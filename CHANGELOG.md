@@ -13,3 +13,7 @@
   or Continuity Camera on Mac) and review a note titled from the slide, linked to its passages,
   with its other lines as bullets — or add a later slide to an existing note. Recognition runs
   on device; the photo is kept only if you choose to.
+- Study mode: turn it on from the toolbar and the Study panel follows the verse you tap. It shows
+  ranked cross references with their text (jump there and back, or press and hold to preview) and
+  commentary from Calvin, Gill and Jamieson‑Fausset‑Brown with linked references. An About Study
+  Resources page lists every source's license and attribution. Everything works offline.

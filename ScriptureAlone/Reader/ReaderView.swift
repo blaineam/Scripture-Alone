@@ -32,9 +32,11 @@ struct ReaderView: View {
     @State private var notesPath: [UUID] = []
     @State private var popover: ReaderPopover?
     @State private var autoScrolling = false
+    @State private var study = StudyModel()
 
     #if os(iOS)
     @ScaledMetric(relativeTo: .body) private var dynamicTypeScale: CGFloat = 1
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     #endif
 
     private var style: ReaderStyle {
@@ -80,10 +82,20 @@ struct ReaderView: View {
                 .toolbar(removing: .title)
                 #endif
         }
-        .inspector(isPresented: $showNotes) {
-            NotesPanel(path: $notesPath)
-                .inspectorColumnWidth(min: 300, ideal: 360, max: 480)
+        .inspector(isPresented: inspectorShown) {
+            Group {
+                if study.isOn && !studyAsSheet {
+                    StudyPanel(onNote: createNoteFromSelection)
+                } else {
+                    NotesPanel(path: $notesPath)
+                }
+            }
+            .inspectorColumnWidth(min: 300, ideal: 360, max: 480)
         }
+        .sheet(isPresented: studySheetShown) {
+            StudyPanel(isSheet: true, onNote: createNoteFromSelection)
+        }
+        .environment(study)
         .sheet(isPresented: $showPicker) {
             PassagePicker()
                 #if os(macOS)
@@ -99,7 +111,10 @@ struct ReaderView: View {
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         #if os(iOS)
-        ToolbarItem(placement: .topBarLeading) { notesButton }
+        ToolbarItemGroup(placement: .topBarLeading) {
+            notesButton
+            studyButton
+        }
         ToolbarItem(placement: .principal) { passageButton }
         ToolbarItemGroup(placement: .topBarTrailing) {
             translationMenu
@@ -123,6 +138,7 @@ struct ReaderView: View {
             translationMenu
             appearanceButton
             notesButton
+            studyButton
         }
         #endif
     }
@@ -140,8 +156,51 @@ struct ReaderView: View {
     }
 
     private var notesButton: some View {
-        Button { showNotes.toggle() } label: { Label("Notes", systemImage: "note.text") }
+        Button {
+            showNotes.toggle()
+            if showNotes { study.isOn = false }
+        } label: { Label("Notes", systemImage: "note.text") }
             .keyboardShortcut("n", modifiers: [.command, .shift])
+    }
+
+    /// Study mode: the panel follows the last verse tapped; taps still select as usual.
+    private var studyButton: some View {
+        Button {
+            if study.isOn {
+                study.isOn = false
+            } else {
+                showNotes = false
+                study.turnOn(selection: model.selection)
+            }
+        } label: {
+            Label("Study", systemImage: study.isOn ? "book.and.wrench.fill" : "book.and.wrench")
+        }
+        .keyboardShortcut("s", modifiers: [.command, .option])
+        .accessibilityValue(study.isOn ? "On" : "Off")
+        .accessibilityHint("Shows cross references and commentary for the verse you tap.")
+    }
+
+    /// On iPhone, Study is a resizable sheet over the text; elsewhere it shares the inspector column.
+    private var studyAsSheet: Bool {
+        #if os(iOS)
+        horizontalSizeClass == .compact
+        #else
+        false
+        #endif
+    }
+
+    /// One inspector column, shared by Notes and Study.
+    private var inspectorShown: Binding<Bool> {
+        Binding(get: { showNotes || (study.isOn && !studyAsSheet) }, set: { shown in
+            if !shown {
+                showNotes = false
+                study.isOn = false
+            }
+        })
+    }
+
+    private var studySheetShown: Binding<Bool> {
+        Binding(get: { study.isOn && studyAsSheet && !showNotes }, set: { if !$0 { study.isOn = false } })
     }
 
     private var previousButton: some View {
@@ -215,6 +274,7 @@ struct ReaderView: View {
         switch tap {
         case .verse(let key):
             model.toggle(key)
+            if study.isOn { study.follow(key) }
         case .notes(let ids, let rect):
             popover = ReaderPopover(kind: .notes(ids), rect: rect)
         case .footnote(let text, let rect):
@@ -243,6 +303,7 @@ struct ReaderView: View {
 
     private func openNote(_ id: UUID) {
         popover = nil
+        study.isOn = false
         notesPath = [id]
         showNotes = true
     }
