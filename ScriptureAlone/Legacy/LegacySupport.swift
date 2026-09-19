@@ -22,6 +22,8 @@ private struct LegacySupport: ViewModifier {
         content
             .environment(LegacyLibrary.shared)
             .environment(session)
+            // Live family sharing: shared Bibles, the owner's mirror, and share invitations.
+            .familySharing(session: session)
             .onOpenURL { url in
                 guard url.isFileURL, url.pathExtension.lowercased() == KeepsakeArchive.fileExtension else { return }
                 pendingImport = KeepsakeImportRequest(url: url)

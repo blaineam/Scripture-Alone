@@ -119,10 +119,116 @@ shows), a note's More menu (just that note), Legacy & Export, and a keepsake's n
 Verse text is optional. Very long passages (over 20 verses — a note on a whole chapter) are
 shortened to their first five verses with an ellipsis. Files can be shared or saved to Files.
 
-## Live family sharing (research)
+## Live family sharing ("Share with Family")
 
-The ideal would be live, read-only sharing: family see the owner's notes as they're written,
-through CloudKit, with no server of ours.
+The living counterpart to the keepsake: the owner invites named family members, who see the
+owner's highlights, notes and favorites **live and read-only**, updating as the owner keeps
+reading — through CloudKit, with no server of ours (and there never will be one).
+
+### Design
+
+SwiftData can't share (see *Why raw CloudKit* below), so sharing is a **raw CloudKit mirror**
+beside the SwiftData store. SwiftData stays the source of truth; the mirror is derived from it
+and can be deleted and rebuilt at any time.
+
+| Piece | Where |
+|---|---|
+| Record mapping, stable IDs, fingerprints, incremental diff, batching, participant snapshot (pure, unit-tested, incl. the CKRecord bridge) | `ScriptureAloneCore/Sources/ScriptureAloneCore/FamilyShare/` |
+| Owner: zone + share, mirror uploader, sharing UI | `ScriptureAlone/FamilyShare/FamilySharingOwner.swift`, `FamilyMirrorUploader.swift`, `FamilySharingView.swift` |
+| Participant: accept, fetch, cache, reader integration | `ScriptureAlone/FamilyShare/SharedBibleLibrary.swift`, `SharedBibleViews.swift`, `FamilyShareAppDelegate.swift` |
+| Glue (per-window refresh, mirror trigger, live reader updates) | `ScriptureAlone/FamilyShare/FamilySharingSupport.swift` |
+| Tests | `ScriptureAloneCore/Tests/ScriptureAloneCoreTests/FamilyMirrorTests.swift` |
+| Two-device manual test plan | [family-sharing-test-plan.md](family-sharing-test-plan.md) |
+
+**Owner side.**
+
+- A custom zone `FamilyBible` in the owner's **private** database (container
+  `iCloud.com.blainemiller.ScriptureAlone`) holds one record per item, named stably so
+  re-uploads replace rather than duplicate:
+
+  | Record type | Name | Fields |
+  |---|---|---|
+  | `FamilyProfile` | `profile` | `bibleID` (the owner's keepsake `bibleID`), `ownerName`, `dedication`, `translation`, `schemaVersion` |
+  | `FamilyHighlight` | `h-<verse key>` | `verse`, `color`, `createdAt` — one per verse, newest wins (as in the reader) |
+  | `FamilyNote` | `n-<note UUID>` | `title`, `body`, `passages` ("start-end,…"), `createdAt`, `updatedAt`, `origin` |
+  | `FamilyFavorite` | `f-<favorite UUID>` | `start`, `end`, `createdAt` |
+
+  Every record also carries `fp`, a SHA-256 fingerprint (first 128 bits) of its type, name and
+  fields with dates at millisecond precision. Slide photos, reading position and settings are
+  never mirrored.
+- The zone is shared with a **zone-wide `CKShare`** (`CKShare(recordZoneID:)`),
+  `publicPermission = .none` (invite-only; the link does nothing for anyone else) and the
+  sharing sheet restricted to `[.allowPrivate, .allowReadOnly]`, so every participant is
+  read-only. The share's title is "Dad's Bible".
+- **Mirror sync** (`FamilyMirrorUploader`, an actor, off the main actor). A per-window view
+  watches SwiftData's highlights, notes and favorites (and the Legacy name/dedication/translation)
+  and, only while sharing is on, hands the latest state to the uploader. The uploader debounces
+  (3 s), diffs the desired records against what the zone holds (`FamilyMirrorDiff`: save what's
+  new or whose fingerprint changed, delete names that are no longer wanted), and sends batches
+  of ≤ 300 items with `savePolicy: .allKeys`, `atomically: false`. Per-item successes are
+  recorded even when others fail, so a retry resends only the failures. Transient errors
+  (network, `serviceUnavailable`, `requestRateLimited`, `zoneBusy`) retry with CloudKit's
+  `retryAfterSeconds` or exponential backoff; `limitExceeded` halves the batch;
+  `zoneNotFound`/`userDeletedZone` means sharing was stopped elsewhere, so the device turns
+  sharing off; `quotaExceeded` and `notAuthenticated` surface as a plain-language status. What's
+  uploaded (name → fingerprint) is kept in `Application Support/FamilyShare/uploaded.json`; a
+  device without it (the owner's iPad, when sharing began on the iPhone) rebuilds it from the
+  zone's `fp` fields before diffing. All of the owner's devices derive the same records from
+  the same synced library, so last write wins without conflicts. Pending changes flush when the
+  app goes to the background.
+- An iCloud key-value flag (`family.owner.sharing`) tells the owner's other devices to keep the
+  mirror current. Nobody who has never shared ever touches CloudKit for this feature.
+- **Stop Sharing** deletes the zone, which deletes the share and every mirrored record.
+  Stopping from the system sharing sheet deletes the share; the app then deletes the zone.
+
+**Participant side.**
+
+- `CKSharingSupported` is declared in `Info.plist`. SwiftUI has no share-acceptance hook, so
+  `ScriptureAloneApp` installs `FamilyShareAppDelegate` (`UIApplicationDelegateAdaptor`), which
+  gives each scene `FamilyShareSceneDelegate`: invitations arrive in
+  `windowScene(_:userDidAcceptCloudKitShareWith:)`, or in the scene connection options on a cold
+  launch. `CKContainer.accept(_:)` adds the owner's zone to the participant's **shared**
+  database.
+- Fetches are incremental: `databaseChanges(since:)` finds changed and deleted `FamilyBible`
+  zones, then `recordZoneChanges(inZoneWith:since:)` per zone, each with its own change token
+  (expired tokens restart from scratch). A cheap `allRecordZones()` check catches a participant
+  who was removed. Fetches run on launch, on returning to the foreground, on pull-to-refresh
+  (Legacy & Export, and the shared Bible's Notes panel) and on a silent push from a
+  `CKDatabaseSubscription` on the shared database.
+- Each shared Bible is cached as JSON in `Application Support/SharedBibles/` (a
+  `FamilyBibleSnapshot` keyed by record name) so it reads offline. It is **never** written into
+  the participant's SwiftData store.
+- Reading reuses the keepsake reader: the snapshot becomes a `Keepsake` value, so highlights get
+  the keepsake pen-line, notes the outlined bubble and read-only Notes panel, and verse taps
+  don't select. The banner reads "Reading Dad's Bible · Shared live · updated 5 min. ago"; a
+  fetch that lands while it's open updates the marks in place. The Notes panel's Favorites tab
+  shows the owner's favorites.
+- **When sharing ends** (owner stops, or removes the person) the entry is marked ended and keeps
+  its last copy; the banner and list say "Sharing ended" and offer **Keep a Copy**, which saves
+  it as an ordinary keepsake (replacing an older keepsake of the same `bibleID`). A participant
+  can also leave a live share, which deletes the share record from their shared database.
+
+**Heir framing.** A live share lasts only as long as the owner's iCloud account. The owner's
+screen says so and links to *Make a Keepsake Too*; the participant's welcome sheet and list
+suggest keeping a copy as a keepsake. The keepsake file remains the permanent copy.
+
+**Privacy.** Only the owner tapping *Start Sharing and Invite…* creates a share. Data goes only
+to the owner's private iCloud database and, through the share, to the invited participants'
+iCloud — Apple's servers, nobody else's. Participants can't write. Nothing is logged or sent
+anywhere else.
+
+**Before shipping.** The record types (`FamilyProfile`, `FamilyHighlight`, `FamilyNote`,
+`FamilyFavorite`) are created automatically in CloudKit's *development* environment the first
+time a signed debug build shares. They must be deployed to *production* from the CloudKit
+Console before a TestFlight/App Store build can share.
+
+**Simulator and unsigned builds.** `CKContainer(identifier:)` crashes when the binary isn't
+entitled to the container, so `FamilyCloud.isEntitled` checks the simulator executable's
+`__entitlements` section (and the code signature on macOS) before any CloudKit call. DEBUG
+builds can fake both sides with `-fakeSharedBible live|ended`, `-fakeFamilyOwner` and
+`-familyScene reader|library|owner|owner-bottom` (`ScriptureAlone/FamilyShare/FamilyDebug.swift`).
+
+### Why raw CloudKit
 
 **Finding: SwiftData can't do it.** In the iOS 27 / macOS 27 SDK (Xcode 27.0, checked in
 `SwiftData.swiftmodule/*.swiftinterface`), `ModelConfiguration.CloudKitDatabase` still has only
@@ -150,9 +256,8 @@ database.
    heir mode is for. A CloudKit share would likely lapse when the owner's Apple Account is
    closed; a file in a drawer doesn't.
 
-**Recommendation:** keep keepsakes as the heir-mode mechanism, and nudge owners to refresh
-them (for example, a gentle reminder in Legacy & Export when their notes have grown since the
-last keepsake). Revisit live sharing if SwiftData gains a shared `CloudKitDatabase` option;
-until then, option 1 is the only clean path, and it isn't worth a second persistence stack
-for a feature whose most important moment happens after the account may be gone. We haven't
-prototyped it.
+**Decision:** option 2, raw CloudKit, built as described above. A one-way, read-only mirror
+avoids the hard parts of owning sync: only the owner writes, every owner device derives the
+same records, so there are no conflicts to merge, and a second persistence stack isn't needed.
+Keepsakes (option 3) stay the heir-mode mechanism for after an account is gone, and live
+sharing points owners to them.

@@ -83,11 +83,24 @@ final class LegacyLibrary {
 @Observable
 final class LegacySession {
     private(set) var reading: Keepsake?
+    /// Where the Bible being read comes from.
+    enum Source: Hashable {
+        /// A keepsake file in the library.
+        case keepsake
+        /// A family member's live share (a `SharedBibleLibrary` entry id).
+        case live(String)
+    }
+
+    private(set) var source = Source.keepsake
+    /// A live share's favorites (keepsakes don't carry them).
+    private(set) var favorites: [FamilyFavorite] = []
     private var translationBefore: String?
 
-    func open(_ keepsake: Keepsake, model: ReaderModel) {
+    func open(_ keepsake: Keepsake, model: ReaderModel, source: Source = .keepsake, favorites: [FamilyFavorite] = []) {
         if reading == nil { translationBefore = model.translationID }
         reading = keepsake
+        self.source = source
+        self.favorites = favorites
         model.selection.removeAll()
         if let preferred = keepsake.manifest.preferredTranslation,
            preferred != model.translationID,
@@ -96,8 +109,21 @@ final class LegacySession {
         }
     }
 
+    /// A live share was fetched again while open: show the newer marks in place.
+    func refresh(_ keepsake: Keepsake, favorites: [FamilyFavorite]) {
+        guard let current = reading, case .live = source else { return }
+        if current.highlights != keepsake.highlights || current.notes != keepsake.notes
+            || current.manifest.ownerName != keepsake.manifest.ownerName
+            || current.manifest.dedication != keepsake.manifest.dedication {
+            reading = keepsake
+        }
+        if self.favorites != favorites { self.favorites = favorites }
+    }
+
     func close(model: ReaderModel) {
         reading = nil
+        source = .keepsake
+        favorites = []
         if let before = translationBefore, before != model.translationID { model.selectTranslation(before) }
         translationBefore = nil
     }
