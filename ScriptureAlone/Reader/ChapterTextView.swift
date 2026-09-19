@@ -24,6 +24,8 @@ struct ChapterTextConfiguration {
     var onScrolledToTarget: () -> Void
     var onReachedEnd: () -> Void
     var onUserScroll: () -> Void
+    /// Verse being read aloud; scrolled into view whenever it changes and isn't visible.
+    var revealVerse: Int? = nil
 }
 
 /// Shared TextKit 1 geometry, used by both platforms.
@@ -144,6 +146,7 @@ struct ChapterTextView: UIViewRepresentable {
             }
         }
         coordinator.setAutoScroll(configuration.autoScrollSpeed)
+        coordinator.revealIfNeeded(configuration)
     }
 
     static func dismantleUIView(_ view: ReaderTextView, coordinator: Coordinator) {
@@ -202,6 +205,34 @@ struct ChapterTextView: UIViewRepresentable {
                            view.contentSize.height - view.bounds.height + view.adjustedContentInset.bottom)
             let y = min(maxY, rect.minY + view.textContainerInset.top - view.adjustedContentInset.top - 12)
             view.setContentOffset(CGPoint(x: 0, y: max(-view.adjustedContentInset.top, y)), animated: false)
+        }
+
+        private var revealedVerse: Int?
+
+        func revealIfNeeded(_ configuration: ChapterTextConfiguration) {
+            guard configuration.scrollTarget == nil else { return }
+            guard let verse = configuration.revealVerse else {
+                revealedVerse = nil
+                return
+            }
+            guard verse != revealedVerse else { return }
+            revealedVerse = verse
+            Task { @MainActor in self.reveal(verse: verse) }
+        }
+
+        /// Brings a verse into view only if it's off screen (or behind the bottom bars), so
+        /// reading along doesn't jolt the page every verse.
+        func reveal(verse key: Int) {
+            guard let view, let range = ChapterGeometry.firstRange(ofVerse: key, in: view.attributedText) else { return }
+            let rect = ChapterGeometry.rect(forCharacters: range, layoutManager: view.layoutManager, container: view.textContainer)
+                .offsetBy(dx: 0, dy: view.textContainerInset.top)
+            let top = view.contentOffset.y + view.adjustedContentInset.top
+            let bottom = view.contentOffset.y + view.bounds.height - max(view.adjustedContentInset.bottom, 0) - 180
+            guard rect.minY < top || rect.minY + min(rect.height, 60) > bottom else { return }
+            let maxY = max(-view.adjustedContentInset.top,
+                           view.contentSize.height - view.bounds.height + view.adjustedContentInset.bottom)
+            let y = min(maxY, rect.minY - view.adjustedContentInset.top - view.bounds.height * 0.18)
+            view.setContentOffset(CGPoint(x: 0, y: max(-view.adjustedContentInset.top, y)), animated: true)
         }
 
         func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -324,6 +355,7 @@ struct ChapterTextView: NSViewRepresentable {
             }
         }
         coordinator.setAutoScroll(configuration.autoScrollSpeed)
+        coordinator.revealIfNeeded(configuration)
     }
 
     static func dismantleNSView(_ view: NSScrollView, coordinator: Coordinator) {
@@ -396,6 +428,34 @@ struct ChapterTextView: NSViewRepresentable {
             let maxY = max(0, textView.frame.height - scrollView.contentView.bounds.height)
             programmaticScroll = true
             scrollView.contentView.scroll(to: CGPoint(x: 0, y: min(maxY, max(0, rect.minY + textView.textContainerOrigin.y - 16))))
+            scrollView.reflectScrolledClipView(scrollView.contentView)
+            programmaticScroll = false
+        }
+
+        private var revealedVerse: Int?
+
+        func revealIfNeeded(_ configuration: ChapterTextConfiguration) {
+            guard configuration.scrollTarget == nil else { return }
+            guard let verse = configuration.revealVerse else {
+                revealedVerse = nil
+                return
+            }
+            guard verse != revealedVerse else { return }
+            revealedVerse = verse
+            Task { @MainActor in self.reveal(verse: verse) }
+        }
+
+        /// Brings a verse into view only if it's off screen or behind the now-playing bar.
+        func reveal(verse key: Int) {
+            guard let textView, let scrollView, let layoutManager = textView.layoutManager, let container = textView.textContainer,
+                  let range = ChapterGeometry.firstRange(ofVerse: key, in: textView.attributedString()) else { return }
+            let rect = ChapterGeometry.rect(forCharacters: range, layoutManager: layoutManager, container: container)
+                .offsetBy(dx: 0, dy: textView.textContainerOrigin.y)
+            let visible = scrollView.contentView.bounds
+            guard rect.minY < visible.minY || rect.minY + min(rect.height, 60) > visible.maxY - 120 else { return }
+            let maxY = max(0, textView.frame.height - visible.height)
+            programmaticScroll = true
+            scrollView.contentView.scroll(to: CGPoint(x: 0, y: min(maxY, max(0, rect.minY - visible.height * 0.18))))
             scrollView.reflectScrolledClipView(scrollView.contentView)
             programmaticScroll = false
         }

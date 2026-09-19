@@ -61,14 +61,22 @@ struct ReaderView: View {
                         .presentationCompactAdaptation(.popover)
                 }
                 .safeAreaInset(edge: .bottom) {
-                    if !model.selection.isEmpty {
-                        SelectionBar(onNote: createNoteFromSelection)
-                            .padding(.horizontal)
-                            .padding(.bottom, 8)
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                    VStack(spacing: 8) {
+                        if ListenController.shared.isListening(in: model) {
+                            NowPlayingBar()
+                                .padding(.horizontal)
+                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
+                        if !model.selection.isEmpty {
+                            SelectionBar(onNote: createNoteFromSelection)
+                                .padding(.horizontal)
+                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
                     }
+                    .padding(.bottom, 8)
                 }
                 .animation(.snappy, value: model.selection.isEmpty)
+                .animation(.snappy, value: ListenController.shared.isListening(in: model))
                 .toolbar { toolbar }
                 #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
@@ -109,6 +117,7 @@ struct ReaderView: View {
             previousButton
             Spacer()
             autoScrollControl
+            listenButton
             Spacer()
             nextButton
         }
@@ -120,6 +129,7 @@ struct ReaderView: View {
         ToolbarItem(placement: .principal) { passageButton }
         ToolbarItemGroup(placement: .primaryAction) {
             autoScrollControl
+            listenButton
             translationMenu
             appearanceButton
             notesButton
@@ -197,6 +207,14 @@ struct ReaderView: View {
             autoScrolling.toggle()
         }
         .accessibilityHint("Scrolls the chapter hands-free. Hold for speed.")
+    }
+
+    private var listenButton: some View {
+        let listening = ListenController.shared.isListening(in: model) && ListenController.shared.isPlaying
+        return Button { ListenController.shared.toolbarAction(in: model) } label: {
+            Label(listening ? "Pause Listening" : "Listen", systemImage: listening ? "headphones.circle.fill" : "headphones")
+        }
+        .accessibilityHint("Reads the chapter aloud from the top of the screen.")
     }
 
     /// Hidden buttons for text-size shortcuts (⌘+ / ⌘−).
@@ -288,7 +306,8 @@ private struct ChapterPane: View {
                 onTopVerseChange: { model.updateTopVerse($0) },
                 onScrolledToTarget: { model.scrollTarget = nil },
                 onReachedEnd: onReachedEnd,
-                onUserScroll: onUserScroll
+                onUserScroll: onUserScroll,
+                revealVerse: ListenController.shared.speakingVerse(in: model)
             ))
         } else if let error = model.loadError {
             ContentUnavailableView("Can’t Open This Chapter", systemImage: "book.closed", description: Text(error))
@@ -317,7 +336,8 @@ private struct ChapterPane: View {
         let next = chapter.next.map { "\($0.display)" }
         return ChapterRenderInput(chapter: chapter, translation: store.info.id, style: ReaderStyleKey(style),
                                   highlights: colors.mapValues(\.0), notes: noteMarkers,
-                                  selection: model.selection, nextTitle: next, copyright: store.info.copyright)
+                                  selection: model.selection, nextTitle: next, copyright: store.info.copyright,
+                                  speakingVerse: ListenController.shared.speakingVerse(in: model))
     }
 }
 

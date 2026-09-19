@@ -18,6 +18,11 @@ struct SelectionBar: View {
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
                 Spacer()
+                Button { ListenController.shared.playSelection(in: model) } label: {
+                    Label("Listen", systemImage: "headphones").font(.subheadline.weight(.semibold))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.tint)
                 Button { model.selection.removeAll() } label: {
                     Image(systemName: "xmark").font(.subheadline.weight(.semibold))
                 }

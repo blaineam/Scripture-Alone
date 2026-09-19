@@ -21,6 +21,11 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 - **Highlights and notes** — tap verses to select; highlight in five colors; attach a note to one
   or more verse ranges (a sermon on Romans 8:1–17). Notes show inline beside the verse and in a
   searchable Notes panel.
+- **Listen** — read aloud from the top of the screen or a selection with any installed system voice
+  (Premium, Enhanced and Personal Voice included), the spoken verse marked and kept in view, on
+  into the next chapter, with speed, sleep timer, lock-screen controls and background audio. On
+  iPhone and iPad, [Mi Speaks](https://wemiller.com/apps/mi-speaks/) subscribers can have its
+  Studio voices record the chapter instead (see `ScriptureAlone/Listen/MiSpeaksClient.swift`).
 - **Sync** — SwiftData over the private CloudKit database; reading position through iCloud
   key-value storage.
 
@@ -28,8 +33,6 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 
 - **Share** — designed verse images made on-device, plus links that rebuild the image in the
   browser from the link itself (the verse rides in the URL fragment; no server stores it).
-- **Listen** — text-to-speech with system voices, and optional hand-off to
-  [Mi Speaks](https://wemiller.com/apps/mi-speaks/) for its Studio voices.
 - **Study mode** — cross-references, maps and timelines of the biblical periods, charts, and
   classic Reformed commentary, a toggle away.
 - **Camera notes** — snap the sermon slide; on-device text recognition titles the note and
