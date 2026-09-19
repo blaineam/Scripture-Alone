@@ -23,11 +23,13 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   searchable Notes panel.
 - **Sync** — SwiftData over the private CloudKit database; reading position through iCloud
   key-value storage.
+- **Share** — verse images designed on-device (eight templates, three shapes, any of the reader's
+  typefaces; save to Photos or share), plain text, or a link that rebuilds the card in any browser
+  from the link itself — the verse rides in the URL fragment, so no server stores it. Contract:
+  [docs/share-links.md](docs/share-links.md).
 
 ## On the way
 
-- **Share** — designed verse images made on-device, plus links that rebuild the image in the
-  browser from the link itself (the verse rides in the URL fragment; no server stores it).
 - **Listen** — text-to-speech with system voices, and optional hand-off to
   [Mi Speaks](https://wemiller.com/apps/mi-speaks/) for its Studio voices.
 - **Study mode** — cross-references, maps and timelines of the biblical periods, charts, and

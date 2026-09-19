@@ -7,10 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		20DCF0DEE79C23AFBC824901 /* ShareStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BEECD7D79C4803DCB59860 /* ShareStyle.swift */; };
 		23F6430073ED541558AAB62E /* BSB.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = CDD77D54BC488F1DA738D64F /* BSB.sqlite */; };
 		28A9DAD1BF4B0CC0B116FD9C /* ScriptureAloneCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1A7205FD5FCA11838150D9A8 /* ScriptureAloneCore */; };
 		4770DFEA1BC39A2844D7DA92 /* SelectionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 293DBAA61F3889B10D77CBFE /* SelectionBar.swift */; };
 		60FC358C80B4C02DF0C7A784 /* NotesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D74C961BED0B7388ED862C /* NotesPanel.swift */; };
+		68BB4D077524582DA20F7E23 /* ShareDesigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A77A69689012AD28F9EB76A /* ShareDesigner.swift */; };
 		6E6914307A950EB418658595 /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14F3A5CAF08690618C671B97 /* ReaderView.swift */; };
 		6F5236F8B372562A114682EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */; };
 		8424029FBF455FF08A704AE7 /* AppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BF719AE320CC291255FBE5 /* AppearanceView.swift */; };
@@ -22,6 +24,9 @@
 		CA283E49B2AC5EDFF35810B4 /* ReaderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E79D61A66336156A65FD29F3 /* ReaderModel.swift */; };
 		D5BE4D8170337EA3A75B265B /* PassagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02B573C120EA0CFCEF9EB807 /* PassagePicker.swift */; };
 		D5C9D7F8E5D34F73C626B369 /* ChapterTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961828BA63931539A77621BD /* ChapterTextView.swift */; };
+		E25B483FC4FA988EAF9D5B85 /* ShareCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9490E2C2C07074CC5136A9 /* ShareCard.swift */; };
+		EB6E25A2A5BCF50CE7B02050 /* ShareExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B03CE75511938642A77DD8B /* ShareExport.swift */; };
+		EEC3FE72CB1BBDB690BE2FEA /* ShareSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF91EB082450DA041248BE6 /* ShareSupport.swift */; };
 		F02E4AD97C78D701BCB83FB4 /* ScriptureAloneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF51A40F2B56DE405EF0EDEC /* ScriptureAloneApp.swift */; };
 		F5D593C5E98A1598C2F69F77 /* ReaderStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF99F7EE590AF05C6A9CF56 /* ReaderStyle.swift */; };
 /* End PBXBuildFile section */
@@ -30,14 +35,19 @@
 		02B573C120EA0CFCEF9EB807 /* PassagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassagePicker.swift; sourceTree = "<group>"; };
 		14F3A5CAF08690618C671B97 /* ReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderView.swift; sourceTree = "<group>"; };
 		293DBAA61F3889B10D77CBFE /* SelectionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionBar.swift; sourceTree = "<group>"; };
+		2B03CE75511938642A77DD8B /* ShareExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareExport.swift; sourceTree = "<group>"; };
 		2B23F521A56070F190FC3B4E /* NoteEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditor.swift; sourceTree = "<group>"; };
 		2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		37BEECD7D79C4803DCB59860 /* ShareStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareStyle.swift; sourceTree = "<group>"; };
 		3CF99F7EE590AF05C6A9CF56 /* ReaderStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderStyle.swift; sourceTree = "<group>"; };
+		4A77A69689012AD28F9EB76A /* ShareDesigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareDesigner.swift; sourceTree = "<group>"; };
 		4D91CA23E8FE546E221CC567 /* ScriptureAloneCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ScriptureAloneCore; path = ScriptureAloneCore; sourceTree = SOURCE_ROOT; };
+		5D9490E2C2C07074CC5136A9 /* ShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCard.swift; sourceTree = "<group>"; };
 		81555B30888819F5ADB9A037 /* ScriptureAlone.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ScriptureAlone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83F2A8744EEF32A4DBDD0B4F /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		94BF719AE320CC291255FBE5 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
 		961828BA63931539A77621BD /* ChapterTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterTextView.swift; sourceTree = "<group>"; };
+		9AF91EB082450DA041248BE6 /* ShareSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSupport.swift; sourceTree = "<group>"; };
 		B6D74C961BED0B7388ED862C /* NotesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesPanel.swift; sourceTree = "<group>"; };
 		BEF5F2289267C3D0B0E64A70 /* ChapterRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterRenderer.swift; sourceTree = "<group>"; };
 		C537216478B6545624E3849E /* ASV.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = ASV.sqlite; sourceTree = "<group>"; };
@@ -68,8 +78,21 @@
 				9DCC7EE67E1699B695A83E23 /* Persistence */,
 				B667085C338E11F6A49B7DBD /* Reader */,
 				CBB570533D14CC6AB0243268 /* Resources */,
+				0FA84B84A138A29E4AD367D2 /* Share */,
 			);
 			path = ScriptureAlone;
+			sourceTree = "<group>";
+		};
+		0FA84B84A138A29E4AD367D2 /* Share */ = {
+			isa = PBXGroup;
+			children = (
+				5D9490E2C2C07074CC5136A9 /* ShareCard.swift */,
+				4A77A69689012AD28F9EB76A /* ShareDesigner.swift */,
+				2B03CE75511938642A77DD8B /* ShareExport.swift */,
+				37BEECD7D79C4803DCB59860 /* ShareStyle.swift */,
+				9AF91EB082450DA041248BE6 /* ShareSupport.swift */,
+			);
+			path = Share;
 			sourceTree = "<group>";
 		};
 		78200FE5CE31F3B680875D28 /* Bibles */ = {
@@ -277,6 +300,11 @@
 				6E6914307A950EB418658595 /* ReaderView.swift in Sources */,
 				F02E4AD97C78D701BCB83FB4 /* ScriptureAloneApp.swift in Sources */,
 				4770DFEA1BC39A2844D7DA92 /* SelectionBar.swift in Sources */,
+				E25B483FC4FA988EAF9D5B85 /* ShareCard.swift in Sources */,
+				68BB4D077524582DA20F7E23 /* ShareDesigner.swift in Sources */,
+				EB6E25A2A5BCF50CE7B02050 /* ShareExport.swift in Sources */,
+				20DCF0DEE79C23AFBC824901 /* ShareStyle.swift in Sources */,
+				EEC3FE72CB1BBDB690BE2FEA /* ShareSupport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -50,9 +50,7 @@ struct SelectionBar: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Copy")
-                ShareLink(item: quotation) { Image(systemName: "square.and.arrow.up").frame(width: 28, height: 28) }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Share")
+                ShareMenu(ranges: ranges, quotation: quotation)
             }
             .font(.title3)
         }
