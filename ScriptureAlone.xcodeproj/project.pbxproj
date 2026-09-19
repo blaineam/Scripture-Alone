@@ -20,8 +20,9 @@
 		23F6430073ED541558AAB62E /* BSB.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = CDD77D54BC488F1DA738D64F /* BSB.sqlite */; };
 		25C2BE3906986CBDB86CE152 /* StudyModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F17EC67413B118E11B84EC /* StudyModel.swift */; };
 		26B899BB800FDA7453A4BE77 /* WatchReaderViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCA7C3E8E3AADBA0719A1ECC /* WatchReaderViews.swift */; };
-		28A9DAD1BF4B0CC0B116FD9C /* ScriptureAloneCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1A7205FD5FCA11838150D9A8 /* ScriptureAloneCore */; };
+		28A9DAD1BF4B0CC0B116FD9C /* MillerKit in Frameworks */ = {isa = PBXBuildFile; productRef = 699B8CC67C93C7D72125C106 /* MillerKit */; };
 		2AC732D4592B52494983760B /* VerseStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0BEC0687ECE009ECE357AB /* VerseStyling.swift */; };
+		2CE7A8DCC9AEA9D0B7A90CDB /* ScriptureAloneCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1A7205FD5FCA11838150D9A8 /* ScriptureAloneCore */; };
 		2D67D62C9CA59B847EA766CA /* Basemap.bin in Resources */ = {isa = PBXBuildFile; fileRef = CD26A00921ADE7C04FC80237 /* Basemap.bin */; };
 		2DB39BE64A22CA7256CD1D9A /* ScriptureAloneWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 2544CC6D255BC8BECC33D29C /* ScriptureAloneWatch.app */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		34EEE38976C8CB13024D9B34 /* ChartViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 037E94E8953976654834491D /* ChartViews.swift */; };
@@ -283,7 +284,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				28A9DAD1BF4B0CC0B116FD9C /* ScriptureAloneCore in Frameworks */,
+				28A9DAD1BF4B0CC0B116FD9C /* MillerKit in Frameworks */,
+				2CE7A8DCC9AEA9D0B7A90CDB /* ScriptureAloneCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -688,6 +690,7 @@
 			);
 			name = ScriptureAlone;
 			packageProductDependencies = (
+				699B8CC67C93C7D72125C106 /* MillerKit */,
 				1A7205FD5FCA11838150D9A8 /* ScriptureAloneCore */,
 			);
 			productName = ScriptureAlone;
@@ -754,6 +757,7 @@
 			mainGroup = A7A1463ECD8668E91BCB7F52;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				B86466128E4F2ADE7CB3B9E7 /* XCRemoteSwiftPackageReference "MillerKit" */,
 				466B986855B6989742EEC3EB /* XCLocalSwiftPackageReference "ScriptureAloneCore" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -1401,10 +1405,26 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		B86466128E4F2ADE7CB3B9E7 /* XCRemoteSwiftPackageReference "MillerKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/blaineam/MillerKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		1A7205FD5FCA11838150D9A8 /* ScriptureAloneCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ScriptureAloneCore;
+		};
+		699B8CC67C93C7D72125C106 /* MillerKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B86466128E4F2ADE7CB3B9E7 /* XCRemoteSwiftPackageReference "MillerKit" */;
+			productName = MillerKit;
 		};
 		A99C75C6CDCFBAD3B748238B /* ScriptureAloneCore */ = {
 			isa = XCSwiftPackageProductDependency;

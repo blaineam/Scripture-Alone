@@ -15,6 +15,7 @@ typealias PlatformImage = NSImage
 /// phone and a Mac want different sizes).
 enum SettingsKey {
     static let theme = "reader.theme"
+    static let accent = "reader.accent"
     static let fontFamily = "reader.fontFamily"
     static let fontSize = "reader.fontSize"
     static let lineSpacing = "reader.lineSpacing"
@@ -75,6 +76,48 @@ enum ReaderTheme: String, CaseIterable, Identifiable {
     }
 }
 
+/// The colour of verse numbers, links, selection and the app's controls. `sunrise` is the
+/// icon's own gold and stays the default; the rest are tuned in pairs so each one keeps its
+/// contrast on a light page and on a dark one.
+enum ReaderAccent: String, CaseIterable, Identifiable {
+    case sunrise, ember, olive, sea, lapis, plum, ink
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .sunrise: "Sunrise"
+        case .ember: "Ember"
+        case .olive: "Olive"
+        case .sea: "Sea"
+        case .lapis: "Lapis"
+        case .plum: "Plum"
+        case .ink: "Ink"
+        }
+    }
+
+    /// Light-page and dark-page values. The dark one is lifted, not just brightened:
+    /// a colour that reads well on paper goes muddy on black at the same saturation.
+    private var pair: (light: UInt32, dark: UInt32) {
+        switch self {
+        case .sunrise: (0x9A6B2F, 0xE0B872)
+        case .ember: (0xA8412A, 0xF08A6C)
+        case .olive: (0x5E6B32, 0xB6C57A)
+        case .sea: (0x1F6F72, 0x76CBCE)
+        case .lapis: (0x2C4C8C, 0x8FB3F0)
+        case .plum: (0x6E3A72, 0xC79AD0)
+        case .ink: (0x45484D, 0xB3B7BE)
+        }
+    }
+
+    func color(isDark: Bool) -> PlatformColor {
+        PlatformColor(hex: isDark ? pair.dark : pair.light)
+    }
+
+    /// The swatch in the picker, always shown on its light-page value.
+    var swatch: Color { Color(PlatformColor(hex: pair.light)) }
+}
+
 struct ReaderPalette: Equatable {
     let page: PlatformColor
     let ink: PlatformColor
@@ -82,6 +125,12 @@ struct ReaderPalette: Equatable {
     let red: PlatformColor
     let accent: PlatformColor
     let isDark: Bool
+
+    /// The same palette with the reader's chosen accent in place of the theme's own.
+    func accented(_ accent: ReaderAccent) -> ReaderPalette {
+        ReaderPalette(page: page, ink: ink, secondary: secondary, red: red,
+                      accent: accent.color(isDark: isDark), isDark: isDark)
+    }
 
     static let light = ReaderPalette(page: PlatformColor(hex: 0xFDFCFA), ink: PlatformColor(hex: 0x1D1B18),
                                      secondary: PlatformColor(hex: 0x7A756D), red: PlatformColor(hex: 0xB0261B),

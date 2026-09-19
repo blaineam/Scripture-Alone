@@ -1,9 +1,11 @@
 import SwiftUI
+import MillerKit
 
 /// Reading preferences, with the chapter visible behind the sheet as a live preview.
 struct AppearanceView: View {
     @Environment(ReaderModel.self) private var model
     @AppStorage(SettingsKey.theme) private var theme = ReaderTheme.system
+    @AppStorage(SettingsKey.accent) private var accent = ReaderAccent.sunrise
     @AppStorage(SettingsKey.fontFamily) private var family = FontFamily.newYork
     @AppStorage(SettingsKey.fontSize) private var fontSize = 19.0
     @AppStorage(SettingsKey.lineSpacing) private var lineSpacing = 1.35
@@ -23,6 +25,19 @@ struct AppearanceView: View {
                     }
                 }
                 .padding(.vertical, 4)
+            }
+
+            Section {
+                HStack(spacing: 12) {
+                    ForEach(ReaderAccent.allCases) { option in
+                        accentSwatch(option)
+                    }
+                }
+                .padding(.vertical, 2)
+            } header: {
+                Text("Accent")
+            } footer: {
+                Text("Colours verse numbers, links and the app’s controls.")
             }
 
             Section("Text") {
@@ -71,6 +86,11 @@ struct AppearanceView: View {
 
             Section { LegacyAndExportRow() }
 
+            SupportSection(app: .scriptureAlone,
+                           extraContext: ["Translation": model.store?.info.id ?? "—"])
+            LoveThisAppSection(app: .scriptureAlone)
+            AboutSection(app: .scriptureAlone)
+
             if let info = model.store?.info {
                 Section("About This Translation") {
                     Text(info.name).font(.headline)
@@ -79,6 +99,29 @@ struct AppearanceView: View {
             }
         }
         .formStyle(.grouped)
+    }
+
+    private func accentSwatch(_ option: ReaderAccent) -> some View {
+        let chosen = option == accent
+        return Button { accent = option } label: {
+            Circle()
+                .fill(option.swatch)
+                .frame(width: 30, height: 30)
+                .overlay(
+                    Circle().strokeBorder(.primary.opacity(chosen ? 0.55 : 0.12),
+                                          lineWidth: chosen ? 2.5 : 1))
+                .overlay {
+                    if chosen {
+                        Image(systemName: "checkmark")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(.white)
+                            .shadow(radius: 1)
+                    }
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(option.title) accent")
+        .accessibilityAddTraits(chosen ? .isSelected : [])
     }
 
     private func themeSwatch(_ option: ReaderTheme) -> some View {

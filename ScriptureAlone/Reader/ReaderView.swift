@@ -17,6 +17,7 @@ struct ReaderView: View {
     @Environment(LegacySession.self) private var legacy
 
     @AppStorage(SettingsKey.theme) private var theme = ReaderTheme.system
+    @AppStorage(SettingsKey.accent) private var accent = ReaderAccent.sunrise
     @AppStorage(SettingsKey.fontFamily) private var family = FontFamily.newYork
     @AppStorage(SettingsKey.fontSize) private var fontSize = 19.0
     @AppStorage(SettingsKey.lineSpacing) private var lineSpacing = 1.35
@@ -46,7 +47,7 @@ struct ReaderView: View {
     #endif
 
     private var style: ReaderStyle {
-        let palette = theme.palette(for: colorScheme)
+        let palette = theme.palette(for: colorScheme).accented(accent)
         #if os(iOS)
         let size = fontSize * dynamicTypeScale
         #else
@@ -55,7 +56,7 @@ struct ReaderView: View {
         return ReaderStyle(family: family, size: size, lineSpacing: lineSpacing, layout: layout,
                            redLetters: redLetters, verseNumbers: verseNumbers, headings: headings,
                            footnotes: footnotes, palette: palette,
-                           paletteID: "\(theme.rawValue)-\(colorScheme == .dark ? "dark" : "light")")
+                           paletteID: "\(theme.rawValue)-\(accent.rawValue)-\(colorScheme == .dark ? "dark" : "light")")
     }
 
     var body: some View {
@@ -138,6 +139,7 @@ struct ReaderView: View {
                 .frame(minWidth: 560, minHeight: 620)
                 #endif
         }
+        .tint(Color(style.palette.accent))
         .preferredColorScheme(theme.colorScheme)
         .background(keyboardShortcuts)
         #if DEBUG

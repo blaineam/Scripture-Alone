@@ -9,6 +9,11 @@
   poetry and footnotes.
 - Reader with paragraph and verse-by-verse layouts, seven typefaces, five themes, adjustable
   size and spacing, and auto-scroll.
+- Accent colour: seven accents (Sunrise, Ember, Olive, Sea, Lapis, Plum, Ink) for verse
+  numbers, links, selection and the app's controls, each tuned separately for light and dark
+  pages. Under Appearance, beside the themes.
+- Feedback, rating and About rows (MillerKit): a guided bug report that carries version and
+  device, a link to the other apps, and the privacy policy — no analytics behind any of it.
 - Quick passage jump ("jn 3 16", "rom 8:28-39") and book/chapter browsing, with recent chapters
   and recent searches kept between launches — tap a past search to run it again, or clear the list.
 - Highlights in five colors and notes on verse ranges, shown inline and in a Notes panel,
