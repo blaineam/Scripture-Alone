@@ -139,7 +139,11 @@ struct ChapterTextView: UIViewRepresentable {
         }
         if let target = configuration.scrollTarget {
             Task { @MainActor in
-                coordinator.scroll(toVerse: target)
+                // A link can arrive while the app is still coming to the foreground; wait for the view.
+                for _ in 0..<20 {
+                    if coordinator.scroll(toVerse: target) { break }
+                    try? await Task.sleep(for: .milliseconds(50))
+                }
                 configuration.onScrolledToTarget()
             }
         }
@@ -194,14 +198,22 @@ struct ChapterTextView: UIViewRepresentable {
                                  dy: view.textContainerInset.top - view.contentOffset.y)
         }
 
-        func scroll(toVerse key: Int) {
-            guard let view, let range = ChapterGeometry.firstRange(ofVerse: key, in: view.attributedText) else { return }
+        /// Returns false when the view can't be positioned yet (not on screen, or not sized).
+        @discardableResult
+        func scroll(toVerse key: Int) -> Bool {
+            guard let view, view.window != nil, view.bounds.height > 0,
+                  let range = ChapterGeometry.firstRange(ofVerse: key, in: view.attributedText) else { return false }
+            view.layoutIfNeeded()
+            // UITextView lays out lazily; without the full layout contentSize is still short and the
+            // offset below gets clamped to the top (seen when a link opened John 3:16 from Psalm 23).
+            view.layoutManager.ensureLayout(for: view.textContainer)
             view.layoutIfNeeded()
             let rect = ChapterGeometry.rect(forCharacters: range, layoutManager: view.layoutManager, container: view.textContainer)
             let maxY = max(-view.adjustedContentInset.top,
                            view.contentSize.height - view.bounds.height + view.adjustedContentInset.bottom)
             let y = min(maxY, rect.minY + view.textContainerInset.top - view.adjustedContentInset.top - 12)
             view.setContentOffset(CGPoint(x: 0, y: max(-view.adjustedContentInset.top, y)), animated: false)
+            return true
         }
 
         func scrollViewDidScroll(_ scrollView: UIScrollView) {
