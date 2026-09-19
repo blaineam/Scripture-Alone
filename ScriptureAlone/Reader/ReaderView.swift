@@ -332,10 +332,20 @@ struct ReaderView: View {
     }
 
     private func openNote(_ id: UUID) {
+        let fromPopover = popover != nil
         popover = nil
         study.isOn = false
         notesPath = [id]
-        showNotes = true
+        guard fromPopover else {
+            showNotes = true
+            return
+        }
+        // On iPhone the notes panel is a sheet; presenting it while the popover is still
+        // dismissing is silently dropped. Wait for the popover to finish going away.
+        Task {
+            try? await Task.sleep(for: .milliseconds(450))
+            showNotes = true
+        }
     }
 }
 
