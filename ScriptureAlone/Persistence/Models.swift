@@ -36,6 +36,8 @@ final class Note {
     var updatedAt: Date = Date.now
     /// "manual" or "camera".
     var origin: String = "manual"
+    /// The slide photo a camera note came from — only when the user chose to keep it.
+    @Attribute(.externalStorage) var slidePhoto: Data?
 
     init(title: String = "", body: String = "", anchors: [VerseRange] = [], origin: String = "manual") {
         self.uuid = UUID()

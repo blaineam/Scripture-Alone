@@ -10,6 +10,7 @@ struct NoteEditor: View {
     @State private var passageText = ""
     @State private var confirmDelete = false
     @FocusState private var focus: Field?
+    @State private var slideCapture = SlideCapture()
 
     enum Field { case title, body, passage }
 
@@ -64,6 +65,8 @@ struct NoteEditor: View {
                     .scrollContentBackground(.hidden)
             }
 
+            SlidePhotoSection(note: note)
+
             Section {
                 LabeledContent("Created", value: note.createdAt.formatted(date: .abbreviated, time: .shortened))
                 LabeledContent("Edited", value: note.updatedAt.formatted(date: .abbreviated, time: .shortened))
@@ -78,6 +81,9 @@ struct NoteEditor: View {
         #endif
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
+                SlideCaptureMenu(capture: slideCapture, addingToNote: true)
+            }
+            ToolbarItem(placement: .primaryAction) {
                 Menu {
                     ShareLink(item: exportText) { Label("Share Note", systemImage: "square.and.arrow.up") }
                     Button(role: .destructive) { confirmDelete = true } label: { Label("Delete Note", systemImage: "trash") }
@@ -86,6 +92,7 @@ struct NoteEditor: View {
                 }
             }
         }
+        .slideCapture(slideCapture, appendTo: note) { _ in }
         .confirmationDialog("Delete this note?", isPresented: $confirmDelete) {
             Button("Delete Note", role: .destructive) {
                 context.delete(note)
