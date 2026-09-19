@@ -32,6 +32,8 @@ struct ReaderView: View {
     @State private var showNotes = false
     @State private var notesPath: [UUID] = []
     @State private var popover: ReaderPopover?
+    /// A note to open once the popover that asked for it has finished dismissing.
+    @State private var pendingNote: UUID?
     @State private var autoScrolling = false
     @State private var study = StudyModel()
 
@@ -60,13 +62,16 @@ struct ReaderView: View {
                 .ignoresSafeArea(edges: .bottom)
                 .background(Color(style.palette.page))
                 .popover(item: $popover, attachmentAnchor: .rect(.rect(popover?.rect ?? .zero))) { item in
-                    if let keepsake = legacy.reading, case .notes(let ids) = item.kind {
-                        LegacyNotesPopover(keepsake: keepsake, ids: ids, openNote: openNote)
-                            .presentationCompactAdaptation(.popover)
-                    } else {
-                        ReaderPopoverView(item: item, openNote: openNote)
-                            .presentationCompactAdaptation(.popover)
+                    Group {
+                        if let keepsake = legacy.reading, case .notes(let ids) = item.kind {
+                            LegacyNotesPopover(keepsake: keepsake, ids: ids, openNote: openNote)
+                        } else {
+                            ReaderPopoverView(item: item, openNote: openNote)
+                        }
                     }
+                    .presentationCompactAdaptation(.popover)
+                    // popover(item:) has no onDismiss; the content disappears once dismissal finishes.
+                    .onDisappear(perform: presentPendingNote)
                 }
                 .safeAreaInset(edge: .top) { LegacyBanner() }
                 .safeAreaInset(edge: .bottom) {
@@ -332,20 +337,24 @@ struct ReaderView: View {
     }
 
     private func openNote(_ id: UUID) {
-        let fromPopover = popover != nil
-        popover = nil
         study.isOn = false
         notesPath = [id]
-        guard fromPopover else {
+        guard popover != nil else {
             showNotes = true
             return
         }
-        // On iPhone the notes panel is a sheet; presenting it while the popover is still
-        // dismissing is silently dropped. Wait for the popover to finish going away.
-        Task {
-            try? await Task.sleep(for: .milliseconds(450))
-            showNotes = true
-        }
+        // On iPhone the notes panel is a sheet, and presenting it in the same update that
+        // dismisses the popover is silently dropped (showNotes stays true with nothing shown).
+        // Present it once the popover has finished going away.
+        pendingNote = id
+        popover = nil
+    }
+
+    private func presentPendingNote() {
+        guard let id = pendingNote else { return }
+        pendingNote = nil
+        notesPath = [id]
+        showNotes = true
     }
 }
 
