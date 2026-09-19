@@ -117,6 +117,7 @@ struct NotesPanel: View {
             .navigationDestination(for: UUID.self) { id in
                 if let note = notes.first(where: { $0.uuid == id }) {
                     NoteEditor(note: note)
+                        .environment(model)
                 } else {
                     ContentUnavailableView("Note Deleted", systemImage: "trash")
                 }

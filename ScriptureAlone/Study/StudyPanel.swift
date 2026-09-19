@@ -73,6 +73,8 @@ struct StudyPanel: View {
             }
             .navigationDestination(isPresented: $showSources) {
                 StudySourcesView()
+                    .environment(model)
+                    .environment(study)
             }
             // An overlay, not a safe-area inset: the bar's natural width is wider than an
             // iPhone, and an inset would widen the whole panel to fit it.

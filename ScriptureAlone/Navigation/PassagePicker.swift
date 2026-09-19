@@ -45,6 +45,7 @@ struct PassagePicker: View {
                     model.show(chapter)
                     dismiss()
                 }
+                .environment(model)
             }
         }
         .task(id: query) { await search() }

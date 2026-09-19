@@ -116,15 +116,24 @@ struct ReaderView: View {
                     NotesPanel(path: $notesPath)
                 }
             }
+            // Presented content gets its models explicitly. On iOS 27 a sheet presented while
+            // another is dismissing (Study → Go To) came up without them, and the first view
+            // pushed inside it crashed reading @Environment(ReaderModel.self).
+            .environment(model)
+            .environment(study)
             .inspectorColumnWidth(min: 300, ideal: 360, max: 480)
         }
         .sheet(isPresented: studySheetShown) {
             StudyPanel(isSheet: true, onNote: createNoteFromSelection)
+                .environment(model)
+                .environment(study)
         }
         .environment(study)
         .onChange(of: legacy.reading?.id) { notesPath = [] }
         .sheet(isPresented: $showPicker) {
             PassagePicker()
+                .environment(model)
+                .environment(study)
                 #if os(macOS)
                 .frame(minWidth: 560, minHeight: 620)
                 #endif
@@ -175,10 +184,37 @@ struct ReaderView: View {
         #endif
     }
 
+    /// With Study up as a sheet (iPhone) the picker can't present over it; SwiftUI queued the
+    /// request and showed the picker only once Study was closed some other way. Close Study
+    /// first, then open Go To once it has finished dismissing.
+    private func openPassagePicker() {
+        guard study.isOn && studyAsSheet else {
+            showPicker = true
+            return
+        }
+        study.isOn = false
+        Task {
+            try? await Task.sleep(for: .milliseconds(450))
+            showPicker = true
+        }
+    }
+
+    private var shortTitle: String {
+        let chapter = model.location
+        return chapter.book.isSingleChapter ? chapter.book.abbreviation : "\(chapter.book.abbreviation) \(chapter.chapter)"
+    }
+
     private var passageButton: some View {
-        Button { showPicker = true } label: {
+        Button { openPassagePicker() } label: {
             HStack(spacing: 4) {
-                Text(model.location.display).font(.headline)
+                // A phone's toolbar leaves little room between the button groups: fall back to
+                // the abbreviation ("Gen 3") rather than truncating the name ("Genesi…").
+                ViewThatFits(in: .horizontal) {
+                    Text(model.location.display)
+                    Text(shortTitle)
+                }
+                .font(.headline)
+                .lineLimit(1)
                 Image(systemName: "chevron.down").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             }
         }
