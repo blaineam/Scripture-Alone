@@ -65,7 +65,9 @@ targets:
         ENABLE_PREVIEWS: YES
         TARGETED_DEVICE_FAMILY: "1,2"
         SUPPORTS_MACCATALYST: NO
-        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        # Mac users get the iPad app ("Designed for iPad") — no macOS platform in App Store Connect.
+        # The native macOS destination stays buildable so its code does not rot, but it is not shipped.
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: YES
         SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
         CODE_SIGN_ENTITLEMENTS: ScriptureAlone/Resources/ScriptureAlone.entitlements
         "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": ScriptureAlone/Resources/ScriptureAlone-macOS.entitlements
