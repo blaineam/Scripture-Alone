@@ -49,6 +49,10 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAlone
         PRODUCT_NAME: Scripture Alone
         INFOPLIST_FILE: ScriptureAlone/Resources/Info.plist
+        # The Icon Composer document ScriptureAlone/Resources/AppIcon.icon
+        # (picked up by the `ScriptureAlone` source path; its layers come from
+        # Tools/generate_icon.py). A watchOS target reuses it by listing the
+        # same file in its sources with this same setting.
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         GENERATE_INFOPLIST_FILE: NO

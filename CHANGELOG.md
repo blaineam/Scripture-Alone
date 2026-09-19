@@ -9,3 +9,5 @@
 - Quick passage jump ("jn 3 16", "rom 8:28-39") and book/chapter browsing.
 - Highlights in five colors and notes on verse ranges, shown inline and in a Notes panel,
   synced through your private iCloud.
+- App icon: an open book as the horizon with the sun rising from its fold, built as a layered
+  Liquid Glass icon with light, dark, tinted and clear appearances.
