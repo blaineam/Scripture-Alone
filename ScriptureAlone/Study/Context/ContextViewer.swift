@@ -173,6 +173,13 @@ struct ContextViewerPresenter: ViewModifier {
             .onChange(of: request) { _, new in
                 guard let new else { return }
                 request = nil
+                #if DEBUG
+                // Screenshots keep the viewer over the reader instead of in a second window.
+                if ScreenshotScene.current != nil {
+                    sheet = new
+                    return
+                }
+                #endif
                 if supportsMultipleWindows && roomForWindows {
                     openWindow(id: ContextViewerRequest.windowID, value: new)
                 } else {
@@ -217,6 +224,13 @@ struct ContextReaderHooks: ViewModifier {
             .onChange(of: ReadingFocus.shared.jumpRequest) { _, jump in
                 if let jump { model.go(to: jump.verse) }
             }
+            #if DEBUG
+            .task {
+                guard ScreenshotScene.current == .maps else { return }
+                try? await Task.sleep(for: .milliseconds(1_500))
+                viewer = ContextViewerRequest(chapter: ChapterRef(.acts, 13), tab: .map)
+            }
+            #endif
     }
 
     private var button: some View {

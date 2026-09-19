@@ -98,6 +98,16 @@ python3 Tools/build_companion_data.py --check
 cd ScriptureAloneCore && swift test
 ```
 
+App Store screenshots come from real simulator captures of DEBUG-only scenes over an invented
+demo library (`ScriptureAlone/App/ScreenshotScene.swift`, `ScriptureAlone/Shared/DemoLibrary.swift`),
+framed in [Monkr](https://github.com/blaineam/Monkr) with a caption per scene:
+
+```bash
+./scripts/update-screenshots.sh --no-upload   # capture iPhone, iPad and Watch, then frame for review
+```
+
+Designs and captions live in `docs/appstore-screenshots/`; the rig is `Tools/capture_screenshots.sh`.
+
 ## License
 
 Code: GNU AGPL‑3.0‑or‑later with the additional permissions in

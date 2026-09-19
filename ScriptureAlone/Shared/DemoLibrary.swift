@@ -3,8 +3,9 @@ import SwiftData
 import ScriptureAloneCore
 
 /// DEBUG-only demo content for simulator verification and screenshot rigs: launch with
-/// `-seedDemoLibrary` and an empty store gets a few favorites, highlights and a note — no
-/// personal data, no taps needed. Compiled into the phone/Mac app and the watch app.
+/// `-seedDemoLibrary` and an empty store gets a few favorites, highlights and two sermon notes —
+/// no personal data, no taps needed. The App Store rig adds `-inMemoryStore` so every scene
+/// starts from exactly this library. Compiled into the phone/Mac app and the watch app.
 enum DemoLibrary {
     static func seedIfRequested(_ context: ModelContext) {
         #if DEBUG
@@ -27,9 +28,20 @@ enum DemoLibrary {
             context.insert(Highlight(verseKey: VerseRef(.john, 3, verse).key, color: .yellow))
         }
         context.insert(Highlight(verseKey: VerseRef(.philippians, 4, 13).key, color: .blue))
-        context.insert(Note(title: "Sunday sermon: No condemnation",
-                            body: "Life in the Spirit. Verse 1 is the hinge — everything after it flows from “no condemnation.”",
-                            anchors: [VerseRange(VerseRef(.romans, 8, 1), VerseRef(.romans, 8, 17))]))
+        context.insert(Highlight(verseKey: VerseRef(.psalms, 23, 1).key, color: .green))
+        context.insert(Highlight(verseKey: VerseRef(.john, 14, 6).key, color: .purple))
+        let romans = Note(title: "Sunday sermon: No condemnation",
+                          body: "Life in the Spirit. Verse 1 is the hinge — everything after it flows from “no condemnation.”",
+                          anchors: [VerseRange(VerseRef(.romans, 8, 1), VerseRef(.romans, 8, 17))])
+        romans.updatedAt = now.addingTimeInterval(-86_400 * 7)
+        context.insert(romans)
+        let nicodemus = Note(title: "Evening sermon: Born of the Spirit",
+                             body: "• Nicodemus comes by night (v. 2)\n• “You must be born anew” — the Spirit’s work, not ours\n• The serpent in the wilderness points to the cross (Numbers 21:8–9)",
+                             anchors: [VerseRange(VerseRef(.john, 3, 1), VerseRef(.john, 3, 21)),
+                                       VerseRange(VerseRef(.numbers, 21, 4), VerseRef(.numbers, 21, 9))],
+                             origin: "camera")
+        nicodemus.updatedAt = now.addingTimeInterval(-86_400 * 3)
+        context.insert(nicodemus)
         try? context.save()
         #endif
     }

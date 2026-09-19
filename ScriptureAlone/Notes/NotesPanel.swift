@@ -106,6 +106,14 @@ struct NotesPanel: View {
                     #endif
             }
             .slideCapture(slideCapture) { note in path = [note.uuid] }
+            #if DEBUG
+            .task {
+                // The sermon-notes screenshot: a sample slide through the photo-import path.
+                guard ScreenshotScene.current == .sermonNotes, let data = ScreenshotScene.sampleSlideData else { return }
+                try? await Task.sleep(for: .milliseconds(900))
+                await slideCapture.accept(data: data)
+            }
+            #endif
             .navigationDestination(for: UUID.self) { id in
                 if let note = notes.first(where: { $0.uuid == id }) {
                     NoteEditor(note: note)

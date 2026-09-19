@@ -36,6 +36,9 @@ struct ReaderView: View {
     @State private var pendingNote: UUID?
     @State private var autoScrolling = false
     @State private var study = StudyModel()
+    #if DEBUG
+    @Environment(ShareCoordinator.self) private var shareCoordinator
+    #endif
 
     #if os(iOS)
     @ScaledMetric(relativeTo: .body) private var dynamicTypeScale: CGFloat = 1
@@ -128,6 +131,9 @@ struct ReaderView: View {
         }
         .preferredColorScheme(theme.colorScheme)
         .background(keyboardShortcuts)
+        #if DEBUG
+        .task { await stageScreenshotScene() }
+        #endif
     }
 
     // MARK: Toolbar
@@ -320,6 +326,49 @@ struct ReaderView: View {
             break
         }
     }
+
+    #if DEBUG
+    /// `-screenshotScene <name>`: sets up one App Store screenshot through the same state the
+    /// toolbar and selection bar set. See `ScreenshotScene` and `Tools/capture_screenshots.sh`.
+    private func stageScreenshotScene() async {
+        guard let scene = ScreenshotScene.current else { return }
+        // Let the first chapter lay out and the demo library land before moving.
+        try? await Task.sleep(for: .milliseconds(700))
+        let john3 = ChapterRef(.john, 3)
+        switch scene {
+        case .reader:
+            model.show(john3, verse: 14)
+        case .jump:
+            model.show(john3, verse: 14)
+            showPicker = true
+        case .study:
+            model.show(john3, verse: 14)
+            let verse = ScreenshotScene.key(.john, 3, 16)
+            model.selection = [verse]
+            study.tab = .crossReferences
+            study.turnOn(selection: model.selection)
+        case .maps:
+            // ContextReaderHooks opens the viewer on the map.
+            model.show(ChapterRef(.acts, 13), verse: 1)
+        case .sermonNotes:
+            // NotesPanel imports the sample slide once it's up.
+            model.show(ChapterRef(.john, 10), verse: 7)
+            showNotes = true
+        case .listen:
+            model.show(ChapterRef(.john, 14), verse: 1)
+            try? await Task.sleep(for: .milliseconds(600))
+            ListenController.shared.playChapter(in: model)
+        case .share:
+            model.show(john3, verse: 14)
+            let ranges = [VerseRange(VerseRef(.john, 3, 16))]
+            if let store = model.store { shareCoordinator.designer = ShareSource(store: store, ranges: ranges) }
+        case .themes:
+            model.show(ChapterRef(.john, 1), verse: 1)
+            try? await Task.sleep(for: .milliseconds(400))
+            showAppearance = true
+        }
+    }
+    #endif
 
     private func advanceWhileScrolling() {
         guard model.location.next != nil else {

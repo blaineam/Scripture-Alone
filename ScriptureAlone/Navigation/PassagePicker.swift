@@ -48,7 +48,13 @@ struct PassagePicker: View {
             }
         }
         .task(id: query) { await search() }
-        .onAppear { focused = true }
+        .onAppear {
+            #if DEBUG
+            // The jump screenshot shows the book grid, not a keyboard.
+            if ScreenshotScene.current == .jump { return }
+            #endif
+            focused = true
+        }
     }
 
     private var searchField: some View {
