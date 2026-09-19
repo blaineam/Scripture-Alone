@@ -1,0 +1,102 @@
+{
+  "id": "journeys",
+  "kind": "journeys",
+  "title": "Paul's Missionary Journeys",
+  "subtitle": "Acts 13–28, c. AD 46–60",
+  "sources": "Routes follow the stops Acts names, in order; straight lines between stops are schematic, not the roads or sea lanes actually taken. Dates: Bruce, Paul: Apostle of the Heart Set Free (1977); approximate. Place coordinates: OpenBible.info Bible Geocoding Data (CC BY 4.0).",
+  "scope": ["ACT", "ROM", "1CO", "2CO", "GAL", "EPH", "PHP", "COL", "1TH", "2TH", "1TI", "2TI", "TIT", "PHM"],
+  "body": {
+    "journeys": [
+      {
+        "id": "first", "name": "First journey", "dates": "c. AD 46–48", "refs": "ACT 13:1-14:28", "color": "#2F7FA6",
+        "stops": [
+          {"place": "ae41ab4", "ref": "ACT 13:1"},
+          {"place": "a6d306d", "ref": "ACT 13:4"},
+          {"place": "afa863b", "ref": "ACT 13:5"},
+          {"place": "a314765", "ref": "ACT 13:6"},
+          {"place": "aff04b8", "ref": "ACT 13:13"},
+          {"place": "a6c704a", "ref": "ACT 13:14"},
+          {"place": "ae425aa", "ref": "ACT 13:51"},
+          {"place": "af0719d", "ref": "ACT 14:6"},
+          {"place": "aa401a9", "ref": "ACT 14:20"},
+          {"place": "af0719d", "ref": "ACT 14:21"},
+          {"place": "ae425aa", "ref": "ACT 14:21"},
+          {"place": "a6c704a", "ref": "ACT 14:21"},
+          {"place": "aff04b8", "ref": "ACT 14:25"},
+          {"place": "ac744c1", "ref": "ACT 14:25"},
+          {"place": "ae41ab4", "ref": "ACT 14:26"}
+        ]
+      },
+      {
+        "id": "second", "name": "Second journey", "dates": "c. AD 49–52", "refs": "ACT 15:36-18:22", "color": "#3F8F6B",
+        "stops": [
+          {"place": "ae41ab4", "ref": "ACT 15:35"},
+          {"place": "ad63819", "ref": "ACT 15:41", "note": "Through Syria and Cilicia, strengthening the churches"},
+          {"place": "aa401a9", "ref": "ACT 16:1"},
+          {"place": "af0719d", "ref": "ACT 16:1"},
+          {"place": "ae425aa", "ref": "ACT 16:2"},
+          {"place": "ab8ae56", "ref": "ACT 16:6", "note": "Through Phrygia and Galatia; kept from speaking in Asia"},
+          {"place": "a2d9bc8", "ref": "ACT 16:7"},
+          {"place": "a91c509", "ref": "ACT 16:8", "note": "The vision of the man of Macedonia"},
+          {"place": "a68750d", "ref": "ACT 16:11"},
+          {"place": "a6a7150", "ref": "ACT 16:11"},
+          {"place": "a49e1d0", "ref": "ACT 16:12"},
+          {"place": "a4bdea7", "ref": "ACT 17:1"},
+          {"place": "ab20df9", "ref": "ACT 17:1"},
+          {"place": "afa9d8e", "ref": "ACT 17:1"},
+          {"place": "a62fe31", "ref": "ACT 17:10"},
+          {"place": "a1fe6e7", "ref": "ACT 17:15"},
+          {"place": "a6f437a", "ref": "ACT 18:1"},
+          {"place": "aa31dd3", "ref": "ACT 18:18"},
+          {"place": "a5feb15", "ref": "ACT 18:19"},
+          {"place": "a58735e", "ref": "ACT 18:22"},
+          {"place": "a15257a", "ref": "ACT 18:22", "note": "\"Went up and greeted the church\" — usually read as Jerusalem"},
+          {"place": "ae41ab4", "ref": "ACT 18:22"}
+        ]
+      },
+      {
+        "id": "third", "name": "Third journey", "dates": "c. AD 53–57", "refs": "ACT 18:23-21:16", "color": "#C9862B",
+        "stops": [
+          {"place": "ae41ab4", "ref": "ACT 18:22"},
+          {"place": "a0f440a", "ref": "ACT 18:23", "note": "Overland through Galatia and Phrygia"},
+          {"place": "ab8ae56", "ref": "ACT 18:23"},
+          {"place": "a5feb15", "ref": "ACT 19:1"},
+          {"place": "a91c509", "ref": "ACT 20:1", "note": "2 Cor 2:12"},
+          {"place": "a49e1d0", "ref": "ACT 20:1"},
+          {"place": "a6f437a", "ref": "ACT 20:2", "note": "Three months in Greece"},
+          {"place": "a49e1d0", "ref": "ACT 20:6"},
+          {"place": "a91c509", "ref": "ACT 20:6"},
+          {"place": "a0a2ca7", "ref": "ACT 20:13"},
+          {"place": "a33910d", "ref": "ACT 20:14"},
+          {"place": "a4c2c75", "ref": "ACT 20:15"},
+          {"place": "acf6ec0", "ref": "ACT 20:15"},
+          {"place": "a55027d", "ref": "ACT 20:15"},
+          {"place": "a398e5d", "ref": "ACT 21:1"},
+          {"place": "a4218ee", "ref": "ACT 21:1"},
+          {"place": "ade301b", "ref": "ACT 21:1"},
+          {"place": "a160272", "ref": "ACT 21:3"},
+          {"place": "abc2af0", "ref": "ACT 21:7"},
+          {"place": "a58735e", "ref": "ACT 21:8"},
+          {"place": "a15257a", "ref": "ACT 21:15"}
+        ]
+      },
+      {
+        "id": "rome", "name": "Voyage to Rome", "dates": "c. AD 59–60", "refs": "ACT 27:1-28:16", "color": "#C23B4B",
+        "stops": [
+          {"place": "a58735e", "ref": "ACT 25:4"},
+          {"place": "a98e4d7", "ref": "ACT 27:3"},
+          {"place": "aa4b3e2", "ref": "ACT 27:5"},
+          {"place": "ab793ce", "ref": "ACT 27:7"},
+          {"place": "aae626a", "ref": "ACT 27:8"},
+          {"place": "a57835d", "ref": "ACT 28:1", "note": "Shipwrecked after two weeks adrift"},
+          {"place": "a1e3697", "ref": "ACT 28:12"},
+          {"place": "a63bb26", "ref": "ACT 28:13"},
+          {"place": "a4488e9", "ref": "ACT 28:13"},
+          {"place": "a121d5e", "ref": "ACT 28:15"},
+          {"place": "afef438", "ref": "ACT 28:15"},
+          {"place": "afc8e7a", "ref": "ACT 28:16"}
+        ]
+      }
+    ]
+  }
+}

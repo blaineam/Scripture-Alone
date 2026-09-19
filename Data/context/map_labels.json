@@ -1,0 +1,26 @@
+{
+  "_about": "Water and landscape labels drawn on the base map, authored for this app. `min` is the smallest map scale (points per degree) at which the label appears; `angle` is in degrees, counter-clockwise.",
+  "labels": [
+    {"text": "Mediterranean Sea", "sub": "The Great Sea", "lon": 19.5, "lat": 34.2, "min": 0, "kind": "sea"},
+    {"text": "Mediterranean Sea", "lon": 33.6, "lat": 33.3, "min": 60, "kind": "sea"},
+    {"text": "Red Sea", "lon": 38.3, "lat": 20.5, "min": 0, "kind": "sea", "angle": -58},
+    {"text": "Persian Gulf", "lon": 51.2, "lat": 27.2, "min": 0, "kind": "sea", "angle": -35},
+    {"text": "Black Sea", "lon": 34.5, "lat": 43.2, "min": 0, "kind": "sea"},
+    {"text": "Caspian Sea", "lon": 50.8, "lat": 41.8, "min": 0, "kind": "sea", "angle": -60},
+    {"text": "Aegean Sea", "lon": 25.0, "lat": 38.9, "min": 22, "kind": "sea", "angle": -70},
+    {"text": "Adriatic Sea", "lon": 16.2, "lat": 42.6, "min": 22, "kind": "sea", "angle": -40},
+    {"text": "Arabian Sea", "lon": 58.5, "lat": 14.5, "min": 0, "kind": "sea"},
+    {"text": "Gulf of Aden", "lon": 47.5, "lat": 12.3, "min": 22, "kind": "sea"},
+    {"text": "Dead Sea", "sub": "Salt Sea", "lon": 35.62, "lat": 31.25, "min": 120, "kind": "lake"},
+    {"text": "Sea of Galilee", "sub": "Chinnereth", "lon": 35.68, "lat": 32.82, "min": 160, "kind": "lake"},
+    {"text": "Nile", "lon": 31.05, "lat": 27.4, "min": 12, "kind": "river", "angle": 80},
+    {"text": "Nile Delta", "lon": 31.0, "lat": 30.85, "min": 60, "kind": "land"},
+    {"text": "Euphrates", "lon": 41.6, "lat": 34.55, "min": 12, "kind": "river", "angle": -25},
+    {"text": "Tigris", "lon": 44.05, "lat": 34.7, "min": 12, "kind": "river", "angle": -55},
+    {"text": "Jordan", "lon": 35.47, "lat": 32.05, "min": 160, "kind": "river", "angle": 88},
+    {"text": "Sinai", "lon": 33.8, "lat": 29.6, "min": 22, "kind": "land"},
+    {"text": "Arabian Desert", "lon": 44.0, "lat": 24.5, "min": 12, "kind": "land"},
+    {"text": "Anatolia", "lon": 33.0, "lat": 39.8, "min": 12, "kind": "land"},
+    {"text": "Mesopotamia", "lon": 44.0, "lat": 33.0, "min": 12, "kind": "land"}
+  ]
+}

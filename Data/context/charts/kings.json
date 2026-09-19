@@ -1,0 +1,58 @@
+{
+  "id": "kings",
+  "kind": "kings",
+  "title": "Kings of Israel & Judah",
+  "subtitle": "The divided kingdom, 931–586 BC",
+  "sources": "Reign dates: Thiele, The Mysterious Numbers of the Hebrew Kings (3rd ed. 1983), which include co-regencies; all are approximate. Verdicts summarize the text's own judgment (\"did what was right / evil in the sight of the LORD\"). Prophets are those the text places in each reign (superscriptions and narratives).",
+  "scope": ["1SA", "2SA", "1KI", "2KI", "1CH", "2CH", "ISA", "JER", "HOS", "JOL", "AMO", "OBA", "JON", "MIC", "NAM", "HAB", "ZEP"],
+  "body": {
+    "united": [
+      {"name": "Saul", "reign": "c. 1050–1010 BC", "years": "40", "verdict": "evil", "ref": "1SA 10:1", "note": "Rejected for disobedience (1 Sam 15:23).", "prophets": ["Samuel"]},
+      {"name": "David", "reign": "1010–970 BC", "years": "40", "verdict": "good", "ref": "2SA 5:4", "note": "A man after God's own heart; the Davidic covenant (2 Sam 7).", "prophets": ["Samuel", "Nathan", "Gad"]},
+      {"name": "Solomon", "reign": "970–931 BC", "years": "40", "verdict": "mixed", "ref": "1KI 11:42", "note": "Built the temple; his heart turned to other gods in old age (1 Kgs 11:4).", "prophets": ["Nathan", "Ahijah"]}
+    ],
+    "israel": [
+      {"name": "Jeroboam I", "reign": "931–910 BC", "years": "22", "verdict": "evil", "ref": "1KI 12:20", "note": "Set up golden calves at Bethel and Dan.", "prophets": ["Ahijah", "A man of God from Judah"]},
+      {"name": "Nadab", "reign": "910–909 BC", "years": "2", "verdict": "evil", "ref": "1KI 15:25"},
+      {"name": "Baasha", "reign": "909–886 BC", "years": "24", "verdict": "evil", "ref": "1KI 15:33", "prophets": ["Jehu son of Hanani"]},
+      {"name": "Elah", "reign": "886–885 BC", "years": "2", "verdict": "evil", "ref": "1KI 16:8"},
+      {"name": "Zimri", "reign": "885 BC", "years": "7 days", "verdict": "evil", "ref": "1KI 16:15"},
+      {"name": "Omri", "reign": "885–874 BC", "years": "12", "verdict": "evil", "ref": "1KI 16:23", "note": "Built Samaria as the capital."},
+      {"name": "Ahab", "reign": "874–853 BC", "years": "22", "verdict": "evil", "ref": "1KI 16:29", "note": "Married Jezebel; promoted Baal worship.", "prophets": ["Elijah", "Micaiah"]},
+      {"name": "Ahaziah", "reign": "853–852 BC", "years": "2", "verdict": "evil", "ref": "1KI 22:51", "prophets": ["Elijah"]},
+      {"name": "Joram", "reign": "852–841 BC", "years": "12", "verdict": "evil", "ref": "2KI 3:1", "prophets": ["Elisha"]},
+      {"name": "Jehu", "reign": "841–814 BC", "years": "28", "verdict": "mixed", "ref": "2KI 10:36", "note": "Wiped out Baal worship but kept Jeroboam's calves (2 Kgs 10:28–31).", "prophets": ["Elisha"]},
+      {"name": "Jehoahaz", "reign": "814–798 BC", "years": "17", "verdict": "evil", "ref": "2KI 13:1", "prophets": ["Elisha"]},
+      {"name": "Jehoash", "reign": "798–782 BC", "years": "16", "verdict": "evil", "ref": "2KI 13:10", "prophets": ["Elisha"]},
+      {"name": "Jeroboam II", "reign": "793–753 BC", "years": "41", "verdict": "evil", "ref": "2KI 14:23", "note": "Includes a co-regency; Israel's borders restored.", "prophets": ["Jonah", "Amos", "Hosea"]},
+      {"name": "Zechariah", "reign": "753 BC", "years": "6 months", "verdict": "evil", "ref": "2KI 15:8", "prophets": ["Hosea"]},
+      {"name": "Shallum", "reign": "752 BC", "years": "1 month", "verdict": "evil", "ref": "2KI 15:13", "prophets": ["Hosea"]},
+      {"name": "Menahem", "reign": "752–742 BC", "years": "10", "verdict": "evil", "ref": "2KI 15:17", "note": "Paid tribute to Assyria.", "prophets": ["Hosea"]},
+      {"name": "Pekahiah", "reign": "742–740 BC", "years": "2", "verdict": "evil", "ref": "2KI 15:23", "prophets": ["Hosea"]},
+      {"name": "Pekah", "reign": "752–732 BC", "years": "20", "verdict": "evil", "ref": "2KI 15:27", "note": "Counted from a rival reign in Gilead (Thiele).", "prophets": ["Hosea", "Oded"]},
+      {"name": "Hoshea", "reign": "732–722 BC", "years": "9", "verdict": "evil", "ref": "2KI 17:1", "note": "Samaria fell to Assyria; the northern tribes were exiled.", "prophets": ["Hosea"]}
+    ],
+    "judah": [
+      {"name": "Rehoboam", "reign": "931–913 BC", "years": "17", "verdict": "evil", "ref": "1KI 14:21", "prophets": ["Shemaiah"]},
+      {"name": "Abijah", "reign": "913–911 BC", "years": "3", "verdict": "evil", "ref": "1KI 15:1", "prophets": ["Iddo"]},
+      {"name": "Asa", "reign": "911–870 BC", "years": "41", "verdict": "good", "ref": "1KI 15:9", "prophets": ["Azariah son of Oded", "Hanani"]},
+      {"name": "Jehoshaphat", "reign": "872–848 BC", "years": "25", "verdict": "good", "ref": "1KI 22:41", "note": "Includes a co-regency with Asa.", "prophets": ["Jehu son of Hanani", "Jahaziel", "Eliezer"]},
+      {"name": "Jehoram", "reign": "853–841 BC", "years": "8", "verdict": "evil", "ref": "2KI 8:16", "note": "Married Ahab's daughter Athaliah.", "prophets": ["Elijah"]},
+      {"name": "Ahaziah", "reign": "841 BC", "years": "1", "verdict": "evil", "ref": "2KI 8:25"},
+      {"name": "Athaliah", "reign": "841–835 BC", "years": "6", "verdict": "evil", "ref": "2KI 11:1", "note": "Queen; seized the throne and killed the royal heirs but Joash."},
+      {"name": "Joash", "reign": "835–796 BC", "years": "40", "verdict": "good", "ref": "2KI 12:1", "note": "Repaired the temple; turned away after Jehoiada died (2 Chr 24:17).", "prophets": ["Zechariah son of Jehoiada"]},
+      {"name": "Amaziah", "reign": "796–767 BC", "years": "29", "verdict": "good", "ref": "2KI 14:1", "note": "\"But not with a whole heart\" (2 Chr 25:2)."},
+      {"name": "Uzziah (Azariah)", "reign": "792–740 BC", "years": "52", "verdict": "good", "ref": "2KI 15:1", "note": "Includes a co-regency; struck with leprosy for pride (2 Chr 26:16–21).", "prophets": ["Isaiah", "Hosea", "Amos"]},
+      {"name": "Jotham", "reign": "750–732 BC", "years": "16", "verdict": "good", "ref": "2KI 15:32", "prophets": ["Isaiah", "Hosea", "Micah"]},
+      {"name": "Ahaz", "reign": "735–715 BC", "years": "16", "verdict": "evil", "ref": "2KI 16:1", "prophets": ["Isaiah", "Hosea", "Micah"]},
+      {"name": "Hezekiah", "reign": "715–686 BC", "years": "29", "verdict": "good", "ref": "2KI 18:1", "note": "Trusted the LORD; Jerusalem delivered from Sennacherib.", "prophets": ["Isaiah", "Hosea", "Micah"]},
+      {"name": "Manasseh", "reign": "697–642 BC", "years": "55", "verdict": "evil", "ref": "2KI 21:1", "note": "Judah's most wicked king; repented late (2 Chr 33:12–13)."},
+      {"name": "Amon", "reign": "642–640 BC", "years": "2", "verdict": "evil", "ref": "2KI 21:19"},
+      {"name": "Josiah", "reign": "640–609 BC", "years": "31", "verdict": "good", "ref": "2KI 22:1", "note": "The Book of the Law found; sweeping reform.", "prophets": ["Jeremiah", "Zephaniah", "Huldah"]},
+      {"name": "Jehoahaz", "reign": "609 BC", "years": "3 months", "verdict": "evil", "ref": "2KI 23:31", "prophets": ["Jeremiah"]},
+      {"name": "Jehoiakim", "reign": "609–598 BC", "years": "11", "verdict": "evil", "ref": "2KI 23:36", "prophets": ["Jeremiah", "Habakkuk", "Uriah"]},
+      {"name": "Jehoiachin", "reign": "598–597 BC", "years": "3 months", "verdict": "evil", "ref": "2KI 24:8", "prophets": ["Jeremiah"]},
+      {"name": "Zedekiah", "reign": "597–586 BC", "years": "11", "verdict": "evil", "ref": "2KI 24:18", "note": "Jerusalem destroyed by Babylon.", "prophets": ["Jeremiah", "Ezekiel"]}
+    ]
+  }
+}

@@ -23,6 +23,13 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   searchable Notes panel.
 - **Sync** — SwiftData over the private CloudKit database; reading position through iCloud
   key-value storage.
+- **Maps, timeline and charts** — for the chapter you're reading: its era on a timeline of
+  the biblical periods, a map of every place it names (tap one for every verse that mentions
+  it), and charts — the kings of Israel and Judah, Paul's journeys drawn on the map, the twelve
+  tribes, the feasts of Israel. The map is drawn on-device from bundled Natural Earth data, so
+  it works with no connection. On iPad and Mac it opens in its own window to keep beside the
+  text. Places are from [OpenBible.info](https://www.openbible.info/geo/) (CC BY 4.0); see
+  [docs/context-sources.md](docs/context-sources.md).
 
 ## On the way
 
@@ -30,8 +37,8 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   browser from the link itself (the verse rides in the URL fragment; no server stores it).
 - **Listen** — text-to-speech with system voices, and optional hand-off to
   [Mi Speaks](https://wemiller.com/apps/mi-speaks/) for its Studio voices.
-- **Study mode** — cross-references, maps and timelines of the biblical periods, charts, and
-  classic Reformed commentary, a toggle away.
+- **Study mode** — cross-references and classic Reformed commentary alongside the maps,
+  timeline and charts, a toggle away.
 - **Camera notes** — snap the sermon slide; on-device text recognition titles the note and
   links the passages it mentions (the reference detector is already in `ScriptureAloneCore`).
 - **Heir mode** — share a read-only copy of your notes and highlights with family, or export a
@@ -47,17 +54,21 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 | `ScriptureAloneCore/` | Swift package: canon, passage parser, reference detector, Bible store |
 | `Tools/build_bibles.py` | Compiles `Data/source/*.zip` (USFM) into `ScriptureAlone/Resources/Bibles/*.sqlite` |
 | `Data/source/` | Source texts: BSB from berean.bible, ASV and KJV from eBible.org |
+| `Tools/build_context.py` | Builds `Resources/Study/Context.sqlite` + `Basemap.bin` from OpenBible.info places, Natural Earth and `Data/context/` |
+| `Data/context/` | Authored eras, events, chapter→era map, charts and map labels |
 
 ## Build
 
 ```bash
 xcodegen generate
 python3 Tools/build_bibles.py --check
+python3 Tools/build_context.py --check   # fetches pinned sources once into Data/cache/
 cd ScriptureAloneCore && swift test
 ```
 
 ## License
 
 Code: GNU AGPL‑3.0‑or‑later with the additional permissions in
-[LICENSE-EXCEPTIONS.md](LICENSE-EXCEPTIONS.md). Bible texts: public domain. See
+[LICENSE-EXCEPTIONS.md](LICENSE-EXCEPTIONS.md). Bible texts: public domain. Place data:
+OpenBible.info, CC BY 4.0. Base map: Natural Earth, public domain. See
 [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.

@@ -70,6 +70,7 @@ struct ReaderView: View {
                 }
                 .animation(.snappy, value: model.selection.isEmpty)
                 .toolbar { toolbar }
+                .contextReaderHooks()
                 #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbarBackground(Color(style.palette.page), for: .navigationBar, .bottomBar)

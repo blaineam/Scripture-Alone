@@ -1,0 +1,21 @@
+{
+  "id": "feasts",
+  "kind": "feasts",
+  "title": "Feasts of Israel",
+  "subtitle": "The appointed times of Leviticus 23, and two later feasts",
+  "sources": "Dates and instructions from the text (Lev 23; Num 28–29; Deut 16; Esth 9; John 10:22). Modern-calendar seasons are approximate, since the Hebrew calendar is lunar. The New Testament column lists passages that connect each feast to Christ or the church; the link for Trumpets is an interpretation, not a stated fulfillment.",
+  "scope": ["EXO", "LEV", "NUM", "DEU", "EST", "NEH", "EZR", "MAT", "MRK", "LUK", "JHN", "ACT", "1CO", "HEB"],
+  "body": {
+    "feasts": [
+      {"name": "Passover", "hebrew": "Pesach", "date": "Nisan 14", "season": "March–April", "refs": "LEV 23:4-5", "also": "EXO 12:1-28", "meaning": "The LORD passed over Israel's firstborn under the lamb's blood and brought them out of Egypt.", "nt": "1CO 5:7", "ntText": "Christ, our Passover lamb, has been sacrificed (BSB).", "pilgrim": true},
+      {"name": "Unleavened Bread", "hebrew": "Matzot", "date": "Nisan 15–21", "season": "March–April", "refs": "LEV 23:6-8", "also": "EXO 12:15-20", "meaning": "Seven days without leaven, remembering the haste of the exodus.", "nt": "1CO 5:8", "ntText": "Keep the feast with the unleavened bread of sincerity and truth.", "pilgrim": true},
+      {"name": "Firstfruits", "hebrew": "Reshit", "date": "The day after the Sabbath of Unleavened Bread", "season": "March–April", "refs": "LEV 23:9-14", "meaning": "The first sheaf of the barley harvest waved before the LORD.", "nt": "1CO 15:20", "ntText": "Christ has been raised, the firstfruits of those who have fallen asleep."},
+      {"name": "Weeks (Pentecost)", "hebrew": "Shavuot", "date": "Fifty days after Firstfruits", "season": "May–June", "refs": "LEV 23:15-21", "also": "DEU 16:9-12", "meaning": "Thanksgiving for the wheat harvest.", "nt": "ACT 2:1-4", "ntText": "The Holy Spirit poured out on the day of Pentecost.", "pilgrim": true},
+      {"name": "Trumpets", "hebrew": "Yom Teruah", "date": "Tishri 1", "season": "September–October", "refs": "LEV 23:23-25", "also": "NUM 29:1-6", "meaning": "A day of rest proclaimed with trumpet blasts, opening the seventh month.", "nt": "1TH 4:16", "ntText": "Some connect it with the trumpet at Christ's return; the text does not say so directly.", "interpretive": true},
+      {"name": "Day of Atonement", "hebrew": "Yom Kippur", "date": "Tishri 10", "season": "September–October", "refs": "LEV 23:26-32", "also": "LEV 16", "meaning": "The high priest entered the Most Holy Place to make atonement for the people's sins.", "nt": "HEB 9:11-12", "ntText": "He entered the Most Holy Place once for all by His own blood (BSB)."},
+      {"name": "Booths (Tabernacles)", "hebrew": "Sukkot", "date": "Tishri 15–21, with an eighth-day assembly", "season": "September–October", "refs": "LEV 23:33-43", "also": "NEH 8:13-18", "meaning": "Living in shelters to remember the wilderness; the harvest ingathering.", "nt": "JHN 7:37-38", "ntText": "On the last and greatest day of the feast: \"If anyone is thirsty, let him come to Me and drink\" (BSB).", "pilgrim": true},
+      {"name": "Purim", "hebrew": "Purim", "date": "Adar 14–15", "season": "February–March", "refs": "EST 9:20-32", "meaning": "The Jews' deliverance from Haman in Persia.", "later": true},
+      {"name": "Dedication (Hanukkah)", "hebrew": "Hanukkah", "date": "Kislev 25, eight days", "season": "November–December", "refs": "JHN 10:22-23", "meaning": "The temple's rededication after the Maccabean revolt (164 BC); Jesus was in the temple at this feast.", "later": true}
+    ]
+  }
+}
