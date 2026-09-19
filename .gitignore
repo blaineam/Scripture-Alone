@@ -5,3 +5,4 @@ DerivedData/
 *.xcodeproj/project.xcworkspace/xcuserdata/
 Tools/__pycache__/
 docs/licensing/
+.claude/
