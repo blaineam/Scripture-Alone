@@ -1,0 +1,523 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		23F6430073ED541558AAB62E /* BSB.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = CDD77D54BC488F1DA738D64F /* BSB.sqlite */; };
+		28A9DAD1BF4B0CC0B116FD9C /* ScriptureAloneCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1A7205FD5FCA11838150D9A8 /* ScriptureAloneCore */; };
+		4770DFEA1BC39A2844D7DA92 /* SelectionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 293DBAA61F3889B10D77CBFE /* SelectionBar.swift */; };
+		60FC358C80B4C02DF0C7A784 /* NotesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D74C961BED0B7388ED862C /* NotesPanel.swift */; };
+		6E6914307A950EB418658595 /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14F3A5CAF08690618C671B97 /* ReaderView.swift */; };
+		6F5236F8B372562A114682EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */; };
+		8424029FBF455FF08A704AE7 /* AppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BF719AE320CC291255FBE5 /* AppearanceView.swift */; };
+		9EDB91B3E493153AD22B0583 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F2A8744EEF32A4DBDD0B4F /* Models.swift */; };
+		9F8302BE770364CD2F7A1F1F /* NoteEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B23F521A56070F190FC3B4E /* NoteEditor.swift */; };
+		BD0C4E58EEB61F180F6808DC /* KJV.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = D05D293260369FD553FC2DA9 /* KJV.sqlite */; };
+		BE2CB76530956EBCDDEC58D5 /* ChapterRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF5F2289267C3D0B0E64A70 /* ChapterRenderer.swift */; };
+		C39880D4719CF8DF740C4577 /* ASV.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = C537216478B6545624E3849E /* ASV.sqlite */; };
+		CA283E49B2AC5EDFF35810B4 /* ReaderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E79D61A66336156A65FD29F3 /* ReaderModel.swift */; };
+		D5BE4D8170337EA3A75B265B /* PassagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02B573C120EA0CFCEF9EB807 /* PassagePicker.swift */; };
+		D5C9D7F8E5D34F73C626B369 /* ChapterTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961828BA63931539A77621BD /* ChapterTextView.swift */; };
+		F02E4AD97C78D701BCB83FB4 /* ScriptureAloneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF51A40F2B56DE405EF0EDEC /* ScriptureAloneApp.swift */; };
+		F5D593C5E98A1598C2F69F77 /* ReaderStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF99F7EE590AF05C6A9CF56 /* ReaderStyle.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		02B573C120EA0CFCEF9EB807 /* PassagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassagePicker.swift; sourceTree = "<group>"; };
+		14F3A5CAF08690618C671B97 /* ReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderView.swift; sourceTree = "<group>"; };
+		293DBAA61F3889B10D77CBFE /* SelectionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionBar.swift; sourceTree = "<group>"; };
+		2B23F521A56070F190FC3B4E /* NoteEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditor.swift; sourceTree = "<group>"; };
+		2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3CF99F7EE590AF05C6A9CF56 /* ReaderStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderStyle.swift; sourceTree = "<group>"; };
+		4D91CA23E8FE546E221CC567 /* ScriptureAloneCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ScriptureAloneCore; path = ScriptureAloneCore; sourceTree = SOURCE_ROOT; };
+		81555B30888819F5ADB9A037 /* ScriptureAlone.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ScriptureAlone.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		83F2A8744EEF32A4DBDD0B4F /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		94BF719AE320CC291255FBE5 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
+		961828BA63931539A77621BD /* ChapterTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterTextView.swift; sourceTree = "<group>"; };
+		B6D74C961BED0B7388ED862C /* NotesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesPanel.swift; sourceTree = "<group>"; };
+		BEF5F2289267C3D0B0E64A70 /* ChapterRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterRenderer.swift; sourceTree = "<group>"; };
+		C537216478B6545624E3849E /* ASV.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = ASV.sqlite; sourceTree = "<group>"; };
+		CDD77D54BC488F1DA738D64F /* BSB.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = BSB.sqlite; sourceTree = "<group>"; };
+		D05D293260369FD553FC2DA9 /* KJV.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = KJV.sqlite; sourceTree = "<group>"; };
+		DF51A40F2B56DE405EF0EDEC /* ScriptureAloneApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureAloneApp.swift; sourceTree = "<group>"; };
+		E79D61A66336156A65FD29F3 /* ReaderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderModel.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		00CBE6A3855E3F0AB246A1BD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				28A9DAD1BF4B0CC0B116FD9C /* ScriptureAloneCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0810B7D929D915AF4EC1AEDE /* ScriptureAlone */ = {
+			isa = PBXGroup;
+			children = (
+				96252C70005CBADAB5D9A85D /* App */,
+				CC9EA9E52CD4B2C3E2D6B007 /* Navigation */,
+				AB0DDA594750C40374A126FA /* Notes */,
+				9DCC7EE67E1699B695A83E23 /* Persistence */,
+				B667085C338E11F6A49B7DBD /* Reader */,
+				CBB570533D14CC6AB0243268 /* Resources */,
+			);
+			path = ScriptureAlone;
+			sourceTree = "<group>";
+		};
+		78200FE5CE31F3B680875D28 /* Bibles */ = {
+			isa = PBXGroup;
+			children = (
+				C537216478B6545624E3849E /* ASV.sqlite */,
+				CDD77D54BC488F1DA738D64F /* BSB.sqlite */,
+				D05D293260369FD553FC2DA9 /* KJV.sqlite */,
+			);
+			path = Bibles;
+			sourceTree = "<group>";
+		};
+		96252C70005CBADAB5D9A85D /* App */ = {
+			isa = PBXGroup;
+			children = (
+				E79D61A66336156A65FD29F3 /* ReaderModel.swift */,
+				DF51A40F2B56DE405EF0EDEC /* ScriptureAloneApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		9A9F6FA1A1E9DDD73C063DCD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				81555B30888819F5ADB9A037 /* ScriptureAlone.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9DCC7EE67E1699B695A83E23 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				83F2A8744EEF32A4DBDD0B4F /* Models.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		A7A1463ECD8668E91BCB7F52 = {
+			isa = PBXGroup;
+			children = (
+				EA7413CE6C430E6B7B85C7A6 /* Packages */,
+				0810B7D929D915AF4EC1AEDE /* ScriptureAlone */,
+				9A9F6FA1A1E9DDD73C063DCD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AB0DDA594750C40374A126FA /* Notes */ = {
+			isa = PBXGroup;
+			children = (
+				2B23F521A56070F190FC3B4E /* NoteEditor.swift */,
+				B6D74C961BED0B7388ED862C /* NotesPanel.swift */,
+			);
+			path = Notes;
+			sourceTree = "<group>";
+		};
+		B667085C338E11F6A49B7DBD /* Reader */ = {
+			isa = PBXGroup;
+			children = (
+				94BF719AE320CC291255FBE5 /* AppearanceView.swift */,
+				BEF5F2289267C3D0B0E64A70 /* ChapterRenderer.swift */,
+				961828BA63931539A77621BD /* ChapterTextView.swift */,
+				3CF99F7EE590AF05C6A9CF56 /* ReaderStyle.swift */,
+				14F3A5CAF08690618C671B97 /* ReaderView.swift */,
+				293DBAA61F3889B10D77CBFE /* SelectionBar.swift */,
+			);
+			path = Reader;
+			sourceTree = "<group>";
+		};
+		CBB570533D14CC6AB0243268 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				78200FE5CE31F3B680875D28 /* Bibles */,
+				2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		CC9EA9E52CD4B2C3E2D6B007 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				02B573C120EA0CFCEF9EB807 /* PassagePicker.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		EA7413CE6C430E6B7B85C7A6 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				4D91CA23E8FE546E221CC567 /* ScriptureAloneCore */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B7C2E571CC42407A79EFD8CB /* ScriptureAlone */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 932C228686AC4DB67C58D861 /* Build configuration list for PBXNativeTarget "ScriptureAlone" */;
+			buildPhases = (
+				6875C88884E760499C490F53 /* Sources */,
+				0F84C490BBDB1F8EC5E429DC /* Strip xattrs (codesign workaround) */,
+				A96F435A027D5E9119F62B43 /* Resources */,
+				00CBE6A3855E3F0AB246A1BD /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ScriptureAlone;
+			packageProductDependencies = (
+				1A7205FD5FCA11838150D9A8 /* ScriptureAloneCore */,
+			);
+			productName = ScriptureAlone;
+			productReference = 81555B30888819F5ADB9A037 /* ScriptureAlone.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7C620D6511A6385F55011EF6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					B7C2E571CC42407A79EFD8CB = {
+						DevelopmentTeam = 8ZVSPZYSVF;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 58CCF8E4C9FC1CBAD91CD925 /* Build configuration list for PBXProject "ScriptureAlone" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = A7A1463ECD8668E91BCB7F52;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				466B986855B6989742EEC3EB /* XCLocalSwiftPackageReference "ScriptureAloneCore" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 9A9F6FA1A1E9DDD73C063DCD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B7C2E571CC42407A79EFD8CB /* ScriptureAlone */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A96F435A027D5E9119F62B43 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C39880D4719CF8DF740C4577 /* ASV.sqlite in Resources */,
+				6F5236F8B372562A114682EB /* Assets.xcassets in Resources */,
+				23F6430073ED541558AAB62E /* BSB.sqlite in Resources */,
+				BD0C4E58EEB61F180F6808DC /* KJV.sqlite in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0F84C490BBDB1F8EC5E429DC /* Strip xattrs (codesign workaround) */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Strip xattrs (codesign workaround)";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "find \"$CODESIGNING_FOLDER_PATH\" -exec xattr -c {} + 2>/dev/null\ntrue\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6875C88884E760499C490F53 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8424029FBF455FF08A704AE7 /* AppearanceView.swift in Sources */,
+				BE2CB76530956EBCDDEC58D5 /* ChapterRenderer.swift in Sources */,
+				D5C9D7F8E5D34F73C626B369 /* ChapterTextView.swift in Sources */,
+				9EDB91B3E493153AD22B0583 /* Models.swift in Sources */,
+				9F8302BE770364CD2F7A1F1F /* NoteEditor.swift in Sources */,
+				60FC358C80B4C02DF0C7A784 /* NotesPanel.swift in Sources */,
+				D5BE4D8170337EA3A75B265B /* PassagePicker.swift in Sources */,
+				CA283E49B2AC5EDFF35810B4 /* ReaderModel.swift in Sources */,
+				F5D593C5E98A1598C2F69F77 /* ReaderStyle.swift in Sources */,
+				6E6914307A950EB418658595 /* ReaderView.swift in Sources */,
+				F02E4AD97C78D701BCB83FB4 /* ScriptureAloneApp.swift in Sources */,
+				4770DFEA1BC39A2844D7DA92 /* SelectionBar.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		74CA33371DB2529C8D2DE039 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ScriptureAlone/Resources/ScriptureAlone.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "ScriptureAlone/Resources/ScriptureAlone-macOS.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ScriptureAlone/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.blainemiller.ScriptureAlone;
+				PRODUCT_NAME = "Scripture Alone";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BFD3C173D427B2BF1ABFA7E8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				"ARCHS[sdk=macosx*]" = arm64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 8ZVSPZYSVF;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				"EXCLUDED_ARCHS[sdk=*simulator*]" = x86_64;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		F4EACC08BD2DA0F29B4B3548 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ScriptureAlone/Resources/ScriptureAlone.entitlements;
+				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "ScriptureAlone/Resources/ScriptureAlone-macOS.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ScriptureAlone/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.blainemiller.ScriptureAlone;
+				PRODUCT_NAME = "Scripture Alone";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F85E9CC9C9EF475E911778FE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				"ARCHS[sdk=macosx*]" = arm64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 8ZVSPZYSVF;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				"EXCLUDED_ARCHS[sdk=*simulator*]" = x86_64;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		58CCF8E4C9FC1CBAD91CD925 /* Build configuration list for PBXProject "ScriptureAlone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F85E9CC9C9EF475E911778FE /* Debug */,
+				BFD3C173D427B2BF1ABFA7E8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		932C228686AC4DB67C58D861 /* Build configuration list for PBXNativeTarget "ScriptureAlone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				74CA33371DB2529C8D2DE039 /* Debug */,
+				F4EACC08BD2DA0F29B4B3548 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		466B986855B6989742EEC3EB /* XCLocalSwiftPackageReference "ScriptureAloneCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ScriptureAloneCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1A7205FD5FCA11838150D9A8 /* ScriptureAloneCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ScriptureAloneCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 7C620D6511A6385F55011EF6 /* Project object */;
+}

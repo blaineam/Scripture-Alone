@@ -1,0 +1,637 @@
+#!/usr/bin/env python3
+"""Compile USFM sources into the offline SQLite databases the app bundles.
+
+    python3 Tools/build_bibles.py            # builds every translation in TRANSLATIONS
+    python3 Tools/build_bibles.py --check    # builds, then asserts known verses
+
+Each database holds:
+  meta      key/value (id, name, abbreviation, copyright, license)
+  books     66 rows: canonical ordinal, USFM code, short name, chapter count
+  chapters  one row per chapter: the layout JSON the reader renders
+  verses    one row per verse: plain text + red-letter spans (search, TTS, sharing)
+  verses_fts  FTS5 index over verses.text
+
+Verse ids are book * 1_000_000 + chapter * 1_000 + verse, the same key the app's
+highlights and notes store, so they survive a translation switch.
+
+Layout JSON (compact keys to keep the bundle small):
+  {"b": [block, ...]}
+  block    {"k": kind, "t": text}                 heading kinds: s1 s2 ms r qa
+           {"k": kind, "f": [fragment, ...]}      text kinds: p m pmo pc li1 li2 q1 q2 qr d
+           {"k": "b"}                             stanza break
+  fragment {"v": verse, "n": 1 if the verse number starts here, "t": text,
+            "s": [[start, length, style], ...], "fn": [[position, note], ...]}
+  styles   r = words of Christ, i = supplied words (KJV italics), c = small caps (LORD)
+Offsets count Unicode scalars, which is what Swift's String.unicodeScalars indexes.
+"""
+
+import json
+import os
+import re
+import sqlite3
+import sys
+import tempfile
+import zipfile
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SOURCE_DIR = os.path.join(ROOT, "Data", "source")
+OUTPUT_DIR = os.path.join(ROOT, "ScriptureAlone", "Resources", "Bibles")
+
+# Canonical Protestant order. Ordinals match BookID in ScriptureAloneCore.
+BOOKS = [
+    "GEN", "EXO", "LEV", "NUM", "DEU", "JOS", "JDG", "RUT", "1SA", "2SA", "1KI", "2KI",
+    "1CH", "2CH", "EZR", "NEH", "EST", "JOB", "PSA", "PRO", "ECC", "SNG", "ISA", "JER",
+    "LAM", "EZK", "DAN", "HOS", "JOL", "AMO", "OBA", "JON", "MIC", "NAM", "HAB", "ZEP",
+    "HAG", "ZEC", "MAL", "MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL",
+    "EPH", "PHP", "COL", "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB", "JAS", "1PE",
+    "2PE", "1JN", "2JN", "3JN", "JUD", "REV",
+]
+
+TRANSLATIONS = [
+    {
+        "id": "ASV",
+        "zip": "asv_usfm.zip",
+        "name": "American Standard Version",
+        "abbreviation": "ASV",
+        "copyright": "American Standard Version (1901). Public domain. Section headings from the Berean Standard Bible (public domain).",
+        "license": "Public domain",
+        "source": "https://ebible.org/find/details.php?id=eng-asv",
+        # The ASV ships without red letters or section headings. Words of Christ are
+        # aligned word-by-word from the KJV it revised; headings come from the BSB.
+        "red_from": "KJV",
+        "headings_from": "BSB",
+    },
+    {
+        "id": "BSB",
+        "zip": "bsb_usfm.zip",
+        "name": "Berean Standard Bible",
+        "abbreviation": "BSB",
+        "copyright": "The Holy Bible, Berean Standard Bible, BSB. Dedicated to the public domain on April 30, 2023.",
+        "license": "Public domain",
+        "source": "https://berean.bible/downloads.htm",
+    },
+    {
+        "id": "KJV",
+        "zip": "kjv_usfm.zip",
+        "name": "King James Version",
+        "abbreviation": "KJV",
+        "copyright": "King James Version (1769 Oxford text). Public domain outside the United Kingdom.",
+        "license": "Public domain",
+        "source": "https://ebible.org/find/details.php?id=eng-kjv2006",
+    },
+]
+
+# Markers whose text is file metadata, never shown.
+SKIP = {"id", "usfm", "ide", "h", "toc1", "toc2", "toc3", "mt", "mt1", "mt2", "mt3", "rem", "sts", "cl"}
+# Paragraph markers that carry only a heading string.
+HEADINGS = {"s": "s1", "s1": "s1", "s2": "s2", "s3": "s2", "ms": "ms", "ms1": "ms", "mr": "r", "r": "r", "qa": "qa", "sp": "s2"}
+# Paragraph markers that carry verse text; value is the stored kind.
+TEXT_BLOCKS = {
+    "p": "p", "m": "m", "nb": "m", "pmo": "pmo", "pm": "pmo", "pc": "pc", "pi": "pmo", "pi1": "pmo",
+    "mi": "pmo", "li": "li1", "li1": "li1", "li2": "li2", "q": "q1", "q1": "q1", "q2": "q2",
+    "q3": "q2", "qr": "qr", "qc": "pc", "d": "d",
+}
+CHAR_STYLES = {"wj": "r", "add": "i", "nd": "c"}
+MARKER = re.compile(r"\\(\+?)([a-z]+[0-9]*)(\*?)")
+SPACE = re.compile(r"\s+")
+
+
+class Book:
+    def __init__(self, code):
+        self.code = code
+        self.name = code
+        self.chapters = {}   # chapter -> list of blocks
+        self.verses = {}     # (chapter, verse) -> {"t": str, "s": [[start, len, style]]}
+
+
+def append_span(spans, start, length, style):
+    if length <= 0:
+        return
+    if spans and spans[-1][2] == style and spans[-1][0] + spans[-1][1] == start:
+        spans[-1][1] += length
+    else:
+        spans.append([start, length, style])
+
+
+class Parser:
+    def __init__(self, text):
+        self.text = text.replace("\ufeff", "")
+        self.book = None
+        self.chapter = 0
+        self.verse = 0
+        self.block = None       # current block dict
+        self.fragment = None    # current fragment dict (inside a text block)
+        self.styles = []        # open character styles (r / i / c)
+        self.in_word = False    # inside \w ... \w* (drop |attributes)
+        self.note = None        # collecting a footnote: list of strings, or None
+        self.note_field = None  # current footnote sub-marker
+        self.skip_text = False  # inside a metadata marker
+        self.in_ref = False     # inside \ref ... \ref* (drop |target)
+        self.pending_number = False  # a \v inside a psalm title (\d) numbers the next line instead
+
+    # -- blocks ---------------------------------------------------------------
+    def blocks(self):
+        return self.book.chapters.setdefault(self.chapter, [])
+
+    def start_block(self, kind):
+        self.fragment = None
+        if kind == "b":
+            self.blocks().append({"k": "b"})
+            self.block = None
+            return
+        if kind in HEADINGS.values():
+            self.block = {"k": kind, "t": ""}
+        else:
+            self.block = {"k": kind, "f": []}
+        self.blocks().append(self.block)
+
+    def ensure_text_block(self):
+        if self.block is None or "f" not in self.block:
+            self.start_block("m")
+
+    def start_fragment(self, numbered):
+        self.ensure_text_block()
+        self.fragment = {"v": self.verse, "t": ""}
+        if numbered and self.block["k"] == "d":
+            # Superscriptions ("A Psalm of David.") print as unnumbered titles.
+            self.pending_number = True
+        elif numbered or (self.pending_number and self.block["k"] != "d"):
+            self.fragment["n"] = 1
+            self.pending_number = False
+        self.block["f"].append(self.fragment)
+
+    # -- text -----------------------------------------------------------------
+    def add_text(self, raw):
+        if self.skip_text or not raw:
+            return
+        if self.in_word:
+            raw = raw.split("|", 1)[0]
+        if self.in_ref:
+            raw = raw.split("|", 1)[0]
+        text = SPACE.sub(" ", raw)
+        if self.note is not None:
+            if self.note_field not in ("fr", "caller"):
+                self.note.append(text)
+            return
+        if self.block is not None and "t" in self.block:  # heading
+            if not self.block["t"] or self.block["t"].endswith(" "):
+                text = text.lstrip()
+            self.block["t"] += text
+            return
+        if not text.strip() and (self.fragment is None or not self.fragment["t"] or self.fragment["t"].endswith(" ")):
+            return
+        if self.verse == 0:
+            # Text before the first verse of a chapter (e.g. a KJV psalm title in \d) is a heading.
+            if self.block is None or self.block.get("k") != "d":
+                return
+        if self.fragment is None:
+            self.start_fragment(numbered=False)
+        frag = self.fragment
+        if not frag["t"] or frag["t"].endswith(" "):
+            text = text.lstrip()
+        if not text:
+            return
+        start = len(frag["t"])
+        frag["t"] += text
+        style = self.styles[-1] if self.styles else None
+        for s in set(self.styles):
+            append_span(frag.setdefault("s", []), start, len(text), s)
+        if self.verse and self.block["k"] != "d":
+            self.add_verse_text(text, set(self.styles))
+
+    def add_verse_text(self, text, styles):
+        entry = self.book.verses.setdefault((self.chapter, self.verse), {"t": "", "s": []})
+        if entry["t"] and not entry["t"].endswith(" ") and not text.startswith(" ") and self.fragment and self.fragment["t"] == text:
+            # First text of a new block continuing the same verse: separate with a space.
+            entry["t"] += " "
+        if not entry["t"] or entry["t"].endswith(" "):
+            text = text.lstrip()
+        start = len(entry["t"])
+        entry["t"] += text
+        if "r" in styles:
+            append_span(entry["s"], start, len(text), "r")
+
+    # -- driver ---------------------------------------------------------------
+    def parse(self, book):
+        self.book = book
+        pos = 0
+        for m in MARKER.finditer(self.text):
+            self.add_text(self.text[pos:m.start()])
+            pos = m.end()
+            self.marker(m.group(2), closing=bool(m.group(3)), nested=bool(m.group(1)), after=m.end())
+            self._strip_one = not m.group(3)
+        self.add_text(self.text[pos:])
+        self.finish()
+
+    def marker(self, name, closing, nested, after):
+        # Footnotes and cross-reference notes.
+        if name in ("f", "x", "fe"):
+            if closing:
+                if self.note is not None and name != "x" and self.fragment is not None:
+                    body = SPACE.sub(" ", "".join(self.note)).strip()
+                    if body:
+                        self.fragment.setdefault("fn", []).append([len(self.fragment["t"]), body])
+                self.note = None
+            else:
+                self.note = []
+                self.note_field = "caller"
+            return
+        if self.note is not None:
+            if name.startswith("f") or name.startswith("x"):
+                self.note_field = name if not closing else "ft"
+            elif name == "ref":
+                self.in_ref = not closing
+            return
+
+        if closing:
+            if name in CHAR_STYLES and CHAR_STYLES[name] in self.styles:
+                # Remove the most recent occurrence.
+                idx = len(self.styles) - 1 - self.styles[::-1].index(CHAR_STYLES[name])
+                self.styles.pop(idx)
+            elif name == "w":
+                self.in_word = False
+            elif name == "ref":
+                self.in_ref = False
+            return
+
+        self.skip_text = False
+        if name in SKIP:
+            if name == "toc2":
+                # Capture the short book name.
+                end = self.text.find("\n", after)
+                self.book.name = self.text[after:end].strip() or self.book.name
+            self.skip_text = True
+            self.block = None
+            self.fragment = None
+            return
+        if name == "c":
+            end = self.text.find("\n", after)
+            num = re.match(r"\s*(\d+)", self.text[after:end])
+            self.chapter = int(num.group(1))
+            self.verse = 0
+            self.block = None
+            self.fragment = None
+            self.styles = [s for s in self.styles if s == "r"]  # red letters can run on
+            self.skip_text = True  # the chapter number itself
+            return
+        if name == "v":
+            num = re.match(r"\s*(\d+)[^\s]*\s?", self.text[after:])
+            self.verse = int(num.group(1))
+            self.consumed = num.end()
+            self.start_fragment(numbered=True)
+            self._skip_chars = num.end()
+            return
+        if name in HEADINGS:
+            self.start_block(HEADINGS[name])
+            return
+        if name == "b":
+            self.start_block("b")
+            return
+        if name in TEXT_BLOCKS:
+            self.start_block(TEXT_BLOCKS[name])
+            return
+        if name in CHAR_STYLES:
+            self.styles.append(CHAR_STYLES[name])
+            return
+        if name == "w":
+            self.in_word = True
+            return
+        if name == "ref":
+            self.in_ref = True
+            return
+        # Unknown character markers (tl, it, qs, bk, ...) just pass their text through.
+
+    def finish(self):
+        # Drop empty fragments/blocks and trailing spaces.
+        for chapter, blocks in self.book.chapters.items():
+            kept = []
+            for block in blocks:
+                if "f" in block:
+                    for frag in block["f"]:
+                        stripped = frag["t"].rstrip()
+                        cut = len(frag["t"]) - len(stripped)
+                        frag["t"] = stripped
+                        if cut and "s" in frag:
+                            frag["s"] = [[s, min(l, len(stripped) - s), st] for s, l, st in frag["s"] if s < len(stripped)]
+                        if "fn" in frag:
+                            frag["fn"] = [[min(p, len(stripped)), n] for p, n in frag["fn"]]
+                    block["f"] = [f for f in block["f"] if f["t"] or f.get("n") or f.get("fn")]
+                    if not block["f"]:
+                        continue
+                elif "t" in block:
+                    block["t"] = block["t"].strip()
+                    if not block["t"]:
+                        continue
+                kept.append(block)
+            # Collapse stanza breaks that lead or repeat.
+            out = []
+            for block in kept:
+                if block["k"] == "b" and (not out or out[-1]["k"] == "b"):
+                    continue
+                out.append(block)
+            while out and out[-1]["k"] == "b":
+                out.pop()
+            self.book.chapters[chapter] = out
+        for key, entry in self.book.verses.items():
+            stripped = entry["t"].rstrip()
+            entry["t"] = stripped
+            entry["s"] = [[s, min(l, len(stripped) - s), st] for s, l, st in entry["s"] if s < len(stripped)]
+
+
+def strip_verse_prefix(parser_cls):
+    """Wrap add_text so the verse number after \\v is not treated as text."""
+    original = parser_cls.add_text
+
+    def add_text(self, raw):
+        skip = getattr(self, "_skip_chars", 0)
+        if skip:
+            raw = raw[skip:]
+            self._skip_chars = 0
+        elif getattr(self, "_strip_one", False) and raw[:1].isspace():
+            # USFM: the one space after an opening marker separates it from its text.
+            raw = raw[1:]
+        self._strip_one = False
+        original(self, raw)
+
+    parser_cls.add_text = add_text
+
+
+strip_verse_prefix(Parser)
+
+
+def load_books(zip_path):
+    books = {}
+    with zipfile.ZipFile(zip_path) as z:
+        for name in z.namelist():
+            if not name.lower().endswith((".usfm", ".sfm")):
+                continue
+            text = z.read(name).decode("utf-8-sig")
+            code = re.match(r"\\id\s+(\S+)", text)
+            if not code or code.group(1) not in BOOKS:
+                continue
+            book = Book(code.group(1))
+            Parser(text).parse(book)
+            books[book.code] = book
+    missing = [c for c in BOOKS if c not in books]
+    if missing:
+        raise SystemExit(f"{zip_path}: missing books {missing}")
+    return books
+
+
+_BOOK_CACHE = {}
+
+
+def books_for(tid):
+    if tid not in _BOOK_CACHE:
+        t = next(t for t in TRANSLATIONS if t["id"] == tid)
+        _BOOK_CACHE[tid] = load_books(os.path.join(SOURCE_DIR, t["zip"]))
+    return _BOOK_CACHE[tid]
+
+
+WORD = re.compile(r"[\w’']+")
+
+
+def word_tokens(text):
+    return [(m.start(), m.end(), m.group(0).lower().strip("’'")) for m in WORD.finditer(text)]
+
+
+def red_mask(text, spans):
+    covered = [False] * len(text)
+    for start, length, *_ in spans:
+        for i in range(start, min(start + length, len(text))):
+            covered[i] = True
+    return [sum(covered[s:e]) * 2 > (e - s) for s, e, _ in word_tokens(text)]
+
+
+def fragments_of(book, chapter, verse):
+    return [f for b in book.chapters.get(chapter, []) for f in b.get("f", []) if f["v"] == verse and f["t"]]
+
+
+def borrow_red_letters(book, source):
+    """Project the source translation's words of Christ onto this book, word by word."""
+    import difflib
+
+    aligned = skipped = 0
+    for (chapter, verse), src in source.verses.items():
+        if not src["s"] or (chapter, verse) not in book.verses:
+            continue
+        entry = book.verses[(chapter, verse)]
+        src_tokens = word_tokens(src["t"])
+        src_red = red_mask(src["t"], src["s"])
+        dst_tokens = word_tokens(entry["t"])
+        dst_red = [False] * len(dst_tokens)
+        ops = difflib.SequenceMatcher(None, [t[2] for t in src_tokens], [t[2] for t in dst_tokens], autojunk=False)
+        for tag, i1, i2, j1, j2 in ops.get_opcodes():
+            if tag == "equal":
+                for k in range(j2 - j1):
+                    dst_red[j1 + k] = src_red[i1 + k]
+            elif tag == "replace":
+                red = sum(src_red[i1:i2]) * 2 >= (i2 - i1)
+                for j in range(j1, j2):
+                    dst_red[j] = red
+            elif tag == "insert":
+                before = src_red[i1 - 1] if i1 > 0 else False
+                after = src_red[i1] if i1 < len(src_red) else before
+                for j in range(j1, j2):
+                    dst_red[j] = before and after or (before if i1 == len(src_red) else False) or (after and i1 == 0)
+        # Character spans: run from the first red word to the end of the last one,
+        # carrying attached punctuation (”, ?, .) along.
+        spans = []
+        text = entry["t"]
+        j = 0
+        while j < len(dst_tokens):
+            if not dst_red[j]:
+                j += 1
+                continue
+            k = j
+            while k + 1 < len(dst_tokens) and dst_red[k + 1]:
+                k += 1
+            start = dst_tokens[j][0]
+            while start > 0 and not text[start - 1].isspace() and not text[start - 1].isalnum():
+                start -= 1
+            end = dst_tokens[k][1]
+            while end < len(text) and not text[end].isspace():
+                end += 1
+            spans.append([start, end - start, "r"])
+            j = k + 1
+        entry["s"] = spans
+        # Map verse offsets onto the layout fragments (joined by single spaces).
+        frags = fragments_of(book, chapter, verse)
+        if " ".join(f["t"] for f in frags) != text:
+            skipped += 1
+            continue
+        offset = 0
+        for frag in frags:
+            lo, hi = offset, offset + len(frag["t"])
+            for start, length, _ in spans:
+                a, b = max(start, lo), min(start + length, hi)
+                if a < b:
+                    append_span(frag.setdefault("s", []), a - lo, b - a, "r")
+            if "s" in frag:
+                frag["s"].sort()
+            offset = hi + 1
+        aligned += 1
+    return aligned, skipped
+
+
+def borrow_headings(book, source):
+    """Insert the source's section headings before the same verse in this book."""
+    placed = 0
+    for chapter, src_blocks in source.chapters.items():
+        pending = []
+        anchors = []
+        for block in src_blocks:
+            if block["k"] in ("s1", "s2", "r"):
+                pending.append(dict(block))
+            elif pending:
+                numbered = [f["v"] for f in block.get("f", []) if f.get("n")]
+                if numbered:
+                    anchors.append((numbered[0], pending))
+                    pending = []
+        blocks = book.chapters.get(chapter)
+        if not blocks:
+            continue
+        for verse, headings in anchors:
+            for bi, block in enumerate(blocks):
+                frags = block.get("f", [])
+                fi = next((i for i, f in enumerate(frags) if f["v"] == verse and f.get("n")), None)
+                if fi is None:
+                    continue
+                if fi > 0:
+                    tail = {"k": "p" if block["k"] in ("p", "m") else block["k"], "f": frags[fi:]}
+                    block["f"] = frags[:fi]
+                    blocks.insert(bi + 1, tail)
+                    bi += 1
+                insert_at = bi
+                while insert_at > 0 and (blocks[insert_at - 1]["k"] == "b" or
+                                         (blocks[insert_at - 1]["k"] == "d" and not any(f.get("n") for f in blocks[insert_at - 1]["f"]))):
+                    insert_at -= 1
+                blocks[insert_at:insert_at] = headings
+                placed += len(headings)
+                break
+    return placed
+
+
+def build(translation):
+    books = books_for(translation["id"])
+    if translation.get("red_from"):
+        source = books_for(translation["red_from"])
+        counts = [borrow_red_letters(book, source[code]) for code, book in books.items()]
+        print(f"{translation['id']}: red letters aligned from {translation['red_from']} in "
+              f"{sum(a for a, _ in counts)} verses ({sum(s for _, s in counts)} layouts unmatched)")
+    if translation.get("headings_from"):
+        source = books_for(translation["headings_from"])
+        placed = sum(borrow_headings(book, source[code]) for code, book in books.items())
+        print(f"{translation['id']}: {placed} section headings borrowed from {translation['headings_from']}")
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    out_path = os.path.join(OUTPUT_DIR, f"{translation['id']}.sqlite")
+    fd, tmp = tempfile.mkstemp(suffix=".sqlite", dir=OUTPUT_DIR)
+    os.close(fd)
+    db = sqlite3.connect(tmp)
+    db.executescript(
+        """
+        PRAGMA page_size = 4096;
+        CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+        CREATE TABLE books (book INTEGER PRIMARY KEY, code TEXT NOT NULL, name TEXT NOT NULL, chapters INTEGER NOT NULL);
+        CREATE TABLE chapters (book INTEGER NOT NULL, chapter INTEGER NOT NULL, verses INTEGER NOT NULL,
+                               layout TEXT NOT NULL, PRIMARY KEY (book, chapter)) WITHOUT ROWID;
+        CREATE TABLE verses (id INTEGER PRIMARY KEY, text TEXT NOT NULL, red TEXT);
+        CREATE VIRTUAL TABLE verses_fts USING fts5(text, content='verses', content_rowid='id',
+                                                  tokenize='unicode61 remove_diacritics 2');
+        """
+    )
+    for key in ("id", "name", "abbreviation", "copyright", "license", "source"):
+        db.execute("INSERT INTO meta VALUES (?, ?)", (key, translation[key]))
+    total = 0
+    for ordinal, code in enumerate(BOOKS, start=1):
+        book = books[code]
+        chapter_count = len([c for c in book.chapters if c > 0])
+        db.execute("INSERT INTO books VALUES (?, ?, ?, ?)", (ordinal, code, book.name, chapter_count))
+        for chapter in sorted(c for c in book.chapters if c > 0):
+            verse_count = max((v for (c, v) in book.verses if c == chapter), default=0)
+            layout = json.dumps({"b": book.chapters[chapter]}, ensure_ascii=False, separators=(",", ":"))
+            db.execute("INSERT INTO chapters VALUES (?, ?, ?, ?)", (ordinal, chapter, verse_count, layout))
+        for (chapter, verse), entry in sorted(book.verses.items()):
+            vid = ordinal * 1_000_000 + chapter * 1_000 + verse
+            red = json.dumps([[s, l] for s, l, _ in entry["s"]]) if entry["s"] else None
+            db.execute("INSERT INTO verses VALUES (?, ?, ?)", (vid, entry["t"], red))
+            total += 1
+    db.execute("INSERT INTO verses_fts(verses_fts) VALUES ('rebuild')")
+    db.execute("INSERT INTO verses_fts(verses_fts) VALUES ('optimize')")
+    db.commit()
+    db.execute("VACUUM")
+    db.close()
+    os.replace(tmp, out_path)
+    print(f"{translation['id']}: {total} verses -> {os.path.relpath(out_path, ROOT)} ({os.path.getsize(out_path) / 1e6:.1f} MB)")
+    return out_path
+
+
+def verse(db, book, chapter, v):
+    vid = (BOOKS.index(book) + 1) * 1_000_000 + chapter * 1_000 + v
+    row = db.execute("SELECT text, red FROM verses WHERE id = ?", (vid,)).fetchone()
+    return row
+
+
+def check(paths):
+    bsb = sqlite3.connect(paths["BSB"])
+    kjv = sqlite3.connect(paths["KJV"])
+    for db, expected in ((bsb, 31086), (kjv, 31102)):
+        n = db.execute("SELECT count(*) FROM verses").fetchone()[0]
+        assert n == expected, (n, expected)
+    text, red = verse(bsb, "JHN", 1, 1)
+    assert text == "In the beginning was the Word, and the Word was with God, and the Word was God.", text
+    assert red is None
+    text, red = verse(bsb, "JHN", 1, 38)
+    assert text.startswith("Jesus turned and saw them following. “What do you want?” He asked. They said"), text
+    start, length = json.loads(red)[0]
+    assert text[start:start + length] == "“What do you want?”", text[start:start + length]
+    text, _ = verse(bsb, "JHN", 3, 16)
+    assert text.startswith("For God so loved the world"), text
+    text, red = verse(bsb, "REV", 2, 5)
+    assert red and json.loads(red)[0][0] == 0, (text, red)  # red letters run across the verse boundary
+    text, _ = verse(bsb, "PSA", 23, 1)
+    assert text == "The LORD is my shepherd; I shall not want.", text
+    text, red = verse(kjv, "JHN", 11, 35)
+    assert text == "Jesus wept.", text
+    text, _ = verse(kjv, "PSA", 1, 2)
+    assert text.startswith("But his delight is in the law of the LORD"), text
+    assert "|" not in text and "strong" not in text
+    layout = json.loads(bsb.execute("SELECT layout FROM chapters WHERE book = 19 AND chapter = 23").fetchone()[0])
+    kinds = [b["k"] for b in layout["b"]]
+    assert kinds[:3] == ["s1", "r", "d"], kinds
+    assert "q1" in kinds and "q2" in kinds, kinds
+    hits = bsb.execute("SELECT count(*) FROM verses_fts WHERE verses_fts MATCH 'shepherd'").fetchone()[0]
+    assert hits > 50, hits
+    leaks = bsb.execute("SELECT count(*) FROM verses WHERE text LIKE '%\\%' ESCAPE '|' OR text LIKE '%|%'").fetchone()[0]
+    assert leaks == 0, f"{leaks} verses leak USFM markup"
+    leaks = kjv.execute("SELECT count(*) FROM verses WHERE text LIKE '%\\%' ESCAPE '|' OR text LIKE '%|%'").fetchone()[0]
+    assert leaks == 0, f"{leaks} KJV verses leak USFM markup"
+    asv = sqlite3.connect(paths["ASV"])
+    # The ASV omits 16 verses (e.g. Matthew 17:21) and explains each in a footnote.
+    assert asv.execute("SELECT count(*) FROM verses").fetchone()[0] == 31086
+    text, red = verse(asv, "JHN", 11, 35)
+    assert text == "Jesus wept." and red is None, (text, red)
+    text, red = verse(asv, "JHN", 14, 6)
+    spans = json.loads(red)
+    said = "".join(text[s:s + l] for s, l in spans)
+    assert said.startswith("I am the way"), (text, spans)
+    assert not text[:spans[0][0]].strip().endswith("way"), (text, spans)
+    text, red = verse(asv, "MAT", 5, 3)
+    assert red and json.loads(red)[0][0] == 0, (text, red)
+    layout = json.loads(asv.execute("SELECT layout FROM chapters WHERE book = 43 AND chapter = 3").fetchone()[0])
+    assert layout["b"][0]["k"] == "s1", layout["b"][0]
+    chapters = asv.execute("SELECT sum(chapters) FROM books").fetchone()[0]
+    assert chapters == 1189, chapters
+    leaks = asv.execute("SELECT count(*) FROM verses WHERE text LIKE '%\\%' ESCAPE '|' OR text LIKE '%|%'").fetchone()[0]
+    assert leaks == 0, f"{leaks} ASV verses leak USFM markup"
+    print("check: ok")
+
+
+def main():
+    paths = {t["id"]: build(t) for t in TRANSLATIONS}
+    if "--check" in sys.argv:
+        check(paths)
+
+
+if __name__ == "__main__":
+    main()

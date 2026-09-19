@@ -1,0 +1,86 @@
+name: ScriptureAlone
+options:
+  bundleIdPrefix: com.blainemiller
+  deploymentTarget:
+    iOS: "26.0"
+    macOS: "26.0"
+  xcodeVersion: "27.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+  developmentLanguage: en
+
+settings:
+  base:
+    SWIFT_EMIT_LOC_STRINGS: YES
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    DEVELOPMENT_TEAM: "8ZVSPZYSVF"
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: YES
+    GCC_TREAT_WARNINGS_AS_ERRORS: YES
+    # The xattr-strip postCompileScript needs script sandboxing off.
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # Intel Macs and Intel simulators are out of scope.
+    "ARCHS[sdk=macosx*]": arm64
+    "EXCLUDED_ARCHS[sdk=*simulator*]": x86_64
+
+packages:
+  ScriptureAloneCore:
+    path: ScriptureAloneCore
+
+targets:
+  ScriptureAlone:
+    type: application
+    supportedDestinations: [iOS, macOS]
+    sources:
+      - path: ScriptureAlone
+        excludes:
+          - "Resources/Info.plist"
+          - "Resources/*.entitlements"
+    dependencies:
+      - package: ScriptureAloneCore
+        product: ScriptureAloneCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAlone
+        PRODUCT_NAME: Scripture Alone
+        INFOPLIST_FILE: ScriptureAlone/Resources/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        GENERATE_INFOPLIST_FILE: NO
+        ENABLE_PREVIEWS: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+        CODE_SIGN_ENTITLEMENTS: ScriptureAlone/Resources/ScriptureAlone.entitlements
+        "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": ScriptureAlone/Resources/ScriptureAlone-macOS.entitlements
+        ENABLE_APP_SANDBOX: YES
+        ENABLE_HARDENED_RUNTIME: YES
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
+        "LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]": "$(inherited) @executable_path/../Frameworks"
+    postCompileScripts:
+      - name: Strip xattrs (codesign workaround)
+        # Must run on EVERY build: iCloud Documents re-tags files with
+        # com.apple.provenance between builds, and a stamp-file output lets
+        # Xcode skip this phase on incremental builds while codesign still
+        # reruns — which then fails with "resource fork, Finder information,
+        # or similar detritus not allowed".
+        basedOnDependencyAnalysis: false
+        script: |
+          find "$CODESIGNING_FOLDER_PATH" -exec xattr -c {} + 2>/dev/null
+          true
+
+schemes:
+  ScriptureAlone:
+    build:
+      targets:
+        ScriptureAlone: all
+    run:
+      config: Debug
+    archive:
+      config: Release
