@@ -18,7 +18,7 @@ Make it comfortable
 Seven typefaces, adjustable size and line spacing, five themes (Auto, Light, Sepia, Dark and Black), paragraphs or verse by verse, and full Dynamic Type. Auto-scroll keeps the text moving hands-free and carries on into the next chapter.
 
 Go straight there
-Type "jn 3 16" or "rom 8:28-39" to jump to a passage, or search any word or phrase.
+Type "jn 3 16" or "rom 8:28-39" to jump to a passage, or search any word or phrase. The chapters you have read and the words you have searched are waiting the next time you open it.
 
 Highlight, note and favorite
 Highlight in five colors, favorite the verses you return to, and attach notes to one or more passages — a Sunday sermon on Romans 8:1–17, say. Notes appear beside the verse and in a searchable Notes panel. Export them as a PDF, Markdown or plain text.

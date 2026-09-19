@@ -17,7 +17,8 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   footnotes, seven typefaces, five themes (Auto, Light, Sepia, Dark, Black), Dynamic Type,
   auto-scroll that carries on into the next chapter.
 - **Quick navigation** — type `jn 3 16`, `rom 8:28-39`, `1co13` or a word to search; or browse
-  books and chapters. ⌘L on Mac and iPad keyboards.
+  books and chapters. The chapters you've read and the words you've searched wait at the top,
+  ready to run again. ⌘L on Mac and iPad keyboards.
 - **Highlights and notes** — tap verses to select; highlight in five colors; attach a note to one
   or more verse ranges (a sermon on Romans 8:1–17). Notes show inline beside the verse and in a
   searchable Notes panel.

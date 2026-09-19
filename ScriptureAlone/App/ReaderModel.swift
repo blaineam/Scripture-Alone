@@ -25,6 +25,8 @@ final class ReaderModel {
     /// The verse currently at the top of the screen.
     private(set) var topVerse: Int?
     private(set) var recent: [ChapterRef] = []
+    /// Words and phrases the user has searched for, most recent first.
+    private(set) var recentSearches: [String] = []
 
     private var stores: [String: BibleStore] = [:]
     private let defaults = UserDefaults.standard
@@ -44,6 +46,7 @@ final class ReaderModel {
         let saved = VerseRef(key: savedKey)
         location = saved.map(\.chapterKey) ?? ChapterRef(.john, 1)
         recent = (defaults.array(forKey: "recent") as? [Int] ?? []).compactMap { VerseRef(key: $0)?.chapterKey }
+        recentSearches = defaults.stringArray(forKey: "recentSearches") ?? []
 
         let preferred = defaults.string(forKey: "translation") ?? Self.defaultTranslation
         selectTranslation(translations.contains { $0.id == preferred } ? preferred : Self.defaultTranslation)
@@ -125,6 +128,33 @@ final class ReaderModel {
         recent.insert(chapter, at: 0)
         recent = Array(recent.prefix(12))
         defaults.set(recent.map { VerseRef($0.book, $0.chapter, 1).key }, forKey: "recent")
+    }
+
+    // MARK: Recent searches
+
+    /// Kept when a search is acted on — opening a result — so passing phrases typed and abandoned
+    /// don't fill the list.
+    func rememberSearch(_ query: String) {
+        let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard text.count >= 2 else { return }
+        recentSearches.removeAll { $0.compare(text, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame }
+        recentSearches.insert(text, at: 0)
+        recentSearches = Array(recentSearches.prefix(12))
+        saveRecentSearches()
+    }
+
+    func forgetSearch(_ query: String) {
+        recentSearches.removeAll { $0 == query }
+        saveRecentSearches()
+    }
+
+    func clearRecentSearches() {
+        recentSearches = []
+        saveRecentSearches()
+    }
+
+    private func saveRecentSearches() {
+        defaults.set(recentSearches, forKey: "recentSearches")
     }
 
     // MARK: Selection

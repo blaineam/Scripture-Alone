@@ -94,8 +94,8 @@ struct ReaderView: View {
                 }
                 .animation(.snappy, value: model.selection.isEmpty)
                 .animation(.snappy, value: ListenController.shared.isListening(in: model))
-                .toolbar { toolbar }
                 .contextReaderHooks()
+                .toolbar { toolbar }
                 #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbarBackground(Color(style.palette.page), for: .navigationBar, .bottomBar)
@@ -199,22 +199,16 @@ struct ReaderView: View {
         }
     }
 
-    private var shortTitle: String {
-        let chapter = model.location
-        return chapter.book.isSingleChapter ? chapter.book.abbreviation : "\(chapter.book.abbreviation) \(chapter.chapter)"
-    }
-
     private var passageButton: some View {
         Button { openPassagePicker() } label: {
             HStack(spacing: 4) {
-                // A phone's toolbar leaves little room between the button groups: fall back to
-                // the abbreviation ("Gen 3") rather than truncating the name ("Genesi…").
-                ViewThatFits(in: .horizontal) {
-                    Text(model.location.display)
-                    Text(shortTitle)
-                }
-                .font(.headline)
-                .lineLimit(1)
+                // A phone's toolbar leaves little room between the button groups, so the name
+                // shrinks to fit. ViewThatFits mis-measures inside a principal toolbar item —
+                // it dropped the title entirely at "John 10" — so scale the one Text instead.
+                Text(model.location.display)
+                    .font(.headline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                 Image(systemName: "chevron.down").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             }
         }

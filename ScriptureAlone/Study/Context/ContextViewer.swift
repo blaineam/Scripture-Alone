@@ -208,13 +208,19 @@ extension View {
 /// `ReadingFocus` current, and jumping when a map or chart asks to open a passage.
 struct ContextReaderHooks: ViewModifier {
     @Environment(ReaderModel.self) private var model
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    #endif
     @State private var viewer: ContextViewerRequest?
 
     func body(content: Content) -> some View {
         content
             .toolbar {
                 #if os(iOS)
-                ToolbarItem(placement: .topBarTrailing) { button }
+                // A phone's top bar only has room for four controls beside the chapter name;
+                // a fifth squeezes the name out of the bar entirely, so Maps rides the bottom
+                // bar with the other reading tools there.
+                ToolbarItem(placement: horizontalSizeClass == .compact ? .bottomBar : .topBarTrailing) { button }
                 #else
                 ToolbarItem(placement: .primaryAction) { button }
                 #endif

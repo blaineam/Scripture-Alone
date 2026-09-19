@@ -22,6 +22,7 @@ struct PassagePicker: View {
                 VStack(alignment: .leading, spacing: 22) {
                     if query.isEmpty {
                         recentSection
+                        recentSearchesSection
                         booksSection(title: "Old Testament", books: BookID.allCases.filter { !$0.isNewTestament })
                         booksSection(title: "New Testament", books: BookID.allCases.filter(\.isNewTestament))
                     } else {
@@ -107,6 +108,43 @@ struct PassagePicker: View {
         }
     }
 
+    @ViewBuilder
+    private var recentSearchesSection: some View {
+        if !model.recentSearches.isEmpty {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text("Recent Searches").font(.headline)
+                    Spacer()
+                    Button("Clear") { model.clearRecentSearches() }
+                        .font(.subheadline)
+                        .buttonStyle(.plain)
+                        .foregroundStyle(.tint)
+                }
+                .padding(.bottom, 6)
+                ForEach(model.recentSearches, id: \.self) { term in
+                    Button { query = term } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .foregroundStyle(.secondary)
+                            Text(term).lineLimit(1)
+                            Spacer()
+                        }
+                        .padding(.vertical, 9)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Search again for \(term)")
+                    .contextMenu {
+                        Button(role: .destructive) { model.forgetSearch(term) } label: {
+                            Label("Remove", systemImage: "trash")
+                        }
+                    }
+                    Divider()
+                }
+            }
+        }
+    }
+
     private func booksSection(title: String, books: [BookID]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title).font(.headline)
@@ -153,6 +191,7 @@ struct PassagePicker: View {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(results) { hit in
                         Button {
+                            model.rememberSearch(query)
                             model.go(to: hit.ref)
                             dismiss()
                         } label: {
@@ -181,6 +220,7 @@ struct PassagePicker: View {
             model.go(to: passage)
             dismiss()
         } else if let first = results.first {
+            model.rememberSearch(query)
             model.go(to: first.ref)
             dismiss()
         }

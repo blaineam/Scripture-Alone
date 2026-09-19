@@ -6,7 +6,8 @@
   poetry and footnotes.
 - Reader with paragraph and verse-by-verse layouts, seven typefaces, five themes, adjustable
   size and spacing, and auto-scroll.
-- Quick passage jump ("jn 3 16", "rom 8:28-39") and book/chapter browsing.
+- Quick passage jump ("jn 3 16", "rom 8:28-39") and book/chapter browsing, with recent chapters
+  and recent searches kept between launches — tap a past search to run it again, or clear the list.
 - Highlights in five colors and notes on verse ranges, shown inline and in a Notes panel,
   synced through your private iCloud.
 - Camera notes: photograph a sermon slide (live text scanner, camera, Photos; image file, paste
