@@ -33,6 +33,8 @@ struct ChapterRenderInput: Hashable {
     let selection: Set<Int>
     let nextTitle: String?
     let copyright: String
+    /// Marks belong to a Legacy Bible keepsake: drawn with a quiet pen-line underneath.
+    var keepsake = false
 }
 
 /// ReaderStyle isn't Hashable (colors); this captures what matters for caching.
@@ -369,6 +371,13 @@ enum ChapterRenderer {
             result.append(text)
             if !isTitle, fragment.verse > 0, let color = highlightColor(fragment.verse) {
                 result.addAttribute(.backgroundColor, value: color, range: NSRange(location: 0, length: result.length))
+                if input.keepsake, let name = input.highlights[key], let ink = HighlightColor(rawValue: name) {
+                    // Their highlights read like a pen line under the words, in their color.
+                    result.addAttributes([
+                        .underlineStyle: NSUnderlineStyle.single.rawValue,
+                        .underlineColor: ink.platformColor(isDark: style.palette.isDark, alpha: 0.9),
+                    ], range: NSRange(location: 0, length: result.length))
+                }
             }
 
             if let noteIDs = input.notes[key], let last = lastFragment[fragment.verse],
@@ -407,17 +416,20 @@ enum ChapterRenderer {
             ])
         }
 
+        /// A keepsake's notes get an outlined bubble, so they read as someone else's hand.
+        private var markerSymbol: String { input.keepsake ? "text.bubble" : "text.bubble.fill" }
+
         private func noteMarker(ids: [String]) -> NSAttributedString {
             let attachment = NSTextAttachment()
             let side = style.size * 0.82
             #if os(iOS)
             let config = UIImage.SymbolConfiguration(pointSize: side, weight: .medium)
-            attachment.image = UIImage(systemName: "text.bubble.fill", withConfiguration: config)?
+            attachment.image = UIImage(systemName: markerSymbol, withConfiguration: config)?
                 .withTintColor(style.palette.accent, renderingMode: .alwaysOriginal)
             #else
             let config = NSImage.SymbolConfiguration(pointSize: side, weight: .medium)
                 .applying(NSImage.SymbolConfiguration(paletteColors: [style.palette.accent]))
-            attachment.image = NSImage(systemSymbolName: "text.bubble.fill", accessibilityDescription: "Note")?
+            attachment.image = NSImage(systemSymbolName: markerSymbol, accessibilityDescription: "Note")?
                 .withSymbolConfiguration(config)
             #endif
             attachment.bounds = CGRect(x: 0, y: -side * 0.12, width: side * 1.1, height: side)

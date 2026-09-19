@@ -9,6 +9,7 @@ struct NoteEditor: View {
     @Bindable var note: Note
     @State private var passageText = ""
     @State private var confirmDelete = false
+    @State private var exporting = false
     @FocusState private var focus: Field?
 
     enum Field { case title, body, passage }
@@ -80,11 +81,15 @@ struct NoteEditor: View {
             ToolbarItem(placement: .primaryAction) {
                 Menu {
                     ShareLink(item: exportText) { Label("Share Note", systemImage: "square.and.arrow.up") }
+                    Button { exporting = true } label: { Label("Export…", systemImage: "doc.richtext") }
                     Button(role: .destructive) { confirmDelete = true } label: { Label("Delete Note", systemImage: "trash") }
                 } label: {
                     Label("More", systemImage: "ellipsis.circle")
                 }
             }
+        }
+        .sheet(isPresented: $exporting) {
+            NotesExportSheet(notes: [note.exportValue], title: note.displayTitle)
         }
         .confirmationDialog("Delete this note?", isPresented: $confirmDelete) {
             Button("Delete Note", role: .destructive) {

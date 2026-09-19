@@ -14,6 +14,7 @@ struct ReaderView: View {
     @Environment(ReaderModel.self) private var model
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var context
+    @Environment(LegacySession.self) private var legacy
 
     @AppStorage(SettingsKey.theme) private var theme = ReaderTheme.system
     @AppStorage(SettingsKey.fontFamily) private var family = FontFamily.newYork
@@ -57,9 +58,15 @@ struct ReaderView: View {
                 .ignoresSafeArea(edges: .bottom)
                 .background(Color(style.palette.page))
                 .popover(item: $popover, attachmentAnchor: .rect(.rect(popover?.rect ?? .zero))) { item in
-                    ReaderPopoverView(item: item, openNote: openNote)
-                        .presentationCompactAdaptation(.popover)
+                    if let keepsake = legacy.reading, case .notes(let ids) = item.kind {
+                        LegacyNotesPopover(keepsake: keepsake, ids: ids, openNote: openNote)
+                            .presentationCompactAdaptation(.popover)
+                    } else {
+                        ReaderPopoverView(item: item, openNote: openNote)
+                            .presentationCompactAdaptation(.popover)
+                    }
                 }
+                .safeAreaInset(edge: .top) { LegacyBanner() }
                 .safeAreaInset(edge: .bottom) {
                     if !model.selection.isEmpty {
                         SelectionBar(onNote: createNoteFromSelection)
@@ -81,9 +88,16 @@ struct ReaderView: View {
                 #endif
         }
         .inspector(isPresented: $showNotes) {
-            NotesPanel(path: $notesPath)
-                .inspectorColumnWidth(min: 300, ideal: 360, max: 480)
+            Group {
+                if let keepsake = legacy.reading {
+                    LegacyNotesPanel(keepsake: keepsake, path: $notesPath)
+                } else {
+                    NotesPanel(path: $notesPath)
+                }
+            }
+            .inspectorColumnWidth(min: 300, ideal: 360, max: 480)
         }
+        .onChange(of: legacy.reading?.id) { notesPath = [] }
         .sheet(isPresented: $showPicker) {
             PassagePicker()
                 #if os(macOS)
@@ -214,7 +228,8 @@ struct ReaderView: View {
     private func handle(_ tap: ChapterTap) {
         switch tap {
         case .verse(let key):
-            model.toggle(key)
+            // A keepsake is read-only: no selecting to highlight or annotate.
+            if legacy.reading == nil { model.toggle(key) }
         case .notes(let ids, let rect):
             popover = ReaderPopover(kind: .notes(ids), rect: rect)
         case .footnote(let text, let rect):
@@ -251,6 +266,7 @@ struct ReaderView: View {
 /// The chapter text plus its per-chapter queries (highlights), rendered for the platform view.
 private struct ChapterPane: View {
     @Environment(ReaderModel.self) private var model
+    @Environment(LegacySession.self) private var legacy
     let chapter: ChapterRef
     let style: ReaderStyle
     let autoScrollSpeed: Double
@@ -298,6 +314,14 @@ private struct ChapterPane: View {
     }
 
     private func renderInput(store: BibleStore) -> ChapterRenderInput {
+        if let keepsake = legacy.reading {
+            // Someone else's Bible: their marks instead of the reader's own.
+            let marks = keepsake.marks(for: chapter, verseCount: store.verseCount(chapter))
+            return ChapterRenderInput(chapter: chapter, translation: store.info.id, style: ReaderStyleKey(style),
+                                      highlights: marks.highlights, notes: marks.notes, selection: [],
+                                      nextTitle: chapter.next.map(\.display), copyright: store.info.copyright,
+                                      keepsake: true)
+        }
         // Newest highlight wins when two devices colored the same verse.
         var colors: [Int: (String, Date)] = [:]
         for highlight in highlights {

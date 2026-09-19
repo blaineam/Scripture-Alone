@@ -23,6 +23,12 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   searchable Notes panel.
 - **Sync** — SwiftData over the private CloudKit database; reading position through iCloud
   key-value storage.
+- **Legacy Bible** — make a keepsake of your highlights and notes for family: one file, given by
+  AirDrop, Messages, a USB drive or with your will, optionally passphrase-protected. Family open
+  it and read your Bible as you marked it, read-only, kept apart from their own notes. The format
+  is an open ZIP of JSON ([docs/heir-mode.md](docs/heir-mode.md)).
+- **Notes export** — all notes, the ones you've filtered, or one note, as a typeset PDF,
+  Markdown (one file or a folder) or plain text, with the verses quoted in your translation.
 
 ## On the way
 
@@ -34,8 +40,8 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   classic Reformed commentary, a toggle away.
 - **Camera notes** — snap the sermon slide; on-device text recognition titles the note and
   links the passages it mentions (the reference detector is already in `ScriptureAloneCore`).
-- **Heir mode** — share a read-only copy of your notes and highlights with family, or export a
-  keepsake: a digital "Dad's Bible."
+- **Live family sharing** — SwiftData can't share through CloudKit yet; see
+  [docs/heir-mode.md](docs/heir-mode.md) for the options.
 - **More translations** — CSB, ESV, NKJV and NASB licenses are being requested from their
   publishers. Licensed texts will never be committed to this repository.
 
@@ -44,7 +50,7 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 | Path | What |
 |---|---|
 | `ScriptureAlone/` | The app (SwiftUI, one multiplatform target: iOS 26+, macOS 26+) |
-| `ScriptureAloneCore/` | Swift package: canon, passage parser, reference detector, Bible store |
+| `ScriptureAloneCore/` | Swift package: canon, passage parser, reference detector, Bible store, keepsake format |
 | `Tools/build_bibles.py` | Compiles `Data/source/*.zip` (USFM) into `ScriptureAlone/Resources/Bibles/*.sqlite` |
 | `Data/source/` | Source texts: BSB from berean.bible, ASV and KJV from eBible.org |
 
