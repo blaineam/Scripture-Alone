@@ -33,6 +33,8 @@ struct ChapterRenderInput: Hashable {
     let selection: Set<Int>
     let nextTitle: String?
     let copyright: String
+    /// The verse being read aloud (Listen), marked distinctly from highlights and selection.
+    var speakingVerse: Int? = nil
 }
 
 /// ReaderStyle isn't Hashable (colors); this captures what matters for caching.
@@ -358,6 +360,8 @@ enum ChapterRenderer {
                 }
             }
 
+            let speaking = !isTitle && fragment.verse > 0 && input.speakingVerse == key
+
             let result = NSMutableAttributedString()
             if fragment.numbered, style.verseNumbers, fragment.verse > 0 {
                 // Narrow no-break space keeps the number on the same line as its first word.
@@ -369,6 +373,15 @@ enum ChapterRenderer {
             result.append(text)
             if !isTitle, fragment.verse > 0, let color = highlightColor(fragment.verse) {
                 result.addAttribute(.backgroundColor, value: color, range: NSRange(location: 0, length: result.length))
+            } else if speaking {
+                result.addAttribute(.backgroundColor, value: style.palette.accent.withAlphaComponent(style.palette.isDark ? 0.2 : 0.13),
+                                    range: NSRange(location: 0, length: result.length))
+            }
+            if speaking, !input.selection.contains(key) {
+                // A solid rule under the spoken verse: selection is dotted, highlights are fills.
+                let range = NSRange(location: 0, length: result.length)
+                result.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: range)
+                result.addAttribute(.underlineColor, value: style.palette.accent.withAlphaComponent(0.7), range: range)
             }
 
             if let noteIDs = input.notes[key], let last = lastFragment[fragment.verse],

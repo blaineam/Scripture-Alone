@@ -25,6 +25,11 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   or Import from iPhone) and on-device text recognition starts the note: titled with the sermon
   title, linked to every passage on the slide, with the other lines as bullets. Review and edit
   before saving; later slides add to the same note. The photo is discarded unless you keep it.
+- **Listen** — read aloud from the top of the screen or a selection with any installed system voice
+  (Premium, Enhanced and Personal Voice included), the spoken verse marked and kept in view, on
+  into the next chapter, with speed, sleep timer, lock-screen controls and background audio. On
+  iPhone and iPad, [Mi Speaks](https://wemiller.com/apps/mi-speaks/) subscribers can have its
+  Studio voices record the chapter instead (see `ScriptureAlone/Listen/MiSpeaksClient.swift`).
 - **Sync** — SwiftData over the private CloudKit database; reading position through iCloud
   key-value storage.
 - **Share** — verse images designed on-device (eight templates, three shapes, any of the reader's
@@ -40,8 +45,6 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 
 ## On the way
 
-- **Listen** — text-to-speech with system voices, and optional hand-off to
-  [Mi Speaks](https://wemiller.com/apps/mi-speaks/) for its Studio voices.
 - **Study context** — maps and timelines of the biblical periods, and charts, in Study mode's
   Context tab.
 - **Heir mode** — share a read-only copy of your notes and highlights with family, or export a

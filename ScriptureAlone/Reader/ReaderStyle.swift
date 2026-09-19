@@ -24,6 +24,11 @@ enum SettingsKey {
     static let headings = "reader.headings"
     static let footnotes = "reader.footnotes"
     static let autoScrollSpeed = "reader.autoScrollSpeed"
+    static let listenVoice = "listen.voice"
+    static let listenStudioVoice = "listen.studioVoice"
+    static let listenSpeed = "listen.speed"
+    static let listenEngine = "listen.engine"
+    static let listenContinue = "listen.continue"
 }
 
 enum ReaderTheme: String, CaseIterable, Identifiable {
