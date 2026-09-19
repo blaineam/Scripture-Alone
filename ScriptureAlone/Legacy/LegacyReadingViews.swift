@@ -25,9 +25,13 @@ struct LegacyBanner: View {
                             .lineLimit(expanded ? nil : 1)
                             .onTapGesture { withAnimation(.snappy) { expanded.toggle() } }
                     }
-                    Text("Read-only keepsake")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                    if case .live(let id) = session.source {
+                        LiveShareCaption(id: id)
+                    } else {
+                        Text("Read-only keepsake")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 Spacer(minLength: 8)
                 Button {
@@ -48,7 +52,7 @@ struct LegacyBanner: View {
             .accessibilityElement(children: .contain)
             .onChange(of: library.entries) {
                 // Removed from the library in another window: step back out.
-                if library.entry(keepsake.id) == nil { session.close(model: model) }
+                if session.source == .keepsake, library.entry(keepsake.id) == nil { session.close(model: model) }
             }
         }
     }
@@ -59,6 +63,7 @@ struct LegacyNotesPanel: View {
     let keepsake: Keepsake
     @Binding var path: [UUID]
     @Environment(ReaderModel.self) private var model
+    @Environment(LegacySession.self) private var session
     @State private var search = ""
     @State private var scope = NotesPanel.Scope.all
     @State private var exporting = false
@@ -87,12 +92,17 @@ struct LegacyNotesPanel: View {
                 } footer: {
                     Text("\(keepsake.manifest.displayTitle) · read-only")
                 }
-                ForEach(notes) { note in
-                    NavigationLink(value: note.id) { LegacyNoteRow(note: note) }
+                if scope == .favorites {
+                    LegacyFavoritesList(favorites: session.favorites, search: search)
+                } else {
+                    ForEach(notes) { note in
+                        NavigationLink(value: note.id) { LegacyNoteRow(note: note) }
+                    }
                 }
             }
+            .liveShareRefreshable(session.source)
             .overlay {
-                if notes.isEmpty {
+                if scope != .favorites, notes.isEmpty {
                     ContentUnavailableView(search.isEmpty ? "No Notes Here" : "No Matches", systemImage: "note.text",
                                            description: Text(search.isEmpty && scope == .chapter
                                                              ? "There are no notes on this chapter."

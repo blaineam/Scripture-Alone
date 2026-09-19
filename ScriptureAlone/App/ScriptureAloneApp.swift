@@ -4,6 +4,12 @@ import SwiftData
 @main
 struct ScriptureAloneApp: App {
     private let container = DataStore.makeContainer()
+    // Accepts family-sharing invitations (CKShare metadata), which SwiftUI has no hook for.
+    #if os(iOS)
+    @UIApplicationDelegateAdaptor(FamilyShareAppDelegate.self) private var familyShareDelegate
+    #else
+    @NSApplicationDelegateAdaptor(FamilyShareAppDelegate.self) private var familyShareDelegate
+    #endif
 
     var body: some Scene {
         WindowGroup {

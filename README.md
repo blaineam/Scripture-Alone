@@ -61,13 +61,33 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   AirDrop, Messages, a USB drive or with your will, optionally passphrase-protected. Family open
   it and read your Bible as you marked it, read-only, kept apart from their own notes. The format
   is an open ZIP of JSON ([docs/heir-mode.md](docs/heir-mode.md)).
+- **Share with Family** — invite named family members to see your highlights, notes and
+  favorites live and read-only, as you keep reading. Your data is mirrored into a CloudKit zone
+  in your private iCloud database and shared with a zone-wide, invite-only `CKShare`; family
+  read it from their shared database through the keepsake reader ("Reading Dad's Bible ·
+  shared live, updated 5 min. ago"), cached for offline reading. Stop sharing any time; family
+  keep the last copy and can save it as a keepsake. Design in [docs/heir-mode.md](docs/heir-mode.md).
 - **Notes export** — all notes, the ones you've filtered, or one note, as a typeset PDF,
   Markdown (one file or a folder) or plain text, with the verses quoted in your translation.
 
+## Privacy
+
+- No ads, no trackers, no analytics, no account, and no server of ours holding your data — not
+  now, not ever.
+- Your highlights, notes, favorites and reading position sync only through your own iCloud
+  (the app's private CloudKit database and iCloud key-value storage).
+- Keepsakes are files you hand over yourself; nothing is sent anywhere.
+- **Share with Family** only happens when you tap *Start Sharing and Invite…*. It copies your
+  highlights, notes, favorites, and the name, dedication and translation you choose into a zone
+  in *your* private iCloud database, shared read-only with the people you invite — nobody else
+  can open it, even with the link. Your reading position, settings and slide photos are never
+  shared. What family receive is stored in their iCloud and on their device, apart from their
+  own notes. Stop Sharing deletes the shared copy from iCloud. Data travels only between your
+  iCloud and theirs, on Apple's servers.
+- Camera notes and verse images are processed on device.
+
 ## On the way
 
-- **Live family sharing** — SwiftData can't share through CloudKit yet; see
-  [docs/heir-mode.md](docs/heir-mode.md) for the options.
 - **More translations** — CSB, ESV, NKJV and NASB licenses are being requested from their
   publishers. Licensed texts will never be committed to this repository.
 
@@ -76,7 +96,7 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 | Path | What |
 |---|---|
 | `ScriptureAlone/` | The app (SwiftUI, one multiplatform target: iOS 26+, macOS 26+) |
-| `ScriptureAloneCore/` | Swift package: canon, passage parser, reference detector, Bible store, keepsake format, Verse of the Day, widget snapshot |
+| `ScriptureAloneCore/` | Swift package: canon, passage parser, reference detector, Bible store, keepsake format, family-sharing mirror mapping and diff, Verse of the Day, widget snapshot |
 | `ScriptureAlone/Shared/` | App Group bridge to the widgets, deep links, the Verse of the Day list |
 | `ScriptureAloneWidgets/` | WidgetKit extension (iOS, macOS) |
 | `ScriptureAloneWatch/`, `ScriptureAloneWatchWidgets/` | Apple Watch app and its complications |

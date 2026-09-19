@@ -53,12 +53,19 @@ struct LegacySettingsView: View {
                     Text("Give your family a copy of your highlights and notes — a digital version of the Bible you’ve marked over the years. It’s a file you hand over yourself; nothing is sent anywhere.")
                 }
 
+                FamilySharingSettingsSection()
+
+                SharedBiblesSection { entry in
+                    session.openLive(entry, model: model)
+                    dismiss()
+                }
+
                 Section {
                     ForEach(library.entries) { entry in
                         Button {
                             open(entry)
                         } label: {
-                            KeepsakeRow(entry: entry, isOpen: session.reading?.id == entry.id)
+                            KeepsakeRow(entry: entry, isOpen: session.source == .keepsake && session.reading?.id == entry.id)
                         }
                         .buttonStyle(.plain)
                         .contextMenu {
@@ -104,6 +111,7 @@ struct LegacySettingsView: View {
                 .foregroundStyle(.secondary)
             }
             .formStyle(.grouped)
+            .refreshable { await SharedBibleLibrary.shared.refresh() }
             .navigationTitle("Legacy & Export")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)

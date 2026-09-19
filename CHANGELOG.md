@@ -24,6 +24,10 @@
 - Legacy Bible: make a keepsake of your highlights and notes for family, optionally protected
   with a passphrase; open keepsakes you're given and read them as a read-only "Dad's Bible",
   with their highlights, notes and dedication, kept apart from your own.
+- Share with Family: invite named family members to see your highlights, notes and favorites
+  live and read-only, through iCloud with no server in between. They read it as "Dad's Bible —
+  shared live, updated 5 min. ago", offline too, apart from their own notes. Stop sharing any
+  time; family keep the last copy and can save it as a keepsake.
 - Export notes as a PDF, Markdown (one file or a folder) or plain text, with verse text, from
   the Notes panel.
 - Favorites: tap verses, then the heart. Favorites have their own tab in the Notes panel and
