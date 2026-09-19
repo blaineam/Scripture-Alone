@@ -189,7 +189,7 @@ import Testing
         var snapshot = FamilyBibleSnapshot()
         snapshot.apply(changed: [FamilyMirror.record(for: Self.input().highlights[0])], deleted: [])
         #expect(snapshot.keepsake(fallbackID: fallback).id == fallback)
-        #expect(snapshot.keepsake(fallbackID: fallback).manifest.displayTitle == "A Legacy Bible")
+        #expect(snapshot.keepsake(fallbackID: fallback).manifest.displayTitle == "A Keepsake Bible")
     }
 
     @Test func snapshotIsCodable() throws {

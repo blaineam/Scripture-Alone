@@ -70,7 +70,7 @@ public struct FamilyFavorite: Codable, Sendable, Equatable, Hashable, Identifiab
     }
 }
 
-/// Who the shared Bible belongs to — from the owner's Legacy Bible settings.
+/// Who the shared Bible belongs to — from the owner's Keepsake Bible settings.
 public struct FamilyOwnerProfile: Codable, Sendable, Equatable, Hashable {
     /// The owner's stable `bibleID` (the same one their keepsakes carry), so a live share and a
     /// keepsake from the same person are recognised as the same Bible.

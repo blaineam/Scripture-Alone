@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- App icon: a gold sun rising behind the open Bible with a cross cut out of it, on ink navy.
-  The cross is an aperture in the sun, so the sky shows through it; in dark mode it glows.
+- App icon: a gold sun on the horizon behind the open Bible, with a cross-shaped starburst
+  flaring off its rim — the crossing sits on the sun's edge the way a camera flares a light,
+  its arms reaching into the sky and its long foot down the sun's face.
 - First build: offline ASV, BSB and KJV with full-text search, red letters, section headings,
   poetry and footnotes.
 - Reader with paragraph and verse-by-verse layouts, seven typefaces, five themes, adjustable
@@ -24,7 +25,7 @@
   the places it names (tap a place for every verse that mentions it), and charts of the kings
   of Israel and Judah, Paul's journeys, the twelve tribes and the feasts of Israel. Opens in its
   own window on iPad and Mac to sit beside the text.
-- Legacy Bible: make a keepsake of your highlights and notes for family, optionally protected
+- Keepsake Bible: make a keepsake of your highlights and notes for family, optionally protected
   with a passphrase; open keepsakes you're given and read them as a read-only "Dad's Bible",
   with their highlights, notes and dedication, kept apart from your own.
 - Share with Family: invite named family members to see your highlights, notes and favorites

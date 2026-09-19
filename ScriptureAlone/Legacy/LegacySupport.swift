@@ -77,7 +77,7 @@ struct KeepsakeImportSheet: View {
                     }
                 }
             }
-            .navigationTitle("Legacy Bible")
+            .navigationTitle("Keepsake Bible")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -163,7 +163,7 @@ struct KeepsakeImportSheet: View {
                 if let replaced {
                     Text("This replaced the copy from \(replaced.formatted(date: .long, time: .omitted)).")
                 } else {
-                    Text("You’ll find it again under Appearance → Legacy & Export.")
+                    Text("You’ll find it again under Appearance → Keepsake & Export.")
                 }
             }
         }

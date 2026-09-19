@@ -90,7 +90,7 @@ struct NotesPanel: View {
                             .disabled(filtered.isEmpty)
                         }
                         Divider()
-                        Button("Legacy & Export…", systemImage: "book.closed") { showLegacy = true }
+                        Button("Keepsake & Export…", systemImage: "book.closed") { showLegacy = true }
                     } label: {
                         Label("Export", systemImage: "square.and.arrow.up")
                     }

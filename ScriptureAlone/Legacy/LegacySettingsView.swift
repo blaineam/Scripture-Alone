@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 import ScriptureAloneCore
 
-/// The "Legacy & Export" row, for a settings list.
+/// The "Keepsake & Export" row, for a settings list.
 struct LegacyAndExportRow: View {
     @Environment(LegacySession.self) private var session
     @Environment(\.dismiss) private var dismissContainer
@@ -10,7 +10,7 @@ struct LegacyAndExportRow: View {
 
     var body: some View {
         Button { showing = true } label: {
-            Label("Legacy & Export", systemImage: "book.closed")
+            Label("Keepsake & Export", systemImage: "book.closed")
         }
         .sheet(isPresented: $showing) {
             LegacySettingsView()
@@ -48,7 +48,7 @@ struct LegacySettingsView: View {
                         Label("Create a Keepsake", systemImage: "gift")
                     }
                 } header: {
-                    Text("Your Legacy Bible")
+                    Text("Your Keepsake Bible")
                 } footer: {
                     Text("Give your family a copy of your highlights and notes — a digital version of the Bible you’ve marked over the years. It’s a file you hand over yourself; nothing is sent anywhere.")
                 }
@@ -86,7 +86,7 @@ struct LegacySettingsView: View {
                     Text("Keepsakes You’ve Been Given")
                 } footer: {
                     Text(library.entries.isEmpty
-                         ? "When someone gives you a Legacy Bible, open the file here — or tap it in Messages, Mail or Files. It stays on this device, apart from your own notes."
+                         ? "When someone gives you a Keepsake Bible, open the file here — or tap it in Messages, Mail or Files. It stays on this device, apart from your own notes."
                          : "Tap one to read it. Their highlights and notes appear in the text, just as they left them.")
                 }
 
@@ -112,7 +112,7 @@ struct LegacySettingsView: View {
             }
             .formStyle(.grouped)
             .refreshable { await SharedBibleLibrary.shared.refresh() }
-            .navigationTitle("Legacy & Export")
+            .navigationTitle("Keepsake & Export")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif

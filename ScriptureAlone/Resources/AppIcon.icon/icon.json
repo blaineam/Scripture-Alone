@@ -91,6 +91,36 @@
       "name": "Sun",
       "layers": [
         {
+          "name": "burst",
+          "image-name": "burst.svg",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "value": {
+                "linear-gradient": [
+                  "srgb:1.00000,0.97255,0.88627,1.00000",
+                  "srgb:1.00000,0.89412,0.60784,1.00000"
+                ]
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "linear-gradient": [
+                  "srgb:1.00000,0.95294,0.81569,1.00000",
+                  "srgb:1.00000,0.85098,0.54118,1.00000"
+                ]
+              }
+            },
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "extended-gray:1.00000,1.00000"
+              }
+            }
+          ]
+        },
+        {
           "name": "sun",
           "image-name": "sun.svg",
           "glass": true,
@@ -115,30 +145,7 @@
             {
               "appearance": "tinted",
               "value": {
-                "solid": "extended-gray:1.00000,1.00000"
-              }
-            }
-          ]
-        },
-        {
-          "name": "cross-glow",
-          "image-name": "cross-glow.svg",
-          "fill-specializations": [
-            {
-              "value": {
-                "solid": "srgb:1.00000,0.93725,0.78431,0.00000"
-              }
-            },
-            {
-              "appearance": "dark",
-              "value": {
-                "solid": "srgb:1.00000,0.93725,0.78431,0.92000"
-              }
-            },
-            {
-              "appearance": "tinted",
-              "value": {
-                "solid": "extended-gray:1.00000,0.00000"
+                "solid": "extended-gray:0.55000,1.00000"
               }
             }
           ]

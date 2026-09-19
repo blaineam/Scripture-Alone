@@ -125,7 +125,7 @@ import Testing
         let decoded = try KeepsakeArchive.decode(data)
         #expect(decoded.highlights.isEmpty)
         #expect(decoded.notes.first?.anchors == [VerseRange(VerseRef(.john, 3, 16))])
-        #expect(decoded.manifest.displayTitle == "A Legacy Bible")
+        #expect(decoded.manifest.displayTitle == "A Keepsake Bible")
     }
 
     @Test func encryptedRoundTrip() throws {

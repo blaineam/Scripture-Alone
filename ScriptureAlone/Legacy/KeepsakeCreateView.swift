@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 import ScriptureAloneCore
 
-/// Makes a Legacy Bible: a file holding a copy of every highlight and note, to give to family.
+/// Makes a Keepsake Bible: a file holding a copy of every highlight and note, to give to family.
 struct KeepsakeCreateView: View {
     @Environment(ReaderModel.self) private var model
     @Query private var highlights: [Highlight]
@@ -29,7 +29,7 @@ struct KeepsakeCreateView: View {
     var body: some View {
         Form {
             Section {
-                Text("A Legacy Bible is a copy of your highlights and notes that your family can open in Scripture Alone and read as you marked it — the way a well-worn Bible gets passed down. It’s a single file you keep and give however you like: AirDrop, Messages, a USB drive, or with your papers.")
+                Text("A Keepsake Bible is a copy of your highlights and notes that your family can open in Scripture Alone and read as you marked it — the way a well-worn Bible gets passed down. It’s a single file you keep and give however you like: AirDrop, Messages, a USB drive, or with your papers.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }

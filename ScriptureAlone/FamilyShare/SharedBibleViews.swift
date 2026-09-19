@@ -1,7 +1,7 @@
 import SwiftUI
 import ScriptureAloneCore
 
-/// "Shared with You" in Legacy & Export: family Bibles shared live, beside received keepsakes.
+/// "Shared with You" in Keepsake & Export: family Bibles shared live, beside received keepsakes.
 struct SharedBiblesSection: View {
     let open: (SharedBibleLibrary.Entry) -> Void
     @Environment(LegacySession.self) private var session
@@ -167,7 +167,7 @@ struct KeepSharedBibleSheet: View {
                     } else if entry.isLive {
                         Text("A keepsake is a snapshot: it won’t change as they keep reading, and it stays even if the live share ends. You’ll still have the live share too.")
                     } else {
-                        Text("Sharing has ended, so this is the last copy there will be. As a keepsake it stays under Legacy & Export, and you can save it to Files or give it to others.")
+                        Text("Sharing has ended, so this is the last copy there will be. As a keepsake it stays under Keepsake & Export, and you can save it to Files or give it to others.")
                     }
                 }
             }
@@ -219,10 +219,10 @@ struct SharedBibleWelcome: View {
                         .disabled(entry.snapshot.isEmpty && library.refreshing)
                         if library.refreshing { HStack { ProgressView(); Text("Fetching from iCloud…").foregroundStyle(.secondary) } }
                     } footer: {
-                        Text("Shared with you live and read-only: their highlights and notes appear in the text as they add them, kept apart from your own. You’ll find it again under Appearance → Legacy & Export.")
+                        Text("Shared with you live and read-only: their highlights and notes appear in the text as they add them, kept apart from your own. You’ll find it again under Appearance → Keepsake & Export.")
                     }
                     Section {
-                        Text("A live share lasts as long as their iCloud account. For a copy that’s yours for good, keep one as a keepsake from Legacy & Export — or ask them to make you a keepsake too.")
+                        Text("A live share lasts as long as their iCloud account. For a copy that’s yours for good, keep one as a keepsake from Keepsake & Export — or ask them to make you a keepsake too.")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                     }

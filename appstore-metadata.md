@@ -39,7 +39,7 @@ On your wrist and Home Screen
 Verse of the Day and Favorites widgets for iPhone, iPad and Mac, and an Apple Watch app with its own offline Bible, your favorites and notes, and a complication with the day's reference.
 
 A Bible to hand down
-Make a Legacy Bible: a keepsake file of your highlights and notes, with a dedication, that your family can open and read as you marked it — a digital "Dad's Bible".
+Make a Keepsake Bible: a keepsake file of your highlights and notes, with a dedication, that your family can open and read as you marked it — a digital "Dad's Bible".
 
 Private by design
 Your highlights, notes and favorites sync across your devices through your own private iCloud. There is no server and no account, and the developer never sees your data. Scripture Alone is open source under the AGPL, so anyone can read exactly what it does.
@@ -60,7 +60,7 @@ Scripture Alone is a free, open-source Bible app (AGPL-3.0, https://github.com/b
 
 Optional iCloud: highlights, notes and favorites sync through the user's own private CloudKit database. The developer operates no server and collects no data.
 
-Quick tour: tap the passage title to jump anywhere (try "jn 3 16"). Tap verses to select them, then highlight, favorite, add a note, copy, share or listen. The book-and-wrench button turns on Study mode (cross-references, commentary, context); the map button opens maps, timeline and charts. The notes button opens the Notes panel, where the camera button scans a sermon slide (the camera is optional; a photo from the library works too). The Aa button holds reading options and Legacy & Export.
+Quick tour: tap the passage title to jump anywhere (try "jn 3 16"). Tap verses to select them, then highlight, favorite, add a note, copy, share or listen. The book-and-wrench button turns on Study mode (cross-references, commentary, context); the map button opens maps, timeline and charts. The notes button opens the Notes panel, where the camera button scans a sermon slide (the camera is optional; a photo from the library works too). The Aa button holds reading options and Keepsake & Export.
 
 Mi Speaks integration is optional and only used when the user chooses Studio voices and has the Mi Speaks app installed.
 

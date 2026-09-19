@@ -35,7 +35,7 @@ struct ChapterRenderInput: Hashable {
     let copyright: String
     /// The verse being read aloud (Listen), marked distinctly from highlights and selection.
     var speakingVerse: Int? = nil
-    /// Marks belong to a Legacy Bible keepsake: drawn with a quiet pen-line underneath.
+    /// Marks belong to a Keepsake Bible keepsake: drawn with a quiet pen-line underneath.
     var keepsake = false
 }
 

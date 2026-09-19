@@ -1,6 +1,6 @@
 import Foundation
 
-// A "Legacy Bible" keepsake: a read-only snapshot of someone's highlights and notes, meant to
+// A "Keepsake Bible" keepsake: a read-only snapshot of someone's highlights and notes, meant to
 // be handed to family. See docs/heir-mode.md for the file format.
 
 /// Everything in a keepsake once opened.
@@ -99,9 +99,9 @@ public struct KeepsakeManifest: Codable, Sendable, Equatable {
 
     public var isEncrypted: Bool { encryption != nil }
 
-    /// "Dad's Bible", or "A Legacy Bible" when unnamed.
+    /// "Dad's Bible", or "A Keepsake Bible" when unnamed.
     public var displayTitle: String {
-        guard let name = ownerName?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty else { return "A Legacy Bible" }
+        guard let name = ownerName?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty else { return "A Keepsake Bible" }
         return name.hasSuffix("s") || name.hasSuffix("S") ? "\(name)’ Bible" : "\(name)’s Bible"
     }
 
@@ -244,7 +244,7 @@ public enum KeepsakeError: Error, Equatable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .notAKeepsake:
-            "This file isn’t a Legacy Bible keepsake."
+            "This file isn’t a Keepsake Bible keepsake."
         case .damaged(let detail):
             "This keepsake appears to be damaged (\(detail)). If you have another copy, try that one."
         case .newerVersion:

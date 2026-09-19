@@ -58,7 +58,7 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   it works with no connection. On iPad and Mac it opens in its own window to keep beside the
   text. Places are from [OpenBible.info](https://www.openbible.info/geo/) (CC BY 4.0); see
   [docs/context-sources.md](docs/context-sources.md).
-- **Legacy Bible** — make a keepsake of your highlights and notes for family: one file, given by
+- **Keepsake Bible** — make a keepsake of your highlights and notes for family: one file, given by
   AirDrop, Messages, a USB drive or with your will, optionally passphrase-protected. Family open
   it and read your Bible as you marked it, read-only, kept apart from their own notes. The format
   is an open ZIP of JSON ([docs/heir-mode.md](docs/heir-mode.md)).
