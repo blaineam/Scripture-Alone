@@ -33,6 +33,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Snap the sermon slide and Scripture Alone starts your note for you — titled, linked to the passages on screen, with the slide’s points ready to fill in. The photo is read on your device and never uploaded.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationCategoryType</key>

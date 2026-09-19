@@ -11,6 +11,7 @@ struct NotesPanel: View {
     @Query(sort: \Note.updatedAt, order: .reverse) private var notes: [Note]
     @State private var search = ""
     @State private var scope = Scope.all
+    @State private var slideCapture = SlideCapture()
 
     enum Scope: String, CaseIterable, Identifiable {
         case all = "All Notes", chapter = "This Chapter"
@@ -56,7 +57,7 @@ struct NotesPanel: View {
                         Label(search.isEmpty ? "No Notes Yet" : "No Matches", systemImage: "note.text")
                     } description: {
                         Text(search.isEmpty
-                             ? "Tap verses in the text, then the pencil, to start a note on a passage — like this Sunday’s sermon."
+                             ? "Tap verses in the text, then the pencil, to start a note on a passage — or scan this Sunday’s sermon slide."
                              : "Try a word or a passage like Rom 8.")
                     }
                 }
@@ -67,7 +68,11 @@ struct NotesPanel: View {
                 ToolbarItem(placement: .primaryAction) {
                     Button { newNote() } label: { Label("New Note", systemImage: "square.and.pencil") }
                 }
+                ToolbarItem(placement: .primaryAction) {
+                    SlideCaptureMenu(capture: slideCapture)
+                }
             }
+            .slideCapture(slideCapture) { note in path = [note.uuid] }
             .navigationDestination(for: UUID.self) { id in
                 if let note = notes.first(where: { $0.uuid == id }) {
                     NoteEditor(note: note)

@@ -21,6 +21,10 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 - **Highlights and notes** — tap verses to select; highlight in five colors; attach a note to one
   or more verse ranges (a sermon on Romans 8:1–17). Notes show inline beside the verse and in a
   searchable Notes panel.
+- **Camera notes** — snap the sermon slide (or pick a photo; on Mac, an image file, the clipboard
+  or Import from iPhone) and on-device text recognition starts the note: titled with the sermon
+  title, linked to every passage on the slide, with the other lines as bullets. Review and edit
+  before saving; later slides add to the same note. The photo is discarded unless you keep it.
 - **Sync** — SwiftData over the private CloudKit database; reading position through iCloud
   key-value storage.
 - **Share** — verse images designed on-device (eight templates, three shapes, any of the reader's
@@ -34,8 +38,6 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   [Mi Speaks](https://wemiller.com/apps/mi-speaks/) for its Studio voices.
 - **Study mode** — cross-references, maps and timelines of the biblical periods, charts, and
   classic Reformed commentary, a toggle away.
-- **Camera notes** — snap the sermon slide; on-device text recognition titles the note and
-  links the passages it mentions (the reference detector is already in `ScriptureAloneCore`).
 - **Heir mode** — share a read-only copy of your notes and highlights with family, or export a
   keepsake: a digital "Dad's Bible."
 - **More translations** — CSB, ESV, NKJV and NASB licenses are being requested from their

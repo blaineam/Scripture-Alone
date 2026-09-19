@@ -11,6 +11,9 @@ struct ScriptureAloneApp: App {
         }
         .modelContainer(container)
         #if os(macOS)
+        .commands { ImportFromDevicesCommands() }
+        #endif
+        #if os(macOS)
         .defaultSize(width: 1080, height: 820)
         #endif
     }
