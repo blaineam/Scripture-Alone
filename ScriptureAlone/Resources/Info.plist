@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Scripture Alone</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -17,10 +21,6 @@
 			</array>
 		</dict>
 	</array>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleDisplayName</key>
-	<string>Scripture Alone</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -36,19 +36,6 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
-			<key>CFBundleURLName</key>
-			<string>com.blainemiller.ScriptureAlone</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>scripturealone</string>
-			</array>
-		</dict>
-	</array>
-	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>CFBundleURLName</key>
@@ -59,20 +46,22 @@
 			</array>
 		</dict>
 	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>Snap the sermon slide and Scripture Alone starts your note for you — titled, linked to the passages on screen, with the slide’s points ready to fill in. The photo is read on your device and never uploaded.</string>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>mispeaks</string>
-	</array>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.reference</string>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>mispeaks</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Snap the sermon slide and Scripture Alone starts your note for you — titled, linked to the passages on screen, with the slide’s points ready to fill in. The photo is read on your device and never uploaded.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Scripture Alone saves the verse images you design to your photo library. It never reads your photos.</string>
 	<key>UIApplicationSceneManifest</key>
@@ -103,15 +92,15 @@
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.blainemiller.scripturealone.legacy</string>
-			<key>UTTypeDescription</key>
-			<string>Legacy Bible Keepsake</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
 				<string>public.content</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Legacy Bible Keepsake</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.blainemiller.scripturealone.legacy</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
