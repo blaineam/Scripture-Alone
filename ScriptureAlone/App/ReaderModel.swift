@@ -13,7 +13,10 @@ struct TranslationEntry: Identifiable, Hashable {
 final class ReaderModel {
     static let defaultTranslation = "ASV"
 
-    let translations: [TranslationEntry]
+    /// Bundled plus whatever the reader has imported.
+    private(set) var translations: [TranslationEntry]
+    /// Just the ones that ship in the app, for the Translations screen.
+    private(set) var bundledTranslations: [TranslationEntry]
     private(set) var store: BibleStore?
     private(set) var location: ChapterRef
     private(set) var layout: ChapterLayout?
@@ -39,6 +42,7 @@ final class ReaderModel {
             return TranslationEntry(id: id, name: names[id] ?? id, url: url)
         }
         translations = bundled
+        bundledTranslations = bundled
 
         // Where we left off: the synced position wins so a Mac picks up where the phone stopped.
         cloud.synchronize()
@@ -51,6 +55,19 @@ final class ReaderModel {
         let preferred = defaults.string(forKey: "translation") ?? Self.defaultTranslation
         selectTranslation(translations.contains { $0.id == preferred } ? preferred : Self.defaultTranslation)
         if let saved, saved.verse > 1 { scrollTarget = saved.key }
+    }
+
+    /// Adds the imported translations to the pickers. Called after an import or a removal, so
+    /// the toolbar menu and the Translations screen agree without either owning the other's list.
+    func refreshTranslations(imported: [(TranslationInfo, URL)]) {
+        let extra = imported.map { TranslationEntry(id: $0.0.id, name: $0.0.name, url: $0.1) }
+        translations = bundledTranslations + extra.sorted {
+            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        }
+        // An imported store that has gone away must not stay selected.
+        if !translations.contains(where: { $0.id == translationID }) {
+            selectTranslation(Self.defaultTranslation)
+        }
     }
 
     var translationID: String { store?.info.id ?? Self.defaultTranslation }

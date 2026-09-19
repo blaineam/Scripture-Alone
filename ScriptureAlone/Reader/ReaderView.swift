@@ -30,6 +30,7 @@ struct ReaderView: View {
 
     @State private var showPicker = false
     @State private var showAppearance = false
+    @State private var showTranslations = false
     @State private var showNotes = false
     @State private var notesPath: [UUID] = []
     @State private var popover: ReaderPopover?
@@ -131,6 +132,13 @@ struct ReaderView: View {
         }
         .environment(study)
         .onChange(of: legacy.reading?.id) { notesPath = [] }
+        .sheet(isPresented: $showTranslations) {
+            TranslationsView()
+                .environment(model)
+                #if os(macOS)
+                .frame(minWidth: 520, minHeight: 560)
+                #endif
+        }
         .sheet(isPresented: $showPicker) {
             PassagePicker()
                 .environment(model)
@@ -286,6 +294,8 @@ struct ReaderView: View {
                     Text("\(entry.id) — \(entry.name)").tag(entry.id)
                 }
             }
+            Divider()
+            Button("Manage Translations…", systemImage: "books.vertical") { showTranslations = true }
         } label: {
             Text(model.translationID).font(.subheadline.weight(.semibold))
         }

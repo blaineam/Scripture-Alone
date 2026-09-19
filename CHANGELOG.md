@@ -9,6 +9,11 @@
   poetry and footnotes.
 - Reader with paragraph and verse-by-verse layouts, seven typefaces, five themes, adjustable
   size and spacing, and auto-scroll.
+- Add a translation: browse the free translations published by eBible.org — over 1,200 in more
+  than 1,000 languages, with your own languages first — or import a USFM zip or a DRM-free ePub
+  you already own. Nothing is downloaded until you choose something, imported translations stay
+  on the device, and anything copy-protected is refused outright. Every import ends with a
+  coverage report, so a file that yields half of Genesis says so.
 - Accent colour: seven accents (Sunrise, Ember, Olive, Sea, Lapis, Plum, Ink) for verse
   numbers, links, selection and the app's controls, each tuned separately for light and dark
   pages. Under Appearance, beside the themes.

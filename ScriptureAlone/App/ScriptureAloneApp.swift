@@ -44,6 +44,7 @@ struct ScriptureAloneApp: App {
 /// Each window keeps its own place in the text.
 private struct RootView: View {
     @State private var model = ReaderModel()
+    @State private var library = ImportedLibrary()
 
     var body: some View {
         ReaderView()
@@ -51,6 +52,9 @@ private struct RootView: View {
             .legacySupport()
             .widgetSnapshotSync()
             .environment(model)
+            .environment(library)
+            // Translations the reader added are part of the picker from the first frame.
+            .task { model.refreshTranslations(imported: library.entries.map { ($0.info, $0.url) }) }
             #if os(macOS)
             .frame(minWidth: 520, minHeight: 480)
             #endif

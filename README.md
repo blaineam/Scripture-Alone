@@ -16,6 +16,9 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 - **Reader** — paragraph or verse-by-verse layout, poetry indentation, words of Christ in red,
   footnotes, seven typefaces, five themes (Auto, Light, Sepia, Dark, Black), Dynamic Type,
   auto-scroll that carries on into the next chapter.
+- **Add a translation** — browse eBible.org's free catalogue (filtered to your own languages) or
+  import a USFM zip or DRM-free ePub you own. Imports are local to the device and never synced,
+  shared or exported; protected files are refused, and no decryption code ships in the app.
 - **Quick navigation** — type `jn 3 16`, `rom 8:28-39`, `1co13` or a word to search; or browse
   books and chapters. The chapters you've read and the words you've searched wait at the top,
   ready to run again. ⌘L on Mac and iPad keyboards.

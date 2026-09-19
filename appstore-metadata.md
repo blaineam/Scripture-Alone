@@ -14,6 +14,9 @@ Scripture Alone is a free Bible for iPhone, iPad, Mac and Apple Watch, built for
 Read the whole Bible, offline
 The American Standard Version, the Berean Standard Bible and the King James Version are included and live on your device, with full-text search. The words of Christ appear in red, poetry is set as poetry, and section headings and footnotes are a tap away.
 
+Bring your own translation
+Browse the free translations published by eBible.org — more than 1,200, in over 1,000 languages, with yours first — or import a USFM file or a DRM-free ePub you already own. Nothing downloads until you choose it, and what you add stays on your device.
+
 Make it comfortable
 Seven typefaces, adjustable size and line spacing, five themes (Auto, Light, Sepia, Dark and Black), paragraphs or verse by verse, and full Dynamic Type. Auto-scroll keeps the text moving hands-free and carries on into the next chapter.
 
@@ -63,6 +66,8 @@ Optional iCloud: highlights, notes and favorites sync through the user's own pri
 Quick tour: tap the passage title to jump anywhere (try "jn 3 16"). Tap verses to select them, then highlight, favorite, add a note, copy, share or listen. The book-and-wrench button turns on Study mode (cross-references, commentary, context); the map button opens maps, timeline and charts. The notes button opens the Notes panel, where the camera button scans a sermon slide (the camera is optional; a photo from the library works too). The Aa button holds reading options and Keepsake & Export.
 
 Mi Speaks integration is optional and only used when the user chooses Studio voices and has the Mi Speaks app installed.
+
+Adding a translation: the Translations screen (in the translation menu) lists what ships with the app and lets the user add more. "Browse Free Translations" fetches https://ebible.org/Scriptures/translations.csv — a public catalogue of openly-licensed translations — only when tapped, and downloads a translation only when the user picks one. No identifiers are sent; nothing is collected. "Import a File" reads a USFM zip or a DRM-free ePub the user already has. Files carrying any copy protection are refused and the app contains no decryption code. Imported translations are stored locally and are never synced, shared or exported, and each one's copyright line is shown in the app.
 
 No in-app purchases, no subscriptions, no ads, no tracking.
 
