@@ -1,0 +1,54 @@
+{
+  "version": 3,
+  "background": {
+    "type": "transparent",
+    "solidColor": "#000000",
+    "gradientCss": null,
+    "gradientName": null,
+    "imageUrl": null
+  },
+  "canvasSize": {
+    "width": 1284,
+    "height": 2778,
+    "presetName": "iPhone 6.5\""
+  },
+  "padding": 0,
+  "exportConfig": {
+    "scale": 1,
+    "format": "png"
+  },
+  "textOverlay": {},
+  "textBlocks": [],
+  "sceneObjects": [
+    {
+      "id": "obj-1",
+      "deviceId": "iphone-18-pro-max",
+      "deviceColorId": "silver",
+      "screenshotUrl": null,
+      "screenshotFile": null,
+      "extraScreenshots": [],
+      "x": 50,
+      "y": 50,
+      "scale": 1.7818,
+      "rotation": 0,
+      "tiltX": 0,
+      "tiltY": 0,
+      "shadow": {
+        "enabled": false,
+        "color": "rgba(12,10,40,0.5)",
+        "blur": 70,
+        "spread": 0,
+        "offsetX": 0,
+        "offsetY": 18
+      },
+      "frameStyle": "default",
+      "borderRadius": 16,
+      "glow": {
+        "enabled": false,
+        "color": "rgba(255,255,255,0.6)",
+        "blur": 20,
+        "spread": 2
+      }
+    }
+  ]
+}
