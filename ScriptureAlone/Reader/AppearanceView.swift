@@ -69,6 +69,8 @@ struct AppearanceView: View {
                 Toggle("Footnotes", isOn: $footnotes)
             }
 
+            Section { LegacyAndExportRow() }
+
             if let info = model.store?.info {
                 Section("About This Translation") {
                     Text(info.name).font(.headline)

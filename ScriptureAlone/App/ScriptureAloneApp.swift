@@ -34,6 +34,7 @@ private struct RootView: View {
     var body: some View {
         ReaderView()
             .shareSupport()
+            .legacySupport()
             .environment(model)
             #if os(macOS)
             .frame(minWidth: 520, minHeight: 480)

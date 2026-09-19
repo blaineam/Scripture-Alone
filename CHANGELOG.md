@@ -21,3 +21,8 @@
   the places it names (tap a place for every verse that mentions it), and charts of the kings
   of Israel and Judah, Paul's journeys, the twelve tribes and the feasts of Israel. Opens in its
   own window on iPad and Mac to sit beside the text.
+- Legacy Bible: make a keepsake of your highlights and notes for family, optionally protected
+  with a passphrase; open keepsakes you're given and read them as a read-only "Dad's Bible",
+  with their highlights, notes and dedication, kept apart from your own.
+- Export notes as a PDF, Markdown (one file or a folder) or plain text, with verse text, from
+  the Notes panel.

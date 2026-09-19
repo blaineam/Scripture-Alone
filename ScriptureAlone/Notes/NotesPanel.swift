@@ -12,6 +12,8 @@ struct NotesPanel: View {
     @State private var search = ""
     @State private var scope = Scope.all
     @State private var slideCapture = SlideCapture()
+    @State private var exportSelection: ExportSelection?
+    @State private var showLegacy = false
 
     enum Scope: String, CaseIterable, Identifiable {
         case all = "All Notes", chapter = "This Chapter"
@@ -71,6 +73,33 @@ struct NotesPanel: View {
                 ToolbarItem(placement: .primaryAction) {
                     SlideCaptureMenu(capture: slideCapture)
                 }
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Button("Export All Notes…", systemImage: "square.and.arrow.up") {
+                            exportSelection = ExportSelection(notes: notes.map(\.exportValue).canonicallySorted)
+                        }
+                        .disabled(notes.isEmpty)
+                        if filtered.count != notes.count {
+                            Button("Export \(filtered.count) Shown…", systemImage: "line.3.horizontal.decrease") {
+                                exportSelection = ExportSelection(notes: filtered.map(\.exportValue).canonicallySorted)
+                            }
+                            .disabled(filtered.isEmpty)
+                        }
+                        Divider()
+                        Button("Legacy & Export…", systemImage: "book.closed") { showLegacy = true }
+                    } label: {
+                        Label("Export", systemImage: "square.and.arrow.up")
+                    }
+                }
+            }
+            .sheet(item: $exportSelection) { selection in
+                NotesExportSheet(notes: selection.notes, title: selection.notes.count == 1 ? selection.notes[0].displayTitle : "Notes")
+            }
+            .sheet(isPresented: $showLegacy) {
+                LegacySettingsView()
+                    #if os(macOS)
+                    .frame(minWidth: 520, minHeight: 600)
+                    #endif
             }
             .slideCapture(slideCapture) { note in path = [note.uuid] }
             .navigationDestination(for: UUID.self) { id in
