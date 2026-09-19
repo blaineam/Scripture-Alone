@@ -11,6 +11,14 @@ struct ScriptureAloneApp: App {
     @NSApplicationDelegateAdaptor(FamilyShareAppDelegate.self) private var familyShareDelegate
     #endif
 
+    init() {
+        #if DEBUG && os(iOS) && !targetEnvironment(simulator)
+        // One-time: create every CloudKit record type in the development environment so the
+        // schema can be deployed to production (see CloudKitSchemaBootstrap).
+        CloudKitSchemaBootstrap.runIfNeeded()
+        #endif
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()

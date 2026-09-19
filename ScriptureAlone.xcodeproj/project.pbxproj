@@ -115,6 +115,7 @@
 		F430E26F04771337A57782F0 /* TimelineViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD5A306EB78C5AFD7261A555 /* TimelineViews.swift */; };
 		F44435B06131F17EC08D6D5A /* SlideCameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A35AFE72D4C6C36ABC4153D /* SlideCameraView.swift */; };
 		F5D593C5E98A1598C2F69F77 /* ReaderStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF99F7EE590AF05C6A9CF56 /* ReaderStyle.swift */; };
+		F82AD3B909696EA9D7B25488 /* CloudKitSchemaBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48C6704C1FC0BD7E01D01BF2 /* CloudKitSchemaBootstrap.swift */; };
 		F9E32F03863ED14301CFFE78 /* ScriptureAloneWatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9DB385840CA261E1F5B13852 /* ScriptureAloneWatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FB93765D699C580999B3D77B /* BibleMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC674A13A1153BB184FCEE35 /* BibleMapView.swift */; };
 /* End PBXBuildFile section */
@@ -214,6 +215,7 @@
 		44F5E5330A02AA403B91A05D /* ScriptureAloneWidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureAloneWidgetsBundle.swift; sourceTree = "<group>"; };
 		4753D71AE67C61E22C364DD8 /* SharedBibleLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedBibleLibrary.swift; sourceTree = "<group>"; };
 		47828284C13AF1383A413F5F /* SlideRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlideRecognizer.swift; sourceTree = "<group>"; };
+		48C6704C1FC0BD7E01D01BF2 /* CloudKitSchemaBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitSchemaBootstrap.swift; sourceTree = "<group>"; };
 		496B1CCA51D2F3EAD0E3555E /* NotesExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesExportSheet.swift; sourceTree = "<group>"; };
 		4A77A69689012AD28F9EB76A /* ShareDesigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareDesigner.swift; sourceTree = "<group>"; };
 		4C46F0ED6FFE91AF1569EBA8 /* FamilySharingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySharingView.swift; sourceTree = "<group>"; };
@@ -488,6 +490,7 @@
 		9DCC7EE67E1699B695A83E23 /* Persistence */ = {
 			isa = PBXGroup;
 			children = (
+				48C6704C1FC0BD7E01D01BF2 /* CloudKitSchemaBootstrap.swift */,
 				83F2A8744EEF32A4DBDD0B4F /* Models.swift */,
 			);
 			path = Persistence;
@@ -936,6 +939,7 @@
 				BE2CB76530956EBCDDEC58D5 /* ChapterRenderer.swift in Sources */,
 				D5C9D7F8E5D34F73C626B369 /* ChapterTextView.swift in Sources */,
 				34EEE38976C8CB13024D9B34 /* ChartViews.swift in Sources */,
+				F82AD3B909696EA9D7B25488 /* CloudKitSchemaBootstrap.swift in Sources */,
 				F1EE746BD1D92D5FD44A7C89 /* CommentaryView.swift in Sources */,
 				D1D129941FEE24263D6058A4 /* ContextAttributionView.swift in Sources */,
 				58AA92EA5928A397E0556F9C /* ContextServices.swift in Sources */,
