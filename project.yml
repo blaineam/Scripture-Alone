@@ -55,6 +55,10 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAlone
         PRODUCT_NAME: Scripture Alone
         INFOPLIST_FILE: ScriptureAlone/Resources/Info.plist
+        # The Icon Composer document ScriptureAlone/Resources/AppIcon.icon
+        # (picked up by the `ScriptureAlone` source path; its layers come from
+        # Tools/generate_icon.py). A watchOS target reuses it by listing the
+        # same file in its sources with this same setting.
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         GENERATE_INFOPLIST_FILE: NO
@@ -149,9 +153,8 @@ targets:
       - ScriptureAlone/Shared/DailyVerseLibrary.swift
       - ScriptureAlone/Shared/DailyVerses.json
       - ScriptureAloneWidgets/VerseStyling.swift
-      # TODO(icon): switch to ScriptureAlone/Resources/AppIcon.icon (the icon agent's sunrise /
-      # open book / red-ribbon cross) once it lands; until then the watch uses the phone's
-      # asset catalog, whose AppIcon has no watchOS slot.
+      # The same Icon Composer document as the phone and Mac; it declares watchOS circles.
+      - ScriptureAlone/Resources/AppIcon.icon
       - ScriptureAlone/Resources/Assets.xcassets
     dependencies:
       - package: ScriptureAloneCore
@@ -189,11 +192,7 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         SKIP_INSTALL: YES
         TARGETED_DEVICE_FAMILY: "4"
-        # TODO(icon): set to AppIcon and add ScriptureAlone/Resources/AppIcon.icon to this
-        # target's sources once the icon agent's file lands. The phone's AppIcon.appiconset has
-        # no watchOS slot, so naming it here fails actool ("did not have any applicable
-        # content"); until then the watch app builds without an icon.
-        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ENABLE_PREVIEWS: YES
     postCompileScripts:

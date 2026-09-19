@@ -35,3 +35,5 @@
 - Apple Watch app: Verse of the Day, favorites, notes, and a reader for the whole ASV, all
   offline and synced through iCloud. Speak reads a passage aloud. Watch face complications
   show the day's reference.
+- App icon: an open book as the horizon with the sun rising from its fold, built as a layered
+  Liquid Glass icon with light, dark, tinted and clear appearances.

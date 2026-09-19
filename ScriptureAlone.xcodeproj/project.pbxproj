@@ -50,6 +50,7 @@
 		6E867677D577ACAFA6CAA5F9 /* DailyVerses.json in Resources */ = {isa = PBXBuildFile; fileRef = 7FB470D843314F7FBBD87D39 /* DailyVerses.json */; };
 		6F5236F8B372562A114682EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */; };
 		71F9CBDE1502FFAA63C7935F /* NotesExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496B1CCA51D2F3EAD0E3555E /* NotesExportSheet.swift */; };
+		75ABBF6B748B18E4ECAF8EA7 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 83FA6232CC192A9E359F659F /* AppIcon.icon */; };
 		75EC754139A6E8FEDEB9B80E /* VerseComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AB89103250BA15DA027F24 /* VerseComplication.swift */; };
 		7734D8B37A8BB71D78A139D9 /* LegacySupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A9DB7CD5F8BC361EF0E88F /* LegacySupport.swift */; };
 		7A4522049DC290A51F677A4C /* ScriptureAloneWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D57DE6BE5257316757C12BFD /* ScriptureAloneWatchApp.swift */; };
@@ -81,6 +82,7 @@
 		C81CB445DABBBDAA96B982D7 /* VerseSpeaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B4035AD8C6AA89E5A0CE15B /* VerseSpeaker.swift */; };
 		CA283E49B2AC5EDFF35810B4 /* ReaderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E79D61A66336156A65FD29F3 /* ReaderModel.swift */; };
 		CABB1668FBF8A367CE9E01E8 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 3274D3AB861FE25DAD44055B /* Localizable.xcstrings */; };
+		CCCF48093DC2772BE6794DAE /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 83FA6232CC192A9E359F659F /* AppIcon.icon */; };
 		D1D129941FEE24263D6058A4 /* ContextAttributionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CF164A29A7059D887F9D530 /* ContextAttributionView.swift */; };
 		D3786BFA34968A6D5CC2D462 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C1FDADFCFFC4564BDA767628 /* Localizable.xcstrings */; };
 		D533CD10FEA0D7144A26D56D /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92CECC981DA199D2D8E1875 /* AppGroup.swift */; };
@@ -216,6 +218,7 @@
 		7FB470D843314F7FBBD87D39 /* DailyVerses.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = DailyVerses.json; sourceTree = "<group>"; };
 		81555B30888819F5ADB9A037 /* ScriptureAlone.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ScriptureAlone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		83F2A8744EEF32A4DBDD0B4F /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		83FA6232CC192A9E359F659F /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		884CF1E5F4E1531A640DE22A /* ScriptureAloneWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ScriptureAloneWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B186D4B5008DA1547FAE40C /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		94BF719AE320CC291255FBE5 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
@@ -532,6 +535,7 @@
 			children = (
 				78200FE5CE31F3B680875D28 /* Bibles */,
 				69099AF2A475A0F4D2A32247 /* Study */,
+				83FA6232CC192A9E359F659F /* AppIcon.icon */,
 				2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */,
 			);
 			path = Resources;
@@ -748,6 +752,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A895C9D5BE7037BDC681CDE0 /* ASV-Watch.sqlite in Resources */,
+				75ABBF6B748B18E4ECAF8EA7 /* AppIcon.icon in Resources */,
 				5493681CFA1710000C4CA0D6 /* Assets.xcassets in Resources */,
 				1CD831ECEEAB5C424AF17EC9 /* DailyVerses.json in Resources */,
 				D3786BFA34968A6D5CC2D462 /* Localizable.xcstrings in Resources */,
@@ -759,6 +764,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C39880D4719CF8DF740C4577 /* ASV.sqlite in Resources */,
+				CCCF48093DC2772BE6794DAE /* AppIcon.icon in Resources */,
 				6F5236F8B372562A114682EB /* Assets.xcassets in Resources */,
 				23F6430073ED541558AAB62E /* BSB.sqlite in Resources */,
 				2D67D62C9CA59B847EA766CA /* Basemap.bin in Resources */,
@@ -1026,7 +1032,7 @@
 		62CBB4B406E79A341D722EC8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ScriptureAloneWatch/ScriptureAloneWatch.entitlements;
 				ENABLE_PREVIEWS = YES;
@@ -1272,7 +1278,7 @@
 		F9AE2F80BCEBF280EA89C68F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ScriptureAloneWatch/ScriptureAloneWatch.entitlements;
 				ENABLE_PREVIEWS = YES;
