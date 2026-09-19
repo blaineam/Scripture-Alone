@@ -22,6 +22,8 @@ private struct RootView: View {
 
     var body: some View {
         ReaderView()
+            .widgetSnapshotSync()
+            .scriptureDeepLinks()
             .environment(model)
             #if os(macOS)
             .frame(minWidth: 520, minHeight: 480)

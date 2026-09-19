@@ -21,6 +21,14 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 - **Highlights and notes** — tap verses to select; highlight in five colors; attach a note to one
   or more verse ranges (a sermon on Romans 8:1–17). Notes show inline beside the verse and in a
   searchable Notes panel.
+- **Favorites** — a heart in the selection bar; a Favorites tab in the Notes panel.
+- **Widgets** — Verse of the Day (365 hand-picked passages across the canon, listed in
+  [docs/daily-verses.md](docs/daily-verses.md)) and Favorites & Notes, on the iPhone Home and
+  Lock Screens, iPad and the Mac desktop. The app writes a small JSON snapshot to its App Group
+  for them; widgets never open the Bible databases or the SwiftData store.
+- **Apple Watch** — Verse of the Day, favorites, read-only notes, a reader and Speak, with
+  complications for the day's reference. Standalone: a compact 4.7 MB ASV ships in the watch
+  app, and data syncs through the same private iCloud database.
 - **Sync** — SwiftData over the private CloudKit database; reading position through iCloud
   key-value storage.
 
@@ -44,8 +52,12 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 | Path | What |
 |---|---|
 | `ScriptureAlone/` | The app (SwiftUI, one multiplatform target: iOS 26+, macOS 26+) |
-| `ScriptureAloneCore/` | Swift package: canon, passage parser, reference detector, Bible store |
+| `ScriptureAloneCore/` | Swift package: canon, passage parser, reference detector, Bible store, Verse of the Day, widget snapshot |
+| `ScriptureAlone/Shared/` | App Group bridge to the widgets, deep links, the Verse of the Day list |
+| `ScriptureAloneWidgets/` | WidgetKit extension (iOS, macOS) |
+| `ScriptureAloneWatch/`, `ScriptureAloneWatchWidgets/` | Apple Watch app and its complications |
 | `Tools/build_bibles.py` | Compiles `Data/source/*.zip` (USFM) into `ScriptureAlone/Resources/Bibles/*.sqlite` |
+| `Tools/build_companion_data.py` | Builds the widgets' `DailyVerses.json`, `docs/daily-verses.md` and the watch's compact ASV from `Data/daily-verses.tsv` |
 | `Data/source/` | Source texts: BSB from berean.bible, ASV and KJV from eBible.org |
 
 ## Build
@@ -53,6 +65,7 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 ```bash
 xcodegen generate
 python3 Tools/build_bibles.py --check
+python3 Tools/build_companion_data.py --check
 cd ScriptureAloneCore && swift test
 ```
 

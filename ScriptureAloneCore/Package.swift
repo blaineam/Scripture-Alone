@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "ScriptureAloneCore",
-    platforms: [.iOS(.v26), .macOS(.v26)],
+    platforms: [.iOS(.v26), .macOS(.v26), .watchOS(.v26)],
     products: [
         .library(name: "ScriptureAloneCore", targets: ["ScriptureAloneCore"])
     ],

@@ -1,0 +1,30 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ %@": {},
+    "%lld": {},
+    "Add to Favorites": {},
+    "American Standard Version": {},
+    "Books": {},
+    "Chapter %lld": {},
+    "Edit notes on your iPhone, iPad or Mac.": {},
+    "Favorite a verse here or on your iPhone, iPad or Mac. It syncs through iCloud.": {},
+    "Favorites": {},
+    "No Favorites": {},
+    "No Notes": {},
+    "Note": {},
+    "Note Deleted": {},
+    "Notes": {},
+    "Notes you write on your iPhone, iPad or Mac appear here.": {},
+    "Opens the verse": {},
+    "Read": {},
+    "Read %@": {},
+    "Remove from Favorites": {},
+    "Scripture Alone": {},
+    "Speak": {},
+    "Stop": {},
+    "This passage isn’t in the watch’s ASV.": {},
+    "Verse of the Day": {}
+  },
+  "version": "1.0"
+}

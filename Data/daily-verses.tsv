@@ -1,0 +1,376 @@
+# Verse of the Day — the curated list behind the widget, the watch and the complications.
+#
+# One passage per line: USFM book code, chapter:verse or chapter:verse-verse, a tab, a short theme.
+# Keep passages to three verses or fewer so they fit a widget. Canonical order here keeps the
+# list easy to review; the day-to-passage order is a fixed permutation (see DailyVerseCatalog),
+# so consecutive days move around the whole canon.
+#
+# Tools/build_companion_data.py turns this into ScriptureAlone/Shared/DailyVerses.json (the
+# text in every bundled translation) and docs/daily-verses.md. It fails if a passage is
+# missing from any translation (the ASV omits a few verses, e.g. Matthew 17:21).
+
+GEN 1:1	Creation
+GEN 1:27	The image of God
+GEN 1:31	Very good
+GEN 3:15	The first promise of a Savior
+GEN 12:2-3	A blessing to all nations
+GEN 15:6	Faith counted as righteousness
+GEN 18:14	Nothing too hard for the LORD
+GEN 22:8	God will provide
+GEN 28:15	I am with you
+GEN 50:20	God meant it for good
+EXO 3:14	I AM WHO I AM
+EXO 14:14	The LORD will fight for you
+EXO 15:2	My strength and my song
+EXO 33:14	My presence will go with you
+EXO 34:6	Merciful and gracious
+LEV 19:18	Love your neighbor
+NUM 6:24-26	The priestly blessing
+NUM 23:19	God does not lie
+DEU 6:4-5	The Shema
+DEU 7:9	The faithful God
+DEU 8:3	Not by bread alone
+DEU 29:29	The secret things
+DEU 31:6	Be strong and courageous
+DEU 31:8	He will not forsake you
+DEU 33:27	The everlasting arms
+JOS 1:8	Meditate day and night
+JOS 1:9	Do not be afraid
+JOS 24:15	As for me and my house
+RUT 1:16	Your God my God
+1SA 2:2	None holy like the LORD
+1SA 15:22	To obey is better than sacrifice
+1SA 16:7	The LORD looks on the heart
+2SA 22:31	His way is perfect
+1KI 19:12	A still small voice
+2KI 6:16	More are with us
+1CH 16:11	Seek His face
+1CH 16:34	His mercy endures forever
+1CH 29:11	Yours is the greatness
+2CH 7:14	If My people humble themselves
+2CH 16:9	The eyes of the LORD
+2CH 20:15	The battle is God’s
+NEH 8:10	The joy of the LORD
+EST 4:14	For such a time as this
+JOB 1:21	Blessed be the name of the LORD
+JOB 19:25	My Redeemer lives
+JOB 23:10	Refined as gold
+JOB 42:2	You can do all things
+PSA 1:1-2	The blessed man
+PSA 4:8	Sleep in peace
+PSA 8:3-4	What is man?
+PSA 16:8	I shall not be moved
+PSA 16:11	Fullness of joy
+PSA 18:2	My rock and fortress
+PSA 19:1	The heavens declare
+PSA 19:14	Words of my mouth
+PSA 23:1	The LORD is my shepherd
+PSA 23:4	The valley of the shadow
+PSA 23:6	Goodness and mercy
+PSA 25:4-5	Teach me Your paths
+PSA 27:1	Whom shall I fear?
+PSA 27:14	Wait for the LORD
+PSA 28:7	My strength and shield
+PSA 30:5	Joy comes in the morning
+PSA 32:1	Sin forgiven
+PSA 32:8	I will instruct you
+PSA 34:8	Taste and see
+PSA 34:18	Near to the brokenhearted
+PSA 37:4	Delight in the LORD
+PSA 37:5	Commit your way
+PSA 42:1	As the deer pants
+PSA 42:11	Hope in God
+PSA 46:1	A very present help
+PSA 46:10	Be still
+PSA 51:10	A clean heart
+PSA 55:22	Cast your burden
+PSA 56:3	When I am afraid
+PSA 62:8	Pour out your heart
+PSA 63:1	My soul thirsts for You
+PSA 73:26	The strength of my heart
+PSA 84:11	A sun and shield
+PSA 90:2	From everlasting to everlasting
+PSA 90:12	Number our days
+PSA 91:1-2	Under His shadow
+PSA 91:11	His angels guard you
+PSA 95:6	Come, let us worship
+PSA 100:4	Enter His gates
+PSA 100:5	The LORD is good
+PSA 103:1-2	Bless the LORD, O my soul
+PSA 103:12	As far as east from west
+PSA 107:1	His love endures
+PSA 118:24	This is the day
+PSA 119:11	Hidden in my heart
+PSA 119:105	A lamp to my feet
+PSA 121:1-2	My help comes from the LORD
+PSA 121:7-8	Your going out and coming in
+PSA 127:1	Unless the LORD builds
+PSA 136:1	Give thanks
+PSA 139:14	Fearfully and wonderfully made
+PSA 139:23-24	Search me, O God
+PSA 143:8	Your lovingkindness in the morning
+PSA 145:18	Near to all who call
+PSA 147:3	He heals the brokenhearted
+PSA 150:6	Let everything praise
+PRO 1:7	The beginning of knowledge
+PRO 3:5-6	Trust in the LORD
+PRO 4:23	Guard your heart
+PRO 9:10	The beginning of wisdom
+PRO 15:1	A gentle answer
+PRO 16:3	Commit your works
+PRO 16:9	The LORD directs his steps
+PRO 17:17	A friend loves at all times
+PRO 18:10	A strong tower
+PRO 19:21	The LORD’s purpose stands
+PRO 22:6	Train up a child
+PRO 27:17	Iron sharpens iron
+PRO 31:30	A woman who fears the LORD
+ECC 3:1	A time for everything
+ECC 3:11	Eternity in their hearts
+ECC 12:1	Remember your Creator
+ECC 12:13	The whole duty of man
+SNG 8:7	Many waters cannot quench love
+ISA 1:18	White as snow
+ISA 6:3	Holy, holy, holy
+ISA 6:8	Here am I; send me
+ISA 7:14	Immanuel
+ISA 9:6	Unto us a child is born
+ISA 12:2	God is my salvation
+ISA 26:3	Perfect peace
+ISA 40:8	The word stands forever
+ISA 40:29	Power to the faint
+ISA 40:31	Wings like eagles
+ISA 41:10	Fear not, I am with you
+ISA 43:1	You are Mine
+ISA 43:2	Through the waters
+ISA 43:19	A new thing
+ISA 49:16	Engraved on His palms
+ISA 52:7	Beautiful feet
+ISA 53:5	By His stripes
+ISA 53:6	All we like sheep
+ISA 55:6	Seek the LORD while He may be found
+ISA 55:8-9	His thoughts are higher
+ISA 55:11	My word will not return empty
+ISA 58:11	A watered garden
+ISA 61:1	Good news to the poor
+ISA 64:8	The potter and the clay
+JER 17:7	Blessed is the one who trusts
+JER 29:11	Plans for a future and a hope
+JER 29:13	Seek Me with all your heart
+JER 31:3	An everlasting love
+JER 33:3	Call to Me
+LAM 3:22-23	New every morning
+LAM 3:25	Good to those who wait
+EZK 36:26	A new heart
+DAN 3:17	Our God is able
+HOS 6:6	Mercy, not sacrifice
+JOL 2:13	Rend your heart
+JOL 2:32	Whoever calls on the name
+AMO 5:24	Let justice roll
+JON 2:9	Salvation is of the LORD
+MIC 6:8	Do justice, love mercy, walk humbly
+MIC 7:18	He delights in mercy
+NAM 1:7	A stronghold in trouble
+HAB 2:4	The just shall live by faith
+HAB 3:18	Yet I will rejoice
+ZEP 3:17	He rejoices over you with singing
+ZEC 4:6	Not by might, but by My Spirit
+ZEC 9:9	Your King comes
+MAL 3:6	I do not change
+MAL 4:2	The Sun of righteousness
+MAT 1:21	He will save His people
+MAT 4:19	Fishers of men
+MAT 5:3	Poor in spirit
+MAT 5:8	The pure in heart
+MAT 5:9	The peacemakers
+MAT 5:14	The light of the world
+MAT 5:16	Let your light shine
+MAT 5:44	Love your enemies
+MAT 6:9-10	The Lord’s Prayer
+MAT 6:21	Where your treasure is
+MAT 6:33	Seek first the kingdom
+MAT 6:34	Do not worry about tomorrow
+MAT 7:7	Ask, seek, knock
+MAT 7:12	The golden rule
+MAT 11:28	Come to Me and rest
+MAT 11:29	Gentle and lowly in heart
+MAT 16:24	Take up your cross
+MAT 18:20	Where two or three gather
+MAT 19:26	All things are possible with God
+MAT 22:37-39	The great commandments
+MAT 24:35	My words will not pass away
+MAT 28:19-20	The Great Commission
+MRK 1:15	Repent and believe
+MRK 9:24	Help my unbelief
+MRK 10:45	To serve and to give His life
+MRK 16:15	Preach the gospel
+LUK 1:37	Nothing impossible with God
+LUK 1:46-47	My soul magnifies the Lord
+LUK 2:10-11	Good news of great joy
+LUK 2:14	Glory to God in the highest
+LUK 6:31	Do to others
+LUK 6:38	Give, and it will be given
+LUK 9:23	Deny yourself daily
+LUK 12:32	Fear not, little flock
+LUK 19:10	To seek and to save the lost
+LUK 23:34	Father, forgive them
+LUK 24:6	He is risen
+JHN 1:1	In the beginning was the Word
+JHN 1:12	Children of God
+JHN 1:14	The Word became flesh
+JHN 1:29	The Lamb of God
+JHN 3:3	Born again
+JHN 3:16	God so loved the world
+JHN 3:17	Not to condemn but to save
+JHN 4:24	Spirit and truth
+JHN 5:24	From death to life
+JHN 6:35	The bread of life
+JHN 6:37	I will never cast out
+JHN 8:12	The light of the world
+JHN 8:32	The truth will set you free
+JHN 8:36	Free indeed
+JHN 10:10	Life abundantly
+JHN 10:11	The good shepherd
+JHN 10:27-28	My sheep hear My voice
+JHN 11:25-26	The resurrection and the life
+JHN 13:34-35	Love one another
+JHN 14:1	Let not your heart be troubled
+JHN 14:6	The way, the truth and the life
+JHN 14:27	My peace I give you
+JHN 15:5	The vine and the branches
+JHN 15:13	Greater love has no one
+JHN 16:33	I have overcome the world
+JHN 17:3	This is eternal life
+JHN 17:17	Your word is truth
+JHN 20:31	That you may believe
+ACT 1:8	You will be My witnesses
+ACT 2:38	Repent and be baptized
+ACT 4:12	No other name
+ACT 16:31	Believe and be saved
+ACT 17:28	In Him we live
+ACT 20:24	Finish the race
+ROM 1:16	Not ashamed of the gospel
+ROM 1:17	The righteous shall live by faith
+ROM 3:23	All have sinned
+ROM 3:24	Justified freely by grace
+ROM 5:1	Peace with God
+ROM 5:8	While we were still sinners
+ROM 6:23	The gift of God
+ROM 8:1	No condemnation
+ROM 8:18	Glory to be revealed
+ROM 8:26	The Spirit helps our weakness
+ROM 8:28	All things work together for good
+ROM 8:31	If God is for us
+ROM 8:38-39	Nothing can separate us
+ROM 10:9	Confess and believe
+ROM 10:17	Faith comes by hearing
+ROM 11:33	The depth of the riches
+ROM 12:1	A living sacrifice
+ROM 12:2	Be transformed
+ROM 12:12	Rejoicing in hope
+ROM 12:21	Overcome evil with good
+ROM 13:10	Love fulfills the law
+ROM 15:4	Written for our learning
+ROM 15:13	The God of hope
+1CO 1:18	The word of the cross
+1CO 2:9	Eye has not seen
+1CO 6:19-20	Bought with a price
+1CO 10:13	A way of escape
+1CO 10:31	Do all to the glory of God
+1CO 13:4	Love is patient
+1CO 13:13	The greatest of these
+1CO 15:3-4	Christ died and rose
+1CO 15:57	Thanks be to God
+1CO 15:58	Your labor is not in vain
+2CO 1:3	The God of all comfort
+2CO 4:18	The things unseen
+2CO 5:7	By faith, not by sight
+2CO 5:17	A new creation
+2CO 5:21	He became sin for us
+2CO 9:7	A cheerful giver
+2CO 12:9	My grace is sufficient
+GAL 2:20	Crucified with Christ
+GAL 5:1	Stand fast in freedom
+GAL 5:22-23	The fruit of the Spirit
+GAL 6:2	Bear one another’s burdens
+GAL 6:9	Do not grow weary
+EPH 1:7	Redemption through His blood
+EPH 2:8-9	Saved by grace through faith
+EPH 2:10	His workmanship
+EPH 3:20	Exceedingly abundantly
+EPH 4:29	Words that build up
+EPH 4:32	Kind and forgiving
+EPH 5:2	Walk in love
+EPH 6:10	Strong in the Lord
+EPH 6:11	The whole armor of God
+PHP 1:6	He who began a good work
+PHP 1:21	To live is Christ
+PHP 2:3	Humility
+PHP 2:10-11	Every knee shall bow
+PHP 3:14	The upward call
+PHP 4:4	Rejoice in the Lord always
+PHP 4:6-7	The peace of God
+PHP 4:8	Whatever is true
+PHP 4:13	I can do all things
+PHP 4:19	God will supply every need
+COL 1:17	In Him all things hold together
+COL 3:2	Set your mind on things above
+COL 3:15	Let peace rule
+COL 3:23	Work heartily, as for the Lord
+1TH 5:11	Encourage one another
+1TH 5:16-18	Rejoice, pray, give thanks
+1TH 5:24	He who calls you is faithful
+2TH 3:3	The Lord is faithful
+2TH 3:16	The Lord of peace
+1TI 1:15	Christ came to save sinners
+1TI 2:5	One mediator
+1TI 4:12	An example to believers
+1TI 6:6	Godliness with contentment
+1TI 6:12	Fight the good fight
+2TI 1:7	Power, love and a sound mind
+2TI 2:15	Rightly dividing the word
+2TI 3:16-17	All Scripture is God-breathed
+2TI 4:7	I have kept the faith
+TIT 2:11	Grace has appeared
+TIT 3:5	Not by works of righteousness
+PHM 1:7	Hearts refreshed
+HEB 4:12	The word is living and active
+HEB 4:16	The throne of grace
+HEB 10:23	He who promised is faithful
+HEB 10:24	Stir up love and good works
+HEB 11:1	Faith defined
+HEB 11:6	Without faith
+HEB 12:2	Looking unto Jesus
+HEB 13:5	I will never leave you
+HEB 13:8	The same yesterday, today and forever
+JAS 1:2-3	Count it all joy
+JAS 1:5	Ask for wisdom
+JAS 1:17	Every good gift
+JAS 1:22	Doers of the word
+JAS 4:8	Draw near to God
+JAS 4:10	Humble yourselves
+JAS 5:16	The prayer of the righteous
+1PE 1:3	A living hope
+1PE 2:9	A chosen people
+1PE 2:24	By His wounds you were healed
+1PE 3:15	Be ready to give an answer
+1PE 5:7	Cast all your cares
+1PE 5:10	The God of all grace
+2PE 1:3	All things for life and godliness
+2PE 3:9	Not willing that any perish
+2PE 3:18	Grow in grace
+1JN 1:9	If we confess our sins
+1JN 3:1	What manner of love
+1JN 4:4	Greater is He who is in you
+1JN 4:8	God is love
+1JN 4:18	Perfect love casts out fear
+1JN 4:19	We love because He first loved us
+1JN 5:14	Confidence in prayer
+3JN 1:4	No greater joy
+JUD 1:24-25	Able to keep you from stumbling
+REV 1:8	The Alpha and the Omega
+REV 3:20	I stand at the door and knock
+REV 4:11	Worthy are You
+REV 21:4	No more tears
+REV 21:5	All things new
+REV 22:13	The First and the Last
