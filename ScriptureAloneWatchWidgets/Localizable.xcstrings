@@ -1,0 +1,10 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ · %@": {},
+    "%@. %@": {},
+    "Today’s passage on your watch face.": {},
+    "Verse of the Day": {}
+  },
+  "version": "1.0"
+}

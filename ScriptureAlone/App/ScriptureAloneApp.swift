@@ -35,6 +35,7 @@ private struct RootView: View {
         ReaderView()
             .shareSupport()
             .legacySupport()
+            .widgetSnapshotSync()
             .environment(model)
             #if os(macOS)
             .frame(minWidth: 520, minHeight: 480)

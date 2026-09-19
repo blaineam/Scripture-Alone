@@ -26,3 +26,12 @@
   with their highlights, notes and dedication, kept apart from your own.
 - Export notes as a PDF, Markdown (one file or a folder) or plain text, with verse text, from
   the Notes panel.
+- Favorites: tap verses, then the heart. Favorites have their own tab in the Notes panel and
+  sync through iCloud.
+- Widgets for iPhone, iPad and Mac: Verse of the Day (a hand-picked passage for every day of
+  the year, in your translation, with red letters) and Favorites & Notes (rotates through your
+  favorited, highlighted and noted verses, with a Next button). Lock Screen widgets on iPhone.
+  Tapping a widget opens the passage.
+- Apple Watch app: Verse of the Day, favorites, notes, and a reader for the whole ASV, all
+  offline and synced through iCloud. Speak reads a passage aloud. Watch face complications
+  show the day's reference.

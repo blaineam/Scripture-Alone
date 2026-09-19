@@ -30,6 +30,14 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   into the next chapter, with speed, sleep timer, lock-screen controls and background audio. On
   iPhone and iPad, [Mi Speaks](https://wemiller.com/apps/mi-speaks/) subscribers can have its
   Studio voices record the chapter instead (see `ScriptureAlone/Listen/MiSpeaksClient.swift`).
+- **Favorites** — a heart in the selection bar; a Favorites tab in the Notes panel.
+- **Widgets** — Verse of the Day (365 hand-picked passages across the canon, listed in
+  [docs/daily-verses.md](docs/daily-verses.md)) and Favorites & Notes, on the iPhone Home and
+  Lock Screens, iPad and the Mac desktop. The app writes a small JSON snapshot to its App Group
+  for them; widgets never open the Bible databases or the SwiftData store.
+- **Apple Watch** — Verse of the Day, favorites, read-only notes, a reader and Speak, with
+  complications for the day's reference. Standalone: a compact 4.7 MB ASV ships in the watch
+  app, and data syncs through the same private iCloud database.
 - **Sync** — SwiftData over the private CloudKit database; reading position through iCloud
   key-value storage.
 - **Share** — verse images designed on-device (eight templates, three shapes, any of the reader's
@@ -68,8 +76,12 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 | Path | What |
 |---|---|
 | `ScriptureAlone/` | The app (SwiftUI, one multiplatform target: iOS 26+, macOS 26+) |
-| `ScriptureAloneCore/` | Swift package: canon, passage parser, reference detector, Bible store, keepsake format |
+| `ScriptureAloneCore/` | Swift package: canon, passage parser, reference detector, Bible store, keepsake format, Verse of the Day, widget snapshot |
+| `ScriptureAlone/Shared/` | App Group bridge to the widgets, deep links, the Verse of the Day list |
+| `ScriptureAloneWidgets/` | WidgetKit extension (iOS, macOS) |
+| `ScriptureAloneWatch/`, `ScriptureAloneWatchWidgets/` | Apple Watch app and its complications |
 | `Tools/build_bibles.py` | Compiles `Data/source/*.zip` (USFM) into `ScriptureAlone/Resources/Bibles/*.sqlite` |
+| `Tools/build_companion_data.py` | Builds the widgets' `DailyVerses.json`, `docs/daily-verses.md` and the watch's compact ASV from `Data/daily-verses.tsv` |
 | `Data/source/` | Source texts: BSB from berean.bible, ASV and KJV from eBible.org |
 | `Tools/build_study.py` | Compiles `Data/source/study/` (cross references, commentary) into `ScriptureAlone/Resources/Study/Study.sqlite` |
 | `Tools/build_context.py` | Builds `Resources/Study/Context.sqlite` + `Basemap.bin` from OpenBible.info places, Natural Earth and `Data/context/` |
@@ -82,6 +94,7 @@ xcodegen generate
 python3 Tools/build_bibles.py --check
 python3 Tools/build_study.py --check
 python3 Tools/build_context.py --check   # fetches pinned sources once into Data/cache/
+python3 Tools/build_companion_data.py --check
 cd ScriptureAloneCore && swift test
 ```
 

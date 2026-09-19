@@ -4,6 +4,7 @@ options:
   deploymentTarget:
     iOS: "26.0"
     macOS: "26.0"
+    watchOS: "26.0"
   xcodeVersion: "27.0"
   createIntermediateGroups: true
   groupSortPosition: top
@@ -44,6 +45,11 @@ targets:
     dependencies:
       - package: ScriptureAloneCore
         product: ScriptureAloneCore
+      # Home/Lock Screen and Mac desktop widgets (embedded on both platforms).
+      - target: ScriptureAloneWidgets
+      # The Apple Watch app rides inside the iOS app only.
+      - target: ScriptureAloneWatch
+        destinationFilters: [iOS]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAlone
@@ -75,6 +81,167 @@ targets:
           find "$CODESIGNING_FOLDER_PATH" -exec xattr -c {} + 2>/dev/null
           true
 
+  # Widgets for iOS (Home + Lock Screen) and macOS (desktop / Notification Center). They read
+  # the bundled Verse of the Day list and the JSON snapshot the app writes to the App Group;
+  # they never open the Bible databases or the SwiftData store.
+  ScriptureAloneWidgets:
+    type: app-extension
+    supportedDestinations: [iOS, macOS]
+    sources:
+      - path: ScriptureAloneWidgets
+        excludes:
+          - "Info.plist"
+          - "*.entitlements"
+      - ScriptureAlone/Shared/AppGroup.swift
+      - ScriptureAlone/Shared/DailyVerseLibrary.swift
+      - ScriptureAlone/Shared/DailyVerses.json
+    dependencies:
+      - package: ScriptureAloneCore
+        product: ScriptureAloneCore
+    info:
+      path: ScriptureAloneWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Scripture Alone
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: ScriptureAloneWidgets/ScriptureAloneWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.blainemiller.ScriptureAlone
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAlone.Widgets
+        PRODUCT_NAME: ScriptureAloneWidgets
+        # Timeline providers and intents run off the main actor; views stay @MainActor via View.
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        ENABLE_APP_SANDBOX: YES
+        ENABLE_HARDENED_RUNTIME: YES
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
+        "LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]": "$(inherited) @executable_path/../Frameworks @executable_path/../../../../Frameworks"
+    postCompileScripts:
+      - name: Strip xattrs (codesign workaround)
+        basedOnDependencyAnalysis: false
+        script: |
+          find "$CODESIGNING_FOLDER_PATH" -exec xattr -c {} + 2>/dev/null
+          true
+
+  # Apple Watch app (watchOS 26+), standalone-capable. Bundles a compact ASV
+  # (Tools/build_companion_data.py) and syncs favorites, highlights and notes through the same
+  # private CloudKit container as the phone via SwiftData — it shares Models.swift so the
+  # schema is identical.
+  ScriptureAloneWatch:
+    type: application
+    platform: watchOS
+    sources:
+      - path: ScriptureAloneWatch
+        excludes:
+          - "Info.plist"
+          - "*.entitlements"
+      - ScriptureAlone/Persistence/Models.swift
+      - ScriptureAlone/Shared/DemoLibrary.swift
+      - ScriptureAlone/Shared/DailyVerseLibrary.swift
+      - ScriptureAlone/Shared/DailyVerses.json
+      - ScriptureAloneWidgets/VerseStyling.swift
+      # TODO(icon): switch to ScriptureAlone/Resources/AppIcon.icon (the icon agent's sunrise /
+      # open book / red-ribbon cross) once it lands; until then the watch uses the phone's
+      # asset catalog, whose AppIcon has no watchOS slot.
+      - ScriptureAlone/Resources/Assets.xcassets
+    dependencies:
+      - package: ScriptureAloneCore
+        product: ScriptureAloneCore
+      - target: ScriptureAloneWatchWidgets
+      # Without it the App Intents metadata step warns "no AppIntents.framework dependency".
+      - sdk: AppIntents.framework
+    info:
+      path: ScriptureAloneWatch/Info.plist
+      properties:
+        CFBundleDisplayName: Scripture Alone
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        WKApplication: true
+        WKCompanionAppBundleIdentifier: com.blainemiller.ScriptureAlone
+        WKRunsIndependentlyOfCompanionApp: true
+        CFBundleURLTypes:
+          - CFBundleURLName: com.blainemiller.ScriptureAlone.watchkitapp
+            CFBundleURLSchemes: [scripturealone]
+        # Speak renders to a file and plays it with AVAudioPlayer; the watch speaker route
+        # needs the audio background mode.
+        UIBackgroundModes: [audio]
+    entitlements:
+      path: ScriptureAloneWatch/ScriptureAloneWatch.entitlements
+      properties:
+        aps-environment: development
+        com.apple.developer.icloud-container-identifiers:
+          - iCloud.com.blainemiller.ScriptureAlone
+        com.apple.developer.icloud-services:
+          - CloudKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAlone.watchkitapp
+        PRODUCT_NAME: Scripture Alone
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: YES
+        TARGETED_DEVICE_FAMILY: "4"
+        # TODO(icon): set to AppIcon and add ScriptureAlone/Resources/AppIcon.icon to this
+        # target's sources once the icon agent's file lands. The phone's AppIcon.appiconset has
+        # no watchOS slot, so naming it here fails actool ("did not have any applicable
+        # content"); until then the watch app builds without an icon.
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: YES
+    postCompileScripts:
+      - name: Strip xattrs (codesign workaround)
+        basedOnDependencyAnalysis: false
+        script: |
+          find "$CODESIGNING_FOLDER_PATH" -exec xattr -c {} + 2>/dev/null
+          true
+
+  # Watch face complications (WidgetKit accessory families).
+  ScriptureAloneWatchWidgets:
+    type: app-extension
+    platform: watchOS
+    sources:
+      - path: ScriptureAloneWatchWidgets
+        excludes:
+          - "Info.plist"
+      - ScriptureAloneWidgets/VerseOfDayShared.swift
+      - ScriptureAloneWidgets/VerseStyling.swift
+      - ScriptureAlone/Shared/DailyVerseLibrary.swift
+      - ScriptureAlone/Shared/DailyVerses.json
+    dependencies:
+      - package: ScriptureAloneCore
+        product: ScriptureAloneCore
+    info:
+      path: ScriptureAloneWatchWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Scripture Alone
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAlone.watchkitapp.Complications
+        PRODUCT_NAME: ScriptureAloneWatchWidgets
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: YES
+        TARGETED_DEVICE_FAMILY: "4"
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
+    postCompileScripts:
+      - name: Strip xattrs (codesign workaround)
+        basedOnDependencyAnalysis: false
+        script: |
+          find "$CODESIGNING_FOLDER_PATH" -exec xattr -c {} + 2>/dev/null
+          true
+
 schemes:
   ScriptureAlone:
     build:
@@ -82,5 +249,23 @@ schemes:
         ScriptureAlone: all
     run:
       config: Debug
+    archive:
+      config: Release
+  ScriptureAloneWatch:
+    build:
+      targets:
+        ScriptureAloneWatch: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+  ScriptureAloneWidgets:
+    build:
+      targets:
+        ScriptureAloneWidgets: all
+        ScriptureAlone: all
+    run:
+      config: Debug
+      askForAppToLaunch: true
     archive:
       config: Release

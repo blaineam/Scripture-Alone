@@ -1,0 +1,32 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ · %@": {},
+    "%@. %@": {},
+    "%lld of %lld": {},
+    "A beloved passage each day, in the translation you read.": {},
+    "Favorite": {},
+    "Favorite a verse": {},
+    "Favorite a verse in Scripture Alone — tap verses, then the heart — and it will appear here.": {},
+    "Favorites": {},
+    "Favorites & Notes": {},
+    "Favorites, Highlights & Notes": {},
+    "Highlight": {},
+    "Highlight a verse in Scripture Alone and it will appear here.": {},
+    "Highlights": {},
+    "Next": {},
+    "Note": {},
+    "Notes": {},
+    "Rotates through the verses you’ve favorited, highlighted or written notes on.": {},
+    "Show": {},
+    "Show Next Verse": {},
+    "Show next verse": {},
+    "Verse of the Day": {},
+    "Verse of the Day, %@. %@": {},
+    "Verses": {},
+    "Write a note on a passage in Scripture Alone and it will appear here.": {},
+    "Your favorited, highlighted and noted verses, one at a time.": {},
+    "·": {}
+  },
+  "version": "1.0"
+}

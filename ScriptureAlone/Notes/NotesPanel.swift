@@ -16,7 +16,7 @@ struct NotesPanel: View {
     @State private var showLegacy = false
 
     enum Scope: String, CaseIterable, Identifiable {
-        case all = "All Notes", chapter = "This Chapter"
+        case all = "All Notes", chapter = "This Chapter", favorites = "Favorites"
         var id: String { rawValue }
     }
 
@@ -46,15 +46,19 @@ struct NotesPanel: View {
                 .pickerStyle(.segmented)
                 .listRowSeparator(.hidden)
 
-                ForEach(filtered) { note in
-                    NavigationLink(value: note.uuid) { NoteRow(note: note) }
-                }
-                .onDelete { offsets in
-                    for index in offsets { context.delete(filtered[index]) }
+                if scope == .favorites {
+                    FavoritesSection(search: search)
+                } else {
+                    ForEach(filtered) { note in
+                        NavigationLink(value: note.uuid) { NoteRow(note: note) }
+                    }
+                    .onDelete { offsets in
+                        for index in offsets { context.delete(filtered[index]) }
+                    }
                 }
             }
             .overlay {
-                if filtered.isEmpty {
+                if scope != .favorites, filtered.isEmpty {
                     ContentUnavailableView {
                         Label(search.isEmpty ? "No Notes Yet" : "No Matches", systemImage: "note.text")
                     } description: {
@@ -64,7 +68,7 @@ struct NotesPanel: View {
                     }
                 }
             }
-            .searchable(text: $search, prompt: "Search notes or a passage")
+            .searchable(text: $search, prompt: scope == .favorites ? "Search favorites or a passage" : "Search notes or a passage")
             .navigationTitle("Notes")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

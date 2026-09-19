@@ -47,6 +47,7 @@ struct SelectionBar: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Remove Highlight")
                 Divider().frame(height: 24)
+                FavoriteButton(ranges: ranges)
                 Button(action: onNote) { Image(systemName: "square.and.pencil").frame(width: 28, height: 28) }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Add Note")

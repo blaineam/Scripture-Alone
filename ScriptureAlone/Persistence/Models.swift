@@ -69,8 +69,31 @@ final class Note {
     func touches(_ chapter: ChapterRef) -> Bool { anchors.contains { $0.overlaps(chapter) } }
 }
 
+/// A favorited verse or passage — one row per contiguous range, so "Romans 8:38–39" is one
+/// favorite. Shown in the Notes panel, the Favorites widget and on Apple Watch.
+@Model
+final class Favorite {
+    var uuid: UUID = UUID()
+    /// "start-end" verse keys, like a note anchor.
+    var rangeRaw: String = ""
+    /// First verse key, for canonical sorting and range queries.
+    var startKey: Int = 0
+    var endKey: Int = 0
+    var createdAt: Date = Date.now
+
+    init(range: VerseRange) {
+        self.uuid = UUID()
+        self.rangeRaw = range.storageString
+        self.startKey = range.start.key
+        self.endKey = range.end.key
+        self.createdAt = .now
+    }
+
+    var range: VerseRange? { VerseRange(storageString: rangeRaw) }
+}
+
 enum DataStore {
-    static let schema = Schema([Highlight.self, Note.self])
+    static let schema = Schema([Highlight.self, Note.self, Favorite.self])
 
     /// Syncs through the user's private iCloud database when the app is signed with the
     /// iCloud entitlement; falls back to a local store (unsigned builds, no account).
