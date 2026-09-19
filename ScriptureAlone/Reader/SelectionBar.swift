@@ -31,32 +31,34 @@ struct SelectionBar: View {
                 .accessibilityLabel("Clear Selection")
                 .keyboardShortcut(.escape, modifiers: [])
             }
-            HStack(spacing: 12) {
+            // Every control gets an equal share of the bar's width, so the row fits any phone
+            // (a fixed 12-pt spacing made it wider than the screen once Favorites joined).
+            HStack(spacing: 0) {
                 ForEach(HighlightColor.allCases) { color in
                     Button { highlight(color) } label: {
                         Circle().fill(color.swatch)
-                            .frame(width: 28, height: 28)
+                            .frame(width: 26, height: 26)
                             .overlay(Circle().strokeBorder(.primary.opacity(0.12)))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Highlight \(color.rawValue)")
+                    .modifier(BarCell())
                 }
-                Button { removeHighlights() } label: {
-                    Image(systemName: "eraser").frame(width: 28, height: 28)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Remove Highlight")
-                Divider().frame(height: 24)
-                FavoriteButton(ranges: ranges)
-                Button(action: onNote) { Image(systemName: "square.and.pencil").frame(width: 28, height: 28) }
+                Button { removeHighlights() } label: { Image(systemName: "eraser") }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Remove Highlight")
+                    .modifier(BarCell())
+                Divider().frame(height: 24).padding(.horizontal, 2)
+                FavoriteButton(ranges: ranges).modifier(BarCell())
+                Button(action: onNote) { Image(systemName: "square.and.pencil") }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Add Note")
-                Button { copy(quotation) } label: {
-                    Image(systemName: copied ? "checkmark" : "doc.on.doc").frame(width: 28, height: 28)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Copy")
-                ShareMenu(ranges: ranges, quotation: quotation)
+                    .modifier(BarCell())
+                Button { copy(quotation) } label: { Image(systemName: copied ? "checkmark" : "doc.on.doc") }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Copy")
+                    .modifier(BarCell())
+                ShareMenu(ranges: ranges, quotation: quotation).modifier(BarCell())
             }
             .font(.title3)
         }
@@ -64,6 +66,13 @@ struct SelectionBar: View {
         .padding(.vertical, 12)
         .frame(maxWidth: 520)
         .glassEffect(.regular, in: .rect(cornerRadius: 26))
+    }
+
+    /// One flexible slot in the action row: shrinks with the bar, never below a 28-pt target.
+    private struct BarCell: ViewModifier {
+        func body(content: Content) -> some View {
+            content.frame(minWidth: 28, maxWidth: .infinity, minHeight: 36)
+        }
     }
 
     private func existing(for keys: Set<Int>) -> [Highlight] {
