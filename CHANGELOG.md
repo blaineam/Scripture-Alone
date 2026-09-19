@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- App icon: a gold sun rising behind the open Bible with a cross cut out of it, on ink navy.
+  The cross is an aperture in the sun, so the sky shows through it; in dark mode it glows.
 - First build: offline ASV, BSB and KJV with full-text search, red letters, section headings,
   poetry and footnotes.
 - Reader with paragraph and verse-by-verse layouts, seven typefaces, five themes, adjustable
