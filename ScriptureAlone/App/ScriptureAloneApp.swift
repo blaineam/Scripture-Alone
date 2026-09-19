@@ -22,6 +22,7 @@ private struct RootView: View {
 
     var body: some View {
         ReaderView()
+            .shareSupport()
             .environment(model)
             #if os(macOS)
             .frame(minWidth: 520, minHeight: 480)
