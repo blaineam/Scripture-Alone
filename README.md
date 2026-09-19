@@ -42,11 +42,16 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   Jamieson‑Fausset‑Brown (public domain), with the references inside it linked. The panel sits
   beside the text on iPad and Mac, and in a resizable sheet on iPhone. Sources and licenses:
   [docs/study-sources.md](docs/study-sources.md).
+- **Maps, timeline and charts** — for the chapter you're reading: its era on a timeline of
+  the biblical periods, a map of every place it names (tap one for every verse that mentions
+  it), and charts — the kings of Israel and Judah, Paul's journeys drawn on the map, the twelve
+  tribes, the feasts of Israel. The map is drawn on-device from bundled Natural Earth data, so
+  it works with no connection. On iPad and Mac it opens in its own window to keep beside the
+  text. Places are from [OpenBible.info](https://www.openbible.info/geo/) (CC BY 4.0); see
+  [docs/context-sources.md](docs/context-sources.md).
 
 ## On the way
 
-- **Study context** — maps and timelines of the biblical periods, and charts, in Study mode's
-  Context tab.
 - **Heir mode** — share a read-only copy of your notes and highlights with family, or export a
   keepsake: a digital "Dad's Bible."
 - **More translations** — CSB, ESV, NKJV and NASB licenses are being requested from their
@@ -61,6 +66,8 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 | `Tools/build_bibles.py` | Compiles `Data/source/*.zip` (USFM) into `ScriptureAlone/Resources/Bibles/*.sqlite` |
 | `Data/source/` | Source texts: BSB from berean.bible, ASV and KJV from eBible.org |
 | `Tools/build_study.py` | Compiles `Data/source/study/` (cross references, commentary) into `ScriptureAlone/Resources/Study/Study.sqlite` |
+| `Tools/build_context.py` | Builds `Resources/Study/Context.sqlite` + `Basemap.bin` from OpenBible.info places, Natural Earth and `Data/context/` |
+| `Data/context/` | Authored eras, events, chapter→era map, charts and map labels |
 
 ## Build
 
@@ -68,6 +75,7 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 xcodegen generate
 python3 Tools/build_bibles.py --check
 python3 Tools/build_study.py --check
+python3 Tools/build_context.py --check   # fetches pinned sources once into Data/cache/
 cd ScriptureAloneCore && swift test
 ```
 
@@ -75,5 +83,6 @@ cd ScriptureAloneCore && swift test
 
 Code: GNU AGPL‑3.0‑or‑later with the additional permissions in
 [LICENSE-EXCEPTIONS.md](LICENSE-EXCEPTIONS.md). Bible texts and commentaries: public domain.
-Cross references: © OpenBible.info, CC BY 4.0 ([details](docs/study-sources.md)). See
+Cross references and place data: © OpenBible.info, CC BY 4.0. Base map: Natural Earth, public
+domain ([details](docs/study-sources.md), [context](docs/context-sources.md)). See
 [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.

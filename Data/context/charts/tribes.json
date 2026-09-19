@@ -1,0 +1,25 @@
+{
+  "id": "tribes",
+  "kind": "tribes",
+  "title": "The Twelve Tribes",
+  "subtitle": "Sons of Jacob, blessings and allotments",
+  "sources": "All from the text: births (Gen 29:31–30:24; 35:16–18), Jacob's blessing (Gen 49), Moses' blessing (Deut 33), allotments (Josh 13–19; Levi's cities, Josh 21). Map label positions are approximate centers of each allotment, authored for this app; tribal borders shifted over time and several are uncertain.",
+  "scope": ["GEN", "EXO", "NUM", "DEU", "JOS", "JDG", "1CH", "EZK", "REV"],
+  "body": {
+    "tribes": [
+      {"name": "Reuben", "order": 1, "mother": "Leah", "birth": "GEN 29:32", "jacob": "GEN 49:3-4", "moses": "DEU 33:6", "allotment": "JOS 13:15-23", "note": "Firstborn; settled east of the Jordan.", "lon": 35.78, "lat": 31.62},
+      {"name": "Simeon", "order": 2, "mother": "Leah", "birth": "GEN 29:33", "jacob": "GEN 49:5-7", "allotment": "JOS 19:1-9", "note": "Inheritance within Judah's territory; absent from Moses' blessing.", "lon": 34.82, "lat": 31.22},
+      {"name": "Levi", "order": 3, "mother": "Leah", "birth": "GEN 29:34", "jacob": "GEN 49:5-7", "moses": "DEU 33:8-11", "allotment": "JOS 21:1-42", "note": "The priestly tribe: no territory, but 48 cities among the others. \"The LORD is their inheritance\" (Deut 18:2)."},
+      {"name": "Judah", "order": 4, "mother": "Leah", "birth": "GEN 29:35", "jacob": "GEN 49:8-12", "moses": "DEU 33:7", "allotment": "JOS 15:1-63", "note": "The scepter shall not depart from Judah — the royal line of David and of Christ.", "lon": 35.05, "lat": 31.5},
+      {"name": "Dan", "order": 5, "mother": "Bilhah", "birth": "GEN 30:6", "jacob": "GEN 49:16-18", "moses": "DEU 33:22", "allotment": "JOS 19:40-48", "note": "Later migrated north to Laish, renamed Dan (Judg 18).", "lon": 34.92, "lat": 31.88},
+      {"name": "Naphtali", "order": 6, "mother": "Bilhah", "birth": "GEN 30:8", "jacob": "GEN 49:21", "moses": "DEU 33:23", "allotment": "JOS 19:32-39", "lon": 35.5, "lat": 33.02},
+      {"name": "Gad", "order": 7, "mother": "Zilpah", "birth": "GEN 30:11", "jacob": "GEN 49:19", "moses": "DEU 33:20-21", "allotment": "JOS 13:24-28", "note": "East of the Jordan.", "lon": 35.78, "lat": 32.1},
+      {"name": "Asher", "order": 8, "mother": "Zilpah", "birth": "GEN 30:13", "jacob": "GEN 49:20", "moses": "DEU 33:24-25", "allotment": "JOS 19:24-31", "lon": 35.2, "lat": 33.05},
+      {"name": "Issachar", "order": 9, "mother": "Leah", "birth": "GEN 30:18", "jacob": "GEN 49:14-15", "moses": "DEU 33:18-19", "allotment": "JOS 19:17-23", "lon": 35.45, "lat": 32.62},
+      {"name": "Zebulun", "order": 10, "mother": "Leah", "birth": "GEN 30:20", "jacob": "GEN 49:13", "moses": "DEU 33:18-19", "allotment": "JOS 19:10-16", "lon": 35.27, "lat": 32.78},
+      {"name": "Joseph: Ephraim", "order": 11, "mother": "Rachel", "birth": "GEN 30:24", "jacob": "GEN 49:22-26", "moses": "DEU 33:13-17", "allotment": "JOS 16:1-10", "note": "Joseph's sons were adopted by Jacob as tribes (Gen 48:5); Ephraim led the northern kingdom.", "lon": 35.25, "lat": 32.1},
+      {"name": "Joseph: Manasseh", "order": 11, "mother": "Rachel", "birth": "GEN 30:24", "jacob": "GEN 49:22-26", "moses": "DEU 33:13-17", "allotment": "JOS 17:1-18", "note": "Half the tribe settled east of the Jordan (Josh 13:29–31).", "lon": 35.2, "lat": 32.38, "lon2": 35.95, "lat2": 32.72},
+      {"name": "Benjamin", "order": 12, "mother": "Rachel", "birth": "GEN 35:18", "jacob": "GEN 49:27", "moses": "DEU 33:12", "allotment": "JOS 18:11-28", "note": "Rachel died giving birth. Saul and Paul were Benjamites.", "lon": 35.3, "lat": 31.85}
+    ]
+  }
+}

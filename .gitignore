@@ -6,3 +6,5 @@ DerivedData/
 Tools/__pycache__/
 docs/licensing/
 .claude/
+# Downloaded build inputs (verified by SHA-256 in Tools/build_context.py).
+Data/cache/

@@ -126,7 +126,7 @@ struct StudyPanel: View {
             ContentUnavailableView("Study Resources Missing", systemImage: "exclamationmark.triangle",
                                    description: Text("This build doesn’t include the study database."))
         } else if study.tab == .context {
-            StudyContextView(chapter: study.verse?.chapterKey ?? model.location, verse: study.verse)
+            StudyContextView(chapter: study.verse?.chapterKey ?? model.location, verse: study.verse?.verse)
         } else if let verse = study.verse {
             switch study.tab {
             case .crossReferences: CrossReferencesView(verse: verse)
