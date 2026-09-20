@@ -633,51 +633,67 @@ def add_policy_arguments(parser: argparse.ArgumentParser) -> None:
 DEMO_SEED = bytes.fromhex("5343524950545552452d414c4f4e452d44454d4f2d534545442d7631212121")
 DEMO_SIGNING_SEED = b"scripture-alone-demo-signing-v1"
 
+# The seed and signing key for the translation the app ships sealed. Both are published on purpose:
+# they protect a public-domain text, so keeping them secret would be theatre, and this document set
+# is trying to be the opposite of theatre. A licensed package uses a key its publisher generates and
+# holds, delivered as described in docs/encrypted-translations.md.
+BUNDLED_SEED = b"SCRIPTURE-ALONE-BUNDLED-SEED-v1"
+BUNDLED_SIGNING_SEED = b"scripture-alone-bundled-signing-v1"
 
-def command_bundle_demo(arguments: argparse.Namespace) -> None:
-    """Packages a bundled translation into the app's resources, shipped as an on-demand resource.
+# What `TranslationRights.unlimitedQuotation` is on the Swift side: Int.max, not a large number some
+# future verse count could reach.
+UNLIMITED_QUOTATION = 2 ** 63 - 1
 
-    This is the demonstration a publisher can run themselves: the app downloads an encrypted
-    package, unseals its key from the Secure Enclave, and reads and searches it without the
-    plaintext ever existing on the device.
+
+def command_bundle(arguments: argparse.Namespace) -> None:
+    """Packages one of the app's own translations into a sealed `.sabible` it ships instead of a store.
+
+    This is not a demonstration bolted on beside the real thing: the American Standard Version is
+    shipped this way and is the translation the app opens by default, so the encrypted path is the
+    ordinary path, exercised by every reader on every launch. If it broke, the app would not start
+    on a fresh install — which is a far stronger claim than a sample nobody opens.
+
+    The text is public domain, so the package grants everything a public-domain text may do. What
+    is being proved here is the mechanism, not a restriction; enforcement of a publisher's terms is
+    proved separately, against packages built with terms that forbid things.
     """
     bibles = repo_root() / "ScriptureAlone/Resources/Bibles"
     store = bibles / f"{arguments.translation}.sqlite"
     if not store.exists():
         sys.exit(f"No bundled store at {store}.")
 
-    # Same derivation the app performs: HKDF-SHA256 over the seed, keyed to the translation id.
+    # The same derivation the app performs: HKDF-SHA256 over the seed, keyed to the translation id.
     content_key = HKDF(algorithm=hashes.SHA256(), length=32,
                        salt=b"scripture-alone-content-key-v1",
-                       info=arguments.identifier.encode()).derive(DEMO_SEED)
-    signing_seed = hashlib.sha256(DEMO_SIGNING_SEED).digest()
-    signing_key = ed25519.Ed25519PrivateKey.from_private_bytes(signing_seed)
+                       info=arguments.translation.encode()).derive(BUNDLED_SEED)
+    signing_seed = hashlib.sha256(BUNDLED_SIGNING_SEED).digest()
 
     meta, chapters = read_store(store)
     identity = {
-        "id": arguments.identifier,
-        "name": f"{meta.get('name', arguments.translation)} (Encrypted)",
-        "abbreviation": arguments.identifier,
-        "publisher": "Scripture Alone demonstration",
+        "id": arguments.translation,
+        "name": meta.get("name", arguments.translation),
+        "abbreviation": arguments.translation,
+        "publisher": "Public domain",
         "copyright": meta.get("copyright", ""),
-        "license": "Public-domain text in a demonstration package — docs/encrypted-translations.md",
+        "license": meta.get("license", "Public domain."),
     }
-    # Deliberately restrictive, so the demonstration *shows* enforcement rather than describing it:
-    # this package forbids notes export and hand-off to other apps, and caps quotation at 25 verses.
+    # Everything a public-domain text may do. Sealing it protects nobody's rights and is not meant
+    # to: the seal is here to prove the format carries a real translation, at real size, on every
+    # launch. `maxQuotationVerses` is the format's "no limit" sentinel.
     policy = {"allowCopy": True, "allowShare": True, "allowVerseImages": True,
-              "allowNotesExport": False, "allowExternalHandoff": False,
-              "allowOfflineStorage": True, "maxQuotationVerses": 25}
+              "allowNotesExport": True, "allowExternalHandoff": True,
+              "allowOfflineStorage": True, "maxQuotationVerses": UNLIMITED_QUOTATION}
 
     data = build_package(identity=identity, policy=policy, chapters=chapters,
                          content_key=content_key, signing_key=signing_seed)
     out_dir = repo_root() / "ScriptureAlone/Resources/Packages"
     out_dir.mkdir(parents=True, exist_ok=True)
-    package = out_dir / f"{arguments.identifier}.sabible"
+    package = out_dir / f"{arguments.translation}.sabible"
     package.write_bytes(data)
 
     public_raw = ed25519.Ed25519PrivateKey.from_private_bytes(signing_seed) \
         .public_key().public_bytes_raw()
-    (out_dir / "demo-signing.pub").write_bytes(public_raw)
+    (out_dir / "bundled-signing.pub").write_bytes(public_raw)
 
     header, _, _, _ = parse_header(data)
     lengths = [entry["length"] for entry in header["index"]["entries"]]
@@ -718,10 +734,9 @@ def main(argv: list[str]) -> None:
     inspect.set_defaults(handler=command_inspect)
 
     bundle = commands.add_parser(
-        "bundle-demo", help="package a bundled translation into the app's resources (on-demand)")
-    bundle.add_argument("--translation", default="BSB")
-    bundle.add_argument("--identifier", default="BSBX")
-    bundle.set_defaults(handler=command_bundle_demo)
+        "bundle", help="seal one of the app's own translations into the resources it ships")
+    bundle.add_argument("--translation", default="ASV")
+    bundle.set_defaults(handler=command_bundle)
 
     demo = commands.add_parser("demo", help="package the bundled public-domain texts with a demonstration key")
     demo.add_argument("--out-dir", default=str(DEMO_DIRECTORY))

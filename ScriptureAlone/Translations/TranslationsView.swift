@@ -53,14 +53,6 @@ struct TranslationsView: View {
                 }
 
                 Section {
-                    encryptedDemoRow
-                } header: {
-                    Text("Encrypted Demonstration")
-                } footer: {
-                    Text("The Berean Standard Bible in a signed, encrypted package — the same way a licensed translation would ship. Its text never exists on this device: chapters are decrypted one at a time, its search index is sealed, and the key is held by the Secure Enclave. This package forbids notes export and hand-off to other apps, and caps quotation at 25 verses — and the app obeys it.")
-                }
-
-                Section {
                     Button("Browse Free Translations…", systemImage: "globe") { showCatalog = true }
                     Button("Import a File…", systemImage: "folder") { showFileImporter = true }
                     Button("Online Translations…", systemImage: "key") { showKeys = true }
@@ -126,38 +118,6 @@ struct TranslationsView: View {
         }
     }
 
-
-    @ViewBuilder
-    private var encryptedDemoRow: some View {
-        let demo = EncryptedDemoLibrary.shared
-        if demo.isOpen {
-            Button {
-                model.setPackageTranslation(demo.package)
-                dismiss()
-            } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(demo.package?.info.name ?? "Berean Standard Bible (Encrypted)")
-                        Text("Signed, encrypted, searchable")
-                            .font(.caption).foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    Image(systemName: "lock.fill").foregroundStyle(.tint)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-        } else if case .downloading(let fraction) = OnDemandLibrary.shared.state(of: .encryptedDemo) {
-            HStack { ProgressView(value: fraction).frame(width: 90); Text("Downloading…") }
-        } else {
-            Button("Download and Open", systemImage: "lock.circle") {
-                Task { await demo.prepare() }
-            }
-            if let failure = demo.failure {
-                Text(failure).font(.caption).foregroundStyle(.red)
-            }
-        }
-    }
 
     private func row(name: String, abbreviation: String, note: String?) -> some View {
         VStack(alignment: .leading, spacing: 3) {

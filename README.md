@@ -99,9 +99,10 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   code that governs the bundled texts, and a sealed search index so a packaged translation is fully
   searchable — phrases included — without a plaintext index ever existing. Read
   [docs/encrypted-translations.md](docs/encrypted-translations.md) for the format, what it does
-  not do, and how to check it yourself. The app ships a working example: the Berean Standard Bible
-  packaged as `BSBX.sabible` and delivered on demand, readable and searchable from the Translations
-  screen, under a policy deliberately tighter than a public-domain text needs.
+  not do, and how to check it yourself. The mechanism is not demonstrated on the side: the American
+  Standard Version — the app's default translation — ships sealed as `ASV.sabible` with no `.sqlite`
+  to fall back on, so every launch exercises it. Being public domain, it grants readers everything;
+  enforcement of terms that forbid things is proved separately.
 
 ## Layout
 

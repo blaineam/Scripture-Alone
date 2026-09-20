@@ -50,11 +50,13 @@ targets:
           # a file listed twice is embedded twice.
           - "Resources/Study/Study.sqlite"
           - "Resources/Study/Interlinear.sqlite"
-          - "Resources/Packages/*"
+          # The American Standard Version ships sealed, so its store stays out of the app; it is
+          # kept in the repository as the source the packaging tool reads.
+          - "Resources/Bibles/ASV.sqlite"
       # On-demand resources. Reading is never one of these: all three translations, the maps and
       # the cross references stay in the app, so a fresh install reads scripture offline with no
-      # network at all. These are study aids a reader opts into, plus the encrypted demonstration
-      # package — together about 71 MB that most readers never need.
+      # network at all. These are study aids a reader opts into — about 54 MB that most readers
+      # never need.
       - path: ScriptureAlone/Resources/Study/Study.sqlite
         buildPhase: resources
         resourceTags: [commentary]
@@ -65,12 +67,6 @@ targets:
       # licensed one would be, so the whole chain — download, Enclave-sealed key, per-chapter
       # decryption, sealed search index, policy enforcement — can be watched running in the app
       # without anyone granting a licence first.
-      - path: ScriptureAlone/Resources/Packages/BSBX.sabible
-        buildPhase: resources
-        resourceTags: [encrypted-demo]
-      - path: ScriptureAlone/Resources/Packages/demo-signing.pub
-        buildPhase: resources
-        resourceTags: [encrypted-demo]
     dependencies:
       - package: MillerKit
       - package: ScriptureAloneCore

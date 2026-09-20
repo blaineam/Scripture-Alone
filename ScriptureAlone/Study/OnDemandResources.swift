@@ -6,9 +6,9 @@ import ScriptureAloneCore
 ///
 /// Reading is never on demand: all three translations, the maps, the timeline and the cross
 /// references are inside the app, so a fresh install reads scripture offline with no network at
-/// all. What is on demand is what a reader opts into — commentary at 43.6 MB, the interlinear at
-/// 10.7 MB, and the encrypted demonstration package at 16.5 MB. Together they are more than half
-/// the download, for features many readers never open.
+/// all — including the American Standard Version, which ships as a signed, encrypted package. What
+/// is on demand is what a reader opts into: commentary at 43.6 MB and the interlinear at 10.7 MB,
+/// together more than half the download, for features many readers never open.
 ///
 /// The system may purge a downloaded pack when storage runs low, so nothing here assumes that a
 /// pack fetched once stays fetched. Every access re-requests it; a present pack resolves
@@ -20,9 +20,6 @@ import ScriptureAloneCore
 enum OnDemandPack: String, CaseIterable, Sendable {
     case commentary
     case interlinear
-    /// The encrypted demonstration translation. Named with a dash in the tag, so it carries its
-    /// own raw value.
-    case encryptedDemo = "encrypted-demo"
 
     var tag: String { rawValue }
 
@@ -30,7 +27,6 @@ enum OnDemandPack: String, CaseIterable, Sendable {
         switch self {
         case .commentary: "Commentary"
         case .interlinear: "Original Languages"
-        case .encryptedDemo: "Encrypted Demonstration"
         }
     }
 
@@ -42,9 +38,6 @@ enum OnDemandPack: String, CaseIterable, Sendable {
         case .interlinear:
             "The Hebrew and Greek behind every word, with a lexicon — about 11 MB, downloaded once "
                 + "and kept."
-        case .encryptedDemo:
-            "The Berean Standard Bible in a signed, encrypted package — about 17 MB. It reads and "
-                + "searches without its text ever existing on the device."
         }
     }
 
@@ -53,7 +46,6 @@ enum OnDemandPack: String, CaseIterable, Sendable {
         switch self {
         case .commentary: ("Study", "sqlite")
         case .interlinear: ("Interlinear", "sqlite")
-        case .encryptedDemo: ("BSBX", "sabible")
         }
     }
 }

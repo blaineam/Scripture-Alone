@@ -6,10 +6,10 @@ import Testing
 /// The package the app actually ships, opened the way the app actually opens it.
 ///
 /// `DemoPackageTests` proves the mechanism against packages built on the spot. This proves the
-/// artifact: `ScriptureAlone/Resources/Packages/BSBX.sabible` — the bytes that go into the
-/// `encrypted-demo` asset pack, downloaded on demand and unsealed on the device — read with the
-/// seed and the pinned publisher key that `EncryptedDemoLibrary` uses. If the tool and the app ever
-/// drift apart, a reader sees a translation that won't open; this is where that is caught instead.
+/// artifact: `ScriptureAlone/Resources/Packages/ASV.sabible` is the American Standard Version, the
+/// translation the app opens by default, and it ships sealed instead of as a database. There is no
+/// `ASV.sqlite` in the app to fall back on — so if the Python tool and the Swift reader drift
+/// apart, a fresh install has nothing to read. This is where that is caught instead.
 @Suite struct ShippedPackageTests {
 
     /// The repository, found from this file rather than from the working directory, which SwiftPM
@@ -21,15 +21,15 @@ import Testing
         .deletingLastPathComponent()   // repository root
 
     static let packageURL = repository
-        .appending(path: "ScriptureAlone/Resources/Packages/BSBX.sabible")
+        .appending(path: "ScriptureAlone/Resources/Packages/ASV.sabible")
     static let publisherKeyURL = repository
-        .appending(path: "ScriptureAlone/Resources/Packages/demo-signing.pub")
+        .appending(path: "ScriptureAlone/Resources/Packages/bundled-signing.pub")
 
-    /// The same published seed `EncryptedDemoLibrary` compiles in and `Tools/package_translation.py
-    /// bundle-demo` builds with. Published on purpose: it protects a public-domain text, so secrecy
+    /// The same published seed `SealedTranslations` compiles in and `Tools/package_translation.py
+    /// bundle` builds with. Published on purpose: it protects a public-domain text, so secrecy
     /// would be theatre.
-    static let seed = Data("SCRIPTURE-ALONE-DEMO-SEED-v1!!!".utf8)
-    static let translationID = "BSBX"
+    static let seed = Data("SCRIPTURE-ALONE-BUNDLED-SEED-v1".utf8)
+    static let translationID = "ASV"
 
     static var isBuilt: Bool {
         FileManager.default.fileExists(atPath: packageURL.path)
@@ -45,7 +45,7 @@ import Testing
     }
 
     @Test func shippedPackageOpensAndReads() throws {
-        try withKnownIssue("the demonstration package has not been built", isIntermittent: true) {
+        try withKnownIssue("the sealed translation has not been built", isIntermittent: true) {
             try #require(Self.isBuilt)
         } when: {
             !Self.isBuilt
@@ -66,11 +66,18 @@ import Testing
         // lines carrying all six verses, the way the store would have given them.
         let layout = try package.layout(for: psalm)
         let numbered = Set(layout.blocks.flatMap(\.fragments).compactMap(\.verse))
-        #expect(numbered == Set(1...6))
+        // Verse 0 is the psalm's Hebrew superscription ("A Psalm of David"), which the store
+        // carries as its own numbered fragment — so the sealed layout should carry it too.
+        #expect(numbered == Set(0...6))
+        #expect(layout.blocks.contains { $0.kind == .title })
         #expect(layout.blocks.contains { $0.kind == .poetry1 })
 
         let opening = try #require(package.verses(in: VerseRange(VerseRef(.psalms, 23, 1))).first)
         #expect(opening.text.lowercased().contains("shepherd"))
+
+        // It is the whole Bible, not a sample: the first chapter and the last, from the same file.
+        #expect(package.contains(ChapterRef(.genesis, 1)))
+        #expect(package.contains(ChapterRef(.revelation, 22)))
     }
 
     /// The wrong key is refused at the door, not at the first chapter.
@@ -110,7 +117,9 @@ import Testing
         #expect(phrase.contains { $0.ref == VerseRef(.john, 3, 16) })
 
         // A bare query matches its last word as a prefix, so a half-typed word still finds it.
-        let prefix = try package.search("the lord is my shep", limit: 50)
+        // "Jehovah", not "the LORD" — this is the American Standard Version, and a test that
+        // passed against another translation's wording would not be testing this one.
+        let prefix = try package.search("jehovah is my shep", limit: 50)
         #expect(prefix.contains { $0.ref == VerseRef(.psalms, 23, 1) })
 
         // Words that all occur, but never in this order, must not match as a phrase.
@@ -118,21 +127,25 @@ import Testing
         #expect(nonsense.isEmpty)
     }
 
-    /// The policy the package carries is the policy the app enforces. This one is deliberately
-    /// restrictive — it stands in for a licensed translation — so the refusals are the point.
-    @Test func shippedPolicyIsEnforced() throws {
+    /// The terms this package carries are the terms of a public-domain text: everything permitted.
+    ///
+    /// Sealing the American Standard Version protects nobody's rights and is not meant to. A reader
+    /// must lose nothing by it — no disabled buttons, no quotation cap — because the only thing
+    /// being proved here is that a real translation reads out of a sealed package on every launch.
+    /// Enforcement of terms that *forbid* things is proved separately, in `PackagePolicyTests`,
+    /// against packages built to forbid them.
+    @Test func shippedTranslationIsUnrestricted() throws {
         guard Self.isBuilt else { return }
         let rights = try Self.openShipped().info.rights
-        #expect(rights.allowCopy)
-        #expect(!rights.allowNotesExport)
-        #expect(!rights.allowExternalHandoff)
-        #expect(rights.maxQuotationVerses == 25)
-
-        // The cap is a boundary, so check the boundary rather than the number beside it. This is
-        // what the reader's copy and share controls are disabled by.
-        #expect(rights.mayQuote(verseCount: 25))
-        #expect(!rights.mayQuote(verseCount: 26))
-        #expect(!rights.permits(\.allowNotesExport))
-        #expect(!rights.permits(\.allowExternalHandoff))
+        #expect(rights.permits(\.allowCopy))
+        #expect(rights.permits(\.allowShare))
+        #expect(rights.permits(\.allowVerseImages))
+        #expect(rights.permits(\.allowNotesExport))
+        #expect(rights.permits(\.allowExternalHandoff))
+        #expect(rights.permits(\.allowOfflineStorage))
+        #expect(rights.maxQuotationVerses == TranslationRights.unlimitedQuotation)
+        // The whole canon is 31,102 verses; an unlimited cap has to clear that and then some.
+        #expect(rights.mayQuote(verseCount: 31_102))
+        #expect(rights.expires == nil)
     }
 }

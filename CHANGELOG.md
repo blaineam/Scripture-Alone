@@ -21,14 +21,15 @@
   edition until every hash was identified. Searching the commonest word in scripture opens one bucket
   of 256 and decrypts at most thirty chapters of 1,189, and the reader counts what it opened so the
   tests can say so.
-- The encrypted format is demonstrated by a translation you can actually read. The Berean Standard
-  Bible ships a second time as `BSBX.sabible` — signed, sealed, and delivered as the on-demand
-  resource `encrypted-demo`, so it is not part of the app download. Downloading it derives the
-  content key from the build's seed, seals it to the Secure Enclave, verifies the publisher
-  signature and opens the package; from there it reads, selects and searches like any other
-  translation while its text never exists on the device in the clear. Its policy is deliberately
-  tighter than a public-domain text needs — no notes export, no hand-off to other apps, quotation
-  capped at 25 verses — because the point is to watch the app obey a publisher's terms.
+- The American Standard Version now ships as a signed, encrypted package instead of a database, and
+  it is still the translation the app opens by default. There is no `ASV.sqlite` in the app to fall
+  back on: every launch derives the content key, unwraps it from the Secure Enclave, verifies the
+  publisher signature and reads chapters decrypted one at a time, and searching it searches a
+  sealed index. Nothing about it looks different to a reader, which is the point — the encrypted
+  path is the ordinary path now, not a sample sitting beside the real thing.
+- Sealing it takes nothing away. The text is public domain, so the package permits everything a
+  public-domain text may do — no disabled controls, no quotation cap. That a package can *forbid*
+  things, and that the app obeys, is proved separately against packages built to forbid them.
 - The reader draws every translation through one seam (`ChapterTextSource`), so a bundled store, an
   imported file, an online translation's cache and an encrypted package are read by the same code
   rather than by four branches that have to be kept in step. Listening, sharing, favourites, notes,

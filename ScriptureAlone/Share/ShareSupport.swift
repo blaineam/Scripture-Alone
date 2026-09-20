@@ -82,7 +82,7 @@ private struct ShareSupport: ViewModifier {
         case .share(let payload):
             reveal(payload.ranges)
             // Rebuild the card from the sender's translation when it's installed here, else the reader's own.
-            guard let from: any ChapterTextSource = model.store(for: payload.translation) ?? model.source,
+            guard let from = model.source(for: payload.translation) ?? model.source,
                   let source = ShareSource(source: from, ranges: payload.ranges, linkStyle: payload) else { return }
             // A sheet presented while the scene is still activating for the URL is dropped; wait a beat.
             Task {

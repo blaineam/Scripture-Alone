@@ -403,42 +403,50 @@ The test suite states the security properties as executable assertions. By name,
 | `editingTheIndexParametersFailsTheSignature` | The tokeniser and bucket count are inside the signature |
 | `aPackageWithoutAnIndexRefusesToSearch` | "Cannot be searched" is not "no matches" |
 | `theToolsDemoIndexIsSearchedByTheApp` | The Python tool's index, searched by the Swift reader |
-| `shippedPackageOpensAndReads` | The artefact the app ships, opened with the seed the app compiles in |
-| `shippedPackageSearches` | Phrase and prefix, through the sealed index, on the shipped package |
+| `shippedPackageOpensAndReads` | The default translation, opened from the bytes the app ships |
+| `shippedPackageSearches` | Phrase and prefix, through the sealed index, on that same package |
 | `wrongContentKeyIsRefused` | A wrong key is refused at open, not at the first chapter |
 | `unpinnedPublisherKeyIsRefused` | A signature from a key the app does not pin |
-| `shippedPolicyIsEnforced` | The terms the reader is bound by are the terms in the file |
+| `shippedTranslationIsUnrestricted` | A public-domain text sealed costs its readers nothing |
 
-### The demonstration that ships
+### The translation that ships sealed
 
-The commands above prove the format on a desk. The app also ships one, so the chain can be watched
-running on a device with nothing to set up.
+The commands above prove the format on a desk. The app goes further: it does not ship a sealed
+*sample* beside its real translations — it ships one of its real translations sealed.
 
-`ScriptureAlone/Resources/Packages/BSBX.sabible` is the Berean Standard Bible, packaged by the same
-tool, signed by a key the app pins, and tagged as the on-demand resource `encrypted-demo`. It is not
-in the app download. A reader opens Translations, taps *Download and Open*, and the device fetches
-17 MB from Apple's CDN, derives the content key from the build's seed, seals it to the Secure
-Enclave, verifies the signature, and opens the package. From then on it is a translation like any
-other in the list — read it, select verses, search it — except that its text never exists on the
-device in the clear and the app refuses what its policy forbids.
+`ScriptureAlone/Resources/Packages/ASV.sabible` is the American Standard Version, packaged by the
+tool above, signed by a key the app pins, and it is the translation the app opens by default. There
+is no `ASV.sqlite` in the app to fall back on. Every reader, on every launch, derives the content
+key, unwraps it from the Secure Enclave, verifies an Ed25519 signature over the header, and reads
+chapters decrypted one at a time out of an authenticated package. Searching it searches a sealed
+index. If any of that broke, the app would not open on a fresh install.
 
-That policy is deliberately tighter than the text needs. The Berean Standard Bible is public domain
-and could be given away; this copy forbids notes export and hand-off to other apps and caps
-quotation at 25 verses, because the point is to watch the app *obey a publisher's terms*, not to
-distribute a Bible. Turning any of those on means changing the policy and re-signing — which a
-publisher does with their own key, and which the app then enforces without a new release.
+That is a stronger claim than a demonstration can make, and it is the reason to prefer it. A sample
+translation nobody selects proves that the code compiles. A default translation proves the format
+survives contact with real use — real size, every chapter, every search, on every device the app
+runs on, for as long as the app is in the store.
 
-The seed for this one package is published in `Tools/package_translation.py` and in
-`EncryptedDemoLibrary.swift`. That is deliberate. It protects a public-domain text, so keeping it
-secret would be theatre, and theatre is precisely what this document is trying not to do. A real
-package uses a key its publisher generates and holds.
+The terms in that package permit everything, and deliberately so. The American Standard Version is
+public domain; sealing it protects nobody's rights and is not meant to. A reader must lose nothing
+by the choice — no disabled buttons, no quotation cap — or the mechanism would be buying its proof
+with someone else's inconvenience. **Enforcement is proved separately**, in `PackagePolicyTests`,
+against packages built with terms that forbid things: a policy that refuses notes export, refuses
+hand-off to other apps and caps quotation at 25 verses, and an app that obeys each refusal at the
+control the reader actually touches. The two claims are kept apart on purpose — one says the format
+carries a real Bible, the other says the app honours real terms — because proving them with the
+same artefact would let a weakness in either hide behind the other.
 
-`ShippedPackageTests` asserts against that exact artefact rather than against a package built on the
-spot: it opens the shipped bytes with the published seed and the pinned key, reads Psalm 23 back as
-poetry with all six verses, finds John 3:16 by phrase and Psalm 23:1 by prefix through the sealed
-index, refuses a wrong content key at open, refuses an unpinned publisher key outright, and checks
-that the policy the reader is bound by is the one in the file. If the Python tool and the Swift
-reader ever drift apart, that suite fails before a reader ever sees a translation that will not open.
+The seed and the signing key for this package are published, in `Tools/package_translation.py` and
+in `SealedTranslations.swift`. That is deliberate: they protect a public-domain text, so keeping
+them secret would be theatre, and theatre is what this document exists to avoid. A licensed package
+uses a key its publisher generates and holds, delivered as described in section 4.
+
+`ShippedPackageTests` asserts against that exact artefact rather than a package built for the test:
+it opens the shipped bytes with the published seed and the pinned key, reads Psalm 23 back as poetry
+with its Hebrew superscription intact, finds John 3:16 by phrase and Psalm 23:1 by prefix through
+the sealed index, refuses a wrong content key at open, refuses an unpinned publisher key outright,
+and checks that a reader of it is bound by nothing. If the Python tool and the Swift reader ever
+drift apart, that suite fails before a reader ever sees it.
 
 That means a publisher can watch the whole mechanism work, end to end, without granting anything, and
 can run the packaging tool against their own text on their own machine before deciding.
@@ -458,9 +466,10 @@ package that will not open on your desk.
 
 Two things this document previously listed as unbuilt are now built, and are described above rather
 than promised: key delivery by the shipped-seed route (section 4), and the reader's own screens,
-which open a package through the same protocol they open a SQLite store through (`ChapterTextSource`)
-— the translation list, the reader, selection, quotation and search all run against the shipped
-`BSBX.sabible` today.
+which open a package through the same protocol they open a SQLite store through
+(`ChapterTextSource`). The translation list, the reader, selection, quotation, listening, sharing
+and search all run against a sealed package today — and against the default translation, so they
+run that way for everyone.
 
 What is deliberately still open, so nobody discovers it later:
 

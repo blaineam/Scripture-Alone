@@ -121,13 +121,14 @@ struct CompareView: View {
         defer { loading = false }
 
         let chapter = model.location
-        // The right-hand side may be an online translation, which fetches (and caches) on demand.
-        let right: BibleStore?
+        // The right-hand side may be an online translation, which fetches (and caches) on demand,
+        // or a sealed package — so it is a source, like the left-hand side.
+        let right: (any ChapterTextSource)?
         if let entry = model.translations.first(where: { $0.id == otherID }), entry.isOnline {
             do { right = try await model.onlineStore(for: entry, chapter: chapter) }
             catch { failure = error.localizedDescription; rows = []; return }
         } else {
-            right = model.store(for: otherID)
+            right = model.source(for: otherID)
         }
         guard let right else { failure = "That translation isn't available."; rows = []; return }
 

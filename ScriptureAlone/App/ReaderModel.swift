@@ -91,9 +91,16 @@ final class ReaderModel {
     private let cloud = NSUbiquitousKeyValueStore.default
 
     init() {
+        // A sealed translation is a bundled translation. The American Standard Version ships as a
+        // signed, encrypted package rather than a database, and appears here exactly like the two
+        // that don't — which is the point: the reader is never asked to care.
+        let names = ["ASV": "American Standard Version", "BSB": "Berean Standard Bible",
+                     "KJV": "King James Version"]
         let bundled = ["ASV", "BSB", "KJV"].compactMap { id -> TranslationEntry? in
+            if SealedTranslations.shared.package(id) != nil {
+                return TranslationEntry(id: id, name: names[id] ?? id, source: .package)
+            }
             guard let url = Bundle.main.url(forResource: id, withExtension: "sqlite") else { return nil }
-            let names = ["ASV": "American Standard Version", "BSB": "Berean Standard Bible", "KJV": "King James Version"]
             return TranslationEntry(id: id, name: names[id] ?? id, url: url)
         }
         translations = bundled
@@ -107,8 +114,15 @@ final class ReaderModel {
         recent = (defaults.array(forKey: "recent") as? [Int] ?? []).compactMap { VerseRef(key: $0)?.chapterKey }
         recentSearches = defaults.stringArray(forKey: "recentSearches") ?? []
 
+        // The default translation ships sealed, so "is it in the list" is a real question now: if
+        // its key could not be unwrapped it is not there at all, and selecting it would leave the
+        // reader staring at nothing. Fall back to whatever the app *can* open, in order, and only
+        // then give up.
         let preferred = defaults.string(forKey: "translation") ?? Self.defaultTranslation
-        selectTranslation(translations.contains { $0.id == preferred } ? preferred : Self.defaultTranslation)
+        let choice = [preferred, Self.defaultTranslation].first { id in
+            translations.contains { $0.id == id }
+        } ?? translations.first?.id
+        if let choice { selectTranslation(choice) }
         if let saved, saved.verse > 1 { scrollTarget = saved.key }
     }
 
@@ -126,16 +140,20 @@ final class ReaderModel {
             $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
         translations = bundledTranslations + added
-        // A translation that has gone away — a deleted import, a removed key — must not stay
-        // selected, or the reader is left staring at a chapter that can never load.
+        // A translation that has gone away — a deleted import, a removed key, a sealed package
+        // whose key would not unwrap — must not stay selected, or the reader is left staring at a
+        // chapter that can never load.
         if !translations.contains(where: { $0.id == translationID }) {
-            selectTranslation(Self.defaultTranslation)
+            let fallback = translations.contains { $0.id == Self.defaultTranslation }
+                ? Self.defaultTranslation
+                : translations.first?.id
+            if let fallback { selectTranslation(fallback) }
         }
     }
 
     /// Online translations, as configured by the reader's keys. Kept apart from imports so a
     /// key removal doesn't disturb files on disk, and vice versa.
-    fileprivate(set) var onlineEntries: [TranslationEntry] = []
+    private(set) var onlineEntries: [TranslationEntry] = []
 
     func setOnlineTranslations(_ entries: [TranslationEntry]) {
         onlineEntries = entries
@@ -147,22 +165,6 @@ final class ReaderModel {
     func onlineStore(for entry: TranslationEntry, chapter: ChapterRef) async throws -> BibleStore {
         guard let onlineLoader else { throw ReaderModelError.noOnlineLoader }
         return try await onlineLoader(entry, chapter)
-    }
-
-    /// Reads from a signed, encrypted package. Registered as a translation like any other, so
-    /// everything downstream treats it as one.
-    func setPackageTranslation(_ package: TranslationPackage?) {
-        guard let package else { return }
-        let entry = TranslationEntry(id: package.info.id, name: package.info.name, source: .package)
-        if !translations.contains(where: { $0.id == entry.id }) {
-            onlineEntries.append(entry)
-            rebuildTranslations()
-        }
-        packageSource = package
-        store = nil
-        onlineTranslation = nil
-        defaults.set(entry.id, forKey: "translation")
-        load()
     }
 
     /// Search the translation being read, whatever kind it is.
@@ -207,9 +209,18 @@ final class ReaderModel {
         }
         onlineTranslation = nil
         if case .package = entry.source {
-            packageSource = EncryptedDemoLibrary.shared.package
+            // A locked device at a cold background launch can leave the key unreadable; try once
+            // more before telling the reader the translation is broken.
+            if SealedTranslations.shared.package(id) == nil { SealedTranslations.shared.reopen(id) }
+            guard let package = SealedTranslations.shared.package(id) else {
+                loadError = SealedTranslations.shared.failure(id) ?? "\(entry.name) couldn't be opened."
+                layout = nil
+                return
+            }
+            packageSource = package
             store = nil
             defaults.set(id, forKey: "translation")
+            if let top = topVerse { scrollTarget = top }
             load()
             return
         }
@@ -233,6 +244,12 @@ final class ReaderModel {
               let store = try? BibleStore(url: url) else { return nil }
         stores[id] = store
         return store
+    }
+
+    /// Any translation the app can read, by id, whatever kind it is. Compare and an incoming share
+    /// link both need to open a translation that isn't the one being read.
+    func source(for id: String) -> (any ChapterTextSource)? {
+        SealedTranslations.shared.package(id) ?? store(for: id)
     }
 
     // MARK: Navigation

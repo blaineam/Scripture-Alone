@@ -67,19 +67,34 @@ final class VersePreview {
             cachedTranslation = id
         }
         if let text = cache[key] { return text }
-        guard let ref = VerseRef(key: key), let store = store(id) else { return nil }
-        let text = (try? store.verses(in: VerseRange(ref)))?.first?.text
+        guard let ref = VerseRef(key: key), let source = source(id) else { return nil }
+        let text = (try? source.verses(in: VerseRange(ref)))?.first?.text
         cache[key] = text
         return text
     }
 
-    private func store(_ id: String) -> BibleStore? {
+    /// The reader's translation, whatever kind it is — a sealed package, a bundled store, or an
+    /// import. Falls back to any translation the app can open rather than to a fixed filename,
+    /// since the default translation ships sealed and has no `.sqlite` to fall back to.
+    private func source(_ id: String) -> (any ChapterTextSource)? {
+        if let package = SealedTranslations.shared.package(id) { return package }
         if let store = stores[id] { return store }
-        let url = Bundle.main.url(forResource: id, withExtension: "sqlite")
-            ?? Bundle.main.url(forResource: ReaderModel.defaultTranslation, withExtension: "sqlite")
-        guard let url, let store = try? BibleStore(url: url) else { return nil }
-        stores[id] = store
-        return store
+        if let url = Bundle.main.url(forResource: id, withExtension: "sqlite"),
+           let store = try? BibleStore(url: url) {
+            stores[id] = store
+            return store
+        }
+        if let package = SealedTranslations.identifiers.lazy
+            .compactMap({ SealedTranslations.shared.package($0) }).first { return package }
+        for fallback in ["BSB", "KJV"] {
+            if let store = stores[fallback] { return store }
+            if let url = Bundle.main.url(forResource: fallback, withExtension: "sqlite"),
+               let store = try? BibleStore(url: url) {
+                stores[fallback] = store
+                return store
+            }
+        }
+        return nil
     }
 }
 
