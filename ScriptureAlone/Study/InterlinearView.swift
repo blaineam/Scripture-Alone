@@ -18,12 +18,31 @@ struct InterlinearView: View {
     @State private var entry: LexiconEntry?
     @State private var failure: String?
 
+    @State private var downloading = false
     private var store: InterlinearStore? { InterlinearLibrary.shared.store }
 
     var body: some View {
         NavigationStack {
             Group {
-                if let failure {
+                if downloading {
+                    VStack(spacing: 12) {
+                        ProgressView(value: downloadFraction)
+                            .frame(maxWidth: 220)
+                        Text("Downloading \(OnDemandPack.interlinear.title)…").font(.callout)
+                        Text(OnDemandPack.interlinear.explanation)
+                            .font(.caption).foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding()
+                } else if InterlinearLibrary.shared.store == nil, words.isEmpty, failure == nil {
+                    ContentUnavailableView {
+                        Label(OnDemandPack.interlinear.title, systemImage: "arrow.down.circle")
+                    } description: {
+                        Text(OnDemandPack.interlinear.explanation)
+                    } actions: {
+                        Button("Download") { Task { await prepareAndLoad() } }
+                    }
+                } else if let failure {
                     ContentUnavailableView("No Original-Language Data", systemImage: "character.book.closed",
                                            description: Text(failure))
                 } else {
@@ -35,7 +54,14 @@ struct InterlinearView: View {
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-            .task { load() }
+            .task {
+                // Already downloaded: open it without asking. Not downloaded: the reader is shown
+                // the size and taps to fetch, because 11 MB on a cellular connection is their
+                // decision, not ours.
+                if InterlinearLibrary.shared.store != nil || OnDemandLibrary.shared.isReady(.interlinear) {
+                    await prepareAndLoad()
+                }
+            }
         }
     }
 
@@ -120,9 +146,27 @@ struct InterlinearView: View {
         entry = try? store?.entry(for: strongs)
     }
 
+    private var downloadFraction: Double {
+        if case .downloading(let value) = OnDemandLibrary.shared.state(of: .interlinear) { return value }
+        return 0
+    }
+
+    private func prepareAndLoad() async {
+        if InterlinearLibrary.shared.store == nil {
+            downloading = true
+            _ = await InterlinearLibrary.shared.prepare()
+            downloading = false
+        }
+        load()
+    }
+
     private func load() {
         guard let store else {
-            failure = "The original-language data isn't available in this build."
+            if case .failed(let message) = OnDemandLibrary.shared.state(of: .interlinear) {
+                failure = message
+            } else {
+                failure = "The original-language data isn't available yet."
+            }
             return
         }
         do {
@@ -139,22 +183,36 @@ struct InterlinearView: View {
 /// It is 11 MB and read-only, so one instance serves the whole app; a verse's worth of taps costs
 /// one inflate rather than one per word.
 @MainActor
+@Observable
 final class InterlinearLibrary {
     static let shared = InterlinearLibrary()
 
-    let store: InterlinearStore?
+    /// Nil until the on-demand pack is on the device. Opened lazily rather than at launch,
+    /// because the file may not exist yet and may be purged later.
+    private(set) var store: InterlinearStore?
 
-    private init() {
-        guard let url = Bundle.main.url(forResource: "Interlinear", withExtension: "sqlite") else {
-            store = nil
-            return
-        }
+    private init() { open() }
+
+    private func open() {
+        guard store == nil, let url = OnDemandLibrary.shared.url(of: .interlinear) else { return }
         store = try? InterlinearStore(url: url)
     }
 
+    /// Downloads the pack if needed, then opens it.
+    @discardableResult
+    func prepare() async -> Bool {
+        if store != nil { return true }
+        guard await OnDemandLibrary.shared.ensure(.interlinear) else { return false }
+        open()
+        return store != nil
+    }
+
     /// Whether to offer the affordance at all: the data aligns to the BSB and nothing else.
+    ///
+    /// Deliberately does not require the pack to be downloaded — the offer is what prompts the
+    /// download, so hiding it until the file exists would mean nobody ever gets it.
     func supports(_ info: TranslationInfo?) -> Bool {
-        guard let info, store != nil else { return false }
+        guard let info else { return false }
         return InterlinearStore.alignsTo(info)
     }
 }

@@ -20,6 +20,9 @@
   poetry and footnotes.
 - Reader with paragraph and verse-by-verse layouts, seven typefaces, five themes, adjustable
   size and spacing, and auto-scroll.
+- The commentary and the original-language data download the first time you open them, which
+  halves the initial install. All three translations, the maps, the timeline and the cross
+  references stay in the app, so a fresh install reads scripture offline with no network at all.
 - Compare two translations side by side, verse aligned, with a verse only one of them prints
   marked rather than silently shifting the rest.
 - Original-language study: select a verse in the Berean Standard Bible to see the Hebrew or Greek

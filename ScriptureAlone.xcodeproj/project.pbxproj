@@ -15,7 +15,7 @@
 		141BB91B972E57BB28053467 /* LegacyReadingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B2F7865CBE3F11E9B378EA /* LegacyReadingViews.swift */; };
 		17AC18B017DE5043396F7C5F /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92CECC981DA199D2D8E1875 /* AppGroup.swift */; };
 		1CD831ECEEAB5C424AF17EC9 /* DailyVerses.json in Resources */ = {isa = PBXBuildFile; fileRef = 7FB470D843314F7FBBD87D39 /* DailyVerses.json */; };
-		1E383C4A315E79DC7A80EDF6 /* Study.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = C41E635BBCC96DC93EF52454 /* Study.sqlite */; };
+		1E383C4A315E79DC7A80EDF6 /* Study.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = C41E635BBCC96DC93EF52454 /* Study.sqlite */; settings = {ASSET_TAGS = (commentary, ); }; };
 		1FE91E0BC9F560E33FD42BF9 /* OnlineTextLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B979A47FCB565BD87D575D13 /* OnlineTextLoader.swift */; };
 		20A64AED5FB99726FC5CD027 /* MapGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F2FBAF7C3E334C863023FB /* MapGeometry.swift */; };
 		20DCF0DEE79C23AFBC824901 /* ShareStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BEECD7D79C4803DCB59860 /* ShareStyle.swift */; };
@@ -27,6 +27,7 @@
 		2CE7A8DCC9AEA9D0B7A90CDB /* ScriptureAloneCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1A7205FD5FCA11838150D9A8 /* ScriptureAloneCore */; };
 		2D67D62C9CA59B847EA766CA /* Basemap.bin in Resources */ = {isa = PBXBuildFile; fileRef = CD26A00921ADE7C04FC80237 /* Basemap.bin */; };
 		2DB39BE64A22CA7256CD1D9A /* ScriptureAloneWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 2544CC6D255BC8BECC33D29C /* ScriptureAloneWatch.app */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		30C1540886EBE0E6D69AD7FA /* OnDemandResources.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7419075F8FCDCFA823DD1DCF /* OnDemandResources.swift */; };
 		31C68B8F127E821D23A383BD /* ImportedLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B428BCAE12449F8C77B44484 /* ImportedLibrary.swift */; };
 		34EEE38976C8CB13024D9B34 /* ChartViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 037E94E8953976654834491D /* ChartViews.swift */; };
 		375DF89AEBFA8910FCA271AA /* MiSpeaksClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57092597A336A50B343F9912 /* MiSpeaksClient.swift */; };
@@ -112,7 +113,7 @@
 		E25B483FC4FA988EAF9D5B85 /* ShareCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9490E2C2C07074CC5136A9 /* ShareCard.swift */; };
 		E306ED72040F902C31B435DF /* WatchHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F623D45503145D4A1FC508E /* WatchHomeView.swift */; };
 		E85C6125ACAABA95F56A46B8 /* VerseOfDayShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16AF12A3C0ED58D26D26A632 /* VerseOfDayShared.swift */; };
-		E88D7C32F5237FD09437C389 /* Interlinear.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 27BEC9EFF1F3BB03BCDA0992 /* Interlinear.sqlite */; };
+		E88D7C32F5237FD09437C389 /* Interlinear.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 27BEC9EFF1F3BB03BCDA0992 /* Interlinear.sqlite */; settings = {ASSET_TAGS = (interlinear, ); }; };
 		EA448292B7A20B8D57D45331 /* FamilyCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C2F62B17B60C2195108C1F /* FamilyCloud.swift */; };
 		EB1582D26EAC997CB1ACE4C6 /* SlideCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E2E509013C8910CB37D5245 /* SlideCapture.swift */; };
 		EB6E25A2A5BCF50CE7B02050 /* ShareExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B03CE75511938642A77DD8B /* ShareExport.swift */; };
@@ -247,6 +248,7 @@
 		64254A487F2AB5DE14735746 /* CommentaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentaryView.swift; sourceTree = "<group>"; };
 		65F2FBAF7C3E334C863023FB /* MapGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapGeometry.swift; sourceTree = "<group>"; };
 		6F623D45503145D4A1FC508E /* WatchHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchHomeView.swift; sourceTree = "<group>"; };
+		7419075F8FCDCFA823DD1DCF /* OnDemandResources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDemandResources.swift; sourceTree = "<group>"; };
 		7BE6DDBF2634E788D5943D3E /* SpeechVoices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechVoices.swift; sourceTree = "<group>"; };
 		7E2E509013C8910CB37D5245 /* SlideCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlideCapture.swift; sourceTree = "<group>"; };
 		7FB470D843314F7FBBD87D39 /* DailyVerses.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = DailyVerses.json; sourceTree = "<group>"; };
@@ -623,6 +625,7 @@
 				64254A487F2AB5DE14735746 /* CommentaryView.swift */,
 				060801F1607F15B63E34EFF7 /* CrossReferencesView.swift */,
 				F435AEBC1B470F11ED9904CE /* InterlinearView.swift */,
+				7419075F8FCDCFA823DD1DCF /* OnDemandResources.swift */,
 				A1EE071A16E5CB568DFB3331 /* StudyContextView.swift */,
 				34F17EC67413B118E11B84EC /* StudyModel.swift */,
 				9DE766724AEE6AA9844B429B /* StudyPanel.swift */,
@@ -787,6 +790,10 @@
 						ProvisioningStyle = Automatic;
 					};
 				};
+				knownAssetTags = (
+					commentary,
+					interlinear,
+				);
 			};
 			buildConfigurationList = 58CCF8E4C9FC1CBAD91CD925 /* Build configuration list for PBXProject "ScriptureAlone" */;
 			developmentRegion = en;
@@ -1023,6 +1030,7 @@
 				C1B77A8C692EE1B04BD44B40 /* NotesPDFRenderer.swift in Sources */,
 				60FC358C80B4C02DF0C7A784 /* NotesPanel.swift in Sources */,
 				458F54193454C89DE6F698E7 /* NowPlayingBar.swift in Sources */,
+				30C1540886EBE0E6D69AD7FA /* OnDemandResources.swift in Sources */,
 				4AA2A511CBD4F3B94FFE9656 /* OnlineKeysView.swift in Sources */,
 				1FE91E0BC9F560E33FD42BF9 /* OnlineTextLoader.swift in Sources */,
 				102A001B3B3B421E170724C3 /* OnlineTranslations.swift in Sources */,

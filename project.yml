@@ -46,6 +46,20 @@ targets:
         excludes:
           - "Resources/Info.plist"
           - "Resources/*.entitlements"
+          # Tagged below as on-demand resources, so they must not also be swept in here —
+          # a file listed twice is embedded twice.
+          - "Resources/Study/Study.sqlite"
+          - "Resources/Study/Interlinear.sqlite"
+      # On-demand resources. Reading is never one of these: all three translations, the maps and
+      # the cross references stay in the app, so a fresh install reads scripture offline with no
+      # network at all. These two are study aids a reader opts into, and together they are 54 MB
+      # of the download.
+      - path: ScriptureAlone/Resources/Study/Study.sqlite
+        buildPhase: resources
+        resourceTags: [commentary]
+      - path: ScriptureAlone/Resources/Study/Interlinear.sqlite
+        buildPhase: resources
+        resourceTags: [interlinear]
     dependencies:
       - package: MillerKit
       - package: ScriptureAloneCore

@@ -122,11 +122,42 @@ struct StudyPanel: View {
         .padding(.vertical, 10)
     }
 
+    /// Commentary is an on-demand resource; cross references and context are in the app, so only
+    /// this panel waits on a download.
+    @ViewBuilder
+    private var commentaryDownload: some View {
+        switch study.downloadState {
+        case .downloading(let fraction):
+            VStack(spacing: 12) {
+                ProgressView(value: fraction).frame(maxWidth: 220)
+                Text("Downloading \(OnDemandPack.commentary.title)…").font(.callout)
+                Text(OnDemandPack.commentary.explanation)
+                    .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            }
+            .padding()
+        case .failed(let message):
+            ContentUnavailableView {
+                Label("Couldn't Download Commentary", systemImage: "exclamationmark.triangle")
+            } description: {
+                Text(message)
+            } actions: {
+                Button("Try Again") { Task { await study.prepareStore() } }
+            }
+        default:
+            ContentUnavailableView {
+                Label(OnDemandPack.commentary.title, systemImage: "arrow.down.circle")
+            } description: {
+                Text(OnDemandPack.commentary.explanation)
+            } actions: {
+                Button("Download") { Task { await study.prepareStore() } }
+            }
+        }
+    }
+
     @ViewBuilder
     private var content: some View {
         if study.store == nil {
-            ContentUnavailableView("Study Resources Missing", systemImage: "exclamationmark.triangle",
-                                   description: Text("This build doesn’t include the study database."))
+            commentaryDownload
         } else if study.tab == .context {
             StudyContextView(chapter: study.verse?.chapterKey ?? model.location, verse: study.verse?.verse)
         } else if let verse = study.verse {

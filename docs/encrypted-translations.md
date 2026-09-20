@@ -62,11 +62,11 @@ The practical consequence for this proposal:
 - **A fork gets the code, not the text.** The repository contains no content key and no signing key.
   Anyone may clone Scripture Alone; nobody who does can decrypt a licensed package, because the
   secret was never in the thing they cloned.
-- **The official build can be anchored by Apple.** The App Store binary is code-signed by the
-  developer account and reviewed by Apple, and App Attest can prove to a server that a client is a
-  genuine build of this app on genuine Apple hardware — which is what makes it possible to refuse a
-  key to a fork. That mechanism is not yet built, and section 4 says so plainly, along with its
-  limits; it is the part we would design with you.
+- **A fork cannot be handed a key it was never given.** The repository holds no content key and no
+  signing key, and the packaging tool refuses to run against a key inside the working tree. Whether a
+  fork can be refused a key *at delivery* depends on which delivery option you choose — section 4
+  sets both out honestly, including the one that needs no infrastructure and the one that is
+  stronger.
 
 The security of this design rests on the key and the signature. That is the correct place for it to
 rest.
@@ -219,14 +219,32 @@ to copy, no cache to scrape, no export path to abuse, and nothing in a backup. I
 expensive, and we will not claim it does.
 
 **The key has to get to the device, and that is a separate problem that cryptography does not solve.**
-The reader takes the content key as a parameter; it does not decide where it came from. That decision
-is yours to review with us, and the honest options are these: a key compiled into the app binary is
-recoverable by anyone who runs `strings` on it, so it is worthless for a public build; a key fetched
-at first run and stored in the keychain is only as strong as whatever gates the fetch, and the
-strongest gate available on Apple platforms is App Attest, which lets our server refuse any client
-that is not a genuine build of our app on genuine Apple hardware. That is the same anchor a
-closed-source app has, and it is the one we would use. It raises the cost of step 1; it does not
-remove it.
+The reader takes the content key as a parameter and has no opinion about where it came from, so the
+delivery decision is yours to make with us rather than ours to present. There are two honest options,
+and the difference between them is operational, not cryptographic.
+
+**A key shipped in the app.** Recoverable: the App Store's binary encryption is removed at runtime, a
+jailbroken device can dump the decrypted binary, and the key is then in hand. Apple provides no
+countermeasure to this, and it is worth being exact about why the usual candidates do not apply. The
+keychain and the Secure Enclave protect secrets *generated on the device*; a key that arrives inside
+the binary has already been exposed before either can hold it. App Attest proves an app's integrity
+*to a server*, so with no server there is nobody for it to convince. Obfuscation raises effort and
+changes nothing else.
+
+We state this plainly because it is also true of every closed-source app that reads your text
+offline. They ship keys too. The only difference is that their readers cannot see how, and by
+Kerckhoffs's principle that difference is not security — it is the absence of review.
+
+**A key fetched once and kept in the keychain.** Stronger, because the fetch can be gated: App Attest
+lets a server refuse any client that is not a genuine build of this app on genuine Apple hardware,
+and a fork is a different app identity and can simply be refused. That is the same anchor a
+closed-source app has and no better, and it raises the cost of step 1 without removing it. It costs
+one small endpoint — a Cloudflare Worker is sufficient, with no servers to run — and we will build it
+if you want it.
+
+Our default is the first, because this app has no backend and we would rather not acquire one. If
+your terms need the second, say so and it exists. What does *not* change between them is everything
+in section 3: your signature, your policy, and the binding of every chapter to both.
 
 **And the analogue hole is always open.** Any reader can screenshot a page, and a patient one can
 script scrolling and run OCR. That is true of every Bible app, every e-reader, and every printed
