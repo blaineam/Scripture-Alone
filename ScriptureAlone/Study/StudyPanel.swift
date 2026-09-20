@@ -122,42 +122,17 @@ struct StudyPanel: View {
         .padding(.vertical, 10)
     }
 
-    /// Commentary is an on-demand resource; cross references and context are in the app, so only
-    /// this panel waits on a download.
-    @ViewBuilder
-    private var commentaryDownload: some View {
-        switch study.downloadState {
-        case .downloading(let fraction):
-            VStack(spacing: 12) {
-                ProgressView(value: fraction).frame(maxWidth: 220)
-                Text("Downloading \(StudyPack.commentary.title)…").font(.callout)
-                Text(StudyPack.commentary.explanation)
-                    .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
-            }
-            .padding()
-        case .failed(let message):
-            ContentUnavailableView {
-                Label("Couldn't Download Commentary", systemImage: "exclamationmark.triangle")
-            } description: {
-                Text(message)
-            } actions: {
-                Button("Try Again") { Task { await study.prepareStore() } }
-            }
-        default:
-            ContentUnavailableView {
-                Label(StudyPack.commentary.title, systemImage: "arrow.down.circle")
-            } description: {
-                Text(StudyPack.commentary.explanation)
-            } actions: {
-                Button("Download") { Task { await study.prepareStore() } }
-            }
-        }
+    /// The commentary ships in the app, so the only way to land here is a database that exists
+    /// and will not open — a corrupt install, not something a reader can retry their way out of.
+    private var commentaryUnavailable: some View {
+        ContentUnavailableView("Commentary Unavailable", systemImage: "exclamationmark.triangle",
+                               description: Text("Reinstalling Scripture Alone should restore it."))
     }
 
     @ViewBuilder
     private var content: some View {
         if study.store == nil {
-            commentaryDownload
+            commentaryUnavailable
         } else if study.tab == .context {
             StudyContextView(chapter: study.verse?.chapterKey ?? model.location, verse: study.verse?.verse)
         } else if let verse = study.verse {

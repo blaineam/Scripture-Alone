@@ -16,6 +16,7 @@
 		141BB91B972E57BB28053467 /* LegacyReadingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B2F7865CBE3F11E9B378EA /* LegacyReadingViews.swift */; };
 		17AC18B017DE5043396F7C5F /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92CECC981DA199D2D8E1875 /* AppGroup.swift */; };
 		1CD831ECEEAB5C424AF17EC9 /* DailyVerses.json in Resources */ = {isa = PBXBuildFile; fileRef = 7FB470D843314F7FBBD87D39 /* DailyVerses.json */; };
+		1E383C4A315E79DC7A80EDF6 /* Study.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = C41E635BBCC96DC93EF52454 /* Study.sqlite */; };
 		1FE91E0BC9F560E33FD42BF9 /* OnlineTextLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B979A47FCB565BD87D575D13 /* OnlineTextLoader.swift */; };
 		20A64AED5FB99726FC5CD027 /* MapGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F2FBAF7C3E334C863023FB /* MapGeometry.swift */; };
 		20DCF0DEE79C23AFBC824901 /* ShareStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BEECD7D79C4803DCB59860 /* ShareStyle.swift */; };
@@ -68,8 +69,6 @@
 		75EC754139A6E8FEDEB9B80E /* VerseComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58AB89103250BA15DA027F24 /* VerseComplication.swift */; };
 		7734D8B37A8BB71D78A139D9 /* LegacySupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A9DB7CD5F8BC361EF0E88F /* LegacySupport.swift */; };
 		7A4522049DC290A51F677A4C /* ScriptureAloneWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D57DE6BE5257316757C12BFD /* ScriptureAloneWatchApp.swift */; };
-		7CB840EBE654C2090AD4C9B3 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E3BCF86CC39058E95866DBF7 /* StoreKit.framework */; };
-		7E97DE72CE6ECB18DD433C7C /* AssetDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFD2C7C16D59383BFC5175C /* AssetDownloader.swift */; };
 		7E9A8375ADA99862471400BF /* FamilyDebug.swift in Sources */ = {isa = PBXBuildFile; fileRef = E257506CFA2AE5AF71BD3E13 /* FamilyDebug.swift */; };
 		83CCE3E5C6E32BA29D68C9B9 /* FamilySharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C46F0ED6FFE91AF1569EBA8 /* FamilySharingView.swift */; };
 		8424029FBF455FF08A704AE7 /* AppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BF719AE320CC291255FBE5 /* AppearanceView.swift */; };
@@ -80,7 +79,6 @@
 		885A850C70EC97AF9120378A /* DailyVerseLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F0BC99CE5196F68A181398 /* DailyVerseLibrary.swift */; };
 		8AA41671A2329FE6258257B5 /* ExportSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7888AAC43ECF30A87D1EBA8 /* ExportSupport.swift */; };
 		8D1229784458488BCB724C1B /* Context.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = A6ECFE14FC10FF50EAF8A454 /* Context.sqlite */; };
-		9061737D26838827EAF9620D /* BackgroundAssets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C4996D32919AC60D65DBF89A /* BackgroundAssets.framework */; };
 		958035C2741200A076B9B75A /* CatalogTranslation+Identity.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE740C0009D2087C316AAC0A /* CatalogTranslation+Identity.swift */; };
 		9D8DB82D6A46F8A1392F04DD /* VerseStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0BEC0687ECE009ECE357AB /* VerseStyling.swift */; };
 		9DAE8CF806823594CE0A002E /* ScriptureAloneCore in Frameworks */ = {isa = PBXBuildFile; productRef = E70DB8E075B7339FEC766812 /* ScriptureAloneCore */; };
@@ -88,7 +86,6 @@
 		9F1CD12A5489E03C8E1810F2 /* WatchLibraryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C231CFA598D2C77307F66A /* WatchLibraryViews.swift */; };
 		9F8302BE770364CD2F7A1F1F /* NoteEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B23F521A56070F190FC3B4E /* NoteEditor.swift */; };
 		A3F695662AA5D3E21A9C9836 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F2A8744EEF32A4DBDD0B4F /* Models.swift */; };
-		A41D6F7C2B1648A683FF87A1 /* ScriptureAloneAssets.appex in Embed Dependencies */ = {isa = PBXBuildFile; fileRef = 21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A812EADE1AA534488E842DC4 /* ScriptureAloneCore in Frameworks */ = {isa = PBXBuildFile; productRef = EC22F6F7CA731D1C087B4FF9 /* ScriptureAloneCore */; };
 		A895C9D5BE7037BDC681CDE0 /* ASV-Watch.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = E4A2B7F7FABABD02EED02944 /* ASV-Watch.sqlite */; };
 		AEC5E4BE40E074C767038607 /* bundled-signing.pub in Resources */ = {isa = PBXBuildFile; fileRef = AC8378E99998755AEE18ECB0 /* bundled-signing.pub */; };
@@ -120,6 +117,7 @@
 		E25B483FC4FA988EAF9D5B85 /* ShareCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9490E2C2C07074CC5136A9 /* ShareCard.swift */; };
 		E306ED72040F902C31B435DF /* WatchHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F623D45503145D4A1FC508E /* WatchHomeView.swift */; };
 		E85C6125ACAABA95F56A46B8 /* VerseOfDayShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16AF12A3C0ED58D26D26A632 /* VerseOfDayShared.swift */; };
+		E88D7C32F5237FD09437C389 /* Interlinear.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 27BEC9EFF1F3BB03BCDA0992 /* Interlinear.sqlite */; };
 		EA448292B7A20B8D57D45331 /* FamilyCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C2F62B17B60C2195108C1F /* FamilyCloud.swift */; };
 		EB1582D26EAC997CB1ACE4C6 /* SlideCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E2E509013C8910CB37D5245 /* SlideCapture.swift */; };
 		EB6E25A2A5BCF50CE7B02050 /* ShareExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B03CE75511938642A77DD8B /* ShareExport.swift */; };
@@ -147,13 +145,6 @@
 			remoteGlobalIDString = DC5CBE3DA17A862C0B7605D7;
 			remoteInfo = ScriptureAloneWatch;
 		};
-		5F72632E8814F5C239CA327D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 7C620D6511A6385F55011EF6 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 72E5DA9085ED59FD10629FB7;
-			remoteInfo = ScriptureAloneAssets;
-		};
 		877FAA9EC45A08B0AC26A778 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 7C620D6511A6385F55011EF6 /* Project object */;
@@ -180,17 +171,6 @@
 				F9E32F03863ED14301CFFE78 /* ScriptureAloneWatchWidgets.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		579F775300AFDFA6BB989810 /* Embed Dependencies */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = Extensions;
-			dstSubfolderSpec = 1;
-			files = (
-				A41D6F7C2B1648A683FF87A1 /* ScriptureAloneAssets.appex in Embed Dependencies */,
-			);
-			name = "Embed Dependencies";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		7214933BBB77069E0F8BA2D0 /* Embed Watch Content */ = {
@@ -232,11 +212,11 @@
 		1535B298112D25F32BB4CDE8 /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
 		16AF12A3C0ED58D26D26A632 /* VerseOfDayShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseOfDayShared.swift; sourceTree = "<group>"; };
 		203F6AB07B6BCF4DCF442A78 /* ContentKeySeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentKeySeed.swift; sourceTree = "<group>"; };
-		21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = ScriptureAloneAssets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		232427C8C504837E7BD697D0 /* FamilyShareAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyShareAppDelegate.swift; sourceTree = "<group>"; };
 		24F97E7F3971462B4C11C7CF /* FavoriteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteButton.swift; sourceTree = "<group>"; };
 		2539ED6AC3F6DFA0CE4CCCD5 /* WidgetSnapshotSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshotSync.swift; sourceTree = "<group>"; };
 		2544CC6D255BC8BECC33D29C /* ScriptureAloneWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScriptureAloneWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		27BEC9EFF1F3BB03BCDA0992 /* Interlinear.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = Interlinear.sqlite; sourceTree = "<group>"; };
 		28B87B651438BBE462790DCD /* StudySourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudySourcesView.swift; sourceTree = "<group>"; };
 		293DBAA61F3889B10D77CBFE /* SelectionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionBar.swift; sourceTree = "<group>"; };
 		2B03CE75511938642A77DD8B /* ShareExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareExport.swift; sourceTree = "<group>"; };
@@ -266,7 +246,6 @@
 		55CDE11E8282F3CD1FF8EB74 /* FavoritesWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesWidget.swift; sourceTree = "<group>"; };
 		57092597A336A50B343F9912 /* MiSpeaksClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiSpeaksClient.swift; sourceTree = "<group>"; };
 		58AB89103250BA15DA027F24 /* VerseComplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseComplication.swift; sourceTree = "<group>"; };
-		5BFD2C7C16D59383BFC5175C /* AssetDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetDownloader.swift; sourceTree = "<group>"; };
 		5CF164A29A7059D887F9D530 /* ContextAttributionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextAttributionView.swift; sourceTree = "<group>"; };
 		5D9490E2C2C07074CC5136A9 /* ShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCard.swift; sourceTree = "<group>"; };
 		5F2651262AA20DD2F3B106F7 /* CompareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareView.swift; sourceTree = "<group>"; };
@@ -305,7 +284,7 @@
 		BEF5F2289267C3D0B0E64A70 /* ChapterRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterRenderer.swift; sourceTree = "<group>"; };
 		C0E1114FBD372117B3796076 /* FamilySharingSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySharingSupport.swift; sourceTree = "<group>"; };
 		C1FDADFCFFC4564BDA767628 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
-		C4996D32919AC60D65DBF89A /* BackgroundAssets.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BackgroundAssets.framework; path = System/Library/Frameworks/BackgroundAssets.framework; sourceTree = SDKROOT; };
+		C41E635BBCC96DC93EF52454 /* Study.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = Study.sqlite; sourceTree = "<group>"; };
 		CD26A00921ADE7C04FC80237 /* Basemap.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = Basemap.bin; sourceTree = "<group>"; };
 		CDD77D54BC488F1DA738D64F /* BSB.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = BSB.sqlite; sourceTree = "<group>"; };
 		CE740C0009D2087C316AAC0A /* CatalogTranslation+Identity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CatalogTranslation+Identity.swift"; sourceTree = "<group>"; };
@@ -315,7 +294,6 @@
 		DE212F8A5D6BAA5EE89EF732 /* SharedBibleViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedBibleViews.swift; sourceTree = "<group>"; };
 		DF51A40F2B56DE405EF0EDEC /* ScriptureAloneApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureAloneApp.swift; sourceTree = "<group>"; };
 		E257506CFA2AE5AF71BD3E13 /* FamilyDebug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyDebug.swift; sourceTree = "<group>"; };
-		E3BCF86CC39058E95866DBF7 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		E4A2B7F7FABABD02EED02944 /* ASV-Watch.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ASV-Watch.sqlite"; sourceTree = "<group>"; };
 		E7888AAC43ECF30A87D1EBA8 /* ExportSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSupport.swift; sourceTree = "<group>"; };
 		E79D61A66336156A65FD29F3 /* ReaderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderModel.swift; sourceTree = "<group>"; };
@@ -365,15 +343,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9DAE8CF806823594CE0A002E /* ScriptureAloneCore in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		FBD11D0B02DFD69EC95EA04D /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				9061737D26838827EAF9620D /* BackgroundAssets.framework in Frameworks */,
-				7CB840EBE654C2090AD4C9B3 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -462,14 +431,6 @@
 			path = ScriptureAloneWatchWidgets;
 			sourceTree = "<group>";
 		};
-		44717D01F8B428D4E17057D4 /* ScriptureAloneAssets */ = {
-			isa = PBXGroup;
-			children = (
-				5BFD2C7C16D59383BFC5175C /* AssetDownloader.swift */,
-			);
-			path = ScriptureAloneAssets;
-			sourceTree = "<group>";
-		};
 		64D875D5BD297BF8085BB056 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -493,6 +454,8 @@
 			children = (
 				CD26A00921ADE7C04FC80237 /* Basemap.bin */,
 				A6ECFE14FC10FF50EAF8A454 /* Context.sqlite */,
+				27BEC9EFF1F3BB03BCDA0992 /* Interlinear.sqlite */,
+				C41E635BBCC96DC93EF52454 /* Study.sqlite */,
 			);
 			path = Study;
 			sourceTree = "<group>";
@@ -515,8 +478,6 @@
 			isa = PBXGroup;
 			children = (
 				1535B298112D25F32BB4CDE8 /* AppIntents.framework */,
-				C4996D32919AC60D65DBF89A /* BackgroundAssets.framework */,
-				E3BCF86CC39058E95866DBF7 /* StoreKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -565,7 +526,6 @@
 			isa = PBXGroup;
 			children = (
 				81555B30888819F5ADB9A037 /* ScriptureAlone.app */,
-				21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */,
 				2544CC6D255BC8BECC33D29C /* ScriptureAloneWatch.app */,
 				9DB385840CA261E1F5B13852 /* ScriptureAloneWatchWidgets.appex */,
 				884CF1E5F4E1531A640DE22A /* ScriptureAloneWidgets.appex */,
@@ -587,7 +547,6 @@
 			children = (
 				EA7413CE6C430E6B7B85C7A6 /* Packages */,
 				0810B7D929D915AF4EC1AEDE /* ScriptureAlone */,
-				44717D01F8B428D4E17057D4 /* ScriptureAloneAssets */,
 				746F994742C3D90A1257DDFF /* ScriptureAloneWatch */,
 				431FE6792B484158356A0E37 /* ScriptureAloneWatchWidgets */,
 				C994915D6D68B43F6FF2032A /* ScriptureAloneWidgets */,
@@ -771,25 +730,6 @@
 			productReference = 884CF1E5F4E1531A640DE22A /* ScriptureAloneWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		72E5DA9085ED59FD10629FB7 /* ScriptureAloneAssets */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = CE5206D684A796463E1EB07E /* Build configuration list for PBXNativeTarget "ScriptureAloneAssets" */;
-			buildPhases = (
-				B4BBCFB8530711FDCD6B6F17 /* Sources */,
-				545D61CC43104E1E650DB7EF /* Strip xattrs (codesign workaround) */,
-				FBD11D0B02DFD69EC95EA04D /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = ScriptureAloneAssets;
-			packageProductDependencies = (
-			);
-			productName = ScriptureAloneAssets;
-			productReference = 21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */;
-			productType = "com.apple.product-type.extensionkit-extension";
-		};
 		87EC28F5E9152287C9E04BE9 /* ScriptureAloneWatchWidgets */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5FE1923FFC76E4E8C05D604B /* Build configuration list for PBXNativeTarget "ScriptureAloneWatchWidgets" */;
@@ -820,14 +760,12 @@
 				A96F435A027D5E9119F62B43 /* Resources */,
 				00CBE6A3855E3F0AB246A1BD /* Frameworks */,
 				910BF278C1B0C8329850E481 /* Embed Foundation Extensions */,
-				579F775300AFDFA6BB989810 /* Embed Dependencies */,
 				7214933BBB77069E0F8BA2D0 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				C5BB0894638E2BF1C1AEBAB8 /* PBXTargetDependency */,
-				F441178E1C16DE3EA329683B /* PBXTargetDependency */,
 				9684FCE7D35981EC1A1CC46F /* PBXTargetDependency */,
 			);
 			name = ScriptureAlone;
@@ -875,10 +813,6 @@
 						DevelopmentTeam = 8ZVSPZYSVF;
 						ProvisioningStyle = Automatic;
 					};
-					72E5DA9085ED59FD10629FB7 = {
-						DevelopmentTeam = 8ZVSPZYSVF;
-						ProvisioningStyle = Automatic;
-					};
 					87EC28F5E9152287C9E04BE9 = {
 						DevelopmentTeam = 8ZVSPZYSVF;
 						ProvisioningStyle = Automatic;
@@ -912,7 +846,6 @@
 			projectRoot = "";
 			targets = (
 				B7C2E571CC42407A79EFD8CB /* ScriptureAlone */,
-				72E5DA9085ED59FD10629FB7 /* ScriptureAloneAssets */,
 				DC5CBE3DA17A862C0B7605D7 /* ScriptureAloneWatch */,
 				87EC28F5E9152287C9E04BE9 /* ScriptureAloneWatchWidgets */,
 				5F66B89091257875F3899A9F /* ScriptureAloneWidgets */,
@@ -962,7 +895,9 @@
 				2D67D62C9CA59B847EA766CA /* Basemap.bin in Resources */,
 				8D1229784458488BCB724C1B /* Context.sqlite in Resources */,
 				0CF01B3F1ADEB43A40A34C2F /* DailyVerses.json in Resources */,
+				E88D7C32F5237FD09437C389 /* Interlinear.sqlite in Resources */,
 				BD0C4E58EEB61F180F6808DC /* KJV.sqlite in Resources */,
+				1E383C4A315E79DC7A80EDF6 /* Study.sqlite in Resources */,
 				AEC5E4BE40E074C767038607 /* bundled-signing.pub in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -990,25 +925,6 @@
 			shellScript = "find \"$CODESIGNING_FOLDER_PATH\" -exec xattr -c {} + 2>/dev/null\ntrue\n";
 		};
 		3CE165D00B5987278D10EF57 /* Strip xattrs (codesign workaround) */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Strip xattrs (codesign workaround)";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "find \"$CODESIGNING_FOLDER_PATH\" -exec xattr -c {} + 2>/dev/null\ntrue\n";
-		};
-		545D61CC43104E1E650DB7EF /* Strip xattrs (codesign workaround) */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -1195,14 +1111,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		B4BBCFB8530711FDCD6B6F17 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				7E97DE72CE6ECB18DD433C7C /* AssetDownloader.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1223,11 +1131,6 @@
 			isa = PBXTargetDependency;
 			target = 87EC28F5E9152287C9E04BE9 /* ScriptureAloneWatchWidgets */;
 			targetProxy = C0A8ACEAB02E81387EF9969B /* PBXContainerItemProxy */;
-		};
-		F441178E1C16DE3EA329683B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 72E5DA9085ED59FD10629FB7 /* ScriptureAloneAssets */;
-			targetProxy = 5F72632E8814F5C239CA327D /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1292,28 +1195,6 @@
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
-			};
-			name = Release;
-		};
-		734ACB59E57B8579EB24C07F /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = ScriptureAloneAssets/ScriptureAloneAssets.entitlements;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ScriptureAloneAssets/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.blainemiller.ScriptureAlone.assets;
-				PRODUCT_NAME = ScriptureAloneAssets;
-				SDKROOT = auto;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -1440,28 +1321,6 @@
 				SKIP_INSTALL = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				TARGETED_DEVICE_FAMILY = 4;
-			};
-			name = Debug;
-		};
-		EB7F3369E38F870947AC313F /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = ScriptureAloneAssets/ScriptureAloneAssets.entitlements;
-				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ScriptureAloneAssets/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.blainemiller.ScriptureAlone.assets;
-				PRODUCT_NAME = ScriptureAloneAssets;
-				SDKROOT = auto;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -1620,15 +1479,6 @@
 			buildConfigurations = (
 				74CA33371DB2529C8D2DE039 /* Debug */,
 				F4EACC08BD2DA0F29B4B3548 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		CE5206D684A796463E1EB07E /* Build configuration list for PBXNativeTarget "ScriptureAloneAssets" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				EB7F3369E38F870947AC313F /* Debug */,
-				734ACB59E57B8579EB24C07F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

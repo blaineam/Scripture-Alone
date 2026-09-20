@@ -46,38 +46,15 @@ targets:
         excludes:
           - "Resources/Info.plist"
           - "Resources/*.entitlements"
-          # Tagged below as on-demand resources, so they must not also be swept in here —
-          # a file listed twice is embedded twice.
-          - "Resources/Study/Study.sqlite"
-          - "Resources/Study/Interlinear.sqlite"
           # The American Standard Version ships sealed, so its store stays out of the app; it is
           # kept in the repository as the source the packaging tool reads.
           - "Resources/Bibles/ASV.sqlite"
-      # The two study databases are NOT here. They ship as Apple-hosted Background Assets packs,
-      # uploaded to App Store Connect separately from the build (see Tools/asset-packs/README.md),
-      # and are fetched and copied into Application Support when a reader opens Commentary or
-      # Original Languages. Reading never depends on them: all three translations, the maps, the
-      # timeline and the cross references stay in the app, so a fresh install reads scripture
-      # offline with no network at all.
-      # The encrypted demonstration package: a public-domain translation shipped exactly the way a
-      # licensed one would be, so the whole chain — download, Enclave-sealed key, per-chapter
-      # decryption, sealed search index, policy enforcement — can be watched running in the app
-      # without anyone granting a licence first.
     dependencies:
       - package: MillerKit
       - package: ScriptureAloneCore
         product: ScriptureAloneCore
       # Home/Lock Screen and Mac desktop widgets (embedded on both platforms).
       - target: ScriptureAloneWidgets
-      # Embedded into the app *wrapper*, not the products directory. XcodeGen's default for an
-      # extensionkit-extension is `$(EXTENSIONS_FOLDER_PATH)` under the products directory, which
-      # during `xcodebuild archive` is not where the app is installed — the appex lands in a stray
-      # `Scripture Alone.app` beside the real one and the archive ships without it. Xcode says so
-      # only as a warning; App Store Connect refuses the build.
-      - target: ScriptureAloneAssets
-        copy:
-          destination: wrapper
-          subpath: Extensions
       # The Apple Watch app rides inside the iOS app only.
       - target: ScriptureAloneWatch
         destinationFilters: [iOS]
@@ -121,54 +98,6 @@ targets:
   # Widgets for iOS (Home + Lock Screen) and macOS (desktop / Notification Center). They read
   # the bundled Verse of the Day list and the JSON snapshot the app writes to the App Group;
   # they never open the Bible databases or the SwiftData store.
-  # The Background Assets downloader extension. It has no behaviour — adopting
-  # `StoreDownloaderExtension` opts into the system's own downloader — but the framework requires
-  # it to exist, and `AssetPackManager` treats its absence as a programmer error.
-  ScriptureAloneAssets:
-    # ExtensionKit, so Xcode embeds it in Extensions/ rather than PlugIns/. Declared as
-    # `app-extension` it builds locally and then fails App Store export.
-    type: extensionkit-extension
-    supportedDestinations: [iOS, macOS]
-    sources:
-      - path: ScriptureAloneAssets
-        excludes:
-          - "Info.plist"
-          - "*.entitlements"
-    # Apple-Hosted Background Assets requires the app and its downloader extension to share an app
-    # group — the system coordinates between the two through it. The app declares the same group,
-    # plus BAAppGroupID/BAHasManagedAssetPacks/BAUsesAppleHosting in its Info.plist.
-    entitlements:
-      path: ScriptureAloneAssets/ScriptureAloneAssets.entitlements
-    dependencies:
-      - sdk: BackgroundAssets.framework
-      - sdk: StoreKit.framework
-    info:
-      path: ScriptureAloneAssets/Info.plist
-      properties:
-        CFBundleDisplayName: Scripture Alone Assets
-        CFBundleShortVersionString: $(MARKETING_VERSION)
-        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
-        # No EXPrincipalClass. `@main` on AssetDownloader emits a `__swift5_entry` section, and
-        # App Store Connect rejects the build when both are present:
-        #   ITMS-90979: Disallowed Info.plist key — The EXPrincipalClass and
-        #   EXExtensionPrincipalClass keys aren't allowed … because the __swift5_entry section is
-        #   detected in the Mach-O header.
-        # The Swift entry point is the principal class; naming it again is the contradiction.
-        EXAppExtensionAttributes:
-          EXExtensionPointIdentifier: com.apple.background-asset-downloader-extension
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAlone.assets
-        PRODUCT_NAME: ScriptureAloneAssets
-        GENERATE_INFOPLIST_FILE: NO
-        SKIP_INSTALL: YES
-    postCompileScripts:
-      - name: Strip xattrs (codesign workaround)
-        basedOnDependencyAnalysis: false
-        script: |
-          find "$CODESIGNING_FOLDER_PATH" -exec xattr -c {} + 2>/dev/null
-          true
-
   ScriptureAloneWidgets:
     type: app-extension
     supportedDestinations: [iOS, macOS]

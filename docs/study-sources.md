@@ -77,7 +77,7 @@ which is about 15% smaller than compressing each comment separately:
 | Gill | 45.4 MB | 16.6 MB |
 | JFB | 10.2 MB | 4.6 MB |
 
-If app size becomes a concern, Gill is the easiest to move into an on-demand download.
+If app size becomes a concern, Gill is the easiest to move into a downloadable asset pack.
 
 ## Evaluated, not used
 
