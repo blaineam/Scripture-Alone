@@ -136,6 +136,15 @@ final class OnDemandLibrary {
             return true
         } catch {
             requests[pack] = nil
+            // A pack that is already in the bundle is usable even when the tag is not — which is
+            // what happens if a resource is shipped embedded rather than tagged. Asking first and
+            // falling back here, rather than checking the bundle up front, is deliberate: when the
+            // tag *does* exist the request has to be made and held, because releasing it tells the
+            // system the pack may be purged out from under an open file handle.
+            if url(of: pack) != nil {
+                states[pack] = .ready
+                return true
+            }
             states[pack] = .failed(Self.message(for: error, pack: pack))
             return false
         }

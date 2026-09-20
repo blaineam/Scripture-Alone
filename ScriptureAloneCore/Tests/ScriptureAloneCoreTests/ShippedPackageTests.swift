@@ -127,5 +127,12 @@ import Testing
         #expect(!rights.allowNotesExport)
         #expect(!rights.allowExternalHandoff)
         #expect(rights.maxQuotationVerses == 25)
+
+        // The cap is a boundary, so check the boundary rather than the number beside it. This is
+        // what the reader's copy and share controls are disabled by.
+        #expect(rights.mayQuote(verseCount: 25))
+        #expect(!rights.mayQuote(verseCount: 26))
+        #expect(!rights.permits(\.allowNotesExport))
+        #expect(!rights.permits(\.allowExternalHandoff))
     }
 }

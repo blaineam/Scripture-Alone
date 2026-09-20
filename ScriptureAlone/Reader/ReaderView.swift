@@ -412,7 +412,7 @@ struct ReaderView: View {
         case .share:
             model.show(john3, verse: 14)
             let ranges = [VerseRange(VerseRef(.john, 3, 16))]
-            if let store = model.store { shareCoordinator.designer = ShareSource(store: store, ranges: ranges) }
+            if let source = model.source { shareCoordinator.designer = ShareSource(source: source, ranges: ranges) }
         case .themes:
             model.show(ChapterRef(.john, 1), verse: 1)
             try? await Task.sleep(for: .milliseconds(400))
@@ -487,8 +487,11 @@ private struct ChapterPane: View {
     }
 
     var body: some View {
-        if let layout = model.layout, let store = model.store {
-            let rendered = cache.render(layout: layout, input: renderInput(store: store), style: style)
+        // Any source, not only a SQLite store: a packaged translation renders through the same
+        // path, because everything this needs — verse counts, the translation's id, its copyright —
+        // is a question `ChapterTextSource` answers.
+        if let layout = model.layout, let source = model.source {
+            let rendered = cache.render(layout: layout, input: renderInput(source: source), style: style)
             ChapterTextView(configuration: ChapterTextConfiguration(
                 content: rendered,
                 background: style.palette.page,
@@ -509,13 +512,13 @@ private struct ChapterPane: View {
         }
     }
 
-    private func renderInput(store: BibleStore) -> ChapterRenderInput {
+    private func renderInput(source: any ChapterTextSource) -> ChapterRenderInput {
         if let keepsake = legacy.reading {
             // Someone else's Bible: their marks instead of the reader's own.
-            let marks = keepsake.marks(for: chapter, verseCount: store.verseCount(chapter))
-            return ChapterRenderInput(chapter: chapter, translation: store.info.id, style: ReaderStyleKey(style),
+            let marks = keepsake.marks(for: chapter, verseCount: source.verseCount(chapter))
+            return ChapterRenderInput(chapter: chapter, translation: source.info.id, style: ReaderStyleKey(style),
                                       highlights: marks.highlights, notes: marks.notes, selection: [],
-                                      nextTitle: chapter.next.map(\.display), copyright: store.info.copyright,
+                                      nextTitle: chapter.next.map(\.display), copyright: source.info.copyright,
                                       keepsake: true)
         }
         // Newest highlight wins when two devices colored the same verse.
@@ -530,14 +533,14 @@ private struct ChapterPane: View {
                 // Mark the last verse of the range that falls in this chapter.
                 let end = anchor.end.chapterKey == chapter
                     ? anchor.end.key
-                    : VerseRef(chapter.book, chapter.chapter, store.verseCount(chapter)).key
+                    : VerseRef(chapter.book, chapter.chapter, source.verseCount(chapter)).key
                 noteMarkers[end, default: []].append(note.uuid.uuidString)
             }
         }
         let next = chapter.next.map { "\($0.display)" }
-        return ChapterRenderInput(chapter: chapter, translation: store.info.id, style: ReaderStyleKey(style),
+        return ChapterRenderInput(chapter: chapter, translation: source.info.id, style: ReaderStyleKey(style),
                                   highlights: colors.mapValues(\.0), notes: noteMarkers,
-                                  selection: model.selection, nextTitle: next, copyright: store.info.copyright,
+                                  selection: model.selection, nextTitle: next, copyright: source.info.copyright,
                                   speakingVerse: ListenController.shared.speakingVerse(in: model))
     }
 }

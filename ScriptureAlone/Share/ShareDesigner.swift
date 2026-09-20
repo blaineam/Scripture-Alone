@@ -32,7 +32,7 @@ struct ShareDesigner: View {
     var body: some View {
         let style = style
         let fit = ShareCardFitter.fit(verses: source.verses, info: source.info, style: style,
-                                      verseCount: source.store.verseCount)
+                                      verseCount: source.source.verseCount)
         NavigationStack {
             ScrollView {
                 #if os(macOS)

@@ -145,7 +145,7 @@ struct CommentaryView: View {
     private func linked(_ paragraph: String) -> AttributedString {
         var result = AttributedString(paragraph)
         for match in ReferenceDetector.detect(in: paragraph) where match.passage.startVerse != nil {
-            let range = match.passage.range { model.store?.verseCount($0) ?? 176 }
+            let range = match.passage.range { model.source?.verseCount($0) ?? 176 }
             guard let url = StudyLink.url(for: range),
                   let stringRange = Range(match.range, in: paragraph),
                   let lower = AttributedString.Index(stringRange.lowerBound, within: result),

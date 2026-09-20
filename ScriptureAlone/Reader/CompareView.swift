@@ -116,7 +116,7 @@ struct CompareView: View {
         if otherID.isEmpty || !candidates.contains(where: { $0.id == otherID }) {
             otherID = candidates.first?.id ?? ""
         }
-        guard !otherID.isEmpty, let left = model.store else { rows = []; return }
+        guard !otherID.isEmpty, let left = model.source else { rows = []; return }
         loading = true
         defer { loading = false }
 

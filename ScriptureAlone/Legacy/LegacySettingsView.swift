@@ -96,11 +96,15 @@ struct LegacySettingsView: View {
                     } label: {
                         Label("Export All Notes…", systemImage: "square.and.arrow.up")
                     }
-                    .disabled(notes.isEmpty)
+                    // An export carries the verses the notes are about, so it is the translation's
+                    // terms that decide, not the notes'.
+                    .disabled(notes.isEmpty || !model.rights.allowNotesExport)
                 } header: {
                     Text("Export")
                 } footer: {
-                    Text("Your notes as a PDF to print or keep, as Markdown, or as plain text — with the verses they’re about.")
+                    Text(model.rights.allowNotesExport
+                         ? "Your notes as a PDF to print or keep, as Markdown, or as plain text — with the verses they’re about."
+                         : "\(model.translationInfo?.abbreviation ?? "This translation") doesn’t allow its text to be exported. Switch to another translation to export your notes with the verses they’re about.")
                 }
 
                 Section("How This Works") {

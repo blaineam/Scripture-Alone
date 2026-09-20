@@ -4,22 +4,22 @@ import ScriptureAloneCore
 /// A passage to share, read from one translation.
 struct ShareSource: Identifiable {
     let id = UUID()
-    let store: BibleStore
+    let source: any ChapterTextSource
     let ranges: [VerseRange]
     let verses: [VerseText]
     /// Designer choices carried in by a share link (template, typeface, aspect).
     var linkStyle: ShareLinkPayload?
 
-    init?(store: BibleStore, ranges: [VerseRange], linkStyle: ShareLinkPayload? = nil) {
-        let verses = ranges.flatMap { (try? store.verses(in: $0)) ?? [] }
+    init?(source: any ChapterTextSource, ranges: [VerseRange], linkStyle: ShareLinkPayload? = nil) {
+        let verses = ranges.flatMap { (try? source.verses(in: $0)) ?? [] }
         guard !verses.isEmpty else { return nil }
-        self.store = store
+        self.source = source
         self.ranges = ranges
         self.verses = verses
         self.linkStyle = linkStyle
     }
 
-    var info: TranslationInfo { store.info }
+    var info: TranslationInfo { source.info }
     var reference: String { ranges.map(\.display).joined(separator: ", ") }
 
     /// Links carry the text itself, so they're offered for public-domain translations only; a licensed
@@ -82,8 +82,8 @@ private struct ShareSupport: ViewModifier {
         case .share(let payload):
             reveal(payload.ranges)
             // Rebuild the card from the sender's translation when it's installed here, else the reader's own.
-            guard let store = model.store(for: payload.translation) ?? model.store,
-                  let source = ShareSource(store: store, ranges: payload.ranges, linkStyle: payload) else { return }
+            guard let from: any ChapterTextSource = model.store(for: payload.translation) ?? model.source,
+                  let source = ShareSource(source: from, ranges: payload.ranges, linkStyle: payload) else { return }
             // A sheet presented while the scene is still activating for the URL is dropped; wait a beat.
             Task {
                 try? await Task.sleep(for: .milliseconds(450))
@@ -135,7 +135,7 @@ struct ShareMenu: View {
     @State private var copied = false
 
     var body: some View {
-        let source = model.store.flatMap { ShareSource(store: $0, ranges: ranges) }
+        let source = model.source.flatMap { ShareSource(source: $0, ranges: ranges) }
         let link = source?.link(style: ShareStyle(template: template, aspect: aspect, family: family, redLetters: redLetters))
         Menu {
             Button("Share Image…", systemImage: "photo.on.rectangle") { coordinator.designer = source }

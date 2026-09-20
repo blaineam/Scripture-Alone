@@ -13,6 +13,7 @@ struct SelectionBar: View {
     var body: some View {
         let ranges = model.selectedRanges
         let quotation = model.quotation(for: ranges)
+        let mayQuote = model.mayQuote(ranges)
         VStack(spacing: 10) {
             HStack {
                 Text(ranges.map(\.display).joined(separator: ", "))
@@ -55,9 +56,13 @@ struct SelectionBar: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel("Add Note")
                     .modifier(BarCell())
+                // Disabled rather than hidden: a reader who selected more than this translation
+                // allows should see that the control exists and why it won't work, not wonder
+                // where it went.
                 Button { copy(quotation) } label: { Image(systemName: copied ? "checkmark" : "doc.on.doc") }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Copy")
+                    .disabled(!mayQuote || !model.rights.allowCopy)
                     .modifier(BarCell())
                 if let single = singleVerse, InterlinearLibrary.shared.supports(model.translationInfo) {
                     Button { interlinear = InterlinearRequest(verse: single) } label: { Image(systemName: "character.book.closed") }
@@ -65,9 +70,18 @@ struct SelectionBar: View {
                         .accessibilityLabel("Original Language")
                         .modifier(BarCell())
                 }
-                ShareMenu(ranges: ranges, quotation: quotation).modifier(BarCell())
+                ShareMenu(ranges: ranges, quotation: quotation)
+                    .disabled(!mayQuote)
+                    .modifier(BarCell())
             }
             .font(.title3)
+
+            if !mayQuote {
+                Text(quotationLimitNotice)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
@@ -88,8 +102,16 @@ struct SelectionBar: View {
         return VerseRef(key: key)
     }
 
+    /// Says whose limit it is and what it is, because "this doesn't work" is not an explanation.
+    private var quotationLimitNotice: String {
+        let limit = model.rights.maxQuotationVerses
+        let name = model.translationInfo?.abbreviation ?? "This translation"
+        guard limit > 0 else { return "\(name) can't be quoted outside the app." }
+        return "\(name) allows up to \(limit) verses in one quotation. Select fewer to copy or share."
+    }
+
     private func text(of verse: VerseRef) -> String {
-        (try? model.store?.verses(in: VerseRange(verse, verse)))??.first?.text ?? ""
+        (try? model.source?.verses(in: VerseRange(verse, verse)))??.first?.text ?? ""
     }
 
     /// One flexible slot in the action row: shrinks with the bar, never below a 28-pt target.

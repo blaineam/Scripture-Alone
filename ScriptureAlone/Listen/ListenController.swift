@@ -167,7 +167,7 @@ final class ListenController {
 
     /// Plays the selected verses, then stops.
     func playSelection(in model: ReaderModel) {
-        guard let store = model.store else { return }
+        guard let store = model.source else { return }
         let verses = model.selectedRanges.flatMap { (try? store.verses(in: $0)) ?? [] }
         start(in: model, scope: .selection, items: verses.map { Item(key: $0.ref.key, text: $0.text) })
     }
@@ -182,7 +182,7 @@ final class ListenController {
     }
 
     private func chapterItems(model: ReaderModel, chapter: ChapterRef, from verse: Int) -> [Item] {
-        guard let store = model.store else { return [] }
+        guard let store = model.source else { return [] }
         let count = store.verseCount(chapter)
         guard count > 0 else { return [] }
         let first = min(max(1, verse), count)
@@ -202,7 +202,7 @@ final class ListenController {
         guard !items.isEmpty else { return }
         reader = model
         translation = model.translationID
-        translationInfo = model.store?.info
+        translationInfo = model.source?.info
         self.scope = scope
         self.items = items
         current = 0

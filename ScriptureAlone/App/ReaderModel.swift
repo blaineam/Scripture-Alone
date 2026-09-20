@@ -361,8 +361,29 @@ final class ReaderModel {
         return VerseRange.ranges(from: selection) { source.verseCount($0) }
     }
 
+    /// What the translation being read permits. A packaged translation carries its publisher's own
+    /// answer; everything else derives one from its licence line. One question, one answer, asked
+    /// the same way whatever kind of translation is open.
+    var rights: TranslationRights { translationInfo?.rights ?? .publicDomain }
+
+    /// How many verses the current selection would quote.
+    func verseCount(in ranges: [VerseRange]) -> Int {
+        guard let source else { return 0 }
+        return ranges.reduce(0) { $0 + ((try? source.verses(in: $1))?.count ?? 0) }
+    }
+
+    /// Whether this selection may leave the device at all, under this translation's terms.
+    func mayQuote(_ ranges: [VerseRange]) -> Bool {
+        rights.mayQuote(verseCount: verseCount(in: ranges))
+    }
+
     /// "“For God so loved…” John 3:16 ASV" — numbered verses when more than one.
+    ///
+    /// Returns nothing when the selection is larger than the translation's quotation limit. The
+    /// gate lives here, at the one place text is turned into something quotable, rather than at
+    /// each button that might carry it away.
     func quotation(for ranges: [VerseRange]) -> String {
+        guard mayQuote(ranges) else { return "" }
         guard let store = source else { return "" }
         let blocks = ranges.compactMap { range -> String? in
             guard let verses = try? store.verses(in: range), !verses.isEmpty else { return nil }

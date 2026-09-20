@@ -40,7 +40,14 @@ final class EncryptedDemoLibrary {
         failure = nil
 
         guard await OnDemandLibrary.shared.ensure(.encryptedDemo) else {
-            failure = "The encrypted demonstration couldn't be downloaded."
+            // Say what actually went wrong. `OnDemandLibrary` has already turned the underlying
+            // error into a sentence — out of space, tag missing from this build — and discarding
+            // that for a generic line is how a fixable problem becomes a mystery.
+            if case .failed(let reason) = OnDemandLibrary.shared.state(of: .encryptedDemo) {
+                failure = reason
+            } else {
+                failure = "The encrypted demonstration couldn't be downloaded."
+            }
             return false
         }
         guard let packageURL = Bundle.main.url(forResource: Self.translationID, withExtension: "sabible"),

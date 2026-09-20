@@ -114,7 +114,7 @@ struct NoteEditor: View {
     }
 
     private func addTypedPassages() {
-        guard let store = model.store else { return }
+        guard let store = model.source else { return }
         let ranges = ReferenceParser.parseList(passageText).map { $0.clamped.range { store.verseCount($0) } }
         guard !ranges.isEmpty else { return }
         note.anchors += ranges

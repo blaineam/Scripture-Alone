@@ -30,7 +30,7 @@ struct NotesPanel: View {
         let term = search.trimmingCharacters(in: .whitespaces)
         guard !term.isEmpty else { return true }
         if let passage = ReferenceParser.parse(term), term.rangeOfCharacter(from: .decimalDigits) != nil,
-           let store = model.store {
+           let store = model.source {
             let range = passage.range { store.verseCount($0) }
             return note.anchors.contains { $0.start <= range.end && range.start <= $0.end }
         }
@@ -128,7 +128,7 @@ struct NotesPanel: View {
     private func newNote() {
         let ranges = model.selection.isEmpty
             ? [VerseRange(VerseRef(model.location.book, model.location.chapter, 1),
-                          VerseRef(model.location.book, model.location.chapter, max(1, model.store?.verseCount(model.location) ?? 1)))]
+                          VerseRef(model.location.book, model.location.chapter, max(1, model.source?.verseCount(model.location) ?? 1)))]
             : model.selectedRanges
         let note = Note(anchors: ranges)
         context.insert(note)

@@ -95,7 +95,7 @@ struct CrossReferencesView: View {
 
     private func load() {
         showAll = false
-        guard let store = study.store, let bible = model.store else { return }
+        guard let store = study.store, let bible = model.source else { return }
         let references = (try? store.crossReferences(for: verse)) ?? []
         let rows = references.map { reference in
             let verses = (try? bible.verses(in: reference.target)) ?? []

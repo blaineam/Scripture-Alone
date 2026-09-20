@@ -87,11 +87,11 @@ struct AppearanceView: View {
             Section { LegacyAndExportRow() }
 
             SupportSection(app: .scriptureAlone,
-                           extraContext: ["Translation": model.store?.info.id ?? "—"])
+                           extraContext: ["Translation": model.source?.info.id ?? "—"])
             LoveThisAppSection(app: .scriptureAlone)
             AboutSection(app: .scriptureAlone)
 
-            if let info = model.store?.info {
+            if let info = model.source?.info {
                 Section("About This Translation") {
                     Text(info.name).font(.headline)
                     Text(info.copyright).font(.footnote).foregroundStyle(.secondary)

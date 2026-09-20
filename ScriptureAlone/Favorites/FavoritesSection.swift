@@ -24,10 +24,10 @@ struct FavoritesSection: View {
     private var rows: [Row] {
         let term = search.trimmingCharacters(in: .whitespaces)
         let passage = term.rangeOfCharacter(from: .decimalDigits) != nil ? ReferenceParser.parse(term) : nil
-        let wanted = passage.flatMap { p in model.store.map { store in p.range { store.verseCount($0) } } }
+        let wanted = passage.flatMap { p in model.source.map { source in p.range { source.verseCount($0) } } }
         return favorites.compactMap { favorite in
             guard let range = favorite.range else { return nil }
-            let text = (try? model.store?.verses(in: range))?.map(\.text).joined(separator: " ") ?? ""
+            let text = (try? model.source?.verses(in: range))?.map(\.text).joined(separator: " ") ?? ""
             if !term.isEmpty {
                 if let wanted {
                     guard range.start <= wanted.end && wanted.start <= range.end else { return nil }

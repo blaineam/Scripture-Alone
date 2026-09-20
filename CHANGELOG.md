@@ -31,7 +31,14 @@
   capped at 25 verses — because the point is to watch the app obey a publisher's terms.
 - The reader draws every translation through one seam (`ChapterTextSource`), so a bundled store, an
   imported file, an online translation's cache and an encrypted package are read by the same code
-  rather than by four branches that have to be kept in step.
+  rather than by four branches that have to be kept in step. Listening, sharing, favourites, notes,
+  cross references, commentary, compare and the slide scanner all ask the source rather than
+  demanding a SQLite file, so none of them goes quiet on a packaged translation.
+- A translation's terms now reach the controls a reader touches. Copy and share are disabled, with
+  a line saying whose limit it is and what it is, when a selection is larger than the translation
+  allows; exporting notes is refused when its terms forbid carrying the text out; and the Mi Speaks
+  hand-off already asked. The terms come from the signed package for a packaged translation and
+  from the licence line for everything else — one question, asked the same way.
 - On-demand resources now work on the Mac, where they do not exist. `NSBundleResourceRequest` is
   unavailable on macOS, so the Mac build ships every pack inside the app and asks the bundle rather
   than the network; a Mac download is one file either way.

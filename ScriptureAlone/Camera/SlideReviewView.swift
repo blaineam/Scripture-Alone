@@ -209,7 +209,7 @@ struct SlideReviewView: View {
 
     private func apply(_ reading: SlideReading) {
         title = reading.title
-        if let store = model.store {
+        if let store = model.source {
             ranges = SlideParser.ranges(for: reading.passages) { store.verseCount($0) }
         }
         lines = reading.bodyLines.map { ReviewLine(text: $0) }
@@ -231,7 +231,7 @@ struct SlideReviewView: View {
     }
 
     private func addTypedPassages() {
-        guard let store = model.store else { return }
+        guard let store = model.source else { return }
         let added = SlideParser.ranges(for: ReferenceParser.parseList(passageText)) { store.verseCount($0) }
         guard !added.isEmpty else { return }
         for range in added where !ranges.contains(range) { ranges.append(range) }

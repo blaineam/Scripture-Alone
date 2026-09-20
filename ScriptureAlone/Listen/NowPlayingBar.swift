@@ -198,7 +198,7 @@ struct NowPlayingBar: View {
     private func refreshVoices() {
         Task { voices = await SpeechVoices.available() }
         #if os(iOS)
-        studioAvailability = MiSpeaksClient.availability(for: model.store?.info)
+        studioAvailability = MiSpeaksClient.availability(for: model.source?.info)
         studioVoices = MiSpeaksClient.publishedVoices()
         #endif
     }
