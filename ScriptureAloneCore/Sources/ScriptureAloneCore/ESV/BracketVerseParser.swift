@@ -18,7 +18,16 @@ public enum BracketVerseParser {
 
         func flush() {
             guard let n = number else { buffer = ""; return }
-            let body = buffer.trimmingCharacters(in: .whitespacesAndNewlines)
+            // Collapse the provider's whitespace, including its line breaks.
+            //
+            // Both APIs return poetry with hard newlines and leading spaces — the shape a terminal
+            // would print. Rendering that literally gives ragged breaks mid-verse and stray
+            // indents, because the reader lays text out itself and wraps to its own measure and
+            // type size. Those line breaks are real structure, but whitespace is the wrong channel
+            // to carry it: a poetic line and a wrapped one look the same, and guessing wrong
+            // prints scripture in the wrong shape. So the text is normalised to prose here, and
+            // structure is left to a format that names its blocks rather than implies them.
+            let body = buffer.split(whereSeparator: \.isWhitespace).joined(separator: " ")
             if !body.isEmpty {
                 verses.append(VerseText(ref: VerseRef(chapter.book, chapter.chapter, n), text: body, red: []))
             }

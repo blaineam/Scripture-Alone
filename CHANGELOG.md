@@ -21,6 +21,15 @@
   edition until every hash was identified. Searching the commonest word in scripture opens one bucket
   of 256 and decrypts at most thirty chapters of 1,189, and the reader counts what it opened so the
   tests can say so.
+- An online translation no longer renders with broken spacing. Both APIs send poetry as hard
+  newlines and leading spaces — the shape a terminal would print — and the reader was drawing them
+  literally, which produced breaks in the middle of a sentence, stray indents, and two verses
+  colliding on one line. That whitespace is now collapsed to ordinary spaces, so an online chapter
+  reads as clean prose. It is a real loss for the Psalms, and deliberate: whitespace cannot tell a
+  poetic line from a wrapped one, and printing scripture in a shape we guessed at is worse than
+  printing it plainly. Chapters cached under the old rules are discarded and re-fetched, so the fix
+  reaches passages already read.
+
 - The American Standard Version now ships as a signed, encrypted package instead of a database, and
   it is still the translation the app opens by default. There is no `ASV.sqlite` in the app to fall
   back on: every launch derives the content key, unwraps it from the Secure Enclave, verifies the

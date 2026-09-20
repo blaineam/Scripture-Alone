@@ -46,6 +46,40 @@ struct ESVClientTests {
         #expect(verses[0].text == "Then he said [to them] plainly")
     }
 
+    /// Psalm 91 as API.Bible returns it: hard line breaks inside a verse, leading spaces marking
+    /// the indented half-lines, and the next verse starting on a fresh line.
+    ///
+    /// Rendered literally this is what a reader saw — breaks in the middle of a sentence, stray
+    /// indents, and two verses colliding on one line — because the reader wraps to its own measure
+    /// and cannot tell the provider's line breaks from its own. The text that reaches the store is
+    /// one run of words separated by single spaces.
+    @Test func poetryLineBreaksBecomeOrdinarySpaces() {
+        let body = """
+        [1] The one who lives under the protection of the Most High
+            dwells in the shadow of the Almighty.
+        [2] I will say concerning the Lord, who is my refuge and my fortress,
+            my God in whom I trust:
+        """
+        let verses = ESVClient.parse(body, in: ChapterRef(.psalms, 91))
+        #expect(verses.count == 2)
+        #expect(verses[0].text == "The one who lives under the protection of the Most High "
+                + "dwells in the shadow of the Almighty.")
+        #expect(verses[1].text == "I will say concerning the Lord, who is my refuge and my fortress, "
+                + "my God in whom I trust:")
+        for verse in verses {
+            #expect(!verse.text.contains("\n"))
+            #expect(!verse.text.contains("  "))
+        }
+    }
+
+    /// Whatever the provider indents with — spaces, tabs, a non-breaking space — none of it
+    /// survives into the text, and no word is ever glued to its neighbour.
+    @Test func anyRunOfWhitespaceCollapsesToOneSpace() {
+        let verses = ESVClient.parse("[1] Praise him\t\tin his\u{00A0}sanctuary;\n\n  praise him",
+                                     in: ChapterRef(.psalms, 150))
+        #expect(verses.first?.text == "Praise him in his sanctuary; praise him")
+    }
+
     @Test func emptyTextYieldsNoVerses() {
         #expect(ESVClient.parse("", in: john3).isEmpty)
         #expect(ESVClient.parse("   \n  ", in: john3).isEmpty)

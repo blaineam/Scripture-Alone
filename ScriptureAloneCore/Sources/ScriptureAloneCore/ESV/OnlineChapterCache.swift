@@ -155,8 +155,14 @@ public final class OnlineChapterCache: @unchecked Sendable {
 
     /// Inserts or replaces one chapter, evicting whatever must go to stay under the ceiling.
     ///
-    /// The API returns prose — no paragraph or poetry marks — so the layout is one paragraph block
-    /// with every verse numbered, matching `ChapterLayout.prose(_:)`.
+    /// One paragraph block with every verse numbered, matching `ChapterLayout.prose(_:)`.
+    ///
+    /// Not because the providers send prose — they send poetry as hard newlines and leading spaces
+    /// — but because whitespace cannot distinguish a poetic line from a wrapped one, so
+    /// `BracketVerseParser` normalises it away rather than guess. An online psalm therefore reads
+    /// as a paragraph where a bundled one reads as verse. Giving it back its shape means asking a
+    /// provider for a format that names its blocks — API.Bible's HTML carries `q1`/`q2`/`p`
+    /// classes — and building that against a captured response rather than an assumption.
     @discardableResult
     public func store(_ verses: [VerseText], for chapter: ChapterRef) throws -> CacheWrite {
         let rows = verses.filter { $0.ref.chapterKey == chapter }.sorted { $0.ref < $1.ref }
@@ -245,7 +251,8 @@ public final class OnlineChapterCache: @unchecked Sendable {
     // MARK: - Layout
 
     /// One paragraph, every verse numbered — the same shape as `ChapterLayout.prose(_:)`, encoded
-    /// with the builder's own writer so the JSON matches a bundled store exactly.
+    /// with the builder's own writer so the JSON matches a bundled store exactly. See the note on
+    /// `store(_:for:)` for why an online chapter carries no poetry blocks.
     static func layout(for rows: [VerseText]) throws -> String {
         let fragments = rows.map { row in
             ExtractedFragment(verse: row.ref.verse, numbered: true, text: row.text,
@@ -343,8 +350,17 @@ public final class OnlineChapterCache: @unchecked Sendable {
         defer { sqlite3_close(db) }
         let marker: Int? = try? value(db, "SELECT COUNT(*) FROM cache_state")
         let online: String? = try? text(db, "SELECT value FROM meta WHERE key = 'online'")
-        return marker != nil && online == "1"
+        // A cache written under older formatting rules holds text this build would not produce, and
+        // the reader would keep seeing the old shape until every chapter happened to be re-fetched.
+        // Folding the stamp into "usable" discards that cache and re-fetches — a few requests, and
+        // the only way the fix reaches a chapter someone has already read.
+        let format: String? = try? text(db, "SELECT value FROM meta WHERE key = 'textFormat'")
+        return marker != nil && online == "1" && format == textFormatVersion
     }
+
+    /// Bumped whenever text written into the cache would come out differently. See `isUsable`.
+    static let textFormatVersion = "2"
+
 
     private func create() throws {
         let directory = url.deletingLastPathComponent()
@@ -368,7 +384,8 @@ public final class OnlineChapterCache: @unchecked Sendable {
                                  ("abbreviation", translation.abbreviation),
                                  ("copyright", translation.copyright), ("license", translation.license),
                                  ("source", "Fetched from the publisher’s API"),
-                                 ("online", "1"), ("verseLimit", String(verseLimit))] {
+                                 ("online", "1"), ("verseLimit", String(verseLimit)),
+                                 ("textFormat", Self.textFormatVersion)] {
                 try Self.run(db, "INSERT INTO meta VALUES (?1, ?2)", bind: [key, value])
             }
         } catch {
