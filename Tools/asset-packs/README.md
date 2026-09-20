@@ -81,3 +81,23 @@ delete the `.aar` first, or you will upload the previous contents and spend a wh
 the pack. Background Assets exposes `Data` or a file descriptor and never a path, and SQLite needs a
 path — so the copy is necessary, and it is also the reason a reader downloads the commentary once
 and keeps it through every future update.
+
+## The app must declare Apple hosting
+
+Apple-Hosted Background Assets is not configured by the extension alone. The app and the downloader
+extension must **share an app group** (the system coordinates between them through it), and the app
+target's `Info.plist` must carry three keys:
+
+```xml
+<key>BAAppGroupID</key>            <string>group.com.blainemiller.ScriptureAlone</string>
+<key>BAHasManagedAssetPacks</key>  <true/>
+<key>BAUsesAppleHosting</key>      <true/>
+```
+
+Apple's instruction is to *omit every other* Background Assets key when using Apple hosting — no
+`BAManifestURL`, no `BAInitialRestrictions*`, no `BAEssentialMaxInstallSize`.
+
+Without them the app builds, archives and exports cleanly, and Xcode says nothing at all. Xcode
+Cloud fails the run at `Preparing build for App Store Connect` with no further detail. The
+extension's bundle identifier also needs the **App Groups** capability enabled in the developer
+portal, or automatic signing cannot build a profile for it.

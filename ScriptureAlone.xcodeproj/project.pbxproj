@@ -1298,6 +1298,7 @@
 		734ACB59E57B8579EB24C07F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScriptureAloneAssets/ScriptureAloneAssets.entitlements;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ScriptureAloneAssets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1445,6 +1446,7 @@
 		EB7F3369E38F870947AC313F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScriptureAloneAssets/ScriptureAloneAssets.entitlements;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ScriptureAloneAssets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

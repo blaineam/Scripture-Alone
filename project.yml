@@ -133,6 +133,12 @@ targets:
       - path: ScriptureAloneAssets
         excludes:
           - "Info.plist"
+          - "*.entitlements"
+    # Apple-Hosted Background Assets requires the app and its downloader extension to share an app
+    # group — the system coordinates between the two through it. The app declares the same group,
+    # plus BAAppGroupID/BAHasManagedAssetPacks/BAUsesAppleHosting in its Info.plist.
+    entitlements:
+      path: ScriptureAloneAssets/ScriptureAloneAssets.entitlements
     dependencies:
       - sdk: BackgroundAssets.framework
       - sdk: StoreKit.framework
