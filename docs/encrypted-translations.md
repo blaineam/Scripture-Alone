@@ -100,20 +100,26 @@ them is. This is a real package's header, printed with no key at all by
 ```json
 {
   "format": 1,
-  "packageID": "AB690BA9-3BB0-426D-8AE0-EAD03990BDA1",
-  "createdAt": "2026-09-20T03:50:47Z",
+  "packageID": "3AABF641-8B15-417A-A2F0-BEA8815FD949",
+  "createdAt": "2026-09-20T06:43:35Z",
   "translation": { "id": "ASV", "name": "American Standard Version", "abbreviation": "ASV",
-                   "publisher": "…", "copyright": "…", "license": "…" },
+                   "publisher": "Public domain", "license": "Public domain",
+                   "copyright": "American Standard Version (1901). Public domain. …" },
   "policy": { "allowCopy": true, "allowShare": true, "allowVerseImages": true,
-              "allowNotesExport": true, "allowExternalHandoff": false,
-              "allowOfflineStorage": true, "maxQuotationVerses": 500 },
+              "allowNotesExport": true, "allowExternalHandoff": true,
+              "allowOfflineStorage": true, "maxQuotationVerses": 9223372036854775807 },
   "crypto": { "cipher": "AES-256-GCM", "signature": "Ed25519", "aad": "sabible-chapter-v1",
-              "keyID": "bff08c0f7b47a1736a8069cad22c3340",
-              "publisherKeyID": "fc66a5c61dff15908baf587144d8b5c9" },
-  "chapters": [ { "book": 1, "chapter": 1, "verses": 31, "offset": 0, "length": 10318 },
-                { "book": 1, "chapter": 2, "verses": 25, "offset": 10318, "length": 7671 }, … ]
+              "keyID": "00b63e297da6049dce75d3e984b74b72",
+              "publisherKeyID": "9f8568f961afc58850ba30326f20f8c2" },
+  "index":  { "aad": "sabible-index-v1", "buckets": 256, "entries": [ … ] },
+  "chapters": [ { "book": 1, "chapter": 1, "verses": 31, "offset": 0, "length": … }, … ]
 }
 ```
+
+This is the package the app ships, so every permission in it is `true` and the quotation cap is the
+format's "no limit" sentinel: the American Standard Version is public domain, and sealing it must
+not cost its readers anything. A licensed package is where those fields earn their keep — section 5
+explains why the two claims are deliberately proved on different artefacts.
 
 (The two key identifiers and the package id are from one run of the demonstration; every key and
 every build produces its own.)
