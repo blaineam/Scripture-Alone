@@ -20,6 +20,13 @@
   poetry and footnotes.
 - Reader with paragraph and verse-by-verse layouts, seven typefaces, five themes, adjustable
   size and spacing, and auto-scroll.
+- Compare two translations side by side, verse aligned, with a verse only one of them prints
+  marked rather than silently shifting the rest.
+- Original-language study: select a verse in the Berean Standard Bible to see the Hebrew or Greek
+  behind each English word, with transliteration, parsing, Strong's number and the lexicon entry.
+- Online translations: the ESV through Crossway's API and the CSB, NASB and NKJV through
+  API.Bible, each read with a free key you register yourself. Nobody may give these away, so they
+  are read over the network and cached within the publisher's own limit.
 - Add a translation: browse the free translations published by eBible.org — over 1,200 in more
   than 1,000 languages, with your own languages first — or import a USFM zip or a DRM-free ePub
   you already own. Nothing is downloaded until you choose something, imported translations stay

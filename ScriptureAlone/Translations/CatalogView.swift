@@ -66,19 +66,19 @@ struct CatalogView: View {
                     } header: {
                         Text("Offered by Scripture Alone")
                     } footer: {
-                        Text("Complete Bibles translated from the Hebrew and Greek.")
+                        Text("Complete Bibles translated from the Hebrew and Greek. Reading in another language? Download a Bible from eBible.org and use Import a File.")
                     }
                 }
-                Section {
-                    if showEverything {
-                        ForEach(other) { row($0) }
-                    } else {
-                        Button("Other Languages (\(other.count.formatted()))") { showEverything = true }
+                if !other.isEmpty {
+                    Section {
+                        if showEverything {
+                            ForEach(other) { row($0) }
+                        } else {
+                            Button("Other Languages (\(other.count.formatted()))") { showEverything = true }
+                        }
+                    } header: {
+                        Text("From eBible.org")
                     }
-                } header: {
-                    Text("From eBible.org")
-                } footer: {
-                    Text("Complete Bibles in other languages, published by eBible.org. Scripture Alone doesn't vouch for these — nobody here reads every language — so read the publisher's own note before relying on one.")
                 }
             }
         }
@@ -120,11 +120,12 @@ struct CatalogView: View {
             // Two lists, because they carry different promises. English is an allowlist the app
             // stands behind; everything else is every complete Bible eBible publishes, offered
             // without a judgement nobody here is qualified to make.
+            // English only for now. The app offers what it can stand behind, and nobody here can
+            // assess a translation in a language they do not read. Other languages are not lost:
+            // a reader downloads one from eBible.org and imports the file.
             let all = try await EBibleCatalog().fetch()
-            let curated = all.filter(CatalogCuration.isCurated)
-            let rest = all.filter(CatalogCuration.isUncurated)
-            state = .loaded(mine: CatalogLanguageMatch.ordered(curated),
-                            other: CatalogLanguageMatch.ordered(rest))
+            state = .loaded(mine: CatalogLanguageMatch.ordered(all.filter(CatalogCuration.isCurated)),
+                            other: [])
         } catch {
             state = .failed(error.localizedDescription)
         }

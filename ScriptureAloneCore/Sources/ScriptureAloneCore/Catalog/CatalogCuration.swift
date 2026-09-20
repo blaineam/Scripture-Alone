@@ -69,6 +69,10 @@ public enum CatalogCuration {
     }
 
     /// A complete Bible in a language the app cannot vouch for, one way or the other.
+    ///
+    /// Not offered in the first release — the catalogue is English-only — but kept because the
+    /// distinction is real and the decision may change. A reader who wants another language
+    /// downloads it from eBible.org and imports the file, which is unrestricted.
     public static func isUncurated(_ translation: CatalogTranslation) -> Bool {
         translation.isCompleteCanon && translation.languageCode.lowercased() != "eng"
     }
