@@ -115,7 +115,9 @@ struct CatalogView: View {
     private func load() async {
         state = .loading
         do {
-            let entries = try await EBibleCatalog().fetch()
+            // Complete Bibles only. The catalogue is mostly New Testaments and portions, and a
+            // reader looking for "a Spanish Bible" does not want four gospels.
+            let entries = try await EBibleCatalog().fetch().filter(\.isCompleteCanon)
             let split = CatalogLanguageMatch.split(entries)
             state = .loaded(mine: split.mine, other: split.other)
         } catch {

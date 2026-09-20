@@ -16,6 +16,7 @@ typealias PlatformImage = NSImage
 enum SettingsKey {
     static let theme = "reader.theme"
     static let accent = "reader.accent"
+    static let compareTranslation = "reader.compareWith"
     static let fontFamily = "reader.fontFamily"
     static let fontSize = "reader.fontSize"
     static let lineSpacing = "reader.lineSpacing"

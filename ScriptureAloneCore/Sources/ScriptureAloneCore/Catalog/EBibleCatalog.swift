@@ -24,6 +24,13 @@ public struct CatalogTranslation: Identifiable, Hashable, Sendable {
     public let script: String
 
     public var bookCount: Int { otBooks + ntBooks }
+
+    /// A whole Bible: all 39 Old Testament books and all 27 New Testament books.
+    ///
+    /// The catalogue is mostly New Testaments and portions — 1,291 entries collapse to 214 once
+    /// this is required. The app offers only complete Bibles, so nobody downloads what turns out
+    /// to be four gospels.
+    public var isCompleteCanon: Bool { otBooks >= 39 && ntBooks >= 27 }
     public var verseCount: Int { otVerses + ntVerses }
     public var isRightToLeft: Bool { textDirection.lowercased() == "rtl" }
 

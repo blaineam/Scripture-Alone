@@ -37,6 +37,11 @@ struct TranslationEntry: Identifiable, Hashable {
     }
 }
 
+enum ReaderModelError: LocalizedError {
+    case noOnlineLoader
+    var errorDescription: String? { "This translation needs a key. Add one in Manage Translations." }
+}
+
 @Observable
 final class ReaderModel {
     static let defaultTranslation = "ASV"
@@ -121,6 +126,13 @@ final class ReaderModel {
     func setOnlineTranslations(_ entries: [TranslationEntry]) {
         onlineEntries = entries
         rebuildTranslations()
+    }
+
+    /// A store for any translation, fetching and caching first when it lives behind an API.
+    /// Used by Compare, which needs a second translation without disturbing the one being read.
+    func onlineStore(for entry: TranslationEntry, chapter: ChapterRef) async throws -> BibleStore {
+        guard let onlineLoader else { throw ReaderModelError.noOnlineLoader }
+        return try await onlineLoader(entry, chapter)
     }
 
     var translationID: String { onlineTranslation?.entry.id ?? store?.info.id ?? Self.defaultTranslation }

@@ -31,6 +31,7 @@ struct ReaderView: View {
     @State private var showPicker = false
     @State private var showAppearance = false
     @State private var showTranslations = false
+    @State private var showCompare = false
     @State private var showNotes = false
     @State private var notesPath: [UUID] = []
     @State private var popover: ReaderPopover?
@@ -132,6 +133,13 @@ struct ReaderView: View {
         }
         .environment(study)
         .onChange(of: legacy.reading?.id) { notesPath = [] }
+        .sheet(isPresented: $showCompare) {
+            CompareView()
+                .environment(model)
+                #if os(macOS)
+                .frame(minWidth: 680, minHeight: 620)
+                #endif
+        }
         .sheet(isPresented: $showTranslations) {
             TranslationsView()
                 .environment(model)
@@ -295,6 +303,7 @@ struct ReaderView: View {
                 }
             }
             Divider()
+            Button("Compare Translations…", systemImage: "rectangle.split.2x1") { showCompare = true }
             Button("Manage Translations…", systemImage: "books.vertical") { showTranslations = true }
         } label: {
             Text(model.translationID).font(.subheadline.weight(.semibold))
