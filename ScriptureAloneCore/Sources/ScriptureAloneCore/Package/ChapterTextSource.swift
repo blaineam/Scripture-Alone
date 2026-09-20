@@ -10,18 +10,34 @@ import Foundation
 /// holds. A packaged translation is not a special case with its own rules; it is the same case with
 /// a different answer to the same questions.
 ///
-/// Search is deliberately not here. A store has an FTS5 index; a package cannot be searched without
-/// decrypting all of it, which is exactly what the format exists to prevent. A packaged translation
-/// is searchable only over what the reader has already opened, or not at all — see the notes in
-/// `docs/encrypted-translations.md`.
+/// Search is part of it, and that is a decision worth stating. A package now carries an encrypted
+/// index (`PackageSearchIndex`), so it answers the same `search(_:limit:)` a store answers, with the
+/// same semantics and the same return type. Keeping search off the protocol would mean the one place
+/// in the app that searches has to ask *what kind* of source it is holding — a downcast to
+/// `BibleStore` — which is precisely the branching the protocol exists to remove. Instead the
+/// capability is a question the source answers: `isSearchable`. A store always can; a package can
+/// when it was built with an index; and a source that cannot says so rather than being a different
+/// type. A caller that searches an unsearchable source gets a thrown error, not empty results,
+/// because "no matches" and "this translation cannot be searched" are different sentences to show a
+/// reader.
 public protocol ChapterTextSource: Sendable {
     var info: TranslationInfo { get }
+    var isSearchable: Bool { get }
     func contains(_ chapter: ChapterRef) -> Bool
     func verseCount(_ chapter: ChapterRef) -> Int
     func layout(for chapter: ChapterRef) throws -> ChapterLayout
     func verses(in range: VerseRange) throws -> [VerseText]
+    func search(_ query: String, limit: Int) throws -> [BibleStore.SearchHit]
 }
 
-extension BibleStore: ChapterTextSource {}
+public extension ChapterTextSource {
+    func search(_ query: String) throws -> [BibleStore.SearchHit] { try search(query, limit: 300) }
+}
+
+extension BibleStore: ChapterTextSource {
+    /// A store is its own index. The online cache is a store too, and searches what has been read —
+    /// which is what it has always done.
+    public var isSearchable: Bool { true }
+}
 
 extension TranslationPackage: ChapterTextSource {}

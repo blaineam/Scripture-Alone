@@ -34,6 +34,11 @@ Three properties matter to a publisher:
 3. **The publisher holds the keys.** The packaging tool runs on the publisher's machine, with the
    publisher's content key and signing key. We never receive the plaintext and never hold the key
    that decrypts it.
+4. **Searching does not undo any of it.** A packaged translation is fully searchable, phrases
+   included, and the index is sealed exactly like the text: a search opens one or two of 256
+   encrypted buckets and decrypts only the chapters its hits are in. There is no plaintext index, and
+   a hashed-token index in the clear — which for a Bible could be aligned against a public one until
+   every hash was identified — is precisely what we did not build.
 
 ---
 
@@ -166,6 +171,46 @@ The policy becomes a `TranslationRights` value — the same type the bundled ASV
 line. Everything downstream (the share sheet, the verse image, the notes export, the Mi Speaks
 hand-off) asks that one value, and does not know which kind of translation it is looking at.
 
+### The search index
+
+A packaged translation is searchable, and the index is sealed exactly like the text is.
+
+The obvious design is HMAC(word) → postings, left in the clear, and for this corpus it is wrong. The
+attacker knows the file is a Bible. Token frequencies, and the positions those tokens sit at, can be
+aligned against any public Bible until every hash is identified — and identifying the hashes
+reconstructs this translation's wording, which is the entire asset. Searchable-encryption schemes
+assume the plaintext distribution is unknown; ours is the most published text in history. So the
+postings are encrypted too:
+
+- **Postings.** Each token carries `(verse, word position)` pairs, so a phrase is an adjacency check
+  on positions rather than a scan over text. Prefixes of three to ten characters get their own
+  postings, verse-level and without positions, because the app's search prefix-matches only the last
+  word of a query. Ten rather than six: a prefix longer than the longest indexed one has to be
+  verified against the text, which means decrypting chapters that turn out not to match. Measured on
+  the ASV, six to ten costs 189,134 more (prefix, verse) pairs out of 1.2 million — about 0.3 MB — and
+  in exchange chapters decrypted equals chapters with hits.
+- **Sharding.** A token's bucket is `HMAC(indexKey, token) mod 256`, and each bucket is sealed on its
+  own with AES-256-GCM, bound to the package id, the translation id, the bucket number and the header
+  hash — the same discipline as a chapter, with a different domain string, so a chapter blob can never
+  be opened as a bucket or the reverse. `indexKey` is HKDF-SHA256 of the content key *and the
+  translation id*: a publisher who packages three translations under one content key would otherwise
+  get the same token → bucket mapping in all three, and bucket sizes could be correlated across files.
+- **Why 256.** A whole Bible's postings are about 5.8 MB. At 256 buckets each holds about 170 tokens
+  and 17 KB, so a search decrypts tens of kilobytes. Fewer buckets leak less per bucket and cost more
+  per search — at 64 the median bucket is 76 KB; at 512 it is 8 KB — and 256 is the point where a
+  search is cheap and a bucket still holds enough tokens that its size is not one word's frequency.
+- **The parameters are signed.** Bucket count, prefix lengths, padding and tokeniser name sit in the
+  header, inside the signature, so none of them can be altered under the app. The policy gains nothing
+  from any of this: searching is reading, and reading is what a package is for.
+
+What a search costs, asserted in the tests rather than asserted here: hash the query's tokens, open
+only the buckets they name, intersect the postings, settle a phrase by comparing positions, and only
+then decrypt the chapters the surviving verses are in — because a hit has to carry its text. Searching
+the commonest word in scripture, "the", opens **1 bucket of 256** and decrypts **at most 30 chapters
+of 1,189**, those being the chapters the first page of results is in. A search that matches nothing
+decrypts no chapters at all. The reader counts what it opened (`accessCounts`), so this is measured,
+not asserted.
+
 Where the code is:
 
 | Path | What |
@@ -175,13 +220,14 @@ Where the code is:
 | `…/Package/TranslationPackageWriter.swift` | Writer — the format in Swift, beside the Python tool |
 | `…/Package/ChapterTextSource.swift` | The seam: a store and a package, read through one protocol |
 | `…/TranslationRights.swift` | The single gate, for packaged and public-domain texts alike |
+| `…/Package/PackageSearchIndex.swift` | The sealed search index: tokeniser, query, postings, buckets |
 | `Tools/package_translation.py` | What a publisher runs, with their own keys, on their own machine |
 
-One capability is knowingly given up: **a packaged translation cannot be searched**. The app's
-full-text search is an FTS5 index over plaintext; building one for a package would mean decrypting all
-of it, which is the thing the format exists to prevent. A packaged translation is searchable only over
-what the reader has already opened, or not at all. We would rather tell you that than quietly keep a
-searchable copy.
+One behaviour differs from a store, and it is small: the index holds no postings for one- and
+two-character prefixes, so while a reader is typing, results narrow one keystroke later than they do
+for a bundled text. Nothing wrong ever appears — the last word is matched whole until it reaches three
+characters. Every other query, including phrases, returns exactly what the app's own FTS5 index
+returns; the test suite runs a dozen queries against both and compares them verse for verse.
 
 ---
 
@@ -260,6 +306,31 @@ can open, and a key recovered on one device is of no use on another. It raises t
 same floor a closed-source app stands on, and we would rather describe it accurately than imply a
 ceiling that does not exist.
 
+**What the sealed index still leaks, measured.** Someone without the key holds ciphertext, the header,
+and the sizes of 256 buckets. Sizes are all that is left, and here is what they are worth. Each bucket
+is the sum of about 170 posting lists under a keyed assignment the attacker cannot compute, so
+recovering per-word frequencies from them is a 256-way subset-sum over 43,639 unknown items — not a
+computation anyone finishes, and one whose answer would be "bucket 37 probably holds *the*", which
+decrypts nothing. Sealed sizes are padded to 4 KiB, so exact byte counts are gone: the ASV's 256
+buckets fall into 16 size classes. Two things do survive. The aggregate — total index size — tracks
+the corpus's word count and vocabulary, which the header already implies by naming the translation and
+listing 1,189 chapter lengths. And the tail: the largest bucket is 86% one token's postings, so its
+size is effectively "how often the commonest word occurs", a figure published for every Bible in
+print. Neither tells you a single word of the text.
+
+Padding further is a poor trade, and we measured it rather than guessing: padding every bucket to the
+largest costs 37.8 MB against a 5.8 MB index — 6.5× — and turns a 17 MB package into a 49 MB one. A 16
+KiB quantum instead of 4 KiB costs 1.4 MB and cuts the size classes from 16 to 8; `padding` is a signed
+header parameter, so a publisher who wants that can have it by changing one number. The one leak
+padding does not fix is the dominant bucket, because a single token's postings cannot be padded
+smaller; fixing that means splitting one token's postings across several buckets, which we will build
+if a publisher asks, at the cost of extra bucket reads for the commonest words.
+
+**A search also leaks its own pattern to anyone watching the device.** Which buckets a query opens is
+visible to something observing file access on a device it controls — that is inherent to any encrypted
+index that is not read in full, and reading it in full would mean decrypting 5.8 MB per keystroke. It
+tells a watcher that two searches were for the same word, not what the word was.
+
 **And the analogue hole is always open.** Any reader can screenshot a page, and a patient one can
 script scrolling and run OCR. That is true of every Bible app, every e-reader, and every printed
 book with a photocopier next to it.
@@ -322,6 +393,52 @@ The test suite states the security properties as executable assertions. By name,
 | `aPackageAndAStoreAreReadThroughOneInterface` | A package and a SQLite store, read through one protocol |
 | `theToolsDemoPackagesOpenInTheApp` | Packages built by the Python tool, opened by the Swift reader |
 | `theToolsDemoPackagesRefuseAWrongKey` | …and refusing a wrong key, against the real artefact |
+| `aPackageFindsExactlyWhatTheStoreFinds` | Twelve queries, sealed index against FTS5, verse for verse |
+| `aPhraseIsAnAdjacencyCheckOnPositions` | "Jesus wept" matches; "wept Jesus" does not |
+| `aPrefixNarrowsWhileTyping` | Prefix search matches the store's, keystroke by keystroke |
+| `aSearchOpensOnlyTheBucketsAndChaptersItNeeds` | One bucket of 256; chapters decrypted = chapters with hits |
+| `thePlainestPossibleSearchStillDecryptsAlmostNothing` | "the": 1 bucket, ≤30 chapters of 1,189 |
+| `aSearchWithNoMatchesDecryptsNoChapters` | No hits, no plaintext |
+| `anIndexBucketTransplantedFromAnotherPackageFailsItsSeal` | A bucket is bound to its package, like a chapter |
+| `editingTheIndexParametersFailsTheSignature` | The tokeniser and bucket count are inside the signature |
+| `aPackageWithoutAnIndexRefusesToSearch` | "Cannot be searched" is not "no matches" |
+| `theToolsDemoIndexIsSearchedByTheApp` | The Python tool's index, searched by the Swift reader |
+| `shippedPackageOpensAndReads` | The artefact the app ships, opened with the seed the app compiles in |
+| `shippedPackageSearches` | Phrase and prefix, through the sealed index, on the shipped package |
+| `wrongContentKeyIsRefused` | A wrong key is refused at open, not at the first chapter |
+| `unpinnedPublisherKeyIsRefused` | A signature from a key the app does not pin |
+| `shippedPolicyIsEnforced` | The terms the reader is bound by are the terms in the file |
+
+### The demonstration that ships
+
+The commands above prove the format on a desk. The app also ships one, so the chain can be watched
+running on a device with nothing to set up.
+
+`ScriptureAlone/Resources/Packages/BSBX.sabible` is the Berean Standard Bible, packaged by the same
+tool, signed by a key the app pins, and tagged as the on-demand resource `encrypted-demo`. It is not
+in the app download. A reader opens Translations, taps *Download and Open*, and the device fetches
+17 MB from Apple's CDN, derives the content key from the build's seed, seals it to the Secure
+Enclave, verifies the signature, and opens the package. From then on it is a translation like any
+other in the list — read it, select verses, search it — except that its text never exists on the
+device in the clear and the app refuses what its policy forbids.
+
+That policy is deliberately tighter than the text needs. The Berean Standard Bible is public domain
+and could be given away; this copy forbids notes export and hand-off to other apps and caps
+quotation at 25 verses, because the point is to watch the app *obey a publisher's terms*, not to
+distribute a Bible. Turning any of those on means changing the policy and re-signing — which a
+publisher does with their own key, and which the app then enforces without a new release.
+
+The seed for this one package is published in `Tools/package_translation.py` and in
+`EncryptedDemoLibrary.swift`. That is deliberate. It protects a public-domain text, so keeping it
+secret would be theatre, and theatre is precisely what this document is trying not to do. A real
+package uses a key its publisher generates and holds.
+
+`ShippedPackageTests` asserts against that exact artefact rather than against a package built on the
+spot: it opens the shipped bytes with the published seed and the pinned key, reads Psalm 23 back as
+poetry with all six verses, finds John 3:16 by phrase and Psalm 23:1 by prefix through the sealed
+index, refuses a wrong content key at open, refuses an unpinned publisher key outright, and checks
+that the policy the reader is bound by is the one in the file. If the Python tool and the Swift
+reader ever drift apart, that suite fails before a reader ever sees a translation that will not open.
 
 That means a publisher can watch the whole mechanism work, end to end, without granting anything, and
 can run the packaging tool against their own text on their own machine before deciding.
@@ -332,23 +449,31 @@ can run the packaging tool against their own text on their own machine before de
 
 For an engineer checking this rather than reading about it, four files carry the whole claim:
 `TranslationPackage.swift` — where the part worth reading is the sequence of checks performed when a
-package is opened, and the one private function that opens a sealed box — together with
-`PackagePolicy.swift`, `TranslationRights.swift`, and `Tools/package_translation.py`. The
+package is opened, and the two private functions that open a sealed box, one per chapter and one per
+index bucket — together with `PackagePolicy.swift`, `PackageSearchIndex.swift`,
+`TranslationRights.swift`, and `Tools/package_translation.py`. The
 format is implemented twice, in different languages, so you can build packages with the tool and
 confirm the app reads them; a divergence between the two shows up as a failing test rather than as a
 package that will not open on your desk.
 
+Two things this document previously listed as unbuilt are now built, and are described above rather
+than promised: key delivery by the shipped-seed route (section 4), and the reader's own screens,
+which open a package through the same protocol they open a SQLite store through (`ChapterTextSource`)
+— the translation list, the reader, selection, quotation and search all run against the shipped
+`BSBX.sabible` today.
+
 What is deliberately still open, so nobody discovers it later:
 
-- **Key delivery is not implemented.** The reader takes a key; nothing yet decides how a real device
-  gets one. See section 4 — this is the part we want to design with you, and it is the part that
-  actually bounds the security of the whole scheme.
-- **The reader's own screens are not yet wired to packages.** The package reader and the SQLite store
-  satisfy one protocol and are tested through it, but the app's translation list and reader view still
-  open stores only. That is plumbing, not design.
-- **No search over packaged text**, as described above.
+- **The attested key-delivery route is designed but not built.** The default — a seed injected at
+  build time, derived with HKDF, sealed to the Secure Enclave — is implemented and shipping. The
+  second option in section 4, where a Cloudflare Worker releases a key only to a build that passes
+  App Attest, is specified but not written, because it is only worth building if your terms require
+  it. It is a few hundred lines and no servers to run, and we will build it if you ask.
 - **No watermarking.** We can add a per-installation mark to a shared quotation if you want one; it is
   a deterrent and an audit trail, not a protection, and we would describe it to you as such.
+- **One key, one publisher, so far.** The vault is namespaced per translation and the derivation takes
+  the translation's identifier, so several publishers' keys coexist by construction; nothing has yet
+  had to hold two at once, and we would rather say that than imply it has been exercised.
 
 ---
 

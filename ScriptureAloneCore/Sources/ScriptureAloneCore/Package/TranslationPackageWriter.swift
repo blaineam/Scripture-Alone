@@ -67,7 +67,8 @@ public struct TranslationPackageWriter: Sendable {
                             contentKey: SymmetricKey,
                             signingKey: Curve25519.Signing.PrivateKey,
                             packageID: String = UUID().uuidString,
-                            createdAt: Date = Date()) throws -> Data {
+                            createdAt: Date = Date(),
+                            buildIndex: Bool = true) throws -> Data {
         guard !chapters.isEmpty else { throw WriterError.noChapters }
         let ordered = chapters.sorted { $0.ref < $1.ref }
 
@@ -92,6 +93,25 @@ public struct TranslationPackageWriter: Sendable {
             offset += length
         }
 
+        // The index sits after the chapters in the same body, and its buckets are laid out the same
+        // way: length known before anything is sealed, because each one is bound to the finished
+        // header too.
+        var bucketPlaintexts: [Data] = []
+        var bucketEntries: [PackagedBucketEntry] = []
+        if buildIndex {
+            bucketPlaintexts = PackageSearchIndex.buildBuckets(
+                chapters: ordered, contentKey: contentKey, translationID: identity.id,
+                parameters: (buckets: PackageSearchIndex.defaultBucketCount,
+                             prefixMin: PackageSearchIndex.defaultPrefixMin,
+                             prefixMax: PackageSearchIndex.defaultPrefixMax,
+                             padding: PackageSearchIndex.defaultPadding))
+            for (bucket, plaintext) in bucketPlaintexts.enumerated() {
+                let length = plaintext.count + TranslationPackageFormat.sealedChapterOverhead
+                bucketEntries.append(PackagedBucketEntry(bucket: bucket, offset: offset, length: length))
+                offset += length
+            }
+        }
+
         let header = TranslationPackageHeader(packageID: packageID,
                                               createdAt: createdAt.formatted(.iso8601),
                                               translation: identity,
@@ -100,7 +120,8 @@ public struct TranslationPackageWriter: Sendable {
                                                 keyID: TranslationPackageKeys.contentKeyID(contentKey),
                                                 publisherKeyID: TranslationPackageKeys.publisherKeyID(
                                                     signingKey.publicKey.rawRepresentation)),
-                                              chapters: entries)
+                                              chapters: entries,
+                                              index: buildIndex ? PackageIndexParameters(entries: bucketEntries) : nil)
         let headerEncoder = JSONEncoder()
         headerEncoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         let headerBytes = try headerEncoder.encode(header)
@@ -119,6 +140,18 @@ public struct TranslationPackageWriter: Sendable {
                                                               headerDigest: headerDigest)
             let box = try AES.GCM.seal(chapter.data, using: contentKey, authenticating: associated)
             guard let sealed = box.combined, sealed.count == entries[index].length else {
+                throw WriterError.sealedSizeChanged
+            }
+            body.append(sealed)
+        }
+
+        for (bucket, plaintext) in bucketPlaintexts.enumerated() {
+            let associated = TranslationPackage.indexAssociatedData(packageID: packageID,
+                                                                    translationID: identity.id,
+                                                                    bucket: bucket,
+                                                                    headerDigest: headerDigest)
+            let box = try AES.GCM.seal(plaintext, using: contentKey, authenticating: associated)
+            guard let sealed = box.combined, sealed.count == bucketEntries[bucket].length else {
                 throw WriterError.sealedSizeChanged
             }
             body.append(sealed)

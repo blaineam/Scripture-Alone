@@ -58,6 +58,12 @@ public enum TranslationPackageError: Error, Equatable, LocalizedError {
     case chapterTampered(ChapterRef)
     case truncated
     case rangeTooLarge(chapters: Int)
+    /// The package carries no search index, or one this build cannot read.
+    case notSearchable(String)
+    case damagedIndex(String)
+    /// A bucket's own authentication failed: moved from another package, replayed under a different
+    /// header, or edited.
+    case bucketTampered(Int)
 
     public var errorDescription: String? {
         switch self {
@@ -73,6 +79,9 @@ public enum TranslationPackageError: Error, Equatable, LocalizedError {
         case .chapterTampered(let chapter): "\(chapter.display) failed its integrity check, so it can’t be shown."
         case .truncated: "This package is incomplete."
         case .rangeTooLarge(let chapters): "That’s \(chapters) chapters at once — more than a quotation."
+        case .notSearchable(let why): "This translation can’t be searched: \(why)"
+        case .damagedIndex(let detail): "This translation’s search index is damaged: \(detail)"
+        case .bucketTampered(let bucket): "Part of the search index (\(bucket)) failed its integrity check."
         }
     }
 }
@@ -156,10 +165,15 @@ public struct TranslationPackageHeader: Hashable, Sendable, Codable {
     public var policy: PackagePolicy
     public var crypto: PackageCryptoParameters
     public var chapters: [PackagedChapterEntry]
+    /// The search index's parameters, when the package carries one. Inside the signed region, so the
+    /// bucket count, the prefix lengths and the tokeniser cannot be altered under the app. The policy
+    /// gains nothing from it: searching is reading, and reading is what a package is for.
+    public var index: PackageIndexParameters?
 
     public init(format: Int = Int(TranslationPackageFormat.version), packageID: String, createdAt: String,
                 translation: PackagedTranslationIdentity, policy: PackagePolicy,
-                crypto: PackageCryptoParameters, chapters: [PackagedChapterEntry]) {
+                crypto: PackageCryptoParameters, chapters: [PackagedChapterEntry],
+                index: PackageIndexParameters? = nil) {
         self.format = format
         self.packageID = packageID
         self.createdAt = createdAt
@@ -167,6 +181,7 @@ public struct TranslationPackageHeader: Hashable, Sendable, Codable {
         self.policy = policy
         self.crypto = crypto
         self.chapters = chapters
+        self.index = index
     }
 }
 
@@ -260,7 +275,18 @@ public final class TranslationPackage: @unchecked Sendable {
     private let fileSize: UInt64
     private let contentKey: SymmetricKey
     private let index: [ChapterRef: PackagedChapterEntry]
+    private let buckets: [Int: PackagedBucketEntry]
     private let lock = NSLock()
+    /// How much of the file this reader has actually decrypted, so a test — or the app — can state
+    /// the cost of a search rather than assume it. Guarded by the same lock as the reads it counts.
+    private var counts = AccessCounts(chapters: 0, buckets: 0)
+
+    public struct AccessCounts: Hashable, Sendable {
+        public var chapters: Int
+        public var buckets: Int
+    }
+
+    public var accessCounts: AccessCounts { lock.withLock { counts } }
 
     /// - Parameters:
     ///   - keyring: the Ed25519 public keys this build pins. A package signed by anything else is
@@ -394,6 +420,25 @@ public final class TranslationPackage: @unchecked Sendable {
             guard !index.isEmpty else { throw TranslationPackageError.damagedHeader("no chapters") }
             self.index = index
 
+            var buckets: [Int: PackagedBucketEntry] = [:]
+            if let parameters = decoded.index {
+                guard parameters.buckets > 0, parameters.buckets <= 65_536,
+                      parameters.prefixMin >= 1, parameters.prefixMax >= parameters.prefixMin,
+                      parameters.padding >= 0 else {
+                    throw TranslationPackageError.damagedHeader("index parameters")
+                }
+                for entry in parameters.entries {
+                    guard entry.bucket >= 0, entry.bucket < parameters.buckets,
+                          entry.offset >= 0, entry.length > TranslationPackageFormat.sealedChapterOverhead,
+                          entry.length <= PackageSearchIndex.maximumBucketBytes,
+                          bodyOffset + UInt64(entry.offset) + UInt64(entry.length) <= fileSize else {
+                        throw TranslationPackageError.truncated
+                    }
+                    buckets[entry.bucket] = entry
+                }
+            }
+            self.buckets = buckets
+
             info = TranslationInfo(id: decoded.translation.id,
                                    name: decoded.translation.name,
                                    abbreviation: decoded.translation.abbreviation,
@@ -446,17 +491,160 @@ public final class TranslationPackage: @unchecked Sendable {
         return result
     }
 
-    // MARK: - The one decrypting path
+    // MARK: - Search
 
-    /// Reads one chapter's sealed blob from its own byte range and opens it. The associated data
-    /// binds the blob to this package, this translation, this chapter and this exact header, so a
-    /// blob moved between packages, replayed under an edited policy, or renamed to another chapter
-    /// fails here rather than being shown as the wrong text.
-    private func plaintext(forChapterAt entry: PackagedChapterEntry, ref: ChapterRef) throws -> Data {
-        let sealed: Data = try lock.withLock {
+    /// Whether this package carries an index this build can read.
+    public var isSearchable: Bool {
+        guard let parameters = header.index else { return false }
+        return parameters.tokenizer == PackageSearchIndex.tokenizer
+            && parameters.aad == PackageSearchIndex.associatedDataVersion
+            && !buckets.isEmpty
+    }
+
+    /// Full-text search, answering the same call the app already makes on a `BibleStore`: every word
+    /// must appear, the last word matches as a prefix so results narrow while typing, and a query in
+    /// double quotes matches as an exact phrase. Results are in canonical order.
+    ///
+    /// What a search costs, and why: the query's tokens are hashed with a key derived from the
+    /// content key, which names the buckets holding their postings. Only those buckets are opened —
+    /// one or two, tens of kilobytes. The postings are intersected, a phrase is settled by comparing
+    /// word positions rather than by scanning text, and only then are chapters decrypted, one at a
+    /// time, for the verses that actually matched, because a hit has to carry its text. A search
+    /// never opens the whole index and never decrypts the whole Bible; `accessCounts` says exactly how
+    /// much it did open, and the test suite asserts on it.
+    public func search(_ query: String, limit: Int = 300) throws -> [BibleStore.SearchHit] {
+        guard let parameters = header.index, !buckets.isEmpty else {
+            throw TranslationPackageError.notSearchable("this package was built without a search index")
+        }
+        guard parameters.tokenizer == PackageSearchIndex.tokenizer,
+              parameters.aad == PackageSearchIndex.associatedDataVersion else {
+            throw TranslationPackageError.notSearchable("its index was built by \(parameters.tokenizer), which this app doesn’t implement")
+        }
+        guard limit > 0, let parsed = PackagedSearchQuery.parse(query, prefixMin: parameters.prefixMin) else { return [] }
+
+        let key = PackageSearchIndex.indexKey(contentKey: contentKey, translationID: header.translation.id)
+
+        // 1. Name the postings this query needs, and the buckets they live in.
+        struct Lookup {
+            var id: UInt64
+            var isPrefix: Bool
+        }
+        var groups: [[Lookup]] = []
+        var longPrefixes: [String] = []
+        var wanted: [Int: Set<UInt64>] = [:]
+        for group in parsed.groups {
+            var lookups: [Lookup] = []
+            for (offset, token) in group.tokens.enumerated() {
+                let isFinal = offset == group.tokens.count - 1
+                let tag: Data
+                let isPrefix = group.prefix && isFinal
+                if isPrefix {
+                    let scalars = Array(token.unicodeScalars)
+                    let cut = min(parameters.prefixMax, scalars.count)
+                    if cut < scalars.count { longPrefixes.append(token) }
+                    tag = PackageSearchIndex.tag(key, .prefix, String(String.UnicodeScalarView(scalars[0..<cut])))
+                } else {
+                    tag = PackageSearchIndex.tag(key, .word, token)
+                }
+                let id = PackageSearchIndex.tokenID(tag)
+                wanted[PackageSearchIndex.bucket(for: tag, count: parameters.buckets), default: []].insert(id)
+                lookups.append(Lookup(id: id, isPrefix: isPrefix))
+            }
+            groups.append(lookups)
+        }
+
+        // 2. Open only those buckets.
+        var entries: [UInt64: PackageSearchIndex.Entry] = [:]
+        for (bucket, ids) in wanted {
+            guard let entry = buckets[bucket] else { continue }
+            for (id, decoded) in try PackageSearchIndex.decodeBucket(plaintext(forBucketAt: entry), wanted: ids) {
+                entries[id] = decoded
+            }
+        }
+
+        // 3. Intersect: every group must be satisfied in the same verse.
+        var candidates: Set<Int>?
+        for lookups in groups {
+            let verses = Self.verses(satisfying: lookups.map { ($0.id, $0.isPrefix) }, entries: entries)
+            candidates = candidates.map { $0.intersection(verses) } ?? verses
+            if candidates?.isEmpty == true { return [] }
+        }
+        guard let candidates, !candidates.isEmpty else { return [] }
+
+        // 4. Only now decrypt chapters — those that hold the matches, in canonical order, stopping at
+        //    the limit. A prefix longer than the longest indexed one is a superset, so those hits are
+        //    verified against the verse's own tokens; every other query needs no verification at all.
+        var hits: [BibleStore.SearchHit] = []
+        var chaptersOpened = 0
+        var text: [Int: String] = [:]
+        var loaded: ChapterRef?
+        for key in candidates.sorted() {
+            guard let ref = VerseRef(key: key) else { continue }
+            if loaded != ref.chapterKey {
+                guard chaptersOpened < Self.searchChapterBudget else { break }
+                guard index[ref.chapterKey] != nil else { continue }
+                let chapter = try self.chapter(ref.chapterKey)
+                chaptersOpened += 1
+                loaded = ref.chapterKey
+                text = Dictionary(uniqueKeysWithValues: chapter.verses.map { ($0.ref.key, $0.text) })
+            }
+            guard let verse = text[key] else { continue }
+            if !longPrefixes.isEmpty {
+                let tokens = PackageSearchIndex.tokens(in: verse)
+                guard longPrefixes.allSatisfy({ prefix in tokens.contains { $0.hasPrefix(prefix) } }) else { continue }
+            }
+            hits.append(BibleStore.SearchHit(ref: ref, text: verse))
+            if hits.count == limit { break }
+        }
+        return hits
+    }
+
+    /// Chapters one search may decrypt. Only a prefix longer than the longest indexed one can produce
+    /// candidates that turn out not to match, and with prefixes indexed to ten characters that is rare
+    /// — this is the ceiling that keeps even a pathological query from walking the whole book.
+    static let searchChapterBudget = 256
+
+    /// One group of the query: adjacent word positions for a phrase, and a verse-level check for a
+    /// trailing prefix, which has no positions by design.
+    static func verses(satisfying lookups: [(id: UInt64, isPrefix: Bool)],
+                       entries: [UInt64: PackageSearchIndex.Entry]) -> Set<Int> {
+        var positional: [PackageSearchIndex.Entry] = []
+        var prefixVerses: Set<Int>?
+        for lookup in lookups {
+            guard let entry = entries[lookup.id] else { return [] }
+            if lookup.isPrefix {
+                prefixVerses = Set(entry.postings.map(\.verse))
+            } else {
+                positional.append(entry)
+            }
+        }
+        guard let first = positional.first else { return prefixVerses ?? [] }
+
+        var running: [Int: Set<Int>] = [:]
+        for posting in first.postings { running[posting.verse] = Set(posting.positions) }
+        for entry in positional.dropFirst() {
+            var next: [Int: Set<Int>] = [:]
+            for posting in entry.postings {
+                guard let previous = running[posting.verse] else { continue }
+                let adjacent = Set(posting.positions).intersection(Set(previous.map { $0 + 1 }))
+                if !adjacent.isEmpty { next[posting.verse] = adjacent }
+            }
+            running = next
+            if running.isEmpty { return [] }
+        }
+        let matched = Set(running.keys)
+        return prefixVerses.map { matched.intersection($0) } ?? matched
+    }
+
+    // MARK: - The two decrypting paths
+
+    /// Reads a byte range of the body. Shared by the two decrypting functions below so that neither
+    /// can quietly grow its own file access.
+    private func sealedBytes(offset: Int, length: Int) throws -> Data {
+        try lock.withLock {
             do {
-                try handle.seek(toOffset: bodyOffset + UInt64(entry.offset))
-                guard let data = try handle.read(upToCount: entry.length), data.count == entry.length else {
+                try handle.seek(toOffset: bodyOffset + UInt64(offset))
+                guard let data = try handle.read(upToCount: length), data.count == length else {
                     throw TranslationPackageError.truncated
                 }
                 return data
@@ -466,13 +654,55 @@ public final class TranslationPackage: @unchecked Sendable {
                 throw TranslationPackageError.unreadable(error.localizedDescription)
             }
         }
+    }
+
+    /// Reads one index bucket's sealed blob and opens it — the sibling of the chapter path, under the
+    /// same discipline: one bucket, from its own byte range, bound to this package, this translation,
+    /// this bucket number and this exact header. The domain string differs from a chapter's, so a
+    /// chapter blob can never be opened as a bucket or the reverse.
+    private func plaintext(forBucketAt entry: PackagedBucketEntry) throws -> Data {
+        let sealed = try sealedBytes(offset: entry.offset, length: entry.length)
+        let associated = Self.indexAssociatedData(packageID: header.packageID,
+                                                  translationID: header.translation.id,
+                                                  bucket: entry.bucket,
+                                                  headerDigest: headerDigest)
+        do {
+            let box = try AES.GCM.SealedBox(combined: sealed)
+            let plaintext = try AES.GCM.open(box, using: contentKey, authenticating: associated)
+            lock.withLock { counts.buckets += 1 }
+            return plaintext
+        } catch {
+            throw TranslationPackageError.bucketTampered(entry.bucket)
+        }
+    }
+
+    /// `sabible-index-v1 ‖ package id ‖ translation id ‖ bucket ‖ header digest`, newline separated,
+    /// UTF-8. Written the same way by `Tools/package_translation.py`.
+    public static func indexAssociatedData(packageID: String, translationID: String, bucket: Int,
+                                           headerDigest: Data) -> Data {
+        let fields = [PackageSearchIndex.associatedDataVersion,
+                      packageID,
+                      translationID,
+                      String(bucket),
+                      TranslationPackageKeys.hex(headerDigest)]
+        return Data(fields.joined(separator: "\n").utf8)
+    }
+
+    /// Reads one chapter's sealed blob from its own byte range and opens it. The associated data
+    /// binds the blob to this package, this translation, this chapter and this exact header, so a
+    /// blob moved between packages, replayed under an edited policy, or renamed to another chapter
+    /// fails here rather than being shown as the wrong text.
+    private func plaintext(forChapterAt entry: PackagedChapterEntry, ref: ChapterRef) throws -> Data {
+        let sealed = try sealedBytes(offset: entry.offset, length: entry.length)
         let associated = Self.associatedData(packageID: header.packageID,
                                              translationID: header.translation.id,
                                              chapter: ref,
                                              headerDigest: headerDigest)
         do {
             let box = try AES.GCM.SealedBox(combined: sealed)
-            return try AES.GCM.open(box, using: contentKey, authenticating: associated)
+            let plaintext = try AES.GCM.open(box, using: contentKey, authenticating: associated)
+            lock.withLock { counts.chapters += 1 }
+            return plaintext
         } catch {
             // GCM cannot distinguish a wrong key from tampering. Either way this chapter is not
             // shown, and the caller is told which chapter refused.

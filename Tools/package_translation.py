@@ -51,6 +51,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 try:
+    import unicodedata
+
+    from cryptography.hazmat.primitives import hashes, hmac
+    from cryptography.hazmat.primitives.kdf.hkdf import HKDF
     from cryptography.hazmat.primitives.asymmetric import ed25519
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 except ImportError:  # pragma: no cover - environment problem, not a code path
@@ -67,6 +71,145 @@ SEALED_OVERHEAD = NONCE_BYTES + TAG_BYTES
 
 DEMO_DIRECTORY = Path.home() / ".scripture-alone-demo"
 
+# ------------------------------------------------------------------------- search index
+#
+# A packaged translation is searchable, and the index is sealed exactly like the text is.
+#
+# The obvious design — HMAC(word) → postings, left in the clear — is wrong for this corpus. An
+# attacker knows the file is a Bible. Token frequencies and positions can be aligned against any
+# public Bible to work out which hash is which word, and that reconstructs the wording, which is the
+# asset. Searchable-encryption schemes assume the plaintext distribution is unknown; ours is the most
+# published text in history. So the postings are encrypted, bucket by bucket, and a search opens only
+# the buckets its query needs.
+INDEX_TOKENIZER = "sabible-tokens-v1"
+INDEX_AAD = "sabible-index-v1"
+INDEX_BUCKETS = 256
+INDEX_PREFIX_MIN = 3
+# Prefixes run to ten characters, not six. Six was the first choice, but a prefix longer than the
+# longest indexed one has to be verified against the text — which means decrypting chapters that turn
+# out not to match, exactly what a search is supposed to avoid. Measured on the ASV, going from six to
+# ten costs 189,134 more (prefix, verse) pairs out of 1.2 million, about 0.3 MB, and makes every
+# realistic prefix exact: chapters decrypted then equals chapters with hits.
+INDEX_PREFIX_MAX = 10
+# Sealed buckets are padded to a multiple of this, so their sizes say as little as possible about
+# what is in them. See `docs/encrypted-translations.md` for what a size still reveals.
+INDEX_PADDING = 4096
+
+WORD_ENTRY = 0
+PREFIX_ENTRY = 1
+
+
+def fold(text: str) -> str:
+    """Tokeniser v1, and the Swift reader does exactly this: NFD, drop combining marks, lowercase."""
+    decomposed = unicodedata.normalize("NFD", text)
+    return "".join(c for c in decomposed if unicodedata.category(c) != "Mn").lower()
+
+
+def tokenize(text: str) -> list[str]:
+    """Runs of letters and digits, like SQLite's unicode61 — apostrophes separate, as they do there."""
+    tokens: list[str] = []
+    current: list[str] = []
+    for character in fold(text):
+        if character.isalnum():
+            current.append(character)
+        elif current:
+            tokens.append("".join(current))
+            current = []
+    if current:
+        tokens.append("".join(current))
+    return tokens
+
+
+def index_key(content_key: bytes, translation_id: str) -> bytes:
+    """A separate key for the index, so a token tag can never be confused with content key material.
+
+    The translation id goes into the derivation as well. A publisher who packages three translations
+    under one content key would otherwise get the same token → bucket mapping in all three, and bucket
+    sizes could be correlated across the files. Per-translation derivation costs nothing and removes
+    that.
+    """
+    return HKDF(algorithm=hashes.SHA256(), length=32, salt=None,
+                info=b"SABIBLE index v1\0" + translation_id.encode("utf-8")).derive(content_key)
+
+
+def token_tag(key: bytes, kind: str, token: str) -> bytes:
+    mac = hmac.HMAC(key, hashes.SHA256())
+    mac.update(f"{kind}:{token}".encode("utf-8"))
+    return mac.finalize()
+
+
+def varint(value: int) -> bytes:
+    out = bytearray()
+    while True:
+        byte = value & 0x7F
+        value >>= 7
+        out.append(byte | (0x80 if value else 0))
+        if not value:
+            return bytes(out)
+
+
+def build_index_buckets(chapters: list[dict], content_key: bytes, translation_id: str) -> list[bytes]:
+    """Postings for every token and every 3–6 character prefix, bucketed and encoded.
+
+    Word postings carry (verse, word position) so a phrase is an adjacency check rather than a
+    substring scan. Prefix postings are verse-level only: the app's own search prefix-matches just the
+    last word of a query, so positions there would be weight with no use.
+    """
+    key = index_key(content_key, translation_id)
+    words: dict[bytes, dict[int, list[int]]] = {}
+    prefixes: dict[bytes, set[int]] = {}
+    for chapter in chapters:
+        for row in chapter["rows"]:
+            verse = row["i"]
+            for position, token in enumerate(tokenize(row["t"])):
+                words.setdefault(token_tag(key, "w", token), {}).setdefault(verse, []).append(position)
+                for length in range(INDEX_PREFIX_MIN, INDEX_PREFIX_MAX + 1):
+                    if len(token) < length:
+                        break
+                    prefixes.setdefault(token_tag(key, "p", token[:length]), set()).add(verse)
+
+    buckets: list[list[tuple[bytes, int, object]]] = [[] for _ in range(INDEX_BUCKETS)]
+    for tag, postings in words.items():
+        buckets[int.from_bytes(tag[:4], "big") % INDEX_BUCKETS].append((tag[:8], WORD_ENTRY, postings))
+    for tag, verses in prefixes.items():
+        buckets[int.from_bytes(tag[:4], "big") % INDEX_BUCKETS].append((tag[:8], PREFIX_ENTRY, verses))
+
+    encoded = []
+    for entries in buckets:
+        payload = bytearray(varint(len(entries)))
+        for token_id, kind, postings in sorted(entries, key=lambda entry: entry[0]):
+            payload += token_id
+            payload.append(kind)
+            if kind == WORD_ENTRY:
+                payload += varint(len(postings))
+                previous = 0
+                for verse in sorted(postings):
+                    payload += varint(verse - previous)
+                    previous = verse
+                    positions = postings[verse]
+                    payload += varint(len(positions))
+                    last = 0
+                    for position in positions:
+                        payload += varint(position - last)
+                        last = position
+            else:
+                payload += varint(len(postings))
+                previous = 0
+                for verse in sorted(postings):
+                    payload += varint(verse - previous)
+                    previous = verse
+        body = varint(len(payload)) + bytes(payload)
+        padded = body + bytes((-len(body)) % INDEX_PADDING)
+        encoded.append(padded)
+    return encoded
+
+
+def index_associated_data(package_id: str, translation_id: str, bucket: int,
+                          header_digest: bytes) -> bytes:
+    """Same discipline as a chapter, and a different domain string, so the two can never be swapped."""
+    return "\n".join([INDEX_AAD, package_id, translation_id, str(bucket),
+                       header_digest.hex()]).encode("utf-8")
+
 
 # --------------------------------------------------------------------------------------- keys
 
@@ -82,6 +225,9 @@ def repo_root() -> Path:
     except (subprocess.CalledProcessError, FileNotFoundError):
         pass
     return here.parent.resolve()
+
+
+REPO_ROOT = repo_root()
 
 
 def refuse_if_inside_repository(path: Path, what: str) -> Path:
@@ -196,7 +342,8 @@ def associated_data(package_id: str, translation_id: str, book: int, chapter: in
 
 
 def build_package(*, identity: dict, policy: dict, chapters: list[dict], content_key: bytes,
-                  signing_key: bytes, package_id: str | None = None) -> bytes:
+                  signing_key: bytes, package_id: str | None = None,
+                  build_index: bool = True) -> bytes:
     if not chapters:
         sys.exit("That store has no chapters.")
     package_id = package_id or str(uuid.uuid4()).upper()
@@ -216,6 +363,16 @@ def build_package(*, identity: dict, policy: dict, chapters: list[dict], content
         plaintexts.append((chapter["book"], chapter["chapter"], payload))
         offset += length
 
+    # The index sits after the chapters in the same body. Its buckets are sealed like chapters, and
+    # its parameters live in the signed header, so neither the bucket count nor the tokeniser can be
+    # changed under the app.
+    index_plaintexts = build_index_buckets(chapters, content_key, identity["id"]) if build_index else []
+    index_entries = []
+    for bucket, padded in enumerate(index_plaintexts):
+        length = len(padded) + SEALED_OVERHEAD
+        index_entries.append({"bucket": bucket, "offset": offset, "length": length})
+        offset += length
+
     public_raw = ed25519.Ed25519PrivateKey.from_private_bytes(signing_key) \
         .public_key().public_bytes_raw()
     header = {
@@ -233,6 +390,16 @@ def build_package(*, identity: dict, policy: dict, chapters: list[dict], content
         },
         "chapters": entries,
     }
+    if build_index:
+        header["index"] = {
+            "tokenizer": INDEX_TOKENIZER,
+            "aad": INDEX_AAD,
+            "buckets": INDEX_BUCKETS,
+            "prefixMin": INDEX_PREFIX_MIN,
+            "prefixMax": INDEX_PREFIX_MAX,
+            "padding": INDEX_PADDING,
+            "entries": index_entries,
+        }
     header_bytes = json.dumps(header, ensure_ascii=False, separators=(",", ":"),
                               sort_keys=True).encode("utf-8")
     header_digest = hashlib.sha256(header_bytes).digest()
@@ -246,6 +413,14 @@ def build_package(*, identity: dict, policy: dict, chapters: list[dict], content
         sealed = nonce + cipher.encrypt(nonce, payload, associated_data(
             package_id, identity["id"], book, chapter, header_digest))
         if len(sealed) != entry["length"]:
+            sys.exit("Sealed size didn’t match the index; the package was not written.")
+        body += sealed
+
+    for bucket, padded in enumerate(index_plaintexts):
+        nonce = secrets.token_bytes(NONCE_BYTES)
+        sealed = nonce + cipher.encrypt(nonce, padded, index_associated_data(
+            package_id, identity["id"], bucket, header_digest))
+        if len(sealed) != index_entries[bucket]["length"]:
             sys.exit("Sealed size didn’t match the index; the package was not written.")
         body += sealed
 
@@ -336,13 +511,18 @@ def command_build(arguments: argparse.Namespace) -> None:
         sys.exit("A package needs a copyright line: the reader prints it and the app's gates read it.")
 
     data = build_package(identity=identity, policy=policy_from_arguments(arguments),
-                         chapters=chapters, content_key=content_key, signing_key=signing_key)
+                         chapters=chapters, content_key=content_key, signing_key=signing_key,
+                         build_index=arguments.index)
     out = Path(arguments.out).expanduser()
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_bytes(data)
     header, _, _, body_offset = parse_header(data)
     print(f"Wrote {out} — {len(data):,} bytes, {len(header['chapters']):,} chapters, "
           f"header {body_offset:,} bytes in the clear")
+    if "index" in header:
+        lengths = [entry["length"] for entry in header["index"]["entries"]]
+        print(f"  search index     {sum(lengths):,} bytes in {len(lengths)} buckets "
+              f"(smallest {min(lengths):,}, median {sorted(lengths)[len(lengths)//2]:,}, largest {max(lengths):,})")
     print(f"  content key id   {header['crypto']['keyID']}")
     print(f"  publisher key id {header['crypto']['publisherKeyID']}")
     print(f"  policy           {json.dumps(header['policy'], sort_keys=True)}")
@@ -407,7 +587,10 @@ def command_demo(arguments: argparse.Namespace) -> None:
                              content_key=content_key, signing_key=signing_key)
         out = directory / f"{abbreviation}.sabible"
         out.write_bytes(data)
-        print(f"{out} — {len(data):,} bytes, {len(chapters):,} chapters "
+        header, _, _, _ = parse_header(data)
+        lengths = [entry["length"] for entry in header["index"]["entries"]]
+        print(f"{out} — {len(data):,} bytes, {len(chapters):,} chapters, "
+              f"index {sum(lengths):,} bytes in {len(lengths)} buckets "
               f"(store was {store.stat().st_size:,} bytes)")
 
 
@@ -441,56 +624,66 @@ def add_policy_arguments(parser: argparse.ArgumentParser) -> None:
 
 
 
-# The demonstration key is published on purpose. It protects a public-domain text, so secrecy would
-# be theatre; what it demonstrates is the *mechanism* — signature, per-chapter AEAD, policy
-# enforcement, Secure Enclave storage — running end to end in the shipping app, on a translation
-# nobody has to licence. A real package uses a key the publisher generates and keeps.
-DEMO_SEED = bytes.fromhex("5343524950545552452d414c4f4e452d44454d4f2d534545442d76312d2121")
 
 
-def cmd_bundle_demo(args) -> int:
-    """Packages the bundled BSB into ScriptureAlone/Resources/Packages/, ready to ship as ODR."""
-    import hashlib, hmac
-    repo = pathlib.Path(args.repo)
-    store = repo / "ScriptureAlone/Resources/Bibles/BSB.sqlite"
+# The seed for the in-app demonstration is published on purpose. It protects a public-domain text,
+# so secrecy would be theatre; what it demonstrates is the *mechanism* — signature, per-chapter
+# AEAD, the sealed search index, policy enforcement — running in the shipping app on a translation
+# nobody has to licence. A real package uses a key its publisher generates and keeps.
+DEMO_SEED = bytes.fromhex("5343524950545552452d414c4f4e452d44454d4f2d534545442d7631212121")
+DEMO_SIGNING_SEED = b"scripture-alone-demo-signing-v1"
+
+
+def command_bundle_demo(arguments: argparse.Namespace) -> None:
+    """Packages a bundled translation into the app's resources, shipped as an on-demand resource.
+
+    This is the demonstration a publisher can run themselves: the app downloads an encrypted
+    package, unseals its key from the Secure Enclave, and reads and searches it without the
+    plaintext ever existing on the device.
+    """
+    bibles = repo_root() / "ScriptureAlone/Resources/Bibles"
+    store = bibles / f"{arguments.translation}.sqlite"
     if not store.exists():
-        print(f"no store at {store}", file=sys.stderr)
-        return 1
-    out_dir = repo / "ScriptureAlone/Resources/Packages"
-    out_dir.mkdir(parents=True, exist_ok=True)
+        sys.exit(f"No bundled store at {store}.")
 
-    # Same derivation the app uses: HKDF-SHA256(seed, salt, info=translation id).
-    content_key = hkdf_sha256(DEMO_SEED, b"scripture-alone-content-key-v1", b"BSB-DEMO", 32)
-    signing_key = ed25519.Ed25519PrivateKey.from_private_bytes(
-        hashlib.sha256(b"scripture-alone-demo-signing-v1").digest())
+    # Same derivation the app performs: HKDF-SHA256 over the seed, keyed to the translation id.
+    content_key = HKDF(algorithm=hashes.SHA256(), length=32,
+                       salt=b"scripture-alone-content-key-v1",
+                       info=arguments.identifier.encode()).derive(DEMO_SEED)
+    signing_seed = hashlib.sha256(DEMO_SIGNING_SEED).digest()
+    signing_key = ed25519.Ed25519PrivateKey.from_private_bytes(signing_seed)
 
+    meta, chapters = read_store(store)
     identity = {
-        "id": "BSB-DEMO",
-        "name": "Berean Standard Bible (Encrypted Demo)",
-        "abbreviation": "BSBx",
-        "publisher": "Berean Bible / demonstration package",
-        "copyright": "Public domain, dedicated 30 April 2023 by Berean Bible.",
-        "license": "Public domain text in a demonstration package — see docs/encrypted-translations.md",
+        "id": arguments.identifier,
+        "name": f"{meta.get('name', arguments.translation)} (Encrypted)",
+        "abbreviation": arguments.identifier,
+        "publisher": "Scripture Alone demonstration",
+        "copyright": meta.get("copyright", ""),
+        "license": "Public-domain text in a demonstration package — docs/encrypted-translations.md",
     }
-    # Deliberately restrictive, so the demonstration shows enforcement rather than describing it.
-    policy = {
-        "allowCopy": True,
-        "allowShare": True,
-        "allowVerseImages": True,
-        "allowNotesExport": False,
-        "allowExternalHandoff": False,
-        "allowOfflineStorage": True,
-        "maxQuotationVerses": 25,
-    }
-    written = build_from_store(store=store, out=out_dir / "BSB-DEMO.sabible",
-                               identity=identity, policy=policy,
-                               content_key=content_key, signing_key=signing_key)
-    pub = signing_key.public_key().public_bytes(
-        serialization.Encoding.Raw, serialization.PublicFormat.Raw)
-    (out_dir / "demo-signing.pub").write_bytes(pub)
-    print(f"wrote {written} ({(out_dir / 'BSB-DEMO.sabible').stat().st_size:,} bytes)")
-    print(f"publisher key: {pub.hex()}")
-    return 0
+    # Deliberately restrictive, so the demonstration *shows* enforcement rather than describing it:
+    # this package forbids notes export and hand-off to other apps, and caps quotation at 25 verses.
+    policy = {"allowCopy": True, "allowShare": True, "allowVerseImages": True,
+              "allowNotesExport": False, "allowExternalHandoff": False,
+              "allowOfflineStorage": True, "maxQuotationVerses": 25}
+
+    data = build_package(identity=identity, policy=policy, chapters=chapters,
+                         content_key=content_key, signing_key=signing_seed)
+    out_dir = repo_root() / "ScriptureAlone/Resources/Packages"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    package = out_dir / f"{arguments.identifier}.sabible"
+    package.write_bytes(data)
+
+    public_raw = ed25519.Ed25519PrivateKey.from_private_bytes(signing_seed) \
+        .public_key().public_bytes_raw()
+    (out_dir / "demo-signing.pub").write_bytes(public_raw)
+
+    header, _, _, _ = parse_header(data)
+    lengths = [entry["length"] for entry in header["index"]["entries"]]
+    print(f"{package} — {len(data):,} bytes, {len(chapters):,} chapters, "
+          f"index {sum(lengths):,} bytes in {len(lengths)} buckets")
+    print(f"publisher key id {publisher_key_id(public_raw)} — pinned in the app")
 
 
 def main(argv: list[str]) -> None:
@@ -514,6 +707,8 @@ def main(argv: list[str]) -> None:
     build.add_argument("--abbreviation", default=None)
     build.add_argument("--copyright", default=None)
     build.add_argument("--license", default=None)
+    build.add_argument("--index", action=argparse.BooleanOptionalAction, default=True,
+                       help="build the encrypted search index (default: yes)")
     add_policy_arguments(build)
     build.set_defaults(handler=command_build)
 
@@ -523,9 +718,10 @@ def main(argv: list[str]) -> None:
     inspect.set_defaults(handler=command_inspect)
 
     bundle = commands.add_parser(
-        "bundle-demo",
-        help="package the BSB into the app's resources, with the published demonstration key")
-    bundle.add_argument("--repo", default=str(REPO_ROOT))
+        "bundle-demo", help="package a bundled translation into the app's resources (on-demand)")
+    bundle.add_argument("--translation", default="BSB")
+    bundle.add_argument("--identifier", default="BSBX")
+    bundle.set_defaults(handler=command_bundle_demo)
 
     demo = commands.add_parser("demo", help="package the bundled public-domain texts with a demonstration key")
     demo.add_argument("--out-dir", default=str(DEMO_DIRECTORY))

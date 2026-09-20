@@ -10,6 +10,8 @@ struct TranslationEntry: Identifiable, Hashable {
         /// Fetched from a publisher's API with the reader's own key. `id` is the provider's own
         /// identifier for the translation.
         case online(provider: OnlineProvider, remoteID: String)
+        /// A signed, encrypted package — read through the same protocol as everything else.
+        case package
     }
 
     let id: String
@@ -23,6 +25,11 @@ struct TranslationEntry: Identifiable, Hashable {
 
     var isOnline: Bool {
         if case .online = source { return true }
+        return false
+    }
+
+    var isPackage: Bool {
+        if case .package = source { return true }
         return false
     }
 
@@ -68,6 +75,13 @@ final class ReaderModel {
     /// Set while an online chapter is being fetched, so the reader can say so instead of
     /// showing an empty page.
     private(set) var isFetching = false
+    /// The encrypted package in use, when the current text is one.
+    private(set) var packageSource: TranslationPackage?
+
+    /// What the reader is actually drawing from, whatever kind it is. Everything that needs verse
+    /// text — selection, quotation, listening, compare, notes — asks this rather than `store`.
+    var source: (any ChapterTextSource)? { packageSource ?? store }
+
     /// The online translation in use, when the current text comes from an API rather than a file.
     private(set) var onlineTranslation: (entry: TranslationEntry, info: TranslationInfo)?
     /// Supplied by the app so the model needn't know about keychains or providers.
@@ -121,7 +135,7 @@ final class ReaderModel {
 
     /// Online translations, as configured by the reader's keys. Kept apart from imports so a
     /// key removal doesn't disturb files on disk, and vice versa.
-    private(set) var onlineEntries: [TranslationEntry] = []
+    fileprivate(set) var onlineEntries: [TranslationEntry] = []
 
     func setOnlineTranslations(_ entries: [TranslationEntry]) {
         onlineEntries = entries
@@ -135,6 +149,22 @@ final class ReaderModel {
         return try await onlineLoader(entry, chapter)
     }
 
+    /// Reads from a signed, encrypted package. Registered as a translation like any other, so
+    /// everything downstream treats it as one.
+    func setPackageTranslation(_ package: TranslationPackage?) {
+        guard let package else { return }
+        let entry = TranslationEntry(id: package.info.id, name: package.info.name, source: .package)
+        if !translations.contains(where: { $0.id == entry.id }) {
+            onlineEntries.append(entry)
+            rebuildTranslations()
+        }
+        packageSource = package
+        store = nil
+        onlineTranslation = nil
+        defaults.set(entry.id, forKey: "translation")
+        load()
+    }
+
     /// Search the translation being read, whatever kind it is.
     ///
     /// A bundled or imported store has an FTS5 index. An online translation cannot be indexed on
@@ -145,23 +175,26 @@ final class ReaderModel {
            let onlineSearch {
             return (try? await onlineSearch(entry, query)) ?? []
         }
-        guard let store else { return [] }
-        return (try? store.search(query)) ?? []
+        guard let source else { return [] }
+        return (try? source.search(query, limit: 300)) ?? []
     }
 
     /// Supplied by the app, like `onlineLoader`, so the model needn't know about keys.
     var onlineSearch: (@MainActor (TranslationEntry, String) async throws -> [BibleStore.SearchHit])?
 
-    var translationID: String { onlineTranslation?.entry.id ?? store?.info.id ?? Self.defaultTranslation }
+    var translationID: String {
+        onlineTranslation?.entry.id ?? source?.info.id ?? Self.defaultTranslation
+    }
 
     /// What the reader is reading, for attribution and for the rules about what may leave the
     /// device. An online translation has no store, but it still has a licence.
-    var translationInfo: TranslationInfo? { onlineTranslation?.info ?? store?.info }
+    var translationInfo: TranslationInfo? { onlineTranslation?.info ?? source?.info }
 
     func selectTranslation(_ id: String) {
         guard let entry = translations.first(where: { $0.id == id }) else { return }
         if case .online(let provider, _) = entry.source {
             store = nil
+            packageSource = nil
             layout = nil
             loadError = nil
             onlineTranslation = (entry, TranslationInfo(id: entry.id, name: entry.name,
@@ -173,6 +206,14 @@ final class ReaderModel {
             return
         }
         onlineTranslation = nil
+        if case .package = entry.source {
+            packageSource = EncryptedDemoLibrary.shared.package
+            store = nil
+            defaults.set(id, forKey: "translation")
+            load()
+            return
+        }
+        packageSource = nil
         guard let url = entry.url else { return }
         do {
             let store = try stores[id] ?? BibleStore(url: url)
@@ -225,9 +266,9 @@ final class ReaderModel {
             loadOnline(online.entry)
             return
         }
-        guard let store else { return }
+        guard let source else { return }
         do {
-            layout = try store.layout(for: location)
+            layout = try source.layout(for: location)
             loadError = nil
         } catch {
             layout = nil
@@ -316,13 +357,13 @@ final class ReaderModel {
     }
 
     var selectedRanges: [VerseRange] {
-        guard let store else { return [] }
-        return VerseRange.ranges(from: selection) { store.verseCount($0) }
+        guard let source else { return [] }
+        return VerseRange.ranges(from: selection) { source.verseCount($0) }
     }
 
     /// "“For God so loved…” John 3:16 ASV" — numbered verses when more than one.
     func quotation(for ranges: [VerseRange]) -> String {
-        guard let store else { return "" }
+        guard let store = source else { return "" }
         let blocks = ranges.compactMap { range -> String? in
             guard let verses = try? store.verses(in: range), !verses.isEmpty else { return nil }
             let text = verses.count == 1

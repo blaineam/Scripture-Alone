@@ -96,9 +96,12 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   publishers. Licensed texts will never be committed to this repository. A licensed translation
   ships as a signed, encrypted package (`.sabible`): chapters sealed one at a time with
   AES-256-GCM, terms in a header signed with the publisher's Ed25519 key and enforced by the same
-  code that governs the bundled texts. Read
+  code that governs the bundled texts, and a sealed search index so a packaged translation is fully
+  searchable — phrases included — without a plaintext index ever existing. Read
   [docs/encrypted-translations.md](docs/encrypted-translations.md) for the format, what it does
-  not do, and how to check it yourself.
+  not do, and how to check it yourself. The app ships a working example: the Berean Standard Bible
+  packaged as `BSBX.sabible` and delivered on demand, readable and searchable from the Translations
+  screen, under a policy deliberately tighter than a public-domain text needs.
 
 ## Layout
 
@@ -109,7 +112,7 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 | `ScriptureAlone/Shared/` | App Group bridge to the widgets, deep links, the Verse of the Day list |
 | `ScriptureAloneWidgets/` | WidgetKit extension (iOS, macOS) |
 | `ScriptureAloneWatch/`, `ScriptureAloneWatchWidgets/` | Apple Watch app and its complications |
-| `ScriptureAloneCore/Sources/ScriptureAloneCore/Package/` | The `.sabible` package: reader, policy → rights mapping, writer, and the source seam the reader draws through |
+| `ScriptureAloneCore/Sources/ScriptureAloneCore/Package/` | The `.sabible` package: reader, policy → rights mapping, writer, encrypted search index, and the source seam the reader draws through |
 | `Tools/package_translation.py` | Builds a signed, encrypted package from a store, with keys the tool refuses to read from inside this repository |
 | `Tools/build_bibles.py` | Compiles `Data/source/*.zip` (USFM) into `ScriptureAlone/Resources/Bibles/*.sqlite` |
 | `Tools/build_companion_data.py` | Builds the widgets' `DailyVerses.json`, `docs/daily-verses.md` and the watch's compact ASV from `Data/daily-verses.tsv` |

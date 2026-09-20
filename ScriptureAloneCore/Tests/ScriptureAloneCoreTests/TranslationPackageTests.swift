@@ -474,23 +474,26 @@ import Testing
     }
 
     /// The shape of the decrypting API, asserted against the source itself, because this is the claim
-    /// a publisher cannot check by running the app: there is exactly one place in the reader that
-    /// opens a sealed box, it takes one chapter, and nothing returns a collection of chapters.
-    @Test func thereIsExactlyOneDecryptingEntryPoint() throws {
+    /// a publisher cannot check by running the app: the reader opens a sealed box in exactly two
+    /// places — one chapter at a time, and one index bucket at a time — and nothing returns a
+    /// collection of chapters.
+    @Test func decryptionHappensOnlyPerChapterAndPerBucket() throws {
         let source = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .appending(path: "Sources/ScriptureAloneCore/Package/TranslationPackage.swift")
         let text = try String(contentsOf: source, encoding: .utf8)
 
         let opens = text.components(separatedBy: "AES.GCM.open(").count - 1
-        #expect(opens == 1, "the reader should open exactly one sealed box in one place, found \(opens)")
+        #expect(opens == 2, "the reader should open a sealed box in exactly two places, found \(opens)")
 
-        // That one call sits inside the private per-chapter function, and that function takes a single
-        // chapter's index entry.
-        let signature = "private func plaintext(forChapterAt entry: PackagedChapterEntry, ref: ChapterRef) throws -> Data"
-        #expect(text.contains(signature))
-        let body = try #require(text.range(of: signature)).upperBound ..< text.endIndex
-        #expect(text[body].contains("AES.GCM.open("))
+        // Each of the two is a private function taking one unit — one chapter, one bucket — and each
+        // contains one of the two calls.
+        for signature in ["private func plaintext(forChapterAt entry: PackagedChapterEntry, ref: ChapterRef) throws -> Data",
+                          "private func plaintext(forBucketAt entry: PackagedBucketEntry) throws -> Data"] {
+            #expect(text.contains(signature), "missing \(signature)")
+            let body = try #require(text.range(of: signature)).upperBound ..< text.endIndex
+            #expect(text[body].prefix(900).contains("AES.GCM.open("))
+        }
 
         // No API returns more than one chapter's worth of anything, and the only method that returns
         // verses is bounded by the chapter-span limit.
@@ -499,6 +502,12 @@ import Testing
         let versesInRange = try #require(text.range(of: "public func verses(in range: VerseRange) throws -> [VerseText]"))
         let versesBody = versesInRange.upperBound ..< text.endIndex
         #expect(text[versesBody].prefix(600).contains("TranslationPackageFormat.chapterSpanLimit"))
+
+        // Search decrypts chapters through that same single chapter path, not around it.
+        let search = try #require(text.range(of: "public func search(_ query: String, limit: Int = 300)"))
+        let searchBody = text[search.upperBound...].prefix(4_000)
+        #expect(searchBody.contains("try self.chapter(ref.chapterKey)"))
+        #expect(!searchBody.contains("AES.GCM"))
     }
 
     // MARK: - Malformed files

@@ -13,6 +13,28 @@
   `Tools/package_translation.py` builds packages on the publisher's own machine and refuses to
   read a key from inside this repository. The mechanism is demonstrated on the bundled ASV and
   BSB; see `docs/encrypted-translations.md`, which also states what the design cannot do.
+- A packaged translation is fully searchable, phrases included, without a plaintext index existing at
+  any point. Postings carry word positions, so a phrase is an adjacency check rather than a text scan;
+  prefixes of three to ten characters have their own postings, so results narrow while typing. The
+  postings are bucketed by a keyed hash and each bucket is sealed like a chapter — a hashed-token
+  index left in the clear would, for a Bible, let an attacker align frequencies against a public
+  edition until every hash was identified. Searching the commonest word in scripture opens one bucket
+  of 256 and decrypts at most thirty chapters of 1,189, and the reader counts what it opened so the
+  tests can say so.
+- The encrypted format is demonstrated by a translation you can actually read. The Berean Standard
+  Bible ships a second time as `BSBX.sabible` — signed, sealed, and delivered as the on-demand
+  resource `encrypted-demo`, so it is not part of the app download. Downloading it derives the
+  content key from the build's seed, seals it to the Secure Enclave, verifies the publisher
+  signature and opens the package; from there it reads, selects and searches like any other
+  translation while its text never exists on the device in the clear. Its policy is deliberately
+  tighter than a public-domain text needs — no notes export, no hand-off to other apps, quotation
+  capped at 25 verses — because the point is to watch the app obey a publisher's terms.
+- The reader draws every translation through one seam (`ChapterTextSource`), so a bundled store, an
+  imported file, an online translation's cache and an encrypted package are read by the same code
+  rather than by four branches that have to be kept in step.
+- On-demand resources now work on the Mac, where they do not exist. `NSBundleResourceRequest` is
+  unavailable on macOS, so the Mac build ships every pack inside the app and asks the bundle rather
+  than the network; a Mac download is one file either way.
 - App icon: a gold sun on the horizon behind the open Bible, with a cross-shaped starburst
   flaring off its rim — the crossing sits on the sun's edge the way a camera flares a light,
   its arms reaching into the sky and its long foot down the sun's face.

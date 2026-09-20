@@ -175,6 +175,35 @@ import Testing
         }
     }
 
+    /// The index the Python tool built, searched by the Swift reader. This is the interop check that
+    /// matters most for the index: the tokeniser, the HKDF derivation, the HMAC tags, the bucket
+    /// arithmetic and the varint posting encoding must all agree between two implementations, and a
+    /// search returning the same verses as the app's own FTS5 index is the proof that they do.
+    @Test(.enabled(if: DemoPackageTests.demoPackagesExist))
+    func theToolsDemoIndexIsSearchedByTheApp() throws {
+        let contentKey = SymmetricKey(data: try Self.hexKeyFile("content.key"))
+        let keyring = try PublisherKeyring(rawPublicKeys: [try Self.hexKeyFile("signing.pub")])
+
+        for abbreviation in ["ASV", "BSB"] {
+            let package = try TranslationPackage.open(url: Self.demoDirectory.appending(path: "\(abbreviation).sabible"),
+                                                      keyring: keyring, contentKey: contentKey)
+            let store = try BibleStore(url: Self.bibles.appending(path: "\(abbreviation).sqlite"))
+            #expect(package.isSearchable)
+            #expect(package.header.index?.tokenizer == PackageSearchIndex.tokenizer)
+            #expect(package.header.index?.buckets == PackageSearchIndex.defaultBucketCount)
+            #expect(package.header.index?.prefixMax == PackageSearchIndex.defaultPrefixMax)
+
+            for query in ["shepherd", "good shep", "\"Jesus wept\"", "faith hope love", "begotten"] {
+                #expect(try package.search(query).map(\.ref) == (try store.search(query)).map(\.ref),
+                        "\(abbreviation): “\(query)” in a package the Python tool built")
+            }
+
+            let counts = package.accessCounts
+            #expect(counts.buckets <= 12, "\(abbreviation) opened \(counts.buckets) of 256 buckets for five searches")
+            #expect(counts.chapters <= 200, "\(abbreviation) decrypted \(counts.chapters) of 1,189 chapters for five searches")
+        }
+    }
+
     /// A wrong key against the tool's own packages, so the claim is tested against the real artefact
     /// and not only against packages this test suite wrote.
     @Test(.enabled(if: DemoPackageTests.demoPackagesExist))
