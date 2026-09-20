@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		025956EECFE872BC95A8443F /* SpeechVoices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE6DDBF2634E788D5943D3E /* SpeechVoices.swift */; };
 		04D830796F2E075C4F9903DF /* DemoLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBF73DDF91E6EEBFC83A4E4A /* DemoLibrary.swift */; };
+		05614EFAE3F9B7A6ECC8DC2E /* LifeBibleImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE510A41385BD38538A93FBF /* LifeBibleImportView.swift */; };
 		0BDC13BEB61126BB6A23EF3F /* DailyVerseLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F0BC99CE5196F68A181398 /* DailyVerseLibrary.swift */; };
 		0CF01B3F1ADEB43A40A34C2F /* DailyVerses.json in Resources */ = {isa = PBXBuildFile; fileRef = 7FB470D843314F7FBBD87D39 /* DailyVerses.json */; };
 		102A001B3B3B421E170724C3 /* OnlineTranslations.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6A3452FD42CAA93C1C07421 /* OnlineTranslations.swift */; };
@@ -300,6 +301,7 @@
 		E89B7FA335AFEC30772AF2F1 /* ASV.sabible */ = {isa = PBXFileReference; path = ASV.sabible; sourceTree = "<group>"; };
 		EB6A1A0C6A57B6779BD9E5D1 /* KeepsakeCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeepsakeCreateView.swift; sourceTree = "<group>"; };
 		EDFB8603886458A9C59AFF53 /* FavoritesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesSection.swift; sourceTree = "<group>"; };
+		EE510A41385BD38538A93FBF /* LifeBibleImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeBibleImportView.swift; sourceTree = "<group>"; };
 		F3121B576043D263B63F71D1 /* LegacyLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyLibrary.swift; sourceTree = "<group>"; };
 		F435AEBC1B470F11ED9904CE /* InterlinearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterlinearView.swift; sourceTree = "<group>"; };
 		F4B2F7865CBE3F11E9B378EA /* LegacyReadingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyReadingViews.swift; sourceTree = "<group>"; };
@@ -371,6 +373,7 @@
 				F0BB80B66372486439021887 /* FamilyShare */,
 				672E9057CB451F5E4C533E33 /* Favorites */,
 				F2CAA7E3B362F0583BA4A3ED /* Generated */,
+				BE3FDF2352EF0B01134804FF /* Import */,
 				92D5420334DFE1CF1064198F /* Legacy */,
 				3B9C8ACFC15EDD2875E1A5BA /* Listen */,
 				CC9EA9E52CD4B2C3E2D6B007 /* Navigation */,
@@ -589,6 +592,14 @@
 				A1B1B91644B5AE4258AB26FA /* TranslationsView.swift */,
 			);
 			path = Translations;
+			sourceTree = "<group>";
+		};
+		BE3FDF2352EF0B01134804FF /* Import */ = {
+			isa = PBXGroup;
+			children = (
+				EE510A41385BD38538A93FBF /* LifeBibleImportView.swift */,
+			);
+			path = Import;
 			sourceTree = "<group>";
 		};
 		BEA2DCE6C961790116395B48 /* Camera */ = {
@@ -1048,6 +1059,7 @@
 				141BB91B972E57BB28053467 /* LegacyReadingViews.swift in Sources */,
 				581B9288A814AD5AA93E385B /* LegacySettingsView.swift in Sources */,
 				7734D8B37A8BB71D78A139D9 /* LegacySupport.swift in Sources */,
+				05614EFAE3F9B7A6ECC8DC2E /* LifeBibleImportView.swift in Sources */,
 				86D64FB0F0463FCCA4C04061 /* ListenController.swift in Sources */,
 				20A64AED5FB99726FC5CD027 /* MapGeometry.swift in Sources */,
 				375DF89AEBFA8910FCA271AA /* MiSpeaksClient.swift in Sources */,

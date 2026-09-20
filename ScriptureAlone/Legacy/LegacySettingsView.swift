@@ -36,6 +36,7 @@ struct LegacySettingsView: View {
     @State private var importing = false
     @State private var importRequest: KeepsakeImportRequest?
     @State private var exportingNotes = false
+    @State private var importingLifeBible = false
     @State private var pendingRemoval: LegacyLibrary.Entry?
 
     var body: some View {
@@ -92,6 +93,19 @@ struct LegacySettingsView: View {
 
                 Section {
                     Button {
+                        importingLifeBible = true
+                    } label: {
+                        Label("Bring Notes From Another App…", systemImage: "square.and.arrow.down")
+                    }
+                } header: {
+                    Text("Coming From Somewhere Else")
+                } footer: {
+                    Text("If you've been reading in Life Bible — the app formerly called Tecarta "
+                         + "Bible — your notes, highlights and saved verses can come with you.")
+                }
+
+                Section {
+                    Button {
                         exportingNotes = true
                     } label: {
                         Label("Export All Notes…", systemImage: "square.and.arrow.up")
@@ -129,6 +143,7 @@ struct LegacySettingsView: View {
             .sheet(item: $importRequest) { request in
                 KeepsakeImportSheet(url: request.url)
             }
+            .sheet(isPresented: $importingLifeBible) { LifeBibleImportView() }
             .sheet(isPresented: $exportingNotes) {
                 NotesExportSheet(notes: notes.map(\.exportValue).canonicallySorted, title: "Notes")
             }

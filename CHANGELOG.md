@@ -21,6 +21,12 @@
   edition until every hash was identified. Searching the commonest word in scripture opens one bucket
   of 256 and decrypts at most thirty chapters of 1,189, and the reader counts what it opened so the
   tests can say so.
+- Your notes can come with you from Life Bible — the app that used to be called Tecarta Bible.
+  Keepsake & Export → Bring Notes From Another App reads the `LifeBibleData.zip` it exports, and
+  brings across notes on verses, journal entries, highlights with their colours, and saved verses.
+  It says what it found before writing anything, names anything it could not place rather than
+  guessing at a verse, and running it twice adds nothing twice.
+
 - The translation you were reading comes back when you reopen the app. Only the bundled
   translations exist at launch — imports arrive from the library and online ones from your keys, a
   moment later — so a reader whose translation was either of those found it missing, and the app
