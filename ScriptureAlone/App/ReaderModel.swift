@@ -2,11 +2,39 @@ import Foundation
 import Observation
 import ScriptureAloneCore
 
-/// The bundled translations. Licensed translations will be added here as agreements land.
+/// A translation the reader can choose: bundled, imported, or read over the network.
 struct TranslationEntry: Identifiable, Hashable {
+    enum Source: Hashable {
+        /// A SQLite store on disk — bundled or imported.
+        case local(URL)
+        /// Fetched from a publisher's API with the reader's own key. `id` is the provider's own
+        /// identifier for the translation.
+        case online(provider: OnlineProvider, remoteID: String)
+    }
+
     let id: String
     let name: String
-    let url: URL
+    let source: Source
+
+    var url: URL? {
+        if case .local(let url) = source { return url }
+        return nil
+    }
+
+    var isOnline: Bool {
+        if case .online = source { return true }
+        return false
+    }
+
+    init(id: String, name: String, url: URL) {
+        self.init(id: id, name: name, source: .local(url))
+    }
+
+    init(id: String, name: String, source: Source) {
+        self.id = id
+        self.name = name
+        self.source = source
+    }
 }
 
 @Observable
@@ -32,6 +60,14 @@ final class ReaderModel {
     private(set) var recentSearches: [String] = []
 
     private var stores: [String: BibleStore] = [:]
+    /// Set while an online chapter is being fetched, so the reader can say so instead of
+    /// showing an empty page.
+    private(set) var isFetching = false
+    /// The online translation in use, when the current text comes from an API rather than a file.
+    private(set) var onlineTranslation: (entry: TranslationEntry, info: TranslationInfo)?
+    /// Supplied by the app so the model needn't know about keychains or providers.
+    var onlineLoader: (@MainActor (TranslationEntry, ChapterRef) async throws -> [VerseText])?
+    @ObservationIgnored private var fetchTask: Task<Void, Never>?
     private let defaults = UserDefaults.standard
     private let cloud = NSUbiquitousKeyValueStore.default
 
@@ -60,22 +96,57 @@ final class ReaderModel {
     /// Adds the imported translations to the pickers. Called after an import or a removal, so
     /// the toolbar menu and the Translations screen agree without either owning the other's list.
     func refreshTranslations(imported: [(TranslationInfo, URL)]) {
-        let extra = imported.map { TranslationEntry(id: $0.0.id, name: $0.0.name, url: $0.1) }
-        translations = bundledTranslations + extra.sorted {
+        importedEntries = imported.map { TranslationEntry(id: $0.0.id, name: $0.0.name, url: $0.1) }
+        rebuildTranslations()
+    }
+
+    private var importedEntries: [TranslationEntry] = []
+
+    private func rebuildTranslations() {
+        let added = (importedEntries + onlineEntries).sorted {
             $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
-        // An imported store that has gone away must not stay selected.
+        translations = bundledTranslations + added
+        // A translation that has gone away — a deleted import, a removed key — must not stay
+        // selected, or the reader is left staring at a chapter that can never load.
         if !translations.contains(where: { $0.id == translationID }) {
             selectTranslation(Self.defaultTranslation)
         }
     }
 
-    var translationID: String { store?.info.id ?? Self.defaultTranslation }
+    /// Online translations, as configured by the reader's keys. Kept apart from imports so a
+    /// key removal doesn't disturb files on disk, and vice versa.
+    private(set) var onlineEntries: [TranslationEntry] = []
+
+    func setOnlineTranslations(_ entries: [TranslationEntry]) {
+        onlineEntries = entries
+        rebuildTranslations()
+    }
+
+    var translationID: String { onlineTranslation?.entry.id ?? store?.info.id ?? Self.defaultTranslation }
+
+    /// What the reader is reading, for attribution and for the rules about what may leave the
+    /// device. An online translation has no store, but it still has a licence.
+    var translationInfo: TranslationInfo? { onlineTranslation?.info ?? store?.info }
 
     func selectTranslation(_ id: String) {
         guard let entry = translations.first(where: { $0.id == id }) else { return }
+        if case .online(let provider, _) = entry.source {
+            store = nil
+            layout = nil
+            loadError = nil
+            onlineTranslation = (entry, TranslationInfo(id: entry.id, name: entry.name,
+                                                        abbreviation: entry.id,
+                                                        copyright: provider.copyrightNotice,
+                                                        license: provider.licenseSummary))
+            defaults.set(id, forKey: "translation")
+            load()
+            return
+        }
+        onlineTranslation = nil
+        guard let url = entry.url else { return }
         do {
-            let store = try stores[id] ?? BibleStore(url: entry.url)
+            let store = try stores[id] ?? BibleStore(url: url)
             stores[id] = store
             self.store = store
             defaults.set(id, forKey: "translation")
@@ -88,7 +159,8 @@ final class ReaderModel {
 
     func store(for id: String) -> BibleStore? {
         if let store = stores[id] { return store }
-        guard let entry = translations.first(where: { $0.id == id }), let store = try? BibleStore(url: entry.url) else { return nil }
+        guard let entry = translations.first(where: { $0.id == id }), let url = entry.url,
+              let store = try? BibleStore(url: url) else { return nil }
         stores[id] = store
         return store
     }
@@ -120,6 +192,10 @@ final class ReaderModel {
     func previous() { if let previous = location.previous { show(previous) } }
 
     private func load() {
+        if let online = onlineTranslation {
+            loadOnline(online.entry)
+            return
+        }
         guard let store else { return }
         do {
             layout = try store.layout(for: location)
@@ -127,6 +203,32 @@ final class ReaderModel {
         } catch {
             layout = nil
             loadError = error.localizedDescription
+        }
+    }
+
+    /// Fetches a chapter the app is not allowed to ship. The previous chapter stays on screen
+    /// until the new one arrives, so turning a page doesn't blank the reader on a slow network.
+    private func loadOnline(_ entry: TranslationEntry) {
+        guard let onlineLoader else {
+            loadError = "This translation needs a key. Add one in Manage Translations."
+            layout = nil
+            return
+        }
+        fetchTask?.cancel()
+        let chapter = location
+        isFetching = true
+        fetchTask = Task { @MainActor [weak self] in
+            defer { self?.isFetching = false }
+            do {
+                let verses = try await onlineLoader(entry, chapter)
+                guard !Task.isCancelled, let self, self.location == chapter else { return }
+                self.layout = ChapterLayout.prose(verses)
+                self.loadError = verses.isEmpty ? "That chapter came back empty." : nil
+            } catch {
+                guard !Task.isCancelled, let self, self.location == chapter else { return }
+                self.layout = nil
+                self.loadError = error.localizedDescription
+            }
         }
     }
 

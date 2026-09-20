@@ -32,6 +32,36 @@ enum OnlineProvider: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+
+    /// The notice that must travel with this publisher's text.
+    var copyrightNotice: String {
+        switch self {
+        case .crossway: ESVClient.requiredCopyright
+        case .apiBible: "Used by permission of the publisher through API.Bible."
+        }
+    }
+
+    var licenseSummary: String {
+        switch self {
+        case .crossway: "Licensed — read from Crossway's API with your key"
+        case .apiBible: "Licensed — read from API.Bible with your key"
+        }
+    }
+
+    /// What this provider serves, as the app offers them.
+    var translations: [(id: String, name: String, remoteID: String)] {
+        switch self {
+        case .crossway:
+            [("ESV", "English Standard Version", "esv")]
+        case .apiBible:
+            // The free Starter plan allows three copyrighted translations; the reader chooses
+            // which on API.Bible's own site, and the app offers the ones it knows how to name.
+            [("CSB", "Christian Standard Bible", "csb"),
+             ("NASB", "New American Standard Bible", "nasb"),
+             ("NKJV", "New King James Version", "nkjv")]
+        }
+    }
+
     var explanation: String {
         switch self {
         case .crossway:

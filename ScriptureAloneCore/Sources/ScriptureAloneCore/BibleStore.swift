@@ -7,6 +7,14 @@ public struct TranslationInfo: Hashable, Sendable, Identifiable {
     public let abbreviation: String
     public let copyright: String
     public let license: String
+
+    public init(id: String, name: String, abbreviation: String, copyright: String, license: String) {
+        self.id = id
+        self.name = name
+        self.abbreviation = abbreviation
+        self.copyright = copyright
+        self.license = license
+    }
 }
 
 public struct VerseText: Hashable, Sendable {

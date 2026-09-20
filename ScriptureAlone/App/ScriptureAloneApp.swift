@@ -45,6 +45,7 @@ struct ScriptureAloneApp: App {
 private struct RootView: View {
     @State private var model = ReaderModel()
     @State private var library = ImportedLibrary()
+    @State private var onlineKeys = OnlineTranslationKeys()
 
     var body: some View {
         ReaderView()
@@ -53,8 +54,17 @@ private struct RootView: View {
             .widgetSnapshotSync()
             .environment(model)
             .environment(library)
+            .environment(onlineKeys)
             // Translations the reader added are part of the picker from the first frame.
-            .task { model.refreshTranslations(imported: library.entries.map { ($0.info, $0.url) }) }
+            .task {
+                model.refreshTranslations(imported: library.entries.map { ($0.info, $0.url) })
+                // A Crossway key is enough to offer the ESV; API.Bible's picks are restored by
+                // the keys screen, which is the only place that knows the opaque ids.
+                model.setOnlineTranslations(OnlineCatalog.entries(keys: onlineKeys, apiBible: [],
+                                                                  chosen: []))
+                let loader = OnlineTextLoader(keys: onlineKeys)
+                model.onlineLoader = { entry, chapter in try await loader.chapter(entry, chapter) }
+            }
             #if os(macOS)
             .frame(minWidth: 520, minHeight: 480)
             #endif

@@ -10,6 +10,7 @@ struct TranslationsView: View {
 
     @State private var showFileImporter = false
     @State private var showCatalog = false
+    @State private var showKeys = false
     @State private var importing: String?
     @State private var failure: String?
     @State private var finished: BibleImportResult?
@@ -21,6 +22,19 @@ struct TranslationsView: View {
                 Section("Included") {
                     ForEach(model.bundledTranslations) { entry in
                         row(name: entry.name, abbreviation: entry.id, note: nil)
+                    }
+                }
+
+                let online = model.translations.filter(\.isOnline)
+                if !online.isEmpty {
+                    Section {
+                        ForEach(online) { entry in
+                            row(name: entry.name, abbreviation: entry.id, note: "Read over the network")
+                        }
+                    } header: {
+                        Text("Online")
+                    } footer: {
+                        Text("These need a connection. What you read is cached up to the publisher's limit, and they can't be searched offline.")
                     }
                 }
 
@@ -41,10 +55,11 @@ struct TranslationsView: View {
                 Section {
                     Button("Browse Free Translations…", systemImage: "globe") { showCatalog = true }
                     Button("Import a File…", systemImage: "folder") { showFileImporter = true }
+                    Button("Online Translations…", systemImage: "key") { showKeys = true }
                 } header: {
                     Text("Add a Translation")
                 } footer: {
-                    Text("Free translations come from eBible.org, and nothing is downloaded until you choose one. A file can be a USFM zip or an ePub you own — anything copy-protected is refused. Added translations stay on this device.")
+                    Text("Free translations come from eBible.org, and nothing is downloaded until you choose one. A file can be a USFM zip or an ePub you own — anything copy-protected is refused. The ESV, CSB, NASB and NKJV can't be given away by anyone, so they're read over the network with your own free key.")
                 }
             }
             .formStyle(.grouped)
@@ -56,6 +71,13 @@ struct TranslationsView: View {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
             .overlay { if let importing { ImportingOverlay(name: importing) } }
+        }
+        .sheet(isPresented: $showKeys) {
+            OnlineKeysView()
+                .environment(model)
+                #if os(macOS)
+                .frame(minWidth: 520, minHeight: 560)
+                #endif
         }
         .sheet(isPresented: $showCatalog) {
             CatalogView { translation, url in
