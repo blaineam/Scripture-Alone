@@ -101,3 +101,15 @@ Without them the app builds, archives and exports cleanly, and Xcode says nothin
 Cloud fails the run at `Preparing build for App Store Connect` with no further detail. The
 extension's bundle identifier also needs the **App Groups** capability enabled in the developer
 portal, or automatic signing cannot build a profile for it.
+
+Get any of it wrong and App Store Connect rejects the *delivery*, so the build never becomes a
+build record — nothing is burned, but the only description of the problem is the ITMS mail Apple
+sends afterwards. Xcode Cloud itself says nothing beyond `Preparing build for App Store Connect
+failed`. Two that cost a round trip each:
+
+- **`ITMS-90979`** — `EXPrincipalClass` and `EXExtensionPrincipalClass` are *disallowed* when the
+  extension binary has a `__swift5_entry` section, which is exactly what `@main` emits. The Swift
+  entry point already is the principal class. Declare only `EXExtensionPointIdentifier`.
+- **`ITMS-90923`/`90924`** demanding `BAManifestURL`, `BAMaxInstallSize` and
+  `BAInitialDownloadRestrictions.*` mean the app was read as *self-hosted*. That is the symptom of
+  the three keys above being absent, not an instruction to add the legacy ones.

@@ -22,8 +22,6 @@
 	<dict>
 		<key>EXExtensionPointIdentifier</key>
 		<string>com.apple.background-asset-downloader-extension</string>
-		<key>EXPrincipalClass</key>
-		<string>$(PRODUCT_MODULE_NAME).AssetDownloader</string>
 	</dict>
 </dict>
 </plist>

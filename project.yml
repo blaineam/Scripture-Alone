@@ -148,9 +148,14 @@ targets:
         CFBundleDisplayName: Scripture Alone Assets
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # No EXPrincipalClass. `@main` on AssetDownloader emits a `__swift5_entry` section, and
+        # App Store Connect rejects the build when both are present:
+        #   ITMS-90979: Disallowed Info.plist key — The EXPrincipalClass and
+        #   EXExtensionPrincipalClass keys aren't allowed … because the __swift5_entry section is
+        #   detected in the Mach-O header.
+        # The Swift entry point is the principal class; naming it again is the contradiction.
         EXAppExtensionAttributes:
           EXExtensionPointIdentifier: com.apple.background-asset-downloader-extension
-          EXPrincipalClass: $(PRODUCT_MODULE_NAME).AssetDownloader
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAlone.assets
