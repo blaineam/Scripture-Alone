@@ -21,6 +21,13 @@
   edition until every hash was identified. Searching the commonest word in scripture opens one bucket
   of 256 and decrypts at most thirty chapters of 1,189, and the reader counts what it opened so the
   tests can say so.
+- The icon's starburst is white, and no longer seams. It had been drawn as a hub rectangle with
+  four triangles abutting it, and two independently anti-aliased edges never sum to full coverage
+  along the edge they share — so every join showed a hairline, which the layer's glass shading then
+  lit. It is one continuous outline now, with no internal edges to seam. The sun is centred in the
+  square, and the burst's left and right arms match its top; the bottom still reaches down into
+  the sun.
+
 - An online translation opens on launch instead of claiming it needs a key. The app installed the
   code that fetches chapters *after* registering the translations — and registering them can
   select one immediately, now that your last translation is restored. So the first fetch of the

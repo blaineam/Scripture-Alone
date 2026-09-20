@@ -1,3 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <path fill="#FFF0CB" d="M 497 231 L 527 231 L 527 257 L 497 257 Z M 497 231 L 512 94 L 527 231 Z M 497 257 L 512 560 L 527 257 Z M 527 231 L 758 244 L 527 257 Z M 497 231 L 266 244 L 497 257 Z"/>
+  <!-- One continuous outline, not a hub rectangle with four triangles abutting it. Abutting shapes
+       share an exact edge, and two independently anti-aliased edges never sum to full coverage
+       along it, so every join showed a hairline seam — which the layer's glass shading then lit.
+       A single closed path has no internal edges to seam.
+       Arms: left and right match the top at 150; the bottom stays longer, reaching into the sun. -->
+  <path fill="#FFFFFF" d="M 512 136 L 527 273 L 662 286 L 527 299 L 512 602 L 497 299 L 362 286 L 497 273 Z"/>
 </svg>
