@@ -1,0 +1,15 @@
+{
+  "assetPackID": "interlinear",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Study/Interlinear.sqlite",
+      "fileDestination": "Interlinear.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

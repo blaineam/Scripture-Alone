@@ -33,17 +33,17 @@ struct InterlinearView: View {
                     VStack(spacing: 12) {
                         ProgressView(value: downloadFraction)
                             .frame(maxWidth: 220)
-                        Text("Downloading \(OnDemandPack.interlinear.title)…").font(.callout)
-                        Text(OnDemandPack.interlinear.explanation)
+                        Text("Downloading \(StudyPack.interlinear.title)…").font(.callout)
+                        Text(StudyPack.interlinear.explanation)
                             .font(.caption).foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                     }
                     .padding()
                 } else if InterlinearLibrary.shared.store == nil, words.isEmpty, failure == nil {
                     ContentUnavailableView {
-                        Label(OnDemandPack.interlinear.title, systemImage: "arrow.down.circle")
+                        Label(StudyPack.interlinear.title, systemImage: "arrow.down.circle")
                     } description: {
-                        Text(OnDemandPack.interlinear.explanation)
+                        Text(StudyPack.interlinear.explanation)
                     } actions: {
                         Button("Download") { Task { await prepareAndLoad() } }
                     }
@@ -63,7 +63,7 @@ struct InterlinearView: View {
                 // Already downloaded: open it without asking. Not downloaded: the reader is shown
                 // the size and taps to fetch, because 11 MB on a cellular connection is their
                 // decision, not ours.
-                if InterlinearLibrary.shared.store != nil || OnDemandLibrary.shared.isReady(.interlinear) {
+                if InterlinearLibrary.shared.store != nil || StudyAssetLibrary.shared.isReady(.interlinear) {
                     await prepareAndLoad()
                 }
             }
@@ -163,7 +163,7 @@ struct InterlinearView: View {
     }
 
     private var downloadFraction: Double {
-        if case .downloading(let value) = OnDemandLibrary.shared.state(of: .interlinear) { return value }
+        if case .downloading(let value) = StudyAssetLibrary.shared.state(of: .interlinear) { return value }
         return 0
     }
 
@@ -184,7 +184,7 @@ struct InterlinearView: View {
 
     private func load() {
         guard let store else {
-            if case .failed(let message) = OnDemandLibrary.shared.state(of: .interlinear) {
+            if case .failed(let message) = StudyAssetLibrary.shared.state(of: .interlinear) {
                 failure = message
             } else {
                 failure = "The original-language data isn't available yet."
@@ -220,7 +220,7 @@ final class InterlinearLibrary {
     private init() { open() }
 
     private func open() {
-        guard store == nil, let url = OnDemandLibrary.shared.url(of: .interlinear) else { return }
+        guard store == nil, let url = StudyAssetLibrary.shared.url(of: .interlinear) else { return }
         store = try? InterlinearStore(url: url)
     }
 
@@ -228,7 +228,7 @@ final class InterlinearLibrary {
     @discardableResult
     func prepare() async -> Bool {
         if store != nil { return true }
-        guard await OnDemandLibrary.shared.ensure(.interlinear) else { return false }
+        guard await StudyAssetLibrary.shared.ensure(.interlinear) else { return false }
         open()
         return store != nil
     }

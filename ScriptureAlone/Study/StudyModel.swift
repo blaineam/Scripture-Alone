@@ -28,7 +28,7 @@ final class StudyModel {
     var store: StudyStore? {
         if let loadedStore { return loadedStore }
         guard !loadFailed else { return nil }
-        guard let url = OnDemandLibrary.shared.url(of: .commentary) else { return nil }
+        guard let url = StudyAssetLibrary.shared.url(of: .commentary) else { return nil }
         guard let store = try? StudyStore(url: url) else {
             loadFailed = true
             return nil
@@ -41,14 +41,14 @@ final class StudyModel {
     @discardableResult
     func prepareStore() async -> Bool {
         if store != nil { return true }
-        guard await OnDemandLibrary.shared.ensure(.commentary) else { return false }
+        guard await StudyAssetLibrary.shared.ensure(.commentary) else { return false }
         return store != nil
     }
 
     /// What to tell the reader while they wait, or nil when there is nothing to wait for.
-    var downloadState: OnDemandLibrary.State? {
+    var downloadState: StudyAssetLibrary.State? {
         guard loadedStore == nil else { return nil }
-        return OnDemandLibrary.shared.state(of: .commentary)
+        return StudyAssetLibrary.shared.state(of: .commentary)
     }
 
     /// A tap in the text while study mode is on.

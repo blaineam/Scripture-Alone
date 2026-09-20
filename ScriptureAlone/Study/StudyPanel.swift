@@ -130,8 +130,8 @@ struct StudyPanel: View {
         case .downloading(let fraction):
             VStack(spacing: 12) {
                 ProgressView(value: fraction).frame(maxWidth: 220)
-                Text("Downloading \(OnDemandPack.commentary.title)…").font(.callout)
-                Text(OnDemandPack.commentary.explanation)
+                Text("Downloading \(StudyPack.commentary.title)…").font(.callout)
+                Text(StudyPack.commentary.explanation)
                     .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
             }
             .padding()
@@ -145,9 +145,9 @@ struct StudyPanel: View {
             }
         default:
             ContentUnavailableView {
-                Label(OnDemandPack.commentary.title, systemImage: "arrow.down.circle")
+                Label(StudyPack.commentary.title, systemImage: "arrow.down.circle")
             } description: {
-                Text(OnDemandPack.commentary.explanation)
+                Text(StudyPack.commentary.explanation)
             } actions: {
                 Button("Download") { Task { await study.prepareStore() } }
             }

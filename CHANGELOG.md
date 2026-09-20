@@ -28,6 +28,15 @@
   square, and the burst's left and right arms match its top; the bottom still reaches down into
   the sun.
 
+- The commentary and the original-language database are downloaded once and kept, instead of again
+  after every app update. They were On-Demand Resources, and ODR ties a pack to an app *version* —
+  Apple's own words: the system "does not have any notion of understanding whether the files in an
+  asset pack are identical across app versions" — so 55 MB came down again on every update even
+  though nothing in it had changed. They are Apple-hosted Background Assets now, uploaded
+  separately from the build, and once fetched each database is copied into the app's own storage,
+  where it survives every future update. ODR is also deprecated as of iOS 27, so this was coming
+  regardless.
+
 - The Hebrew and Greek behind a verse is available in every translation, not only the Berean
   Standard Bible. The word-by-word data is keyed to the BSB's wording, and the whole feature was
   gated on that — so anyone reading the ASV, the KJV, an import or an online translation was denied
