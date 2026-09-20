@@ -1,3 +1,7 @@
+// Neither service is reached from the watch: it receives text through the CloudKit/WCSession
+// snapshot, never over the network, and the types these build (`ParsedPassage`, the layout blocks)
+// come from `Import/`, which arm64_32 cannot compile. Same guard as `OnlineChapterCache`.
+#if !os(watchOS)
 import Foundation
 
 /// One translation the reader's API.Bible key can reach.
@@ -73,7 +77,7 @@ public struct APIBibleClient: Sendable {
         }
     }
 
-    public func chapter(_ chapter: ChapterRef, session: URLSession = .shared) async throws -> [VerseText] {
+    public func chapter(_ chapter: ChapterRef, session: URLSession = .shared) async throws -> ParsedPassage {
         // Chapter ids are "<USFM book code>.<number>" — the same three-letter codes `Canon`
         // already carries, so nothing new has to be mapped.
         let chapterID = "\(chapter.book.code).\(chapter.chapter)"
@@ -81,17 +85,21 @@ public struct APIBibleClient: Sendable {
             url: Self.base.appending(path: "bibles/\(bibleID)/chapters/\(chapterID)"),
             resolvingAgainstBaseURL: false)!
         components.queryItems = [
-            .init(name: "content-type", value: "text"),
+            // HTML, not text. Their markup is USFM with the markers as class names — `wj` for
+            // the words of Jesus, `q1`/`q2` for poetry, `d` for a psalm's superscription, `s1`
+            // for a heading — which is the same vocabulary this app's own layout speaks. Asking
+            // for text renders all of that away.
+            .init(name: "content-type", value: "html"),
             .init(name: "include-verse-numbers", value: "true"),
             .init(name: "include-chapter-numbers", value: "false"),
             .init(name: "include-notes", value: "false"),
-            .init(name: "include-titles", value: "false"),
+            .init(name: "include-titles", value: "true"),
         ]
         let data = try await get(components.url!, session: session, reference: chapter.display)
         let decoded = try JSONDecoder().decode(ChapterResponse.self, from: data)
-        let verses = BracketVerseParser.parse(decoded.data.content, in: chapter)
-        guard !verses.isEmpty else { throw Failure.empty(chapter.display) }
-        return verses
+        let passage = APIBiblePassageHTML.parse(decoded.data.content, in: chapter)
+        guard !passage.isEmpty else { throw Failure.empty(chapter.display) }
+        return passage
     }
 
     private func get(_ url: URL, session: URLSession, reference: String) async throws -> Data {
@@ -158,3 +166,4 @@ public struct APIBibleClient: Sendable {
         let data: Payload
     }
 }
+#endif

@@ -155,22 +155,20 @@ public final class OnlineChapterCache: @unchecked Sendable {
 
     /// Inserts or replaces one chapter, evicting whatever must go to stay under the ceiling.
     ///
-    /// One paragraph block with every verse numbered, matching `ChapterLayout.prose(_:)`.
+    /// Inserts or replaces one chapter, with whatever structure the provider supplied.
     ///
-    /// Not because the providers send prose — they send poetry as hard newlines and leading spaces
-    /// — but because whitespace cannot distinguish a poetic line from a wrapped one, so
-    /// `BracketVerseParser` normalises it away rather than guess. An online psalm therefore reads
-    /// as a paragraph where a bundled one reads as verse. Giving it back its shape means asking a
-    /// provider for a format that names its blocks — API.Bible's HTML carries `q1`/`q2`/`p`
-    /// classes — and building that against a captured response rather than an assumption.
+    /// Both services are asked for HTML now, which names its blocks — so an online psalm arrives
+    /// as poetry lines with its superscription, and the words of Christ arrive as red. `blocks`
+    /// is empty only for a source that cannot say, and then the chapter is one paragraph as before.
     @discardableResult
-    public func store(_ verses: [VerseText], for chapter: ChapterRef) throws -> CacheWrite {
+    public func store(_ verses: [VerseText], blocks: [ExtractedBlock] = [],
+                      for chapter: ChapterRef) throws -> CacheWrite {
         let rows = verses.filter { $0.ref.chapterKey == chapter }.sorted { $0.ref < $1.ref }
         guard !rows.isEmpty else {
             return CacheWrite(chapter: chapter, versesStored: 0, evicted: [],
                               cachedVerses: try cachedVerseCount(), exceedsLimit: false)
         }
-        let layout = try Self.layout(for: rows)
+        let layout = try Self.layout(for: rows, blocks: blocks)
 
         return try mutate { db in
             let held: Int = try Self.value(db, "SELECT verses FROM cache_state WHERE book = ?1 AND chapter = ?2",
@@ -253,13 +251,20 @@ public final class OnlineChapterCache: @unchecked Sendable {
     /// One paragraph, every verse numbered — the same shape as `ChapterLayout.prose(_:)`, encoded
     /// with the builder's own writer so the JSON matches a bundled store exactly. See the note on
     /// `store(_:for:)` for why an online chapter carries no poetry blocks.
-    static func layout(for rows: [VerseText]) throws -> String {
-        let fragments = rows.map { row in
-            ExtractedFragment(verse: row.ref.verse, numbered: true, text: row.text,
-                              spans: scalarSpans(row.red, in: row.text))
+    static func layout(for rows: [VerseText], blocks: [ExtractedBlock] = []) throws -> String {
+        // The provider's own structure when it gave us one — paragraphs, poetry lines, psalm
+        // titles, headings. Falling back to a single paragraph only when it did not.
+        let shape: [ExtractedBlock]
+        if blocks.isEmpty {
+            shape = [ExtractedBlock(kind: .paragraph, fragments: rows.map { row in
+                ExtractedFragment(verse: row.ref.verse, numbered: true, text: row.text,
+                                  spans: scalarSpans(row.red, in: row.text))
+            })]
+        } else {
+            shape = blocks
         }
         do {
-            return try ImportedBibleBuilder.layoutJSON([ExtractedBlock(kind: .paragraph, fragments: fragments)])
+            return try ImportedBibleBuilder.layoutJSON(shape)
         } catch {
             throw OnlineCacheError.write("couldn’t encode the chapter layout")
         }
@@ -359,7 +364,7 @@ public final class OnlineChapterCache: @unchecked Sendable {
     }
 
     /// Bumped whenever text written into the cache would come out differently. See `isUsable`.
-    static let textFormatVersion = "2"
+    static let textFormatVersion = "3"
 
 
     private func create() throws {

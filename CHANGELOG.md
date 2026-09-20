@@ -67,6 +67,16 @@
   reader refuses to draw a mismatch, and a fetch for a different chapter shows that it is loading.
   Re-reading the chapter already on screen keeps its text, since there is nothing to confuse.
 
+- Online translations have the words of Christ in red, and psalms that look like psalms. Both
+  services were being asked for plain text, which is a *rendering* — and everything that makes
+  scripture look like scripture is thrown away in making it. Crossway's text endpoint has no
+  red-letter option at all, and API.Bible's text output is a flat string. Asked for HTML instead,
+  both state their structure outright: the ESV marks the words of Christ and its poetry lines, and
+  API.Bible's markup is USFM with the markers as class names — the same vocabulary this app's own
+  layout speaks. So an online chapter now arrives with its red letters, its poetry, its psalm
+  superscriptions and its headings, rather than as one flat paragraph. Chapters cached under the
+  old rules are re-fetched.
+
 - An online translation no longer renders with broken spacing. Both APIs send poetry as hard
   newlines and leading spaces — the shape a terminal would print — and the reader was drawing them
   literally, which produced breaks in the middle of a sentence, stray indents, and two verses

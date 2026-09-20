@@ -71,17 +71,19 @@ struct OnlineTextLoader {
         }
 
         guard let key = keys.key(for: provider) else { throw Failure.needsKey(provider) }
-        let verses: [VerseText]
+        let passage: ParsedPassage
         switch provider {
         case .crossway:
-            verses = try await ESVClient(key: key).chapter(chapter)
+            passage = try await ESVClient(key: key).chapter(chapter)
         case .apiBible:
-            verses = try await APIBibleClient(key: key, bibleID: remoteID).chapter(chapter)
+            passage = try await APIBibleClient(key: key, bibleID: remoteID).chapter(chapter)
         }
 
         try await Task.detached(priority: .userInitiated) {
             let cache = try OnlineChapterCache(url: url, translation: translation)
-            try cache.store(verses, for: chapter)
+            // The chapter's own shape goes in with it: poetry lines, psalm titles, headings, and
+            // the words of Christ, all of which the plain-text endpoints had rendered away.
+            try cache.store(passage.verses, blocks: passage.blocks, for: chapter)
         }.value
         // The cache swaps the file underneath, so a store opened before the write cannot see the
         // new chapter — it is re-opened rather than reused.
