@@ -440,6 +440,59 @@ def add_policy_arguments(parser: argparse.ArgumentParser) -> None:
                        help="a JSON file of the same keys, applied over the flags above")
 
 
+
+# The demonstration key is published on purpose. It protects a public-domain text, so secrecy would
+# be theatre; what it demonstrates is the *mechanism* — signature, per-chapter AEAD, policy
+# enforcement, Secure Enclave storage — running end to end in the shipping app, on a translation
+# nobody has to licence. A real package uses a key the publisher generates and keeps.
+DEMO_SEED = bytes.fromhex("5343524950545552452d414c4f4e452d44454d4f2d534545442d76312d2121")
+
+
+def cmd_bundle_demo(args) -> int:
+    """Packages the bundled BSB into ScriptureAlone/Resources/Packages/, ready to ship as ODR."""
+    import hashlib, hmac
+    repo = pathlib.Path(args.repo)
+    store = repo / "ScriptureAlone/Resources/Bibles/BSB.sqlite"
+    if not store.exists():
+        print(f"no store at {store}", file=sys.stderr)
+        return 1
+    out_dir = repo / "ScriptureAlone/Resources/Packages"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Same derivation the app uses: HKDF-SHA256(seed, salt, info=translation id).
+    content_key = hkdf_sha256(DEMO_SEED, b"scripture-alone-content-key-v1", b"BSB-DEMO", 32)
+    signing_key = ed25519.Ed25519PrivateKey.from_private_bytes(
+        hashlib.sha256(b"scripture-alone-demo-signing-v1").digest())
+
+    identity = {
+        "id": "BSB-DEMO",
+        "name": "Berean Standard Bible (Encrypted Demo)",
+        "abbreviation": "BSBx",
+        "publisher": "Berean Bible / demonstration package",
+        "copyright": "Public domain, dedicated 30 April 2023 by Berean Bible.",
+        "license": "Public domain text in a demonstration package — see docs/encrypted-translations.md",
+    }
+    # Deliberately restrictive, so the demonstration shows enforcement rather than describing it.
+    policy = {
+        "allowCopy": True,
+        "allowShare": True,
+        "allowVerseImages": True,
+        "allowNotesExport": False,
+        "allowExternalHandoff": False,
+        "allowOfflineStorage": True,
+        "maxQuotationVerses": 25,
+    }
+    written = build_from_store(store=store, out=out_dir / "BSB-DEMO.sabible",
+                               identity=identity, policy=policy,
+                               content_key=content_key, signing_key=signing_key)
+    pub = signing_key.public_key().public_bytes(
+        serialization.Encoding.Raw, serialization.PublicFormat.Raw)
+    (out_dir / "demo-signing.pub").write_bytes(pub)
+    print(f"wrote {written} ({(out_dir / 'BSB-DEMO.sabible').stat().st_size:,} bytes)")
+    print(f"publisher key: {pub.hex()}")
+    return 0
+
+
 def main(argv: list[str]) -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0],
                                      formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -468,6 +521,11 @@ def main(argv: list[str]) -> None:
     inspect.add_argument("--package", required=True)
     inspect.add_argument("--publisher-key", default=None, help="verify the signature against this public key")
     inspect.set_defaults(handler=command_inspect)
+
+    bundle = commands.add_parser(
+        "bundle-demo",
+        help="package the BSB into the app's resources, with the published demonstration key")
+    bundle.add_argument("--repo", default=str(REPO_ROOT))
 
     demo = commands.add_parser("demo", help="package the bundled public-domain texts with a demonstration key")
     demo.add_argument("--out-dir", default=str(DEMO_DIRECTORY))

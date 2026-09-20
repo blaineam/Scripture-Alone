@@ -135,6 +135,23 @@ final class ReaderModel {
         return try await onlineLoader(entry, chapter)
     }
 
+    /// Search the translation being read, whatever kind it is.
+    ///
+    /// A bundled or imported store has an FTS5 index. An online translation cannot be indexed on
+    /// the device — its terms cap what may be kept — so the provider does the searching, which
+    /// costs one request and is why this is async.
+    func search(_ query: String) async -> [BibleStore.SearchHit] {
+        if let entry = translations.first(where: { $0.id == translationID }), entry.isOnline,
+           let onlineSearch {
+            return (try? await onlineSearch(entry, query)) ?? []
+        }
+        guard let store else { return [] }
+        return (try? store.search(query)) ?? []
+    }
+
+    /// Supplied by the app, like `onlineLoader`, so the model needn't know about keys.
+    var onlineSearch: (@MainActor (TranslationEntry, String) async throws -> [BibleStore.SearchHit])?
+
     var translationID: String { onlineTranslation?.entry.id ?? store?.info.id ?? Self.defaultTranslation }
 
     /// What the reader is reading, for attribution and for the rules about what may leave the

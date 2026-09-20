@@ -113,6 +113,33 @@ public struct APIBibleClient: Sendable {
 
     // MARK: Wire format
 
+
+    /// API.Bible's own search, for the same reason Crossway's is used: the text cannot be indexed
+    /// on the device, so the provider does the searching.
+    public func search(_ query: String, limit: Int = 100,
+                       session: URLSession = .shared) async throws -> [BibleStore.SearchHit] {
+        var components = URLComponents(
+            url: Self.base.appending(path: "bibles/\(bibleID)/search"),
+            resolvingAgainstBaseURL: false)!
+        components.queryItems = [
+            .init(name: "query", value: query),
+            .init(name: "limit", value: String(min(limit, 100))),
+            .init(name: "sort", value: "canonical"),
+        ]
+        let data = try await get(components.url!, session: session, reference: query)
+        let decoded = try JSONDecoder().decode(SearchResponse.self, from: data)
+        return (decoded.data.verses ?? []).compactMap { verse in
+            guard let passage = ReferenceParser.parse(verse.reference) else { return nil }
+            return BibleStore.SearchHit(ref: passage.firstVerse, text: verse.text)
+        }
+    }
+
+    private struct SearchResponse: Decodable {
+        struct Verse: Decodable { let reference: String; let text: String }
+        struct Payload: Decodable { let verses: [Verse]? }
+        let data: Payload
+    }
+
     private struct BiblesResponse: Decodable {
         struct Entry: Decodable {
             struct Language: Decodable { let name: String? }

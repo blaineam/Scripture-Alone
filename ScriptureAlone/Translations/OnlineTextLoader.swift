@@ -39,6 +39,16 @@ struct OnlineTextLoader {
         return base.appending(path: (safe.isEmpty ? "ONLINE" : safe) + ".sqlite")
     }
 
+    /// Searches an online translation at its provider.
+    func search(_ entry: TranslationEntry, _ query: String) async throws -> [BibleStore.SearchHit] {
+        guard case .online(let provider, let remoteID) = entry.source else { return [] }
+        guard let key = keys.key(for: provider) else { throw Failure.needsKey(provider) }
+        switch provider {
+        case .crossway: return try await ESVClient(key: key).search(query)
+        case .apiBible: return try await APIBibleClient(key: key, bibleID: remoteID).search(query)
+        }
+    }
+
     /// Fetches a chapter and files it in the translation's cache, returning the store the reader
     /// should now read from.
     ///

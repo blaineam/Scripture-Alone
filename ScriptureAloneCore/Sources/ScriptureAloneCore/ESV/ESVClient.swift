@@ -86,6 +86,42 @@ public struct ESVClient: Sendable {
         return verses
     }
 
+
+    /// Crossway's own search, so an online translation is searchable like any other.
+    ///
+    /// The whole text cannot be indexed on the device — Crossway's terms cap what may be cached at
+    /// 500 verses — so the search happens at their end and costs one request.
+    public func search(_ query: String, limit: Int = 100,
+                       session: URLSession = .shared) async throws -> [BibleStore.SearchHit] {
+        var components = URLComponents(string: "https://api.esv.org/v3/passage/search/")!
+        components.queryItems = [
+            .init(name: "q", value: query),
+            .init(name: "page-size", value: String(min(limit, 100))),
+        ]
+        var request = URLRequest(url: components.url!)
+        request.timeoutInterval = 20
+        request.setValue("Token \(key)", forHTTPHeaderField: "Authorization")
+        let (data, response) = try await session.data(for: request)
+        if let http = response as? HTTPURLResponse {
+            switch http.statusCode {
+            case 200..<300: break
+            case 401, 403: throw Failure.unauthorized
+            case 429: throw Failure.rateLimited
+            case let code: throw Failure.http(code)
+            }
+        }
+        let decoded = try JSONDecoder().decode(SearchResponse.self, from: data)
+        return decoded.results.compactMap { result in
+            guard let passage = ReferenceParser.parse(result.reference) else { return nil }
+            return BibleStore.SearchHit(ref: passage.firstVerse, text: result.content)
+        }
+    }
+
+    private struct SearchResponse: Decodable {
+        struct Result: Decodable { let reference: String; let content: String }
+        let results: [Result]
+    }
+
     private struct Response: Decodable { let passages: [String] }
 
     /// Kept as the name the ESV tests and callers already use.

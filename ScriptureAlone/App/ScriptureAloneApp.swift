@@ -64,6 +64,7 @@ private struct RootView: View {
                                                                   chosen: []))
                 let loader = OnlineTextLoader(keys: onlineKeys)
                 model.onlineLoader = { entry, chapter in try await loader.chapter(entry, chapter) }
+                model.onlineSearch = { entry, query in try await loader.search(entry, query) }
             }
             #if os(macOS)
             .frame(minWidth: 520, minHeight: 480)

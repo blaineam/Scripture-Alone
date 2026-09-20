@@ -229,13 +229,13 @@ struct PassagePicker: View {
     private func search() async {
         let text = query
         // A reference ("john", "ps 23") navigates; anything else searches the text.
-        guard text.count >= 3, ReferenceParser.parse(text) == nil, let store = model.store else {
+        guard text.count >= 3, ReferenceParser.parse(text) == nil else {
             results = []
             return
         }
         try? await Task.sleep(for: .milliseconds(180))
         guard !Task.isCancelled else { return }
-        let hits = await Task.detached(priority: .userInitiated) { (try? store.search(text)) ?? [] }.value
+        let hits = await model.search(text)
         guard !Task.isCancelled else { return }
         results = hits
     }
