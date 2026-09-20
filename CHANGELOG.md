@@ -21,6 +21,13 @@
   edition until every hash was identified. Searching the commonest word in scripture opens one bucket
   of 256 and decrypts at most thirty chapters of 1,189, and the reader counts what it opened so the
   tests can say so.
+- An online translation no longer shows the chapter you navigated away from. The toolbar moved to
+  the new reference as soon as you turned the page, but the text underneath was the previous
+  chapter's until the fetch returned — the right address over the wrong words, which for scripture
+  is the worst way to be wrong. The layout now travels with the chapter it was built for, the
+  reader refuses to draw a mismatch, and a fetch for a different chapter shows that it is loading.
+  Re-reading the chapter already on screen keeps its text, since there is nothing to confuse.
+
 - An online translation no longer renders with broken spacing. Both APIs send poetry as hard
   newlines and leading spaces — the shape a terminal would print — and the reader was drawing them
   literally, which produced breaks in the middle of a sentence, stray indents, and two verses

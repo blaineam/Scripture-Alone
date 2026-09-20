@@ -60,6 +60,22 @@ final class ReaderModel {
     private(set) var store: BibleStore?
     private(set) var location: ChapterRef
     private(set) var layout: ChapterLayout?
+
+    /// The chapter `layout` was built for.
+    ///
+    /// An online translation fetches, so there is a window where `location` has already moved to
+    /// the chapter the reader asked for and `layout` still holds the one they were reading. Drawn
+    /// as-is, that is the previous chapter's verses under the new chapter's reference — the right
+    /// address over the wrong words, which for scripture is the worst way to be wrong. Carrying the
+    /// chapter alongside the layout lets the reader refuse to draw a mismatch instead of trusting
+    /// that one never happens.
+    private(set) var layoutChapter: ChapterRef?
+
+    /// The only way `layout` is written, so the two can never disagree.
+    private func setLayout(_ value: ChapterLayout?, for chapter: ChapterRef?) {
+        layout = value
+        layoutChapter = value == nil ? nil : chapter
+    }
     private(set) var loadError: String?
     /// Verse keys the user has tapped.
     var selection: Set<Int> = []
@@ -197,7 +213,7 @@ final class ReaderModel {
         if case .online(let provider, _) = entry.source {
             store = nil
             packageSource = nil
-            layout = nil
+            setLayout(nil, for: nil)
             loadError = nil
             onlineTranslation = (entry, TranslationInfo(id: entry.id, name: entry.name,
                                                         abbreviation: entry.id,
@@ -214,7 +230,7 @@ final class ReaderModel {
             if SealedTranslations.shared.package(id) == nil { SealedTranslations.shared.reopen(id) }
             guard let package = SealedTranslations.shared.package(id) else {
                 loadError = SealedTranslations.shared.failure(id) ?? "\(entry.name) couldn't be opened."
-                layout = nil
+                setLayout(nil, for: nil)
                 return
             }
             packageSource = package
@@ -284,25 +300,35 @@ final class ReaderModel {
             return
         }
         guard let source else { return }
+        let chapter = location
         do {
-            layout = try source.layout(for: location)
+            setLayout(try source.layout(for: chapter), for: chapter)
             loadError = nil
         } catch {
-            layout = nil
+            setLayout(nil, for: nil)
             loadError = error.localizedDescription
         }
     }
 
-    /// Fetches a chapter the app is not allowed to ship. The previous chapter stays on screen
-    /// until the new one arrives, so turning a page doesn't blank the reader on a slow network.
+    /// Fetches a chapter the app is not allowed to ship.
+    ///
+    /// While it is in flight the reader shows that it is loading rather than the chapter it was
+    /// showing before. Keeping the old text up was the earlier behaviour and it read better on a
+    /// slow network — but the toolbar has already moved to the new reference, so what a reader
+    /// actually saw was Psalm 90's text titled Psalm 91. A moment of "loading" is a small cost
+    /// against attributing the wrong words to a verse.
+    ///
+    /// Re-reading the chapter already on screen — a retry, a translation change — keeps its text,
+    /// since there is no mismatch to create.
     private func loadOnline(_ entry: TranslationEntry) {
         guard let onlineLoader else {
             loadError = "This translation needs a key. Add one in Manage Translations."
-            layout = nil
+            setLayout(nil, for: nil)
             return
         }
         fetchTask?.cancel()
         let chapter = location
+        if layoutChapter != chapter { setLayout(nil, for: nil) }
         isFetching = true
         fetchTask = Task { @MainActor [weak self] in
             defer { self?.isFetching = false }
@@ -313,11 +339,11 @@ final class ReaderModel {
                 let store = try await onlineLoader(entry, chapter)
                 guard !Task.isCancelled, let self, self.location == chapter else { return }
                 self.store = store
-                self.layout = try store.layout(for: chapter)
+                self.setLayout(try store.layout(for: chapter), for: chapter)
                 self.loadError = nil
             } catch {
                 guard !Task.isCancelled, let self, self.location == chapter else { return }
-                self.layout = nil
+                self.setLayout(nil, for: nil)
                 self.loadError = error.localizedDescription
             }
         }

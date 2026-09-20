@@ -490,7 +490,10 @@ private struct ChapterPane: View {
         // Any source, not only a SQLite store: a packaged translation renders through the same
         // path, because everything this needs — verse counts, the translation's id, its copyright —
         // is a question `ChapterTextSource` answers.
-        if let layout = model.layout, let source = model.source {
+        // `layoutChapter == chapter` is the guard that makes a mismatch impossible to draw rather
+        // than merely unlikely: whatever races upstream, this pane never renders one chapter's
+        // text beneath another's reference.
+        if let layout = model.layout, model.layoutChapter == chapter, let source = model.source {
             let rendered = cache.render(layout: layout, input: renderInput(source: source), style: style)
             ChapterTextView(configuration: ChapterTextConfiguration(
                 content: rendered,
