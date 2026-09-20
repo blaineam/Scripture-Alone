@@ -64,19 +64,21 @@ struct CatalogView: View {
                     Section {
                         ForEach(mine) { row($0) }
                     } header: {
-                        Text("In Your Languages")
+                        Text("Offered by Scripture Alone")
                     } footer: {
-                        Text("Chosen from your device's language settings.")
+                        Text("Complete Bibles translated from the Hebrew and Greek.")
                     }
                 }
                 Section {
                     if showEverything {
                         ForEach(other) { row($0) }
                     } else {
-                        Button("Show All \(other.count.formatted()) Translations") { showEverything = true }
+                        Button("Other Languages (\(other.count.formatted()))") { showEverything = true }
                     }
                 } header: {
-                    Text(mine.isEmpty ? "All Translations" : "Every Other Language")
+                    Text("From eBible.org")
+                } footer: {
+                    Text("Complete Bibles in other languages, published by eBible.org. Scripture Alone doesn't vouch for these — nobody here reads every language — so read the publisher's own note before relying on one.")
                 }
             }
         }
@@ -115,11 +117,14 @@ struct CatalogView: View {
     private func load() async {
         state = .loading
         do {
-            // Complete Bibles only. The catalogue is mostly New Testaments and portions, and a
-            // reader looking for "a Spanish Bible" does not want four gospels.
-            let entries = try await EBibleCatalog().fetch().filter(\.isCompleteCanon)
-            let split = CatalogLanguageMatch.split(entries)
-            state = .loaded(mine: split.mine, other: split.other)
+            // Two lists, because they carry different promises. English is an allowlist the app
+            // stands behind; everything else is every complete Bible eBible publishes, offered
+            // without a judgement nobody here is qualified to make.
+            let all = try await EBibleCatalog().fetch()
+            let curated = all.filter(CatalogCuration.isCurated)
+            let rest = all.filter(CatalogCuration.isUncurated)
+            state = .loaded(mine: CatalogLanguageMatch.ordered(curated),
+                            other: CatalogLanguageMatch.ordered(rest))
         } catch {
             state = .failed(error.localizedDescription)
         }
