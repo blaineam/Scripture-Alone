@@ -21,6 +21,19 @@
   edition until every hash was identified. Searching the commonest word in scripture opens one bucket
   of 256 and decrypts at most thirty chapters of 1,189, and the reader counts what it opened so the
   tests can say so.
+- The translation you were reading comes back when you reopen the app. Only the bundled
+  translations exist at launch — imports arrive from the library and online ones from your keys, a
+  moment later — so a reader whose translation was either of those found it missing, and the app
+  fell back. Worse, the fallback was written down as though you had chosen it, which destroyed the
+  real preference before the translation could arrive: the choice could never return, on that
+  launch or any after it. A fallback is no longer mistaken for a choice, and the moment the
+  translation registers it is selected.
+- The API.Bible translations you picked survive a restart. Which Bibles a key may read is chosen on
+  API.Bible's dashboard and identified by opaque ids, and the app only ever learned them from the
+  keys screen — so they vanished from the picker until you opened that screen again. The picks are
+  remembered now (the ids and names, not the key, which stays in the keychain) and restored at
+  launch with no network call. Removing the key still removes the translations.
+
 - An online translation no longer shows the chapter you navigated away from. The toolbar moved to
   the new reference as soon as you turned the page, but the text underneath was the previous
   chapter's until the fetch returned — the right address over the wrong words, which for scripture

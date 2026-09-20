@@ -62,10 +62,11 @@ struct OnlineKeysView: View {
                 for provider in OnlineProvider.allCases {
                     entry[provider] = keys.key(for: provider) ?? ""
                 }
-                chosen = Set(model.translations.compactMap { entry -> String? in
-                    if case .online(.apiBible, let remote) = entry.source { return remote }
-                    return nil
-                })
+                chosen = Set((model.translations + OnlineCatalog.restored(keys: keys))
+                    .compactMap { entry -> String? in
+                        if case .online(.apiBible, let remote) = entry.source { return remote }
+                        return nil
+                    })
                 if keys.key(for: .apiBible) != nil { Task { await loadAvailable() } }
             }
             .alert("That didn't work", isPresented: .constant(failure != nil)) {
@@ -119,8 +120,11 @@ struct OnlineKeysView: View {
     }
 
     private func refreshTranslations() {
-        model.setOnlineTranslations(OnlineCatalog.entries(keys: keys, apiBible: available,
-                                                          chosen: chosen))
+        let entries = OnlineCatalog.entries(keys: keys, apiBible: available, chosen: chosen)
+        // Written down here, where the opaque ids are actually known, so the next launch can
+        // rebuild the picker without opening this sheet or touching the network.
+        OnlineCatalog.remember(entries)
+        model.setOnlineTranslations(entries)
     }
 
     /// Bible ids are opaque, and which three a key can read is chosen on API.Bible's own
@@ -144,6 +148,61 @@ struct OnlineKeysView: View {
 
 /// Builds the translation entries for whatever keys and choices exist.
 enum OnlineCatalog {
+
+    // MARK: Remembering the picks
+
+    /// Which API.Bible translations the reader picked, kept across launches.
+    ///
+    /// Bible ids are opaque strings from API.Bible's own catalogue, and which ones a key may read
+    /// is chosen on their dashboard — so the app has to be told, and previously it was told only
+    /// by the keys screen. That made the picks live in a `@State` on a sheet: open the app and
+    /// they were gone until you went back and opened that sheet again.
+    ///
+    /// They are stored in `UserDefaults` rather than the keychain deliberately. The key is a
+    /// credential and stays in the keychain; these are not — they are public catalogue ids and the
+    /// names API.Bible gave them, and without the key they open nothing. Keeping them here means a
+    /// launch restores the picker with no network call and no credential read.
+    private static let storageKey = "onlineTranslations"
+
+    private struct Remembered: Codable {
+        var id: String
+        var name: String
+        var remoteID: String
+    }
+
+    /// Remembers the API.Bible picks among these entries. The ESV is not stored: it follows from
+    /// the presence of a Crossway key, so storing it could only ever disagree with the keychain.
+    static func remember(_ entries: [TranslationEntry], in defaults: UserDefaults = .standard) {
+        let picks = entries.compactMap { entry -> Remembered? in
+            guard case .online(.apiBible, let remote) = entry.source else { return nil }
+            return Remembered(id: entry.id, name: entry.name, remoteID: remote)
+        }
+        guard let data = try? JSONEncoder().encode(picks) else { return }
+        defaults.set(data, forKey: storageKey)
+    }
+
+    /// The entries to offer at launch: the ESV if a Crossway key exists, plus the remembered
+    /// API.Bible picks — but only while a key that could read them exists. Removing the key
+    /// removes the translations, without needing the keys screen to have been opened.
+    static func restored(keys: OnlineTranslationKeys,
+                         defaults: UserDefaults = .standard) -> [TranslationEntry] {
+        var out: [TranslationEntry] = []
+        if keys.key(for: .crossway) != nil {
+            out.append(TranslationEntry(id: "ESV", name: "English Standard Version",
+                                        source: .online(provider: .crossway, remoteID: "esv")))
+        }
+        guard keys.key(for: .apiBible) != nil,
+              let data = defaults.data(forKey: storageKey),
+              let picks = try? JSONDecoder().decode([Remembered].self, from: data) else { return out }
+        out += picks.map {
+            TranslationEntry(id: $0.id, name: $0.name,
+                             source: .online(provider: .apiBible, remoteID: $0.remoteID))
+        }
+        return out
+    }
+
+    // MARK: Building from a live catalogue
+
     static func entries(keys: OnlineTranslationKeys,
                         apiBible: [APIBibleTranslation],
                         chosen: Set<String>) -> [TranslationEntry] {

@@ -130,15 +130,23 @@ final class ReaderModel {
         recent = (defaults.array(forKey: "recent") as? [Int] ?? []).compactMap { VerseRef(key: $0)?.chapterKey }
         recentSearches = defaults.stringArray(forKey: "recentSearches") ?? []
 
-        // The default translation ships sealed, so "is it in the list" is a real question now: if
-        // its key could not be unwrapped it is not there at all, and selecting it would leave the
-        // reader staring at nothing. Fall back to whatever the app *can* open, in order, and only
-        // then give up.
+        // Only the bundled translations exist this early: imports arrive from the library and
+        // online ones from the reader's keys, both after the first frame. So a reader whose
+        // translation is an import or an API translation will not find it here — and the fallback
+        // must not be mistaken for a choice. Writing it to `defaults` was exactly that mistake:
+        // it destroyed the preference before the real entry could arrive, so the selection could
+        // never come back, on this launch or any later one.
         let preferred = defaults.string(forKey: "translation") ?? Self.defaultTranslation
-        let choice = [preferred, Self.defaultTranslation].first { id in
-            translations.contains { $0.id == id }
-        } ?? translations.first?.id
-        if let choice { selectTranslation(choice) }
+        if translations.contains(where: { $0.id == preferred }) {
+            selectTranslation(preferred)
+        } else {
+            // Hold the wish. `rebuildTranslations` grants it the moment the entry shows up.
+            awaitedTranslation = preferred
+            let fallback = [Self.defaultTranslation, translations.first?.id]
+                .compactMap { $0 }
+                .first { id in translations.contains { $0.id == id } }
+            if let fallback { selectTranslation(fallback, remember: false) }
+        }
         if let saved, saved.verse > 1 { scrollTarget = saved.key }
     }
 
@@ -156,6 +164,15 @@ final class ReaderModel {
             $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
         translations = bundledTranslations + added
+
+        // The reader's own choice, now that it can be honoured. This is the other half of the
+        // fallback in `init`: imports and online keys register after the first frame, so the
+        // translation someone was last reading usually becomes available a moment after launch.
+        if let wanted = awaitedTranslation, translations.contains(where: { $0.id == wanted }) {
+            selectTranslation(wanted)
+            return
+        }
+
         // A translation that has gone away — a deleted import, a removed key, a sealed package
         // whose key would not unwrap — must not stay selected, or the reader is left staring at a
         // chapter that can never load.
@@ -163,9 +180,18 @@ final class ReaderModel {
             let fallback = translations.contains { $0.id == Self.defaultTranslation }
                 ? Self.defaultTranslation
                 : translations.first?.id
-            if let fallback { selectTranslation(fallback) }
+            // `remember: false` again: if the reader's translation is merely not back yet, this
+            // must not become their new preference.
+            if let fallback { selectTranslation(fallback, remember: awaitedTranslation == nil) }
         }
     }
+
+    /// A translation the reader chose that the app could not offer yet.
+    ///
+    /// Nil once it has been honoured or once something else was deliberately chosen. It is not
+    /// persisted itself — `defaults["translation"]` is the durable record, and the whole point of
+    /// this property is that the record survives a launch that cannot yet satisfy it.
+    private var awaitedTranslation: String?
 
     /// Online translations, as configured by the reader's keys. Kept apart from imports so a
     /// key removal doesn't disturb files on disk, and vice versa.
@@ -208,8 +234,12 @@ final class ReaderModel {
     /// device. An online translation has no store, but it still has a licence.
     var translationInfo: TranslationInfo? { onlineTranslation?.info ?? source?.info }
 
-    func selectTranslation(_ id: String) {
+    /// - Parameter remember: false when the app is falling back rather than the reader choosing.
+    ///   A fallback must not overwrite what they asked for, or their choice is lost for good.
+    func selectTranslation(_ id: String, remember: Bool = true) {
         guard let entry = translations.first(where: { $0.id == id }) else { return }
+        if remember { awaitedTranslation = nil }
+        let persist = remember
         if case .online(let provider, _) = entry.source {
             store = nil
             packageSource = nil
@@ -219,7 +249,7 @@ final class ReaderModel {
                                                         abbreviation: entry.id,
                                                         copyright: provider.copyrightNotice,
                                                         license: provider.licenseSummary))
-            defaults.set(id, forKey: "translation")
+            if persist { defaults.set(id, forKey: "translation") }
             load()
             return
         }
@@ -235,7 +265,7 @@ final class ReaderModel {
             }
             packageSource = package
             store = nil
-            defaults.set(id, forKey: "translation")
+            if persist { defaults.set(id, forKey: "translation") }
             if let top = topVerse { scrollTarget = top }
             load()
             return
@@ -246,7 +276,7 @@ final class ReaderModel {
             let store = try stores[id] ?? BibleStore(url: url)
             stores[id] = store
             self.store = store
-            defaults.set(id, forKey: "translation")
+            if persist { defaults.set(id, forKey: "translation") }
             if let top = topVerse { scrollTarget = top }
             load()
         } catch {
