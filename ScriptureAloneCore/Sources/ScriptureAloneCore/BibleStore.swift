@@ -38,8 +38,13 @@ public enum BibleStoreError: Error, LocalizedError {
     }
 }
 
-/// Read-only access to one bundled translation. SQLite is opened immutable, so reads are
-/// safe from any thread; the lock only serializes use of the shared connection.
+/// Read-only access to one translation.
+///
+/// Bundled and imported stores never change while open, so they are opened `immutable=1`: SQLite
+/// then takes no locks and caches pages indefinitely, which is the fastest way to read a file
+/// that is genuinely fixed. A store that *can* change underneath us — the cache an online
+/// translation fills a chapter at a time — must be opened without it, because breaking that
+/// promise is undefined behaviour in SQLite, not merely a stale read.
 public final class BibleStore: @unchecked Sendable {
     public let info: TranslationInfo
     public let url: URL
@@ -47,10 +52,12 @@ public final class BibleStore: @unchecked Sendable {
     private let lock = NSLock()
     private let verseCounts: [ChapterRef: Int]
 
-    public init(url: URL) throws {
+    /// - Parameter immutable: false for a store that is written while the app runs. Costs the
+    ///   usual shared locks and gives up SQLite's indefinite page caching, in exchange for being correct.
+    public init(url: URL, immutable: Bool = true) throws {
         self.url = url
         var handle: OpaquePointer?
-        let uri = "file:\(url.path(percentEncoded: true))?immutable=1"
+        let uri = "file:\(url.path(percentEncoded: true))" + (immutable ? "?immutable=1" : "")
         guard sqlite3_open_v2(uri, &handle, SQLITE_OPEN_READONLY | SQLITE_OPEN_URI | SQLITE_OPEN_NOMUTEX, nil) == SQLITE_OK,
               let handle else {
             let message = handle.map { String(cString: sqlite3_errmsg($0)) } ?? "unknown error"

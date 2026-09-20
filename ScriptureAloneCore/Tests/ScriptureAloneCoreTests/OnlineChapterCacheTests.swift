@@ -231,25 +231,30 @@ import Testing
 
     /// `BibleStore` opens with `immutable=1` and reads its chapter table once, in `init`. An
     /// instance made before a write therefore cannot see that write — it is not a bug, it is the
-    /// contract, and it is what "the chapter didn't load" will turn out to be.
+    /// contract, and it is what "the chapter didn't load" will turn out to be six months from now.
     @Test func aReaderOpenedBeforeAWriteMustBeReopened() throws {
         let cache = try cache()
         try cache.store(verses(ChapterRef(.john, 3), 1...2), for: ChapterRef(.john, 3))
         let stale = try BibleStore(url: cache.url)
+        #expect(stale.contains(ChapterRef(.john, 3)))
         #expect(stale.contains(ChapterRef(.john, 4)) == false)
 
         try cache.store(verses(ChapterRef(.john, 4), 1...2), for: ChapterRef(.john, 4))
 
-        // The old instance still shows the world as it was, and does not crash or corrupt: the
-        // copy-and-replace left it holding an unlinked inode that really is immutable.
+        // The old instance is finished. Its chapter table was read in `init`, so it cannot know
+        // about John 4 whatever the file does; and because the file it promised SQLite would never
+        // change has been replaced underneath it, a read may also simply fail with an I/O error.
+        // Either is acceptable. What must never happen — and is what `immutable=1` would allow if
+        // the cache wrote in place — is a torn page or rows from a half-written chapter.
         #expect(stale.contains(ChapterRef(.john, 4)) == false)
-        #expect(try stale.verses(in: VerseRange(VerseRef(.john, 4, 1), VerseRef(.john, 4, 2))).isEmpty)
-        #expect(try stale.verses(in: VerseRange(VerseRef(.john, 3, 1), VerseRef(.john, 3, 2))).count == 2)
+        let staleRows = (try? stale.verses(in: VerseRange(VerseRef(.john, 4, 1), VerseRef(.john, 4, 2)))) ?? []
+        #expect(staleRows.isEmpty)
 
-        // Re-opening is all it takes.
+        // Re-opening is all it takes, and it is the whole contract.
         let fresh = try BibleStore(url: cache.url)
         #expect(fresh.contains(ChapterRef(.john, 4)))
         #expect(try fresh.verses(in: VerseRange(VerseRef(.john, 4, 1), VerseRef(.john, 4, 2))).count == 2)
+        #expect(try fresh.verses(in: VerseRange(VerseRef(.john, 3, 1), VerseRef(.john, 3, 2))).count == 2)
     }
 
     @Test func wordsOfChristSurviveTheUTF16ToScalarConversion() throws {

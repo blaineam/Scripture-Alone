@@ -66,7 +66,7 @@ final class ReaderModel {
     /// The online translation in use, when the current text comes from an API rather than a file.
     private(set) var onlineTranslation: (entry: TranslationEntry, info: TranslationInfo)?
     /// Supplied by the app so the model needn't know about keychains or providers.
-    var onlineLoader: (@MainActor (TranslationEntry, ChapterRef) async throws -> [VerseText])?
+    var onlineLoader: (@MainActor (TranslationEntry, ChapterRef) async throws -> BibleStore)?
     @ObservationIgnored private var fetchTask: Task<Void, Never>?
     private let defaults = UserDefaults.standard
     private let cloud = NSUbiquitousKeyValueStore.default
@@ -220,10 +220,14 @@ final class ReaderModel {
         fetchTask = Task { @MainActor [weak self] in
             defer { self?.isFetching = false }
             do {
-                let verses = try await onlineLoader(entry, chapter)
+                // The loader returns the cache store with this chapter in it, so from here on the
+                // online translation behaves like any other: selection, quoting, listening and
+                // searching what has been read all work against a real store.
+                let store = try await onlineLoader(entry, chapter)
                 guard !Task.isCancelled, let self, self.location == chapter else { return }
-                self.layout = ChapterLayout.prose(verses)
-                self.loadError = verses.isEmpty ? "That chapter came back empty." : nil
+                self.store = store
+                self.layout = try store.layout(for: chapter)
+                self.loadError = nil
             } catch {
                 guard !Task.isCancelled, let self, self.location == chapter else { return }
                 self.layout = nil

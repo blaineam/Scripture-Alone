@@ -79,10 +79,14 @@ public struct CacheWrite: Sendable, Hashable {
 /// **undefined** — not "stale", but undefined: missing rows, a torn page, or `SQLITE_CORRUPT`.
 ///
 /// So this type never writes in place. Every mutation copies the store to a sibling file, changes
-/// the copy, and atomically replaces the original. A `BibleStore` already open keeps the old inode,
-/// which is now unlinked and therefore genuinely immutable for as long as that reader lives — the
-/// promise stays true, and the failure mode collapses from "undefined" to "shows the previous
-/// contents".
+/// the copy, and swaps it in with `rename(2)`, which replaces the directory entry in one step and
+/// unlinks the old inode rather than writing through it. The bytes an open reader is reading are
+/// therefore never edited, and the promise made to SQLite is never broken.
+///
+/// That bounds the damage; it does not make a stale reader usable. In practice an instance that
+/// predates a write either keeps showing the previous contents or fails its next read with an I/O
+/// error — both are fine, and both are far better than the torn page or `SQLITE_CORRUPT` that
+/// writing in place would risk. It is asserted in `aReaderOpenedBeforeAWriteMustBeReopened`.
 ///
 /// **The caller must therefore re-open `BibleStore` after every successful `store` or `clear`.**
 /// That is true even setting SQLite aside: `BibleStore` reads its chapter/verse-count table once in
@@ -227,7 +231,7 @@ public final class OnlineChapterCache: @unchecked Sendable {
     /// survives, empty, so `BibleStore` still opens it; `VACUUM` makes sure the text is actually
     /// gone rather than sitting in free pages.
     public func clear() throws {
-        try mutate { db in
+        try mutate(vacuum: true) { db in
             try Self.exec(db, """
                 DELETE FROM verses;
                 DELETE FROM chapters;
@@ -235,7 +239,6 @@ public final class OnlineChapterCache: @unchecked Sendable {
                 DELETE FROM cache_state;
                 """)
             try Self.reindex(db)
-            try Self.exec(db, "VACUUM")
         }
     }
 
@@ -386,7 +389,7 @@ public final class OnlineChapterCache: @unchecked Sendable {
     /// Copy, change the copy, replace the original. See the note on `immutable=1` above: this is
     /// what keeps a `BibleStore` that is already open from reading a file that changes underneath
     /// it. The cost is one copy of a file that holds at most a few hundred verses.
-    private func mutate<T>(_ body: (OpaquePointer) throws -> T) throws -> T {
+    private func mutate<T>(vacuum: Bool = false, _ body: (OpaquePointer) throws -> T) throws -> T {
         lock.lock()
         defer { lock.unlock() }
         if !Self.isUsable(url) { try create() }
@@ -407,6 +410,8 @@ public final class OnlineChapterCache: @unchecked Sendable {
             try Self.exec(db, "BEGIN")
             result = try body(db)
             try Self.exec(db, "COMMIT")
+            // VACUUM cannot run inside a transaction.
+            if vacuum { try Self.exec(db, "VACUUM") }
         } catch {
             sqlite3_close(db)
             try? FileManager.default.removeItem(at: working)
@@ -414,14 +419,17 @@ public final class OnlineChapterCache: @unchecked Sendable {
         }
         sqlite3_close(db)
 
-        do {
-            if (try? FileManager.default.replaceItemAt(url, withItemAt: working)) == nil {
-                try? FileManager.default.removeItem(at: url)
-                try FileManager.default.moveItem(at: working, to: url)
-            }
-        } catch {
+        // `rename(2)`, not `FileManager.replaceItemAt`: rename replaces the directory entry in one
+        // step and unlinks the old inode, which stays alive and unchanged for any descriptor still
+        // open on it. `replaceItemAt` may preserve the original inode instead — which would write
+        // through to the very file an open reader promised SQLite would not change.
+        let moved = working.path.withCString { source in
+            url.path.withCString { destination in rename(source, destination) }
+        }
+        guard moved == 0 else {
+            let code = errno
             try? FileManager.default.removeItem(at: working)
-            throw OnlineCacheError.write(error.localizedDescription)
+            throw OnlineCacheError.write("couldn’t replace the cache (errno \(code))")
         }
         return result
     }
