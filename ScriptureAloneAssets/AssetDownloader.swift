@@ -1,4 +1,8 @@
 import BackgroundAssets
+// ExtensionKit, not the legacy plug-in kind: a Background Assets downloader is declared with
+// `EXAppExtensionAttributes` and lives in the app's Extensions directory. Without this import the
+// `@main` below is "cannot use static method 'main()' here", which surfaces only at archive time.
+import ExtensionFoundation
 import StoreKit
 
 /// The Background Assets downloader extension.

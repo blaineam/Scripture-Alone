@@ -117,7 +117,9 @@ targets:
   # `StoreDownloaderExtension` opts into the system's own downloader — but the framework requires
   # it to exist, and `AssetPackManager` treats its absence as a programmer error.
   ScriptureAloneAssets:
-    type: app-extension
+    # ExtensionKit, so Xcode embeds it in Extensions/ rather than PlugIns/. Declared as
+    # `app-extension` it builds locally and then fails App Store export.
+    type: extensionkit-extension
     supportedDestinations: [iOS, macOS]
     sources:
       - path: ScriptureAloneAssets

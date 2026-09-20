@@ -58,6 +58,7 @@
 		6B540EFF06E34E6D0F55E3BF /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 8B186D4B5008DA1547FAE40C /* Localizable.xcstrings */; };
 		6CECB71BC29B73727C162FE8 /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1535B298112D25F32BB4CDE8 /* AppIntents.framework */; };
 		6D9EF450A11F9FED9C75C067 /* VerseOfDayShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16AF12A3C0ED58D26D26A632 /* VerseOfDayShared.swift */; };
+		6DAE98E74AA6DB144EE34ADF /* ScriptureAloneAssets.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6DFDAE02A6F001B51EBC1441 /* CompareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2651262AA20DD2F3B106F7 /* CompareView.swift */; };
 		6E6914307A950EB418658595 /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14F3A5CAF08690618C671B97 /* ReaderView.swift */; };
 		6E867677D577ACAFA6CAA5F9 /* DailyVerses.json in Resources */ = {isa = PBXBuildFile; fileRef = 7FB470D843314F7FBBD87D39 /* DailyVerses.json */; };
@@ -119,7 +120,6 @@
 		E25B483FC4FA988EAF9D5B85 /* ShareCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9490E2C2C07074CC5136A9 /* ShareCard.swift */; };
 		E306ED72040F902C31B435DF /* WatchHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F623D45503145D4A1FC508E /* WatchHomeView.swift */; };
 		E85C6125ACAABA95F56A46B8 /* VerseOfDayShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16AF12A3C0ED58D26D26A632 /* VerseOfDayShared.swift */; };
-		E8D0EA44EB4AA67101C92E8E /* ScriptureAloneAssets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		EA448292B7A20B8D57D45331 /* FamilyCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C2F62B17B60C2195108C1F /* FamilyCloud.swift */; };
 		EB1582D26EAC997CB1ACE4C6 /* SlideCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E2E509013C8910CB37D5245 /* SlideCapture.swift */; };
 		EB6E25A2A5BCF50CE7B02050 /* ShareExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B03CE75511938642A77DD8B /* ShareExport.swift */; };
@@ -200,9 +200,19 @@
 			dstSubfolderSpec = 13;
 			files = (
 				6649DB5B898B27EAF081D381 /* ScriptureAloneWidgets.appex in Embed Foundation Extensions */,
-				E8D0EA44EB4AA67101C92E8E /* ScriptureAloneAssets.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D1865CB234CF68ADEA76D161 /* Embed ExtensionKit Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				6DAE98E74AA6DB144EE34ADF /* ScriptureAloneAssets.appex in Embed ExtensionKit Extensions */,
+			);
+			name = "Embed ExtensionKit Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -222,7 +232,7 @@
 		1535B298112D25F32BB4CDE8 /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
 		16AF12A3C0ED58D26D26A632 /* VerseOfDayShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseOfDayShared.swift; sourceTree = "<group>"; };
 		203F6AB07B6BCF4DCF442A78 /* ContentKeySeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentKeySeed.swift; sourceTree = "<group>"; };
-		21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ScriptureAloneAssets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = ScriptureAloneAssets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		232427C8C504837E7BD697D0 /* FamilyShareAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyShareAppDelegate.swift; sourceTree = "<group>"; };
 		24F97E7F3971462B4C11C7CF /* FavoriteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteButton.swift; sourceTree = "<group>"; };
 		2539ED6AC3F6DFA0CE4CCCD5 /* WidgetSnapshotSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshotSync.swift; sourceTree = "<group>"; };
@@ -778,7 +788,7 @@
 			);
 			productName = ScriptureAloneAssets;
 			productReference = 21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */;
-			productType = "com.apple.product-type.app-extension";
+			productType = "com.apple.product-type.extensionkit-extension";
 		};
 		87EC28F5E9152287C9E04BE9 /* ScriptureAloneWatchWidgets */ = {
 			isa = PBXNativeTarget;
@@ -810,6 +820,7 @@
 				A96F435A027D5E9119F62B43 /* Resources */,
 				00CBE6A3855E3F0AB246A1BD /* Frameworks */,
 				910BF278C1B0C8329850E481 /* Embed Foundation Extensions */,
+				D1865CB234CF68ADEA76D161 /* Embed ExtensionKit Extensions */,
 				7214933BBB77069E0F8BA2D0 /* Embed Watch Content */,
 			);
 			buildRules = (
@@ -1292,7 +1303,6 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.blainemiller.ScriptureAlone.assets;
 				PRODUCT_NAME = ScriptureAloneAssets;
@@ -1440,7 +1450,6 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.blainemiller.ScriptureAlone.assets;
 				PRODUCT_NAME = ScriptureAloneAssets;
