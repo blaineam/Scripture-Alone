@@ -8,6 +8,7 @@ struct SelectionBar: View {
     @Environment(\.modelContext) private var context
     let onNote: () -> Void
     @State private var copied = false
+    @State private var interlinear: InterlinearRequest?
 
     var body: some View {
         let ranges = model.selectedRanges
@@ -58,6 +59,12 @@ struct SelectionBar: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel("Copy")
                     .modifier(BarCell())
+                if let single = singleVerse, InterlinearLibrary.shared.supports(model.translationInfo) {
+                    Button { interlinear = InterlinearRequest(verse: single) } label: { Image(systemName: "character.book.closed") }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Original Language")
+                        .modifier(BarCell())
+                }
                 ShareMenu(ranges: ranges, quotation: quotation).modifier(BarCell())
             }
             .font(.title3)
@@ -66,6 +73,23 @@ struct SelectionBar: View {
         .padding(.vertical, 12)
         .frame(maxWidth: 520)
         .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .sheet(item: $interlinear) { request in
+            InterlinearView(verse: request.verse, verseText: text(of: request.verse))
+                #if os(macOS)
+                .frame(minWidth: 460, minHeight: 560)
+                #endif
+        }
+    }
+
+    /// Word-by-word makes sense for one verse at a time; a selection spanning several would be a
+    /// wall rather than a study aid.
+    private var singleVerse: VerseRef? {
+        guard model.selection.count == 1, let key = model.selection.first else { return nil }
+        return VerseRef(key: key)
+    }
+
+    private func text(of verse: VerseRef) -> String {
+        (try? model.store?.verses(in: VerseRange(verse, verse)))??.first?.text ?? ""
     }
 
     /// One flexible slot in the action row: shrinks with the bar, never below a 28-pt target.
@@ -107,4 +131,12 @@ struct SelectionBar: View {
             copied = false
         }
     }
+}
+
+
+/// A verse to show word-by-word. `VerseRef` is a plain value in Core; wrapping it here keeps
+/// SwiftUI's `sheet(item:)` happy without making a data type conform to a UI protocol.
+private struct InterlinearRequest: Identifiable {
+    let verse: VerseRef
+    var id: Int { verse.key }
 }

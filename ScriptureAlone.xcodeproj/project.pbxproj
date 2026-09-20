@@ -39,6 +39,7 @@
 		4A5EA3EFDE3C74379D47A50A /* CatalogDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FCF3BC4B64741451E8DC375 /* CatalogDownloader.swift */; };
 		4AA2A511CBD4F3B94FFE9656 /* OnlineKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516CA9EE0C2D72ED9057AC6E /* OnlineKeysView.swift */; };
 		4AB012AE8C3B7C9A3FCCE461 /* FamilySharingSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E1114FBD372117B3796076 /* FamilySharingSupport.swift */; };
+		51067F02DBFC89BBCD92F9F8 /* InterlinearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F435AEBC1B470F11ED9904CE /* InterlinearView.swift */; };
 		5493681CFA1710000C4CA0D6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */; };
 		551D89B9A0AE47EC704BBE72 /* StudyContextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1EE071A16E5CB568DFB3331 /* StudyContextView.swift */; };
 		57828EF5983539D10AB2ABF6 /* CrossReferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 060801F1607F15B63E34EFF7 /* CrossReferencesView.swift */; };
@@ -292,6 +293,7 @@
 		EB6A1A0C6A57B6779BD9E5D1 /* KeepsakeCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeepsakeCreateView.swift; sourceTree = "<group>"; };
 		EDFB8603886458A9C59AFF53 /* FavoritesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesSection.swift; sourceTree = "<group>"; };
 		F3121B576043D263B63F71D1 /* LegacyLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyLibrary.swift; sourceTree = "<group>"; };
+		F435AEBC1B470F11ED9904CE /* InterlinearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterlinearView.swift; sourceTree = "<group>"; };
 		F4B2F7865CBE3F11E9B378EA /* LegacyReadingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyReadingViews.swift; sourceTree = "<group>"; };
 		F5C2F62B17B60C2195108C1F /* FamilyCloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyCloud.swift; sourceTree = "<group>"; };
 		F8336CBEF8FA208CEC7AB8F7 /* WatchVerseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchVerseView.swift; sourceTree = "<group>"; };
@@ -620,6 +622,7 @@
 				01EE46129150B2DF7C1BA088 /* Context */,
 				64254A487F2AB5DE14735746 /* CommentaryView.swift */,
 				060801F1607F15B63E34EFF7 /* CrossReferencesView.swift */,
+				F435AEBC1B470F11ED9904CE /* InterlinearView.swift */,
 				A1EE071A16E5CB568DFB3331 /* StudyContextView.swift */,
 				34F17EC67413B118E11B84EC /* StudyModel.swift */,
 				9DE766724AEE6AA9844B429B /* StudyPanel.swift */,
@@ -1005,6 +1008,7 @@
 				C67DEDA793A56D2E57E364E9 /* FavoriteButton.swift in Sources */,
 				37FEC9F94DD87B26AB164FF6 /* FavoritesSection.swift in Sources */,
 				31C68B8F127E821D23A383BD /* ImportedLibrary.swift in Sources */,
+				51067F02DBFC89BBCD92F9F8 /* InterlinearView.swift in Sources */,
 				F1ED4C9CBFA73E1B4868D00D /* KeepsakeCreateView.swift in Sources */,
 				40D4243305A23E4092AB825F /* LegacyLibrary.swift in Sources */,
 				141BB91B972E57BB28053467 /* LegacyReadingViews.swift in Sources */,

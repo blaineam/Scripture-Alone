@@ -7,13 +7,20 @@ public struct TranslationInfo: Hashable, Sendable, Identifiable {
     public let abbreviation: String
     public let copyright: String
     public let license: String
+    /// Terms a publisher granted in a signed package, when the text came from one. Nil for a store
+    /// whose terms have to be read out of its licence line — the bundled texts, and imports.
+    /// `TranslationRights` (see `TranslationRights.swift`) is what the app actually gates on, and
+    /// both cases produce one: this is the same judgement applied to two sources of the same facts.
+    public let grantedRights: TranslationRights?
 
-    public init(id: String, name: String, abbreviation: String, copyright: String, license: String) {
+    public init(id: String, name: String, abbreviation: String, copyright: String, license: String,
+                grantedRights: TranslationRights? = nil) {
         self.id = id
         self.name = name
         self.abbreviation = abbreviation
         self.copyright = copyright
         self.license = license
+        self.grantedRights = grantedRights
     }
 }
 
@@ -116,6 +123,40 @@ public final class BibleStore: @unchecked Sendable {
         }
     }
 
+    /// One chapter as a package writer needs it: the layout JSON and the verse rows exactly as this
+    /// store keeps them, with no decoding in between. Packaging must not reinterpret the text — a
+    /// package is meant to hold what the store held, byte for byte — so this deliberately returns
+    /// the stored strings rather than a decoded `ChapterLayout`.
+    ///
+    /// `Tools/package_translation.py` reads the same three columns from the same tables; this is the
+    /// in-process path, used by the test suite and by any future in-app repackaging.
+    public func packagingChapter(_ chapter: ChapterRef) throws -> TranslationPackageWriter.SourceChapter {
+        try locked {
+            var layout: String?
+            try Self.rows(db, "SELECT layout FROM chapters WHERE book = ?1 AND chapter = ?2",
+                          bind: [chapter.book.rawValue, chapter.chapter]) { stmt in
+                layout = Self.string(stmt, 0)
+            }
+            guard let layout else { throw BibleStoreError.missing(chapter) }
+            var rows: [TranslationPackageWriter.SourceVerse] = []
+            try Self.rows(db, "SELECT id, text, red FROM verses WHERE id BETWEEN ?1 AND ?2 ORDER BY id",
+                          bind: [chapter.keyRange.lowerBound, chapter.keyRange.upperBound]) { stmt in
+                var pairs: [[Int]] = []
+                if let red = Self.optionalString(stmt, 2),
+                   let decoded = try? JSONDecoder().decode([[Int]].self, from: Data(red.utf8)) {
+                    pairs = decoded
+                }
+                rows.append(TranslationPackageWriter.SourceVerse(key: Int(sqlite3_column_int64(stmt, 0)),
+                                                                 text: Self.string(stmt, 1),
+                                                                 redScalarPairs: pairs))
+            }
+            return TranslationPackageWriter.SourceChapter(ref: chapter,
+                                                          verses: verseCount(chapter),
+                                                          layoutJSON: layout,
+                                                          verseRows: rows)
+        }
+    }
+
     public struct SearchHit: Hashable, Sendable, Identifiable {
         public let ref: VerseRef
         public let text: String
@@ -163,7 +204,7 @@ public final class BibleStore: @unchecked Sendable {
         return try body()
     }
 
-    private static func rows(_ db: OpaquePointer, _ sql: String, bind: [Any] = [], _ row: (OpaquePointer) throws -> Void) throws {
+    static func rows(_ db: OpaquePointer, _ sql: String, bind: [Any] = [], _ row: (OpaquePointer) throws -> Void) throws {
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK, let stmt else {
             throw BibleStoreError.query(String(cString: sqlite3_errmsg(db)))
@@ -190,16 +231,19 @@ public final class BibleStore: @unchecked Sendable {
         }
     }
 
-    private static func string(_ stmt: OpaquePointer, _ column: Int32) -> String {
+    static func string(_ stmt: OpaquePointer, _ column: Int32) -> String {
         optionalString(stmt, column) ?? ""
     }
 
-    private static func optionalString(_ stmt: OpaquePointer, _ column: Int32) -> String? {
+    static func optionalString(_ stmt: OpaquePointer, _ column: Int32) -> String? {
         guard let cString = sqlite3_column_text(stmt, column) else { return nil }
         return String(cString: cString)
     }
 
-    private static func redRanges(_ json: String?, in text: String) -> [NSRange] {
+    /// Words-of-Christ ranges, converting the stored scalar offsets to the UTF-16 ranges the text
+    /// view wants. Shared with `TranslationPackage`, whose chapter blobs carry the same pairs, so a
+    /// packaged translation renders red letters through identical arithmetic.
+    static func redRanges(_ json: String?, in text: String) -> [NSRange] {
         guard let json, let pairs = try? JSONDecoder().decode([[Int]].self, from: Data(json.utf8)) else { return [] }
         return pairs.compactMap { pair in
             guard pair.count == 2 else { return nil }

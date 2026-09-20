@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Signed, encrypted translation packages (`.sabible`), for a licensed translation a publisher has
+  agreed to: a plaintext, Ed25519-signed header carrying the translation's identity and the
+  publisher's terms, and a body of chapters sealed one at a time with AES-256-GCM, each bound to
+  its package, translation, chapter and the exact header — so a chapter moved between packages, a
+  chapter replayed after the terms tightened, and an edited policy all fail rather than pass. A
+  package is decrypted a chapter at a time and never as a whole; the terms (copy, share, verse
+  images, notes export, hand-off to other apps, offline storage, quotation limit, expiry) are
+  enforced by the same `TranslationRights` gate that governs the bundled public-domain texts.
+  `Tools/package_translation.py` builds packages on the publisher's own machine and refuses to
+  read a key from inside this repository. The mechanism is demonstrated on the bundled ASV and
+  BSB; see `docs/encrypted-translations.md`, which also states what the design cannot do.
 - App icon: a gold sun on the horizon behind the open Bible, with a cross-shaped starburst
   flaring off its rim — the crossing sits on the sun's edge the way a camera flares a light,
   its arms reaching into the sky and its long foot down the sun's face.

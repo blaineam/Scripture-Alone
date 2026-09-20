@@ -93,7 +93,12 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 ## On the way
 
 - **More translations** — CSB, ESV, NKJV and NASB licenses are being requested from their
-  publishers. Licensed texts will never be committed to this repository.
+  publishers. Licensed texts will never be committed to this repository. A licensed translation
+  ships as a signed, encrypted package (`.sabible`): chapters sealed one at a time with
+  AES-256-GCM, terms in a header signed with the publisher's Ed25519 key and enforced by the same
+  code that governs the bundled texts. Read
+  [docs/encrypted-translations.md](docs/encrypted-translations.md) for the format, what it does
+  not do, and how to check it yourself.
 
 ## Layout
 
@@ -104,6 +109,8 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 | `ScriptureAlone/Shared/` | App Group bridge to the widgets, deep links, the Verse of the Day list |
 | `ScriptureAloneWidgets/` | WidgetKit extension (iOS, macOS) |
 | `ScriptureAloneWatch/`, `ScriptureAloneWatchWidgets/` | Apple Watch app and its complications |
+| `ScriptureAloneCore/Sources/ScriptureAloneCore/Package/` | The `.sabible` package: reader, policy → rights mapping, writer, and the source seam the reader draws through |
+| `Tools/package_translation.py` | Builds a signed, encrypted package from a store, with keys the tool refuses to read from inside this repository |
 | `Tools/build_bibles.py` | Compiles `Data/source/*.zip` (USFM) into `ScriptureAlone/Resources/Bibles/*.sqlite` |
 | `Tools/build_companion_data.py` | Builds the widgets' `DailyVerses.json`, `docs/daily-verses.md` and the watch's compact ASV from `Data/daily-verses.tsv` |
 | `Data/source/` | Source texts: BSB from berean.bible, ASV and KJV from eBible.org |
@@ -120,6 +127,14 @@ python3 Tools/build_study.py --check
 python3 Tools/build_context.py --check   # fetches pinned sources once into Data/cache/
 python3 Tools/build_companion_data.py --check
 cd ScriptureAloneCore && swift test
+```
+
+The encrypted-package demonstration, on the bundled public-domain texts:
+
+```bash
+python3 Tools/package_translation.py demo          # keys and packages in ~/.scripture-alone-demo
+python3 Tools/package_translation.py inspect --package ~/.scripture-alone-demo/ASV.sabible
+cd ScriptureAloneCore && swift test                # the demo packages are then read by the app's reader
 ```
 
 App Store screenshots come from real simulator captures of DEBUG-only scenes over an invented
