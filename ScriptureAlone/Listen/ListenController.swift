@@ -232,7 +232,11 @@ final class ListenController {
         switch phase {
         case .playing: pause()
         case .paused: resume()
-        case .idle: if let reader { playChapter(in: reader) }
+        // Nothing is playing, so there is nothing to toggle. This used to start a new chapter,
+        // which meant a stray remote command — a headset button, a car, the lock screen acting on
+        // a stale now-playing entry — could restart playback *after* the reader had closed the
+        // player, and put the bar straight back on screen. Starting is `toolbarAction`'s job.
+        case .idle: break
         case .preparing: break
         }
     }
@@ -305,9 +309,14 @@ final class ListenController {
     }
 
     /// Stops and hides the bar.
+    ///
+    /// `isPresented` goes false first so the bar leaves the screen even if teardown below is slow,
+    /// and the remote commands are switched off so the system stops sending transport events to an
+    /// app that is no longer playing anything.
     func stop() {
-        stopOutput()
         isPresented = false
+        setRemoteCommandsEnabled(false)
+        stopOutput()
         speakingVerse = nil
         items = []
         notice = nil
@@ -586,28 +595,46 @@ final class ListenController {
     // MARK: Now Playing and remote commands
 
     private func installRemoteCommands() {
+        setRemoteCommandsEnabled(true)
         guard !remoteCommandsInstalled else { return }
         remoteCommandsInstalled = true
         let center = MPRemoteCommandCenter.shared()
+        // Each handler refuses when the player is closed. Targets cannot be added more than once
+        // and are awkward to remove, so "is there a session at all" is checked here rather than
+        // relying on the controller's state machine to be harmless in every phase.
         center.playCommand.addTarget { @Sendable _ in
-            Task { @MainActor in ListenController.shared.resume() }
+            Task { @MainActor in ListenController.shared.remote { $0.resume() } }
             return .success
         }
         center.pauseCommand.addTarget { @Sendable _ in
-            Task { @MainActor in ListenController.shared.pause() }
+            Task { @MainActor in ListenController.shared.remote { $0.pause() } }
             return .success
         }
         center.togglePlayPauseCommand.addTarget { @Sendable _ in
-            Task { @MainActor in ListenController.shared.togglePlayPause() }
+            Task { @MainActor in ListenController.shared.remote { $0.togglePlayPause() } }
             return .success
         }
         center.nextTrackCommand.addTarget { @Sendable _ in
-            Task { @MainActor in ListenController.shared.nextVerse() }
+            Task { @MainActor in ListenController.shared.remote { $0.nextVerse() } }
             return .success
         }
         center.previousTrackCommand.addTarget { @Sendable _ in
-            Task { @MainActor in ListenController.shared.previousVerse() }
+            Task { @MainActor in ListenController.shared.remote { $0.previousVerse() } }
             return .success
+        }
+    }
+
+    /// Runs a remote command only while the player is actually up.
+    private func remote(_ action: (ListenController) -> Void) {
+        guard isPresented else { return }
+        action(self)
+    }
+
+    private func setRemoteCommandsEnabled(_ enabled: Bool) {
+        let center = MPRemoteCommandCenter.shared()
+        for command in [center.playCommand, center.pauseCommand, center.togglePlayPauseCommand,
+                        center.nextTrackCommand, center.previousTrackCommand] {
+            command.isEnabled = enabled
         }
     }
 

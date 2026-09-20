@@ -28,6 +28,13 @@
   square, and the burst's left and right arms match its top; the bottom still reaches down into
   the sun.
 
+- Closing the Listen player closes it. The lock-screen and headset transport controls were
+  registered once and never switched off, and toggling play from one of them while nothing was
+  playing would *start* a new chapter — so a stray command from a headset, a car or a stale
+  now-playing entry could restart playback right after you tapped the X, and put the player back on
+  screen. Toggling can no longer start a session (that is the toolbar's job), remote commands are
+  ignored while the player is closed, and closing it takes the app out of the now-playing role.
+
 - An online translation opens on launch instead of claiming it needs a key. The app installed the
   code that fetches chapters *after* registering the translations — and registering them can
   select one immediately, now that your last translation is restored. So the first fetch of the
