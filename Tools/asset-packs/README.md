@@ -56,6 +56,22 @@ delete the `.aar` first, or you will upload the previous contents and spend a wh
   2, including older versions that are still installed." So a schema change to either database must
   stay readable by older builds, or ship under a *new* `assetPackID` rather than a new version of
   this one.
+- **The extension must be embedded into the app *wrapper*, not the products directory.** XcodeGen's
+  default for an `extensionkit-extension` is a copy phase with `dstPath = $(EXTENSIONS_FOLDER_PATH)`
+  and `dstSubfolderSpec = 16` (products directory). During `xcodebuild archive` that is not where
+  the app is installed — the appex is copied into a second `Scripture Alone.app` sitting in
+  `BuildProductsPath` rather than the one under `InstallationBuildProductsLocation`. Xcode reports
+  it only as a *warning* ("is embedded in the parent app bundle's `../../../BuildProductsPath/…`
+  directory") and the archive and all three exports still succeed, so it passes locally; Xcode
+  Cloud then fails the build at `Preparing build for App Store Connect` with no further detail.
+  The dependency therefore pins the destination itself:
+
+  ```yaml
+  - target: ScriptureAloneAssets
+    copy: { destination: wrapper, subpath: Extensions }
+  ```
+
+  which is what `PlugIns` gets for free, since its subfolder spec is already wrapper-relative.
 - **The download policy is `onDemand` on purpose.** `essential` blocks app launch on 40 MB;
   `prefetch` spends it on readers who never open Commentary.
 

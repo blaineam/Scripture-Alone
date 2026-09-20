@@ -58,7 +58,6 @@
 		6B540EFF06E34E6D0F55E3BF /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 8B186D4B5008DA1547FAE40C /* Localizable.xcstrings */; };
 		6CECB71BC29B73727C162FE8 /* AppIntents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1535B298112D25F32BB4CDE8 /* AppIntents.framework */; };
 		6D9EF450A11F9FED9C75C067 /* VerseOfDayShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16AF12A3C0ED58D26D26A632 /* VerseOfDayShared.swift */; };
-		6DAE98E74AA6DB144EE34ADF /* ScriptureAloneAssets.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6DFDAE02A6F001B51EBC1441 /* CompareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2651262AA20DD2F3B106F7 /* CompareView.swift */; };
 		6E6914307A950EB418658595 /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14F3A5CAF08690618C671B97 /* ReaderView.swift */; };
 		6E867677D577ACAFA6CAA5F9 /* DailyVerses.json in Resources */ = {isa = PBXBuildFile; fileRef = 7FB470D843314F7FBBD87D39 /* DailyVerses.json */; };
@@ -89,6 +88,7 @@
 		9F1CD12A5489E03C8E1810F2 /* WatchLibraryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11C231CFA598D2C77307F66A /* WatchLibraryViews.swift */; };
 		9F8302BE770364CD2F7A1F1F /* NoteEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B23F521A56070F190FC3B4E /* NoteEditor.swift */; };
 		A3F695662AA5D3E21A9C9836 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F2A8744EEF32A4DBDD0B4F /* Models.swift */; };
+		A41D6F7C2B1648A683FF87A1 /* ScriptureAloneAssets.appex in Embed Dependencies */ = {isa = PBXBuildFile; fileRef = 21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A812EADE1AA534488E842DC4 /* ScriptureAloneCore in Frameworks */ = {isa = PBXBuildFile; productRef = EC22F6F7CA731D1C087B4FF9 /* ScriptureAloneCore */; };
 		A895C9D5BE7037BDC681CDE0 /* ASV-Watch.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = E4A2B7F7FABABD02EED02944 /* ASV-Watch.sqlite */; };
 		AEC5E4BE40E074C767038607 /* bundled-signing.pub in Resources */ = {isa = PBXBuildFile; fileRef = AC8378E99998755AEE18ECB0 /* bundled-signing.pub */; };
@@ -182,6 +182,17 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		579F775300AFDFA6BB989810 /* Embed Dependencies */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Extensions;
+			dstSubfolderSpec = 1;
+			files = (
+				A41D6F7C2B1648A683FF87A1 /* ScriptureAloneAssets.appex in Embed Dependencies */,
+			);
+			name = "Embed Dependencies";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7214933BBB77069E0F8BA2D0 /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -202,17 +213,6 @@
 				6649DB5B898B27EAF081D381 /* ScriptureAloneWidgets.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D1865CB234CF68ADEA76D161 /* Embed ExtensionKit Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
-			dstSubfolderSpec = 16;
-			files = (
-				6DAE98E74AA6DB144EE34ADF /* ScriptureAloneAssets.appex in Embed ExtensionKit Extensions */,
-			);
-			name = "Embed ExtensionKit Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -820,7 +820,7 @@
 				A96F435A027D5E9119F62B43 /* Resources */,
 				00CBE6A3855E3F0AB246A1BD /* Frameworks */,
 				910BF278C1B0C8329850E481 /* Embed Foundation Extensions */,
-				D1865CB234CF68ADEA76D161 /* Embed ExtensionKit Extensions */,
+				579F775300AFDFA6BB989810 /* Embed Dependencies */,
 				7214933BBB77069E0F8BA2D0 /* Embed Watch Content */,
 			);
 			buildRules = (

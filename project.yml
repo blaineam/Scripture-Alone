@@ -69,7 +69,15 @@ targets:
         product: ScriptureAloneCore
       # Home/Lock Screen and Mac desktop widgets (embedded on both platforms).
       - target: ScriptureAloneWidgets
+      # Embedded into the app *wrapper*, not the products directory. XcodeGen's default for an
+      # extensionkit-extension is `$(EXTENSIONS_FOLDER_PATH)` under the products directory, which
+      # during `xcodebuild archive` is not where the app is installed — the appex lands in a stray
+      # `Scripture Alone.app` beside the real one and the archive ships without it. Xcode says so
+      # only as a warning; App Store Connect refuses the build.
       - target: ScriptureAloneAssets
+        copy:
+          destination: wrapper
+          subpath: Extensions
       # The Apple Watch app rides inside the iOS app only.
       - target: ScriptureAloneWatch
         destinationFilters: [iOS]
