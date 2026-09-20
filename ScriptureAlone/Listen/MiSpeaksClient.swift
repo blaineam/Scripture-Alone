@@ -43,6 +43,7 @@
 #if os(iOS)
 import Foundation
 import UIKit
+import ScriptureAloneCore
 
 @MainActor
 enum MiSpeaksClient {
@@ -56,6 +57,8 @@ enum MiSpeaksClient {
         case notInstalled
         case noSharedContainer
         case notSubscribed
+        /// The text itself may not be handed to another app — see `TranslationInfo`.
+        case translationNotPermitted
 
         nonisolated var explanation: String {
             switch self {
@@ -63,6 +66,9 @@ enum MiSpeaksClient {
             case .notInstalled: "Studio voices come from Mi Speaks, which isn’t installed."
             case .noSharedContainer: "This build can’t reach Mi Speaks’s shared folder."
             case .notSubscribed: "Studio voices need Mi Speaks Premium."
+            case .translationNotPermitted:
+                "Studio voices send the text to Mi Speaks to record it, which this translation’s "
+                    + "licence doesn’t allow. The voices on this device read it as usual."
             }
         }
     }
@@ -105,6 +111,13 @@ enum MiSpeaksClient {
     /// Nil unless this build carries the App Group entitlement.
     static var container: URL? {
         FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
+    }
+
+    /// `translation` is the text about to be read. Handing it to another app is a copy the
+    /// publisher never licensed, so a licensed translation stays with the on-device voices.
+    static func availability(for translation: TranslationInfo?) -> Availability {
+        if let translation, !translation.mayHandOffToOtherApps { return .translationNotPermitted }
+        return availability
     }
 
     static var availability: Availability {

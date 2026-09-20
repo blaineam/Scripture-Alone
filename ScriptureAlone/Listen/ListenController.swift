@@ -74,6 +74,8 @@ final class ListenController {
     @ObservationIgnored private weak var reader: ReaderModel?
     @ObservationIgnored private var scope: Scope = .selection
     @ObservationIgnored private var translation = ""
+    /// The text being read, so the Studio hand-off can check its licence.
+    @ObservationIgnored private var translationInfo: TranslationInfo?
     @ObservationIgnored private var items: [Item] = []
     @ObservationIgnored private var current = 0
     @ObservationIgnored private let defaults = UserDefaults.standard
@@ -200,6 +202,7 @@ final class ListenController {
         guard !items.isEmpty else { return }
         reader = model
         translation = model.translationID
+        translationInfo = model.store?.info
         self.scope = scope
         self.items = items
         current = 0
@@ -458,7 +461,7 @@ final class ListenController {
 
     #if os(iOS)
     private func beginStudio(at index: Int) {
-        let availability = MiSpeaksClient.availability
+        let availability = MiSpeaksClient.availability(for: translationInfo)
         guard availability == .ready else {
             fallBackToSystem(at: index, because: availability.explanation)
             return

@@ -8,14 +8,27 @@ public enum NotesTextExport {
         public var title: String
         /// Translation abbreviation shown after quoted passages ("ASV"), or nil to omit verse text.
         public var translation: String?
+        /// The publisher's copyright line, when the quoted translation requires one. It is
+        /// written at the end of the document: a file of quotations that leaves the device
+        /// without its attribution is the thing publishers' permissions actually forbid.
+        public var notice: String?
 
-        public init(title: String = "Notes", translation: String? = nil) {
+        public init(title: String = "Notes", translation: String? = nil, notice: String? = nil) {
             self.title = title
             self.translation = translation
+            self.notice = notice
         }
     }
 
     public typealias VerseText = (VerseRange) -> String?
+
+    /// The publisher's line, at the foot of an export that quotes their text.
+    static func noticeBlock(_ options: Options, markdown: Bool) -> String {
+        guard let notice = options.notice?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !notice.isEmpty else { return "" }
+        return markdown ? "\n---\n\n\(notice)\n" : "\n\(String(repeating: "—", count: 24))\n\(notice)\n"
+    }
+
 
     // MARK: Markdown
 
@@ -27,7 +40,7 @@ public enum NotesTextExport {
             parts.append("---")
             parts.append(markdown(note: note, headingLevel: 2, options: options, verseText: verseText))
         }
-        return parts.joined(separator: "\n\n") + "\n"
+        return parts.joined(separator: "\n\n") + "\n" + noticeBlock(options, markdown: true)
     }
 
     /// One Markdown document per note, with unique, file-system-safe names.
@@ -100,6 +113,7 @@ public enum NotesTextExport {
             blocks.append(lines.joined(separator: "\n"))
         }
         return blocks.joined(separator: "\n\n" + String(repeating: "—", count: 24) + "\n\n") + "\n"
+            + noticeBlock(options, markdown: false)
     }
 
     // MARK: Helpers

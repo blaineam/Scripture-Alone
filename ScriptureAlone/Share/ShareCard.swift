@@ -80,9 +80,7 @@ enum ShareCardFitter {
     }
 
     /// Public-domain texts carry no notice; a licensed translation's `copyright` rides on the card.
-    static func noticeText(for info: TranslationInfo) -> String? {
-        info.license.localizedCaseInsensitiveContains("public domain") || info.copyright.isEmpty ? nil : info.copyright
-    }
+    static func noticeText(for info: TranslationInfo) -> String? { info.attributionNotice }
 
     private static func largestFittingSize(_ passage: SharePassageText, style: ShareStyle, metrics: ShareCardMetrics,
                                            height: CGFloat) -> CGFloat? {

@@ -145,7 +145,9 @@ struct NotesExportSheet: View {
     private func prepare() {
         failure = nil
         let verseText: NotesTextExport.VerseText = includeVerses ? model.exportVerseText(translation: translation) : { _ in nil }
-        let options = NotesTextExport.Options(title: title, translation: includeVerses ? translation : nil)
+        let notice = includeVerses ? model.store(for: translation)?.info.attributionNotice : nil
+        let options = NotesTextExport.Options(title: title, translation: includeVerses ? translation : nil,
+                                              notice: notice)
         let base = ExportStaging.safeName(title)
         let file: ExportFile
         let name: String

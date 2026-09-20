@@ -3,6 +3,7 @@ import ScriptureAloneCore
 
 /// The compact glass bar shown while listening: transport, speed, voice and sleep timer.
 struct NowPlayingBar: View {
+    @Environment(ReaderModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
     @State private var voices: [VoiceOption] = []
@@ -184,7 +185,7 @@ struct NowPlayingBar: View {
             Button { openURL(MiSpeaksClient.appStoreURL) } label: {
                 Label("Get Mi Speaks on the App Store", systemImage: "arrow.down.app")
             }
-        case .notSubscribed, .noSharedContainer:
+        case .notSubscribed, .noSharedContainer, .translationNotPermitted:
             Text(studioAvailability.explanation)
         }
     }
@@ -197,7 +198,7 @@ struct NowPlayingBar: View {
     private func refreshVoices() {
         Task { voices = await SpeechVoices.available() }
         #if os(iOS)
-        studioAvailability = MiSpeaksClient.availability
+        studioAvailability = MiSpeaksClient.availability(for: model.store?.info)
         studioVoices = MiSpeaksClient.publishedVoices()
         #endif
     }
