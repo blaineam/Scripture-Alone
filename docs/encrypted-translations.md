@@ -246,6 +246,20 @@ Our default is the first, because this app has no backend and we would rather no
 your terms need the second, say so and it exists. What does *not* change between them is everything
 in section 3: your signature, your policy, and the binding of every chapter to both.
 
+**What we do with a shipped key, given that it can be recovered.** The seed is injected at build
+time by Xcode Cloud from a secret that is not in the repository, and it is never used directly: the
+content key is derived from it with HKDF, so the bytes in the binary are not the key and one seed
+can serve several publishers without any of them sharing a key. On first launch the derived key is
+sealed to a Secure Enclave key generated on that device, marked "this device only", which never
+syncs and cannot leave the chip; what sits in the keychain afterwards is ciphertext.
+
+This does not hide the seed from someone disassembling the binary, and we do not claim it does. It
+closes every other route, which are the ones that actually happen: the key is never written to disk
+in the clear, a copied keychain or a device backup or a file-system dump yields ciphertext nobody
+can open, and a key recovered on one device is of no use on another. It raises the floor. It is the
+same floor a closed-source app stands on, and we would rather describe it accurately than imply a
+ceiling that does not exist.
+
 **And the analogue hole is always open.** Any reader can screenshot a page, and a patient one can
 script scrolling and run OCR. That is true of every Bible app, every e-reader, and every printed
 book with a photocopier next to it.
