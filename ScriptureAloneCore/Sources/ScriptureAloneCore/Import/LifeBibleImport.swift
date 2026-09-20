@@ -27,68 +27,15 @@ import Foundation
 /// **Nothing is guessed.** A line whose reference cannot be resolved is not dropped and not
 /// approximated: it is collected in `unresolved` so the reader can be told exactly what did not
 /// come across. Losing a note silently would be worse than not importing at all.
-public struct LifeBibleImport: Sendable, Equatable {
-
-    /// A highlight, reduced to what this app can hold: one verse, one of five colors.
-    public struct Highlight: Sendable, Equatable {
-        public let verse: VerseRef
-        /// Matches `HighlightColor`'s raw values: yellow, green, blue, pink, purple.
-        public let color: String
-        /// The translation the highlight was made in, kept for the import summary.
-        public let translation: String?
-    }
-
-    /// A note. `range` is nil for a journal entry, which is attached to no verse.
-    public struct Note: Sendable, Equatable {
-        public let range: VerseRange?
-        public let title: String
-        public let body: String
-        public let translation: String?
-    }
-
-    /// The color names this import can produce — `HighlightColor`'s raw values in the app.
-    public static let HighlightColorNames: Set<String> = ["yellow", "green", "blue", "pink", "purple"]
-
-    public var highlights: [Highlight] = []
-    public var verseNotes: [Note] = []
-    public var journals: [Note] = []
-    public var saved: [VerseRange] = []
-    /// Lines whose reference could not be resolved, verbatim, so they can be shown rather than lost.
-    public var unresolved: [String] = []
-
-    public var isEmpty: Bool {
-        highlights.isEmpty && verseNotes.isEmpty && journals.isEmpty && saved.isEmpty
-    }
-
-    public var total: Int {
-        highlights.count + verseNotes.count + journals.count + saved.count
-    }
-
-    public enum Failure: LocalizedError, Equatable {
-        case notAnArchive
-        case notALifeBibleExport
-        case nothingToImport
-
-        public var errorDescription: String? {
-            switch self {
-            case .notAnArchive:
-                "That file isn't a zip archive."
-            case .notALifeBibleExport:
-                "That doesn't look like a Life Bible export. Look for LifeBibleData.zip, from "
-                    + "Settings → Advanced → Export your data."
-            case .nothingToImport:
-                "That export has no notes, highlights or saved verses in it."
-            }
-        }
-    }
+public enum LifeBibleImport {
 
     // MARK: Reading the archive
 
-    public static func read(archive data: Data) throws -> LifeBibleImport {
+    public static func read(archive data: Data) throws -> ImportedNotes {
         let zip: ZipReader
-        do { zip = try ZipReader(data: data) } catch { throw Failure.notAnArchive }
+        do { zip = try ZipReader(data: data) } catch { throw NoteImportError.notAnArchive }
 
-        var result = LifeBibleImport()
+        var result = ImportedNotes()
         var sawKnownFile = false
 
         for entry in zip.entries where entry.name.lowercased().hasSuffix(".html") {
@@ -101,49 +48,49 @@ public struct LifeBibleImport: Sendable, Equatable {
             switch leaf.lowercased() {
             case "verse-notes.html":
                 sawKnownFile = true
-                result.readVerseNotes(html)
+                readVerseNotes(html, into: &result)
             case "highlights.html":
                 sawKnownFile = true
-                result.readHighlights(html)
+                readHighlights(html, into: &result)
             case "saves-in-this-folder.html":
                 sawKnownFile = true
-                result.readSaves(html)
+                readSaves(html, into: &result)
             default:
                 // A journal entry. Its folder path is kept in the title so a reader who organised
                 // their journal into folders can still tell entries apart.
                 let folders = file.dropFirst().dropLast().filter { $0 != "LifeBibleData" }
-                result.readJournal(html, leaf: leaf, folders: Array(folders))
+                readJournal(html, leaf: leaf, folders: Array(folders), into: &result)
             }
         }
 
-        guard sawKnownFile || !result.journals.isEmpty else { throw Failure.notALifeBibleExport }
-        guard !result.isEmpty else { throw Failure.nothingToImport }
+        guard sawKnownFile || !result.journals.isEmpty else { throw NoteImportError.notALifeBibleExport }
+        guard !result.isEmpty else { throw NoteImportError.nothingToImport }
         return result
     }
 
     // MARK: The four shapes
 
-    mutating func readVerseNotes(_ html: String) {
-        for block in Self.paragraphs(in: Self.body(of: html)) {
+    static func readVerseNotes(_ html: String, into result: inout ImportedNotes) {
+        for block in paragraphs(in: body(of: html)) {
             // Reference, <br>, then the note. Only the first break separates them; the rest belong
             // to the note's own text.
-            let pieces = Self.lines(in: block)
+            let pieces = lines(in: block)
             guard let head = pieces.first else { continue }
             let rest = pieces.dropFirst().joined(separator: "\n")
-            guard let reference = Self.reference(in: head) else {
-                if !Self.text(of: block).isEmpty { unresolved.append(Self.text(of: head)) }
+            guard let reference = reference(in: head) else {
+                if !text(of: block).isEmpty { result.unresolved.append(text(of: head)) }
                 continue
             }
-            let body = Self.text(of: rest)
+            let body = text(of: rest)
             guard !body.isEmpty else { continue }
-            verseNotes.append(Note(range: reference.range, title: reference.display,
+            result.verseNotes.append(ImportedNotes.Note(range: reference.range, title: reference.display,
                                    body: body, translation: reference.translation))
         }
     }
 
-    mutating func readHighlights(_ html: String) {
-        for line in Self.lines(in: Self.body(of: html)) {
-            let text = Self.text(of: line)
+    static func readHighlights(_ html: String, into result: inout ImportedNotes) {
+        for line in lines(in: body(of: html)) {
+            let text = text(of: line)
             guard !text.isEmpty else { continue }
             // "underline " is a style Life Bible has and this app does not; the highlight still
             // comes across, in the nearest color, rather than being dropped for want of a style.
@@ -154,39 +101,40 @@ public struct LifeBibleImport: Sendable, Equatable {
             if let cut = remainder.range(of: #"\s+words?:\s*\d+(-\d+)?$"#, options: .regularExpression) {
                 remainder.removeSubrange(cut)
             }
-            guard let hash = remainder.lastIndex(of: "#") else { unresolved.append(text); continue }
+            guard let hash = remainder.lastIndex(of: "#") else { result.unresolved.append(text); continue }
             let hex = String(remainder[remainder.index(after: hash)...])
                 .trimmingCharacters(in: .whitespaces)
             let head = String(remainder[..<hash])
-            guard let reference = Self.reference(in: head), let range = reference.range else {
-                unresolved.append(text)
+            guard let reference = reference(in: head), let range = reference.range else {
+                result.unresolved.append(text)
                 continue
             }
-            let color = Self.nearestColor(toHex: hex)
+            let color = nearestColor(toHex: hex)
             // One row per verse: a Life Bible highlight spanning verses exports as one line each,
             // but a range would still be meaningful and is expanded rather than truncated.
             for key in stride(from: range.start.key, through: range.end.key, by: 1) {
                 guard let verse = VerseRef(key: key) else { continue }
-                highlights.append(Highlight(verse: verse, color: color,
+                result.highlights.append(ImportedNotes.Highlight(verse: verse, color: color,
                                             translation: reference.translation))
             }
         }
     }
 
-    mutating func readSaves(_ html: String) {
-        for line in Self.lines(in: Self.body(of: html)) {
-            let text = Self.text(of: line)
+    static func readSaves(_ html: String, into result: inout ImportedNotes) {
+        for line in lines(in: body(of: html)) {
+            let text = text(of: line)
             guard !text.isEmpty else { continue }
-            guard let reference = Self.reference(in: text), let range = reference.range else {
-                unresolved.append(text)
+            guard let reference = reference(in: text), let range = reference.range else {
+                result.unresolved.append(text)
                 continue
             }
-            saved.append(range)
+            result.saved.append(range)
         }
     }
 
-    mutating func readJournal(_ html: String, leaf: String, folders: [String]) {
-        let body = Self.text(of: Self.body(of: html))
+    static func readJournal(_ html: String, leaf: String, folders: [String],
+                            into result: inout ImportedNotes) {
+        let body = text(of: body(of: html))
         guard !body.isEmpty else { return }
         // The file name is a slug of the title the reader gave it. The title is usually repeated as
         // the entry's first line, which is a better source: it kept its capitals and punctuation.
@@ -195,13 +143,13 @@ public struct LifeBibleImport: Sendable, Equatable {
         let firstLine = body.split(separator: "\n", maxSplits: 1).first.map(String.init) ?? ""
         let title: String
         if !firstLine.isEmpty, firstLine.count <= 120,
-           Self.slugify(firstLine).hasPrefix(Self.slugify(fromSlug).prefix(24)) {
+           slugify(firstLine).hasPrefix(slugify(fromSlug).prefix(24)) {
             title = firstLine.trimmingCharacters(in: CharacterSet(charactersIn: " ."))
         } else {
             title = fromSlug.capitalized
         }
         let prefixed = folders.isEmpty ? title : folders.joined(separator: " › ") + " › " + title
-        journals.append(Note(range: nil, title: prefixed, body: body, translation: nil))
+        result.journals.append(ImportedNotes.Note(range: nil, title: prefixed, body: body, translation: nil))
     }
 
     // MARK: References

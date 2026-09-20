@@ -101,7 +101,18 @@ final class ReaderModel {
     /// The online translation in use, when the current text comes from an API rather than a file.
     private(set) var onlineTranslation: (entry: TranslationEntry, info: TranslationInfo)?
     /// Supplied by the app so the model needn't know about keychains or providers.
-    var onlineLoader: (@MainActor (TranslationEntry, ChapterRef) async throws -> BibleStore)?
+    ///
+    /// Installing it retries a chapter that failed for want of it. Order still matters at launch
+    /// and the app gets it right — but "the reader is told their key is missing because two lines
+    /// ran in the wrong order" is a bad enough failure that it should not be possible to
+    /// reintroduce by rearranging startup.
+    var onlineLoader: (@MainActor (TranslationEntry, ChapterRef) async throws -> BibleStore)? {
+        didSet {
+            guard onlineLoader != nil, onlineTranslation != nil, layout == nil else { return }
+            loadError = nil
+            load()
+        }
+    }
     @ObservationIgnored private var fetchTask: Task<Void, Never>?
     private let defaults = UserDefaults.standard
     private let cloud = NSUbiquitousKeyValueStore.default

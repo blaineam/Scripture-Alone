@@ -21,6 +21,19 @@
   edition until every hash was identified. Searching the commonest word in scripture opens one bucket
   of 256 and decrypts at most thirty chapters of 1,189, and the reader counts what it opened so the
   tests can say so.
+- An online translation opens on launch instead of claiming it needs a key. The app installed the
+  code that fetches chapters *after* registering the translations — and registering them can
+  select one immediately, now that your last translation is restored. So the first fetch of the
+  session failed and reported a missing key, when the key was fine and the app simply wasn't wired
+  up yet. Switching away and back fixed it, which is the signature of an ordering problem rather
+  than a missing key. The order is right now, and installing the fetcher also retries a chapter
+  that was waiting on it, so the same mistake can't be reintroduced by rearranging startup.
+- Notes can come from any app, not only Life Bible. Paste them, or choose a CSV or text file you
+  exported from somewhere else: entries are read by shape — a reference, and the text belonging to
+  it — rather than by a list of vendors whose files nobody here has seen. Quoted commas and
+  newlines inside a cell are handled, a colour column becomes highlights, a bare reference becomes
+  a saved verse, and anything that names no verse is shown to you rather than guessed at.
+
 - Your notes can come with you from Life Bible — the app that used to be called Tecarta Bible.
   Keepsake & Export → Bring Notes From Another App reads the `LifeBibleData.zip` it exports, and
   brings across notes on verses, journal entries, highlights with their colours, and saved verses.

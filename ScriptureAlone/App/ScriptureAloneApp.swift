@@ -57,14 +57,22 @@ private struct RootView: View {
             .environment(onlineKeys)
             // Translations the reader added are part of the picker from the first frame.
             .task {
+                // The loader goes in FIRST. Registering the translations can immediately select
+                // one — the reader's last translation is restored the moment it becomes available
+                // — and selecting an online translation fetches it. With the loader still nil at
+                // that point, the fetch failed and told the reader their translation "needs a
+                // key", which was both wrong and alarming: the key was fine, the app simply was
+                // not wired up yet. Switching away and back fixed it, which is the signature of
+                // an ordering bug rather than a missing key.
+                let loader = OnlineTextLoader(keys: onlineKeys)
+                model.onlineLoader = { entry, chapter in try await loader.chapter(entry, chapter) }
+                model.onlineSearch = { entry, query in try await loader.search(entry, query) }
+
                 model.refreshTranslations(imported: library.entries.map { ($0.info, $0.url) })
                 // A Crossway key is enough to offer the ESV; API.Bible's picks are remembered
                 // when they are made, so they come back here without a network call and without
                 // the reader having to open the keys screen again.
                 model.setOnlineTranslations(OnlineCatalog.restored(keys: onlineKeys))
-                let loader = OnlineTextLoader(keys: onlineKeys)
-                model.onlineLoader = { entry, chapter in try await loader.chapter(entry, chapter) }
-                model.onlineSearch = { entry, query in try await loader.search(entry, query) }
             }
             #if os(macOS)
             .frame(minWidth: 520, minHeight: 480)

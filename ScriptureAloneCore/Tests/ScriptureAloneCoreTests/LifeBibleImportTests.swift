@@ -46,8 +46,8 @@ import Testing
         Genesis\u{00A0}22:1 CSB  #b3e487<br>John\u{00A0}3:16 CSB  #cae1fe<br>\
         underline Psalms\u{00A0}23:1 CSB  #999999  words: 2-5<br>
         """)
-        var result = LifeBibleImport()
-        result.readHighlights(file)
+        var result = ImportedNotes()
+        LifeBibleImport.readHighlights(file, into: &result)
 
         #expect(result.highlights.count == 5)
         #expect(result.unresolved.isEmpty)
@@ -59,7 +59,7 @@ import Testing
         // Underlines and word offsets are styles this app has no equivalent for. The highlight
         // still arrives — losing it would be the worse trade — in the nearest color it has.
         #expect(result.highlights[4].verse == VerseRef(.psalms, 23, 1))
-        #expect(LifeBibleImport.HighlightColorNames.contains(result.highlights[4].color))
+        #expect(ImportedNotes.highlightColorNames.contains(result.highlights[4].color))
     }
 
     /// Life Bible's palette is pale where this app's is saturated, so these must be matched by hue.
@@ -81,8 +81,8 @@ import Testing
         <p>Genesis\u{00A0}22:1 CSB<br>How to pass a test:<br>Will you trust God's will.<br><br>\
         Abraham obeyed God</p>
         """)
-        var result = LifeBibleImport()
-        result.readVerseNotes(file)
+        var result = ImportedNotes()
+        LifeBibleImport.readVerseNotes(file, into: &result)
 
         #expect(result.verseNotes.count == 2)
         #expect(result.verseNotes[0].range?.start == VerseRef(.genesis, 2, 18))
@@ -94,17 +94,17 @@ import Testing
     }
 
     @Test func savedVersesComeAcross() throws {
-        var result = LifeBibleImport()
-        result.readSaves(Self.html("1 John\u{00A0}1:1<br>Philippians\u{00A0}4:6<br>"))
+        var result = ImportedNotes()
+        LifeBibleImport.readSaves(Self.html("1 John\u{00A0}1:1<br>Philippians\u{00A0}4:6<br>"), into: &result)
         #expect(result.saved.count == 2)
         #expect(result.saved[0].start == VerseRef(.firstJohn, 1, 1))
         #expect(result.saved[1].start == VerseRef(.philippians, 4, 6))
     }
 
     @Test func aJournalEntryTakesItsTitleFromItsFirstLine() throws {
-        var result = LifeBibleImport()
-        result.readJournal(Self.html("The Doctrine of God. <br>The Bible assumes the existence of God"),
-                           leaf: "the-doctrine-of-god.html", folders: [])
+        var result = ImportedNotes()
+        LifeBibleImport.readJournal(Self.html("The Doctrine of God. <br>The Bible assumes the existence of God"),
+                                    leaf: "the-doctrine-of-god.html", folders: [], into: &result)
         let entry = try #require(result.journals.first)
         #expect(entry.range == nil)
         // The slug lost the capitals; the body's own first line kept them.

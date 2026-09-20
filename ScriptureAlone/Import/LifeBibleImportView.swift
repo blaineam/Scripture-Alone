@@ -19,7 +19,9 @@ struct LifeBibleImportView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var picking = false
-    @State private var found: LifeBibleImport?
+    @State private var found: ImportedNotes?
+    @State private var pasting = false
+    @State private var pasted = ""
     @State private var failure: String?
     @State private var outcome: Outcome?
     @State private var working = false
@@ -52,7 +54,8 @@ struct LifeBibleImportView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
-            .fileImporter(isPresented: $picking, allowedContentTypes: [.zip]) { result in
+            .sheet(isPresented: $pasting) { pasteSheet }
+            .fileImporter(isPresented: $picking, allowedContentTypes: [.zip, .commaSeparatedText, .plainText, .tabSeparatedText]) { result in
                 switch result {
                 case .success(let url): read(url)
                 case .failure(let error): failure = error.localizedDescription
@@ -71,13 +74,26 @@ struct LifeBibleImportView: View {
     private var instructions: some View {
         Group {
             Section {
-                Button("Choose LifeBibleData.zip…", systemImage: "doc.badge.plus") { picking = true }
+                Button("Choose a File…", systemImage: "doc.badge.plus") { picking = true }
             } header: {
                 Text("From Life Bible")
             } footer: {
                 Text("Life Bible — the app that used to be called Tecarta Bible — can export "
                      + "everything you've written. Your notes, highlights and saved verses come "
                      + "across; nothing is sent anywhere, and the file never leaves your device.")
+            }
+
+            Section {
+                Button("Paste Notes From Any App…", systemImage: "doc.on.clipboard") { pasting = true }
+            } header: {
+                Text("From Anywhere Else")
+            } footer: {
+                // Deliberately not a list of supported apps: the parser reads a reference and the
+                // text belonging to it, whatever produced them. Naming apps whose exports nobody
+                // here has seen would be a promise made from documentation rather than from files.
+                Text("Paste notes, or a CSV you exported. Each entry needs to start with a "
+                     + "reference — “John 3:16” — so it can be attached to the right verse. "
+                     + "Anything that doesn't name a verse is listed for you rather than guessed at.")
             }
 
             Section("How to get the file") {
@@ -104,7 +120,7 @@ struct LifeBibleImportView: View {
     }
 
     @ViewBuilder
-    private func preview(_ result: LifeBibleImport) -> some View {
+    private func preview(_ result: ImportedNotes) -> some View {
         Section {
             row("Notes on verses", result.verseNotes.count, "text.quote")
             row("Journal entries", result.journals.count, "book.closed")
@@ -177,21 +193,74 @@ struct LifeBibleImportView: View {
         }
     }
 
+    private var pasteSheet: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                TextEditor(text: $pasted)
+                    .font(.callout)
+                    .padding(.horizontal, 12)
+                    .overlay(alignment: .topLeading) {
+                        if pasted.isEmpty {
+                            Text("John 3:16 — the whole gospel in one verse\n\nRomans 8:28 — not that all things are good")
+                                .font(.callout)
+                                .foregroundStyle(.tertiary)
+                                .padding(.horizontal, 17)
+                                .padding(.vertical, 8)
+                                .allowsHitTesting(false)
+                        }
+                    }
+            }
+            .navigationTitle("Paste Notes")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { pasting = false; pasted = "" }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Read") { readPasted() }
+                        .disabled(pasted.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+        }
+    }
+
     // MARK: Work
+
+    private func readPasted() {
+        do {
+            found = try PastedNotesImport.parse(pasted)
+            pasting = false
+            pasted = ""
+        } catch {
+            failure = error.localizedDescription
+        }
+    }
 
     private func read(_ url: URL) {
         // A file chosen from Files or iCloud Drive is outside the sandbox until asked for.
         let scoped = url.startAccessingSecurityScopedResource()
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         do {
-            found = try LifeBibleImport.read(archive: try Data(contentsOf: url))
+            let data = try Data(contentsOf: url)
+            // A zip is a Life Bible export; anything else is text somebody exported from
+            // elsewhere, read by shape rather than by which app wrote it.
+            if url.pathExtension.lowercased() == "zip" {
+                found = try LifeBibleImport.read(archive: data)
+            } else if let text = String(data: data, encoding: .utf8)
+                        ?? String(data: data, encoding: .isoLatin1) {
+                found = try PastedNotesImport.parse(text)
+            } else {
+                failure = NoteImportError.nothingRecognised.localizedDescription
+            }
         } catch {
             failure = error.localizedDescription
         }
     }
 
     @MainActor
-    private func bring(_ result: LifeBibleImport) async {
+    private func bring(_ result: ImportedNotes) async {
         working = true
         defer { working = false }
         var tally = Outcome()
