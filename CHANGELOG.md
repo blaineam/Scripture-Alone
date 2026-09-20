@@ -28,6 +28,13 @@
   square, and the burst's left and right arms match its top; the bottom still reaches down into
   the sun.
 
+- The Hebrew and Greek behind a verse is available in every translation, not only the Berean
+  Standard Bible. The word-by-word data is keyed to the BSB's wording, and the whole feature was
+  gated on that — so anyone reading the ASV, the KJV, an import or an online translation was denied
+  the original languages, the parsing, the Strong's numbers and the lexicon as well, none of which
+  depend on the English in front of them. The lookup is offered everywhere now; the English beside
+  each word is the BSB's, and the sheet says so rather than leaving it to be noticed.
+
 - Closing the Listen player closes it. The lock-screen and headset transport controls were
   registered once and never switched off, and toggling play from one of them while nothing was
   playing would *start* a new chapter — so a stray command from a headset, a car or a stale

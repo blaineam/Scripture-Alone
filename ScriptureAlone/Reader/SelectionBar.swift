@@ -88,7 +88,8 @@ struct SelectionBar: View {
         .frame(maxWidth: 520)
         .glassEffect(.regular, in: .rect(cornerRadius: 26))
         .sheet(item: $interlinear) { request in
-            InterlinearView(verse: request.verse, verseText: text(of: request.verse))
+            InterlinearView(verse: request.verse, verseText: text(of: request.verse),
+                            glossText: bereanText(of: request.verse))
                 #if os(macOS)
                 .frame(minWidth: 460, minHeight: 560)
                 #endif
@@ -108,6 +109,13 @@ struct SelectionBar: View {
         let name = model.translationInfo?.abbreviation ?? "This translation"
         guard limit > 0 else { return "\(name) can't be quoted outside the app." }
         return "\(name) allows up to \(limit) verses in one quotation. Select fewer to copy or share."
+    }
+
+    /// The verse in the Berean Standard Bible, which the word-by-word data is keyed to. The app
+    /// ships the BSB, so this is a local lookup and costs nothing even when reading online.
+    private func bereanText(of verse: VerseRef) -> String? {
+        guard let bsb = model.source(for: InterlinearStore.translationID) else { return nil }
+        return (try? bsb.verses(in: VerseRange(verse, verse)))?.first?.text
     }
 
     private func text(of verse: VerseRef) -> String {
