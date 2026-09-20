@@ -187,6 +187,17 @@ class Parser:
         if self.fragment is None:
             self.start_fragment(numbered=False)
         frag = self.fragment
+        if getattr(self, "note_closed_without_space", False):
+            self.note_closed_without_space = False
+            # Only when the next run starts a *word*. A note before closing punctuation —
+            # "…strike his heel.\f ...\f*”" — must not become "heel. ”", which is what a
+            # blanket rule did to 217 verses.
+            # Letters and opening quotes only. Brackets are not safe: Exodus 25:40 ends
+            # "…on the mountain.\f ...\f*[’’]", where the bracket is an artifact in the source
+            # rather than the start of anything.
+            opens_a_word = bool(text) and (text[0].isalnum() or text[0] in "\u201c\u2018")
+            if frag["t"] and not frag["t"].endswith(" ") and not text.startswith(" ") and opens_a_word:
+                text = " " + text
         if not frag["t"] or frag["t"].endswith(" "):
             text = text.lstrip()
         if not text:
@@ -232,6 +243,11 @@ class Parser:
                     if body:
                         self.fragment.setdefault("fn", []).append([len(self.fragment["t"]), body])
                 self.note = None
+                # A footnote can sit *between* two words with no space either side, because the
+                # marker itself occupies that gap: "Samuel,\f ...\f*saying". Dropping the note
+                # from the running text would glue them together ("Samuel,saying"), which is how
+                # six verses shipped. Remember the gap; the next text run closes it.
+                self.note_closed_without_space = True
             else:
                 self.note = []
                 self.note_field = "caller"
@@ -359,8 +375,26 @@ def strip_verse_prefix(parser_cls):
 strip_verse_prefix(Parser)
 
 
+# Two places where the BSB's USFM omits a space that bereanbible.com's own translation tables
+# contain. These are not footnote gaps (those are handled in the parser) — the space is simply
+# missing. Found by aligning the interlinear tables against the built store. A correction that
+# stops matching is reported, so a fixed upstream file leaves no silent no-op behind.
+USFM_CORRECTIONS = [
+    ("NUM", "his sons:This", "his sons: This"),
+    ("JER", "\u201cevenif you", "\u201ceven if you"),
+]
+
+
+def apply_corrections(code, text, applied):
+    for book, wrong, right in USFM_CORRECTIONS:
+        if book == code and wrong in text:
+            text = text.replace(wrong, right)
+            applied.add((book, wrong))
+    return text
+
 def load_books(zip_path):
     books = {}
+    applied = set()
     with zipfile.ZipFile(zip_path) as z:
         for name in z.namelist():
             if not name.lower().endswith((".usfm", ".sfm")):
@@ -369,12 +403,16 @@ def load_books(zip_path):
             code = re.match(r"\\id\s+(\S+)", text)
             if not code or code.group(1) not in BOOKS:
                 continue
+            text = apply_corrections(code.group(1), text, applied)
             book = Book(code.group(1))
             Parser(text).parse(book)
             books[book.code] = book
     missing = [c for c in BOOKS if c not in books]
     if missing:
         raise SystemExit(f"{zip_path}: missing books {missing}")
+    for book, wrong, _ in USFM_CORRECTIONS:
+        if (book, wrong) not in applied:
+            print(f"  note: unused correction for {book}: {wrong!r} — upstream may have fixed it")
     return books
 
 
