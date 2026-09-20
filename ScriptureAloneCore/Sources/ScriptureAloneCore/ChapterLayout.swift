@@ -5,6 +5,17 @@ import Foundation
 public struct ChapterLayout: Decodable, Sendable {
     public let blocks: [Block]
 
+    public init(blocks: [Block]) { self.blocks = blocks }
+
+    /// A layout for text that arrived without structure — an online translation's API returns
+    /// prose, not the paragraph and poetry marks a USFM store carries. One paragraph, every verse
+    /// numbered, which is how the reader renders prose anyway.
+    public static func prose(_ verses: [VerseText]) -> ChapterLayout {
+        ChapterLayout(blocks: [Block(kind: .paragraph, fragments: verses.map {
+            Fragment(verse: $0.ref.verse, numbered: true, text: $0.text)
+        })])
+    }
+
     enum CodingKeys: String, CodingKey { case blocks = "b" }
 
     public struct Block: Decodable, Sendable {
@@ -27,6 +38,12 @@ public struct ChapterLayout: Decodable, Sendable {
         public let text: String?
         public let fragments: [Fragment]
 
+        public init(kind: Kind, text: String? = nil, fragments: [Fragment] = []) {
+            self.kind = kind
+            self.text = text
+            self.fragments = fragments
+        }
+
         enum CodingKeys: String, CodingKey { case kind = "k", text = "t", fragments = "f" }
 
         public init(from decoder: Decoder) throws {
@@ -44,6 +61,15 @@ public struct ChapterLayout: Decodable, Sendable {
         public let text: String
         public let spans: [Span]
         public let footnotes: [Footnote]
+
+        public init(verse: Int, numbered: Bool, text: String,
+                    spans: [Span] = [], footnotes: [Footnote] = []) {
+            self.verse = verse
+            self.numbered = numbered
+            self.text = text
+            self.spans = spans
+            self.footnotes = footnotes
+        }
 
         enum CodingKeys: String, CodingKey { case verse = "v", numbered = "n", text = "t", spans = "s", footnotes = "fn" }
 

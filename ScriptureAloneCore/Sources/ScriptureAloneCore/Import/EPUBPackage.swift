@@ -1,3 +1,7 @@
+// Importing is an iPhone, iPad and Mac feature: the watch has no file picker and no
+// catalogue. It is also 32-bit (arm64_32), where the ZIP64 sentinel 0xFFFF_FFFF does not
+// fit in an Int at all — so this code is not merely unused there, it cannot compile.
+#if !os(watchOS)
 import Foundation
 
 /// Dublin Core metadata from the package document. The `rights` line is the one that matters most:
@@ -274,3 +278,4 @@ public struct EPUBPackage: Sendable {
         return String(data: data, encoding: .isoLatin1) ?? String(decoding: data, as: UTF8.self)
     }
 }
+#endif

@@ -1,3 +1,7 @@
+// Importing is an iPhone, iPad and Mac feature: the watch has no file picker and no
+// catalogue. It is also 32-bit (arm64_32), where the ZIP64 sentinel 0xFFFF_FFFF does not
+// fit in an Int at all — so this code is not merely unused there, it cannot compile.
+#if !os(watchOS)
 import Foundation
 
 /// What the import actually got, book by book.
@@ -161,3 +165,4 @@ public struct ImportCoverageReport: Sendable, Hashable, Codable {
 private extension ImportCoverageReport.BookCoverage {
     var name: String { book.name }
 }
+#endif
