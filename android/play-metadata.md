@@ -65,7 +65,7 @@ apps@wemiller.com
 https://wemiller.com/apps/scripture-alone/
 
 ## privacy_policy_url
-https://wemiller.com/apps/scripture-alone/privacy/
+https://wemiller.com/privacy/
 
 ## release_notes
 The first release of Scripture Alone for Android.
