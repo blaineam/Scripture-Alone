@@ -85,6 +85,10 @@ val syncBundledData by tasks.registering(Sync::class) {
         eachFile { path = name }          // flatten, as the iOS bundle does
         includeEmptyDirs = false
     }
+    // Verse of the Day: the same curated list, and so the same passage on the same day, as iOS.
+    from(rootProject.layout.projectDirectory.dir("../ScriptureAlone/Shared")) {
+        include("DailyVerses.json")
+    }
     into(layout.buildDirectory.dir("generated/bundledData"))
 }
 tasks.named("preBuild") { dependsOn(syncBundledData) }
@@ -109,6 +113,8 @@ dependencies {
     // tree API of kotlinx.serialization for the header, because org.json is a stub on the JVM.
     implementation("com.google.crypto.tink:tink-android:1.16.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    // Reading position and appearance — the iOS app's UserDefaults `reader.*` keys.
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation("junit:junit:4.13.2")

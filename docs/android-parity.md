@@ -110,7 +110,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Notes with multiple anchors, inline markers, Notes panel | ⬜ | |
 | Favorites | ⬜ | |
 | Export: PDF, Markdown, Markdown folder, plain text | ⬜ | `android.graphics.pdf.PdfDocument` |
-| Quotation-limit gate on copy and share | ⬜ | |
+| Quotation-limit gate on copy and share | 🔧 | `TranslationRights.mayQuote` ported (500 for licensed text); copy/share UI not yet gated |
 
 ### Camera notes
 | Feature | Status | Notes |
@@ -149,7 +149,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Import USFM zip / DRM-free ePub, with DRM refusal | ⬜ | Port the importers + 57 tests |
 | Online ESV and API.Bible with the reader's key | ⬜ | Port `OnlinePassageHTML` |
 | Keys synced across the reader's devices | ⬜ | Block Store |
-| Translation rights gate | ⬜ | |
+| Translation rights gate | 🔧 | `data/rights/`: the same rule as iOS (licence line or a package's signed policy, expiry) — tested; not yet asked by the UI |
 | `.sabible` reader: signature, per-chapter AES-GCM | ✅ | All 1,189 ASV chapters decrypt to exactly `ASV.sqlite` (31,086 verses, 0 mismatches); tamper, rebinding and wrong-key tests. Tink for Ed25519. |
 | `.sabible` sealed search index | ⬜ | Header's index entries are signature-covered but not yet bounds-checked or read |
 | Content key wrapped by Android Keystore | ⬜ | Derived from the published seed and held in memory for now |
@@ -173,7 +173,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 ### Widgets and Wear OS
 | Feature | Status | Notes |
 |---|---|---|
-| Verse of the Day widget | ⬜ | Glance, reads `DailyVerses.json` |
+| Verse of the Day widget | 🔧 | `data/daily/`: same pick as iOS for every date (pinned tests); `DailyVerses.json` synced at build. Glance widget not yet built |
 | Favorites & Notes widget with "Next" | ⬜ | Glance |
 | Lock Screen widgets | ➖ | |
 | Wear OS app: VOTD, favorites, notes, reader, translations | ⬜ | Same `*-Watch.sqlite` files |

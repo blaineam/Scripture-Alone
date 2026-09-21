@@ -25,6 +25,19 @@ data class VerseRange(val start: VerseRef, val end: VerseRef) {
             else -> "${display(start)}–${end.verse}"
         }
 
+    /** "Ps 23:1", "1 Cor 13:4–7", "Gen 1:1–2:3" — for widgets and other tight spaces. */
+    val abbreviatedDisplay: String
+        get() {
+            fun abbreviation(ref: VerseRef) = BookID.of(ref.book)?.abbreviation ?: "${ref.book}"
+            val head = "${abbreviation(start)} ${start.chapter}:${start.verse}"
+            return when {
+                start == end -> head
+                start.book != end.book -> "$head–${abbreviation(end)} ${end.chapter}:${end.verse}"
+                start.chapter != end.chapter -> "$head–${end.chapter}:${end.verse}"
+                else -> "$head–${end.verse}"
+            }
+        }
+
     companion object {
         fun of(a: VerseRef, b: VerseRef = a): VerseRange = if (a.key <= b.key) VerseRange(a, b) else VerseRange(b, a)
 
