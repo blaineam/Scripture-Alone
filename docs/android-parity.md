@@ -147,7 +147,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Translations screen | ⬜ | |
 | eBible.org catalogue (16-ID allowlist) | ⬜ | |
 | Import USFM zip / DRM-free ePub, with DRM refusal | ⬜ | Port the importers + 57 tests |
-| Online ESV and API.Bible with the reader's key | ⬜ | Port `OnlinePassageHTML` |
+| Online ESV and API.Bible with the reader's key | 🔧 | `data/online/`: HTML parsing and the chapter cache with Crossway's 500-verse ceiling, LRU eviction and VACUUM on clear (24 tests, incl. real captured responses). Networking and key entry not yet built |
 | Keys synced across the reader's devices | ⬜ | Block Store |
 | Translation rights gate | 🔧 | `data/rights/`: the same rule as iOS (licence line or a package's signed policy, expiry) — tested; not yet asked by the UI |
 | `.sabible` reader: signature, per-chapter AES-GCM | ✅ | All 1,189 ASV chapters decrypt to exactly `ASV.sqlite` (31,086 verses, 0 mismatches); tamper, rebinding and wrong-key tests. Tink for Ed25519. |
