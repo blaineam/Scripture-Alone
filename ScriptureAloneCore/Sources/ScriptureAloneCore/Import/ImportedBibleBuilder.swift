@@ -89,7 +89,11 @@ public enum ImportedBibleBuilder {
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         // A half-written store from a previous attempt must not survive.
         let temporary = directory.appending(path: ".\(url.lastPathComponent).partial")
-        for stale in [temporary, temporary.appendingPathExtension("journal")] {
+        // SQLite's rollback journal is "<partial>-journal" (a hyphen, not an extension). A journal
+        // left by a crashed write would be replayed into the fresh file, so it goes too; the old
+        // "<partial>.journal" spelling is swept as well, for anything an earlier build left behind.
+        let journal = directory.appending(path: ".\(url.lastPathComponent).partial-journal")
+        for stale in [temporary, journal, temporary.appendingPathExtension("journal")] {
             try? FileManager.default.removeItem(at: stale)
         }
 

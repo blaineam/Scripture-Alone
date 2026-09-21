@@ -4,21 +4,21 @@ package com.blainemiller.scripturealone.data.importer
  * One tag from an XHTML file, ported from `XMLTag` in `Import/XMLScanner.swift`.
  *
  * [name] is lowercased with its namespace prefix dropped ("html:p" → "p"). Attribute names are
- * lowercased; `epub:`, `opf:` and `dc:` keep their prefix. Attribute *values* are kept as written —
- * including `class` and `epub:type`, which the Swift doc comments call lowercased but the Swift code
- * does not lowercase, so neither does this.
+ * lowercased; `epub:`, `opf:` and `dc:` keep their prefix. Attribute *values* are kept as written,
+ * except that [classes] and [epubType] are read lowercased, as the Swift `XMLTag` reads them — so
+ * `class="WJ"` is words of Christ.
  */
 data class XMLTag(val name: String, val attributes: Map<String, String>, val isSelfClosing: Boolean) {
     fun attribute(name: String): String? = attributes[name]
 
-    /** Class tokens, split on space, tab and newline characters (not CR: a "\r\n" is one Swift character). */
+    /** Class tokens, lowercased, split on space, tab and newline characters (not CR: a "\r\n" is one Swift character). */
     val classes: List<String>
-        get() = SwiftText.split(attributes["class"] ?: "") { chars, i ->
+        get() = SwiftText.split((attributes["class"] ?: "").lowercase()) { chars, i ->
             chars.isChar(i, ' ') || chars.isChar(i, '\t') || chars.isChar(i, '\n')
         }
 
-    /** `epub:type` (OPS 3) or `type` (OPS 2 files sometimes carry it bare). */
-    val epubType: String get() = attributes["epub:type"] ?: attributes["type"] ?: ""
+    /** `epub:type` (OPS 3) or `type` (OPS 2 files sometimes carry it bare), lowercased. */
+    val epubType: String get() = (attributes["epub:type"] ?: attributes["type"] ?: "").lowercase()
 }
 
 sealed class XMLEvent {
@@ -240,7 +240,9 @@ object XMLScanner {
         "ndash" to "–", "mdash" to "—", "hellip" to "…", "middot" to "·", "bull" to "•",
         "lsquo" to "‘", "rsquo" to "’", "ldquo" to "“", "rdquo" to "”", "sbquo" to "‚", "bdquo" to "„",
         "dagger" to "†", "Dagger" to "‡", "sect" to "§", "para" to "¶", "copy" to "©", "reg" to "®",
-        "deg" to "°", "prime" to "′", "Prime" to "″", "eacute" to "é", "egrave" to "è", "shy" to "­",
+        "deg" to "°", "prime" to "′", "Prime" to "″", "eacute" to "é", "egrave" to "è",
+        // A soft hyphen is a line-breaking hint, not text: kept, it splits the word for search.
+        "shy" to "",
     )
 
     fun decodeEntities(raw: String): String {

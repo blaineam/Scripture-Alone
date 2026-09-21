@@ -533,6 +533,144 @@ import Testing
 
     // MARK: - Helper
 
+    // MARK: - Regressions
+
+    /// `class` and `epub:type` values are matched without regard to case: `class="WJ"` is words of
+    /// Christ, and `epub:type="NoteRef"`/`"Footnote"` are a note and its body.
+    @Test func matchesClassAndTypeValuesWithoutCase() throws {
+        let bible = try extract("jhn14.xhtml", """
+            <h1>John 14</h1>
+            <p><sup>6</sup>Jesus saith unto him, <span class="WJ">I am the way.</span><a epub:type="NoteRef" href="#n1">*</a></p>
+            <aside epub:type="Footnote" id="n1">Or the road.</aside>
+            """)
+        let verse = try #require(bible.verses[VerseRef(.john, 14, 6)])
+        #expect(verse.text == "Jesus saith unto him, I am the way.")
+        let span = try #require(verse.red.first)
+        let scalars = Array(verse.text.unicodeScalars)
+        #expect(String(String.UnicodeScalarView(scalars[span.start..<(span.start + span.length)])) == "I am the way.")
+        let fragment = try #require(bible.blocks(for: ChapterRef(.john, 14)).flatMap(\.fragments).first { $0.verse == 6 })
+        #expect(fragment.footnotes.map(\.text) == ["Or the road."])
+    }
+
+    /// A superscript footnote letter in a file numbered by class is dropped, not glued onto the
+    /// word ("saidb"); and a bridge split across superscripts ("7–") is verse 7, not text.
+    @Test func dropsFootnoteLettersAndReadsADanglingBridge() throws {
+        let byClass = try extract("gen03.xhtml", """
+            <h1>Genesis 3</h1>
+            <p><span class="verse-num">1</span>Now the serpent was more subtle.
+            <span class="verse-num">2</span>And the woman said<sup>b</sup>, We may eat.</p>
+            """)
+        #expect(byClass.shapesByDocument["OEBPS/gen03.xhtml"] == .numberClass)
+        #expect(byClass.verses[VerseRef(.genesis, 3, 2)]?.text == "And the woman said, We may eat.")
+
+        let bySuperscript = try extract("gen01.xhtml", """
+            <h1>Genesis 1</h1>
+            <p><sup>6</sup>And God said.<sup>7–</sup>And God made the firmament.<sup>8</sup>And God called.</p>
+            """)
+        #expect(bySuperscript.verseNumbers(in: ChapterRef(.genesis, 1)) == [6, 7, 8])
+        #expect(bySuperscript.verses[VerseRef(.genesis, 1, 6)]?.text == "And God said.")
+        #expect(bySuperscript.verses[VerseRef(.genesis, 1, 7)]?.text == "And God made the firmament.")
+        // An ordinal ending is text, not a caller.
+        #expect(DocumentScanner.isFootnoteLabel("b"))
+        #expect(DocumentScanner.isFootnoteLabel("[c]"))
+        #expect(DocumentScanner.isFootnoteLabel("†"))
+        #expect(!DocumentScanner.isFootnoteLabel("th"))
+    }
+
+    @Test func aLineBreakSeparatesWords() throws {
+        let bible = try extract("1jn02.xhtml", """
+            <h1>1 John 2</h1>
+            <p><sup>1</sup>My little children,<br/>these things write I unto you.</p>
+            """)
+        #expect(bible.verses[VerseRef(.firstJohn, 2, 1)]?.text == "My little children, these things write I unto you.")
+    }
+
+    /// Nothing outside a document's elements reaches the verse the previous file ended on: not a
+    /// UTF-16 byte-order mark, and not stray bytes before `<html>`.
+    @Test func textBeforeTheRootElementIsNotScripture() throws {
+        let second = ImportFixtures.Document("gen04.xhtml", "<h1>Genesis 4</h1><p><sup>1</sup>And the man knew Eve.</p>")
+        var utf16 = Data([0xFF, 0xFE])
+        utf16.append(try #require(second.xhtml.data(using: .utf16LittleEndian)))
+        let third = ImportFixtures.Document("gen05.xhtml", "<h1>Genesis 5</h1><p><sup>1</sup>This is the book.</p>")
+        let data = ImportFixtures.epub(documents: [
+            ImportFixtures.Document("gen03.xhtml", "<h1>Genesis 3</h1><p><sup>4</sup>Ye shall not surely die.</p>"),
+            ImportFixtures.Document("gen04.xhtml", raw: utf16),
+            ImportFixtures.Document("gen05.xhtml", raw: Data(("stray bytes" + third.xhtml).utf8)),
+        ])
+        let bible = try BibleTextExtractor().extract(from: try EPUBPackage(data: data))
+        #expect(bible.verses[VerseRef(.genesis, 3, 4)]?.text == "Ye shall not surely die.")
+        #expect(bible.verses[VerseRef(.genesis, 4, 1)]?.text == "And the man knew Eve.")
+        #expect(bible.verses[VerseRef(.genesis, 5, 1)]?.text == "This is the book.")
+        #expect(!bible.verses.values.contains { $0.text.unicodeScalars.contains("\u{FEFF}") || $0.text.contains("stray") })
+    }
+
+    /// A soft hyphen is a line-break hint, not text. FTS5's unicode61 tokenizer splits on it, so
+    /// kept, "be&shy;ginning" would never be found by a search for "beginning".
+    @Test func stripsSoftHyphens() throws {
+        let bible = try extract("gen01.xhtml", """
+            <h1>Genesis 1</h1>
+            <p><sup>1</sup>In the be&shy;ginning God cre\u{00AD}ated the hea&#173;vens.</p>
+            """)
+        #expect(bible.verses[VerseRef(.genesis, 1, 1)]?.text == "In the beginning God created the heavens.")
+        let identity = ImportedTranslationIdentity(id: "IMPORT-SHY", name: "Soft", abbreviation: "SH", copyright: "Public domain.")
+        let url = try ImportFixtures.scratchDirectory().appending(path: "IMPORT-SHY.sqlite")
+        try ImportedBibleBuilder.write(bible, identity: identity, to: url)
+        #expect(try BibleStore(url: url).search("beginning").map(\.ref) == [VerseRef(.genesis, 1, 1)])
+    }
+
+    /// The problems list says "ran out of order" once per chapter, not once from the coverage and
+    /// again from the importer's own note.
+    @Test func reportsAnOutOfOrderChapterOnce() throws {
+        let bible = try extract("gen01.xhtml", """
+            <h1>Genesis 1</h1>
+            <p><sup>1</sup>One.<sup>3</sup>Three.<sup>2</sup>Two.</p>
+            """)
+        let problems = ImportCoverageReport(bible).problems
+        #expect(problems.filter { $0 == "Genesis 1: verse numbers ran out of order." }.count == 1)
+    }
+
+    /// SQLite's rollback journal is "<partial>-journal"; one left by a crashed write (here a
+    /// directory, which SQLite cannot use) must be cleared, or the next write fails.
+    @Test func clearsAStaleRollbackJournal() throws {
+        let bible = try extract("gen01.xhtml", "<h1>Genesis 1</h1><p><sup>1</sup>In the beginning.</p>")
+        let identity = ImportedTranslationIdentity(id: "IMPORT-JRNL", name: "Journal", abbreviation: "JR", copyright: "Public domain.")
+        let directory = try ImportFixtures.scratchDirectory()
+        try FileManager.default.createDirectory(at: directory.appending(path: ".IMPORT-JRNL.sqlite.partial-journal"),
+                                                withIntermediateDirectories: true)
+        let url = directory.appending(path: "IMPORT-JRNL.sqlite")
+        try ImportedBibleBuilder.write(bible, identity: identity, to: url)
+        #expect(try BibleStore(url: url).verseCount(ChapterRef(.genesis, 1)) == 1)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path) == ["IMPORT-JRNL.sqlite"])
+    }
+
+    /// Inflating stops once the output passes the declared size, so a header that understates it
+    /// cannot make the reader hold a whole bomb in memory.
+    @Test func stopsInflatingPastTheDeclaredSize() throws {
+        let bomb = Data(repeating: 0x20, count: 8 * 1024 * 1024)
+        let deflated = try (bomb as NSData).compressed(using: .zlib) as Data
+        let partial = try #require(ZipReader.inflate(deflated, limit: 100))
+        #expect(partial.count > 100)
+        #expect(partial.count <= 100 + 64 * 1024)
+        #expect(ZipReader.inflate(deflated, limit: bomb.count) == bomb)
+        #expect(ZipReader.inflate(Data([0xFF, 0xFF, 0xFF]), limit: 100) == nil)
+
+        let data = ImportFixtures.zip([ImportFixtures.ZipEntry("OEBPS/big.xhtml", data: bomb, deflate: true, claimedSize: 10)])
+        let zip = try ZipReader(data: data)
+        #expect(throws: BibleImportError.damagedArchive("OEBPS/big.xhtml is the wrong size")) {
+            _ = try zip.data(for: "OEBPS/big.xhtml")
+        }
+    }
+
+    /// A ZIP64 size of 2^63 or more cannot be an `Int`; it is refused, not trapped on.
+    @Test func refusesAZIP64SizeBeyondInt() throws {
+        let data = ImportFixtures.zip([ImportFixtures.ZipEntry("OEBPS/a.xhtml", data: Data("<p>x</p>".utf8),
+                                                               zip64Size: 1 << 63)])
+        let zip = try ZipReader(data: data)
+        #expect(ZipReader.int(1 << 63) == -1)
+        #expect(ZipReader.int(UInt64.max) == -1)
+        #expect(throws: BibleImportError.entryTooLarge("OEBPS/a.xhtml")) { _ = try zip.data(for: "OEBPS/a.xhtml") }
+    }
+
     private func extract(_ path: String, _ body: String) throws -> ExtractedBible {
         let data = ImportFixtures.epub(documents: [ImportFixtures.Document(path, body)])
         return try BibleTextExtractor().extract(from: try EPUBPackage(data: data))

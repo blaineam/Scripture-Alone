@@ -144,11 +144,11 @@ class USFMPackage internal constructor(private val zip: ZipReader) {
         fun licenseLine(text: String): String? {
             val lowered = text.lowercase()
             if (lowered.contains("public domain")) return "Public domain"
-            val range = lowered.indexOf("creative commons")
+            // Searched in `text` itself: an index found in the lowercased copy does not line up with
+            // `text` when lowercasing changes a length ("İ" becomes two characters).
+            val range = text.indexOf("creative commons", ignoreCase = true)
             if (range >= 0) {
-                // `text[range.lowerBound...]` — the index found in the lowercased copy, which only lines
-                // up with `text` while lowercasing keeps lengths (it does for every licence line in practice).
-                val tail = SwiftText.prefix(text.substring(minOf(range, text.length)), 90)
+                val tail = SwiftText.prefix(text.substring(range), 90)
                 return plainWhitespace(tail)
             }
             for (marker in listOf("cc by-sa", "cc by-nc-nd", "cc by-nc-sa", "cc by-nc", "cc by-nd", "cc by")) {
@@ -294,6 +294,9 @@ internal class USFMBookParser(private val options: BibleTextExtractor.Options, p
     private var lastVerse = 0
     private var pendingVerseIsNumbered = true
     private var pendingVerseStart = false
+    /** A verse whose text has so far only appeared in a title (`\d \v 1 …`), and that text. */
+    private var titleVerse = 0
+    private var titleVerseText = ""
 
     // MARK: Driving
 
@@ -319,7 +322,9 @@ internal class USFMBookParser(private val options: BibleTextExtractor.Options, p
                 characters.appendTo(name, cursor)
                 cursor++
             }
-            while (cursor < count && characters.isNumber(cursor)) {
+            // A marker name starts with a letter ("q1", "toc2"); "\123" is text, not a marker named
+            // "123" that would swallow the digits.
+            while (name.isNotEmpty() && cursor < count && characters.isNumber(cursor)) {
                 characters.appendTo(name, cursor)
                 cursor++
             }
@@ -337,6 +342,7 @@ internal class USFMBookParser(private val options: BibleTextExtractor.Options, p
         }
         addText(text.toString(), bible)
         closeBlock(bible)
+        flushTitleVerse(bible)
     }
 
     /** Handles one marker whose name ends at [start]; returns the index to continue from. */
@@ -386,6 +392,7 @@ internal class USFMBookParser(private val options: BibleTextExtractor.Options, p
         }
         if (name == "c") {
             closeBlock(bible)
+            flushTitleVerse(bible)
             val (parsed, next) = number(characters, index)
             index = next
             chapter = parsed ?: (chapter + 1)
@@ -506,6 +513,13 @@ internal class USFMBookParser(private val options: BibleTextExtractor.Options, p
     }
 
     private fun startFragment(numbered: Boolean, bible: ExtractedBible) {
+        val open = block
+        if (numbered && open != null && open.kind == ExtractedBlock.Kind.TITLE && open.fragments.any { it.text.isNotEmpty() }) {
+            // "\d A Psalm of David. \v 1 O LORD…" with no paragraph marker between: the title already
+            // has its text, so the verse starts a text block of its own rather than being swallowed
+            // into the title (where verse text is never stored).
+            startBlock(ExtractedBlock.Kind.CONTINUATION, bible)
+        }
         ensureTextBlock(bible)
         var wantsNumber = numbered
         if (numbered && block?.kind == ExtractedBlock.Kind.TITLE) {
@@ -516,6 +530,14 @@ internal class USFMBookParser(private val options: BibleTextExtractor.Options, p
         } else if (pendingNumber && block?.kind != ExtractedBlock.Kind.TITLE) {
             wantsNumber = true
             pendingNumber = false
+            // The number moved to this line. When the line is the same verse, the title was only its
+            // superscription; when it is a later verse, the title was all that verse had.
+            if (titleVerse == verse) {
+                titleVerse = 0
+                titleVerseText = ""
+            } else {
+                flushTitleVerse(bible)
+            }
         }
         val current = block
         if (current != null) {
@@ -577,7 +599,27 @@ internal class USFMBookParser(private val options: BibleTextExtractor.Options, p
         if (verse > 0 && chapter > 0 && block?.kind != ExtractedBlock.Kind.TITLE) {
             val red = if (StyledSpan.Style.WORDS_OF_CHRIST in styles) listOf(ScalarSpan(0, length)) else emptyList()
             bible.appendVerseText(addition, red, verseRef(book, chapter, verse), separate = startsFragment)
+        } else if (verse > 0 && chapter > 0 && pendingNumber && fragment.verse == verse) {
+            // "\d \v 1 A Psalm of David." — held until it is known whether a line of the psalm carries
+            // verse 1 on (the usual shape) or the title was the whole of the verse.
+            titleVerse = verse
+            titleVerseText = fragment.text
         }
+    }
+
+    /**
+     * A verse whose only text sat in a title (`\d \v 1 …` followed by the next verse, chapter or
+     * book) is stored from that text, rather than going missing.
+     */
+    private fun flushTitleVerse(bible: ExtractedBible) {
+        val pending = titleVerse
+        val text = titleVerseText
+        titleVerse = 0
+        titleVerseText = ""
+        if (pending <= 0 || chapter <= 0) return
+        val target = verseRef(book, chapter, pending)
+        if (bible.verses[target] != null) return
+        bible.appendVerseText(text, emptyList(), target, separate = true)
     }
 
     private fun finishNote() {

@@ -133,8 +133,8 @@ object ImportedBibleBuilder {
 
         val directory = file.absoluteFile.parentFile
         directory?.mkdirs()
-        // A half-written store from a previous attempt must not survive. Swift removes
-        // "<partial>.journal"; SQLite's own rollback journal is "<partial>-journal", so both go.
+        // A half-written store from a previous attempt must not survive, nor a rollback journal a
+        // crashed write left beside it: SQLite's is "<partial>-journal"; "<partial>.journal" goes too.
         val temporary = File(directory, ".${file.name}.partial")
         for (stale in listOf(temporary, File(directory, "${temporary.name}.journal"), File(directory, "${temporary.name}-journal"))) {
             stale.delete()

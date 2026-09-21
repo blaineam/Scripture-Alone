@@ -22,7 +22,17 @@ import java.util.zip.Deflater
 object ImportFixtures {
     // MARK: - ZIP
 
-    class ZipEntry(val name: String, val data: ByteArray, val deflate: Boolean = false) {
+    /**
+     * [zip64Size], when set, is claimed by the central directory through a ZIP64 extra field (the
+     * 32-bit field saturated); [claimedSize], when set, is claimed by both headers instead of the real size.
+     */
+    class ZipEntry(
+        val name: String,
+        val data: ByteArray,
+        val deflate: Boolean = false,
+        val zip64Size: Long? = null,
+        val claimedSize: Long? = null,
+    ) {
         constructor(name: String, text: String, deflate: Boolean = false) : this(name, text.toByteArray(Charsets.UTF_8), deflate)
     }
 
@@ -44,19 +54,23 @@ object ImportFixtures {
                 method = 8
             }
             val offset = output.size()
+            val size = entry.claimedSize ?: entry.data.size.toLong()
+            val extra = ByteArrayOutputStream()
+            entry.zip64Size?.let { extra.le16(0x0001); extra.le16(8); extra.le32(it and 0xFFFF_FFFFL); extra.le32(it ushr 32) }
+            val extraBytes = extra.toByteArray()
 
             output.le32(0x0403_4B50); output.le16(20); output.le16(0x0800); output.le16(method)
             output.le16(0); output.le16(0); output.le32(crc)
-            output.le32(payload.size.toLong()); output.le32(entry.data.size.toLong())
+            output.le32(payload.size.toLong()); output.le32(size)
             output.le16(name.size); output.le16(0)
             output.write(name); output.write(payload)
 
             central.le32(0x0201_4B50); central.le16(20); central.le16(20); central.le16(0x0800); central.le16(method)
             central.le16(0); central.le16(0); central.le32(crc)
-            central.le32(payload.size.toLong()); central.le32(entry.data.size.toLong())
-            central.le16(name.size); central.le16(0); central.le16(0); central.le16(0); central.le16(0)
+            central.le32(payload.size.toLong()); central.le32(if (entry.zip64Size == null) size else 0xFFFF_FFFFL)
+            central.le16(name.size); central.le16(extraBytes.size); central.le16(0); central.le16(0); central.le16(0)
             central.le32(0); central.le32(offset.toLong())
-            central.write(name)
+            central.write(name); central.write(extraBytes)
         }
         val centralOffset = output.size()
         val centralBytes = central.toByteArray()
@@ -93,6 +107,15 @@ object ImportFixtures {
     // MARK: - ePub
 
     class Document(val path: String, body: String) {
+        /** The file's exact bytes, when a test needs an encoding or a prefix [xhtml] cannot carry. */
+        var raw: ByteArray? = null
+            private set
+
+        companion object {
+            /** A document whose bytes are given as they are, not wrapped. */
+            fun raw(path: String, bytes: ByteArray): Document = Document(path, "").also { it.raw = bytes }
+        }
+
         val xhtml: String = listOf(
             """<?xml version="1.0" encoding="utf-8"?>""",
             "<!DOCTYPE html>",
@@ -155,7 +178,9 @@ object ImportFixtures {
             "</package>",
         ).joinToString("\n")
         entries.add(ZipEntry("OEBPS/content.opf", opf, deflate))
-        for (document in documents) entries.add(ZipEntry("OEBPS/${document.path}", document.xhtml, deflate))
+        for (document in documents) {
+            entries.add(document.raw?.let { ZipEntry("OEBPS/${document.path}", it, deflate) } ?: ZipEntry("OEBPS/${document.path}", document.xhtml, deflate))
+        }
         entries.addAll(extra)
         return zip(entries)
     }

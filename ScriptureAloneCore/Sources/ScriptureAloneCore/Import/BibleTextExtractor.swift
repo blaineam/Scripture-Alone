@@ -143,6 +143,9 @@ struct DocumentScanner: Sendable {
         var buffers: [[FlowItem]] = [[]]          // innermost capture buffer is last
         var skipDepth = 0
         var redDepth = 0
+        // Text before the first element (a byte-order mark, stray bytes before `<html>`) is not in
+        // the document at all. Kept, it would be carried onto the previous file's last verse.
+        var seenElement = false
 
         func emit(_ item: FlowItem) {
             guard skipDepth == 0 else { return }
@@ -152,6 +155,7 @@ struct DocumentScanner: Sendable {
         for event in XMLScanner.scan(xhtml) {
             switch event {
             case .start(let tag):
+                seenElement = true
                 var frame = Frame(name: tag.name, capture: nil, isSkipped: false, isRed: false, startedBlock: false)
                 let epubType = tag.epubType
                 let classes = Set(tag.classes)
@@ -165,6 +169,12 @@ struct DocumentScanner: Sendable {
                     continue
                 }
                 if skipDepth > 0 {
+                    stack.append(frame)
+                    continue
+                }
+                // A line break separates words: "children.<br/>These" is two sentences, not one word.
+                if tag.name == "br" {
+                    emit(.text(" ", red: redDepth > 0))
                     stack.append(frame)
                     continue
                 }
@@ -241,7 +251,7 @@ struct DocumentScanner: Sendable {
                 }
 
             case .text(let text):
-                guard skipDepth == 0 else { continue }
+                guard skipDepth == 0, seenElement else { continue }
                 let collapsed = Self.collapse(text)
                 guard !collapsed.isEmpty else { continue }
                 emit(.text(collapsed, red: redDepth > 0))
@@ -272,6 +282,9 @@ struct DocumentScanner: Sendable {
                 emit(.marker(marker))
                 return
             }
+            // A superscript footnote letter ("said<sup>b</sup>") whose note is not linked: it is
+            // neither a verse number nor text, so it goes, rather than reading "saidb".
+            if marker.shapes.contains(.superscript), Self.isFootnoteLabel(text) { return }
             // Not a number after all: it was an ordinary span that happened to be called "verse".
             for item in captured { emit(item) }
         case .heading:
@@ -404,6 +417,9 @@ struct DocumentScanner: Sendable {
         output.reserveCapacity(raw.count)
         var pendingSpace = false
         for character in raw {
+            // A soft hyphen is a hint for where a line may break, not text. Left in, "be\u{00AD}ginning"
+            // no longer matches a search for "beginning" (FTS5's tokenizer splits on it).
+            if character == "\u{00AD}" { continue }
             if character.isWhitespace || character == "\u{00A0}" {
                 pendingSpace = true
                 continue
@@ -427,21 +443,39 @@ struct DocumentScanner: Sendable {
         return output
     }
 
-    /// "12", "[12]", "1-2", "1–2" — a verse number, and the last number of a bridged pair.
+    /// "12", "[12]", "1-2", "1–2" — a verse number, and the last number of a bridged pair. A
+    /// dangling separator ("7–", a bridge the typesetter split across two superscripts) is the
+    /// number alone.
     static func verseNumber(in raw: String) -> (number: Int, through: Int?)? {
         let separators: Set<Character> = ["-", "\u{2010}", "\u{2011}", "\u{2012}", "\u{2013}", "\u{2014}"]
         if let split = raw.firstIndex(where: { separators.contains($0) }),
-           let first = number(in: String(raw[raw.startIndex..<split])),
-           let last = number(in: String(raw[raw.index(after: split)...])),
-           last > first, last - first < 20 {
-            return (first, last)
+           let first = number(in: String(raw[raw.startIndex..<split])) {
+            let rest = String(raw[raw.index(after: split)...])
+            if let last = number(in: rest), last > first, last - first < 20 {
+                return (first, last)
+            }
+            if rest.trimmingCharacters(in: numberTrim).isEmpty {
+                return (first, nil)
+            }
         }
         return number(in: raw).map { ($0, nil) }
     }
 
+    /// A footnote or cross-reference caller printed as a superscript: "a", "b", "aa", "[c]", "*",
+    /// "†". Ordinal endings ("1<sup>st</sup>") are not callers.
+    static func isFootnoteLabel(_ raw: String) -> Bool {
+        let label = raw.trimmingCharacters(in: CharacterSet(charactersIn: " \u{00A0}[]()\n\t"))
+        guard !label.isEmpty, label.count <= 3 else { return false }
+        if label.allSatisfy({ "*†‡§¶#".contains($0) }) { return true }
+        guard label.count <= 2, label.allSatisfy({ $0.isASCII && $0.isLetter }) else { return false }
+        return !["st", "nd", "rd", "th"].contains(label.lowercased())
+    }
+
+    static let numberTrim = CharacterSet(charactersIn: " \u{00A0}[](){}.,:;·•*\u{200B}\n\t")
+
     /// "12", " 12 ", "[12]", "12.", "12 " -> 12. Anything else -> nil.
     static func number(in raw: String) -> Int? {
-        let stripped = raw.trimmingCharacters(in: CharacterSet(charactersIn: " \u{00A0}[](){}.,:;·•*\u{200B}\n\t"))
+        let stripped = raw.trimmingCharacters(in: numberTrim)
         guard !stripped.isEmpty, stripped.count <= 3, stripped.allSatisfy(\.isNumber), let value = Int(stripped),
               value > 0, value < 1000 else { return nil }
         return value

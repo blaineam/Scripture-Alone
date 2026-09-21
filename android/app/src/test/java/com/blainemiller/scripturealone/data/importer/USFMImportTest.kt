@@ -403,6 +403,65 @@ class USFMImportTest {
         }
     }
 
+    // MARK: - Regressions
+
+    /**
+     * `\d` then `\v 1` with no paragraph marker between: verse 1 is stored, whether the title had its
+     * own text first or the verse was all the title held.
+     */
+    @Test fun aVerseAfterATitleWithNoParagraphMarkerIsStored() {
+        val bible = extract(
+            listOf(
+                """
+                \id PSA
+                \c 3
+                \d A Psalm of David, when he fled.
+                \v 1 Jehovah, how are mine adversaries increased!
+                \v 2 Many there are that say of my soul.
+                \c 4
+                \d \v 1 For the Chief Musician; on stringed instruments.
+                \q1 \v 2 Answer me when I call.
+                \c 5
+                \d \v 1 For the Chief Musician.
+                \b
+                \q1 Give ear to my words, O Jehovah.
+                \q1 \v 2 Hearken unto the voice of my cry.
+                """.trimIndent(),
+            ),
+        )
+        assertEquals("Jehovah, how are mine adversaries increased!", bible.verses[ref(BookID.PSALMS, 3, 1)]?.text)
+        assertEquals(listOf(1, 2), bible.verseNumbers(ChapterRef(BookID.PSALMS, 3)))
+        val psalm3 = bible.blocks(ChapterRef(BookID.PSALMS, 3))
+        assertEquals(listOf("A Psalm of David, when he fled."), psalm3.firstOrNull { it.kind == ExtractedBlock.Kind.TITLE }?.fragments?.map { it.text })
+        assertEquals(true, psalm3.flatMap { it.fragments }.firstOrNull { it.verse == 1 }?.numbered)
+        // A title that was the whole of verse 1 is that verse's text.
+        assertEquals("For the Chief Musician; on stringed instruments.", bible.verses[ref(BookID.PSALMS, 4, 1)]?.text)
+        assertEquals("Answer me when I call.", bible.verses[ref(BookID.PSALMS, 4, 2)]?.text)
+        // The usual shape is unchanged: the superscription is not verse 1, the next line is.
+        assertEquals("Give ear to my words, O Jehovah.", bible.verses[ref(BookID.PSALMS, 5, 1)]?.text)
+    }
+
+    /** A backslash before digits is not a marker, so the digits are not lost. */
+    @Test fun aBackslashBeforeDigitsIsText() {
+        val bible = extract(listOf("\\id GEN\n\\c 1\n\\p\n\\v 1 In the \\123 beginning."))
+        assertEquals("In the \\123 beginning.", bible.verses[ref(BookID.GENESIS, 1, 1)]?.text)
+    }
+
+    @Test fun stripsSoftHyphens() {
+        val bible = extract(listOf("\\id GEN\n\\c 1\n\\s1 The Cre­ation\n\\p\n\\v 1 In the be­ginning God created."))
+        assertEquals("In the beginning God created.", bible.verses[ref(BookID.GENESIS, 1, 1)]?.text)
+        assertEquals("The Creation", bible.blocks(ChapterRef(BookID.GENESIS, 1)).firstOrNull()?.heading)
+    }
+
+    /**
+     * The licence tail is cut from the original text, found without regard to case — not at an index
+     * found in a lowercased copy, which "İ" (two characters once lowercased) throws off.
+     */
+    @Test fun findsACreativeCommonsLicenceAfterALengthChangingLetter() {
+        val line = USFMPackage.licenseLine("İİİ İstanbul Bible Society. Licensed under a CREATIVE COMMONS Attribution 4.0 licence.")
+        assertEquals("CREATIVE COMMONS Attribution 4.0 licence.", line)
+    }
+
     /**
      * The entry point decides by structure, so a USFM zip and an ePub can be handed to the same call
      * without the UI sniffing anything.

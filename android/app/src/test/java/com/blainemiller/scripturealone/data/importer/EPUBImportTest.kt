@@ -659,6 +659,152 @@ class EPUBImportTest {
 
     // MARK: - Helper
 
+    // MARK: - Regressions
+
+    /**
+     * `class` and `epub:type` values are matched without regard to case: `class="WJ"` is words of
+     * Christ, and `epub:type="NoteRef"`/`"Footnote"` are a note and its body.
+     */
+    @Test fun matchesClassAndTypeValuesWithoutCase() {
+        val bible = extract(
+            "jhn14.xhtml",
+            """
+            <h1>John 14</h1>
+            <p><sup>6</sup>Jesus saith unto him, <span class="WJ">I am the way.</span><a epub:type="NoteRef" href="#n1">*</a></p>
+            <aside epub:type="Footnote" id="n1">Or the road.</aside>
+            """.trimIndent(),
+        )
+        val verse = required(bible.verses[ref(BookID.JOHN, 14, 6)])
+        assertEquals("Jesus saith unto him, I am the way.", verse.text)
+        val span = required(verse.red.firstOrNull())
+        assertEquals("I am the way.", String(verse.text.codePoints().toArray(), span.start, span.length))
+        val fragment = required(bible.blocks(ChapterRef(BookID.JOHN, 14)).flatMap { it.fragments }.firstOrNull { it.verse == 6 })
+        assertEquals(listOf("Or the road."), fragment.footnotes.map { it.text })
+    }
+
+    /**
+     * A superscript footnote letter in a file numbered by class is dropped, not glued onto the word
+     * ("saidb"); and a bridge split across superscripts ("7–") is verse 7, not text.
+     */
+    @Test fun dropsFootnoteLettersAndReadsADanglingBridge() {
+        val byClass = extract(
+            "gen03.xhtml",
+            """
+            <h1>Genesis 3</h1>
+            <p><span class="verse-num">1</span>Now the serpent was more subtle.
+            <span class="verse-num">2</span>And the woman said<sup>b</sup>, We may eat.</p>
+            """.trimIndent(),
+        )
+        assertEquals(VerseMarkupShape.NUMBER_CLASS, byClass.shapesByDocument["OEBPS/gen03.xhtml"])
+        assertEquals("And the woman said, We may eat.", byClass.verses[ref(BookID.GENESIS, 3, 2)]?.text)
+
+        val bySuperscript = extract(
+            "gen01.xhtml",
+            """
+            <h1>Genesis 1</h1>
+            <p><sup>6</sup>And God said.<sup>7–</sup>And God made the firmament.<sup>8</sup>And God called.</p>
+            """.trimIndent(),
+        )
+        assertEquals(listOf(6, 7, 8), bySuperscript.verseNumbers(ChapterRef(BookID.GENESIS, 1)))
+        assertEquals("And God said.", bySuperscript.verses[ref(BookID.GENESIS, 1, 6)]?.text)
+        assertEquals("And God made the firmament.", bySuperscript.verses[ref(BookID.GENESIS, 1, 7)]?.text)
+        // An ordinal ending is text, not a caller.
+        assertTrue(DocumentScanner.isFootnoteLabel("b"))
+        assertTrue(DocumentScanner.isFootnoteLabel("[c]"))
+        assertTrue(DocumentScanner.isFootnoteLabel("†"))
+        assertFalse(DocumentScanner.isFootnoteLabel("th"))
+    }
+
+    @Test fun aLineBreakSeparatesWords() {
+        val bible = extract(
+            "1jn02.xhtml",
+            """
+            <h1>1 John 2</h1>
+            <p><sup>1</sup>My little children,<br/>these things write I unto you.</p>
+            """.trimIndent(),
+        )
+        assertEquals("My little children, these things write I unto you.", bible.verses[ref(BookID.FIRST_JOHN, 2, 1)]?.text)
+    }
+
+    /**
+     * Nothing outside a document's elements reaches the verse the previous file ended on: not a
+     * UTF-16 byte-order mark, and not stray bytes before `<html>`.
+     */
+    @Test fun textBeforeTheRootElementIsNotScripture() {
+        val second = ImportFixtures.Document("gen04.xhtml", "<h1>Genesis 4</h1><p><sup>1</sup>And the man knew Eve.</p>")
+        val utf16 = byteArrayOf(0xFF.toByte(), 0xFE.toByte()) + second.xhtml.toByteArray(Charsets.UTF_16LE)
+        val third = ImportFixtures.Document("gen05.xhtml", "<h1>Genesis 5</h1><p><sup>1</sup>This is the book.</p>")
+        val data = ImportFixtures.epub(
+            listOf(
+                ImportFixtures.Document("gen03.xhtml", "<h1>Genesis 3</h1><p><sup>4</sup>Ye shall not surely die.</p>"),
+                ImportFixtures.Document.raw("gen04.xhtml", utf16),
+                ImportFixtures.Document.raw("gen05.xhtml", ("stray bytes" + third.xhtml).toByteArray(Charsets.UTF_8)),
+            ),
+        )
+        val bible = BibleTextExtractor().extract(EPUBPackage(data))
+        assertEquals("Ye shall not surely die.", bible.verses[ref(BookID.GENESIS, 3, 4)]?.text)
+        assertEquals("And the man knew Eve.", bible.verses[ref(BookID.GENESIS, 4, 1)]?.text)
+        assertEquals("This is the book.", bible.verses[ref(BookID.GENESIS, 5, 1)]?.text)
+        assertFalse(bible.verses.values.any { it.text.contains('﻿') || it.text.contains("stray") })
+    }
+
+    /**
+     * A soft hyphen is a line-break hint, not text. FTS5's unicode61 tokenizer splits on it, so kept,
+     * "be&shy;ginning" would never be found by a search for "beginning".
+     */
+    @Test fun stripsSoftHyphens() {
+        val bible = extract(
+            "gen01.xhtml",
+            "<h1>Genesis 1</h1>\n<p><sup>1</sup>In the be&shy;ginning God cre­ated the hea&#173;vens.</p>",
+        )
+        assertEquals("In the beginning God created the heavens.", bible.verses[ref(BookID.GENESIS, 1, 1)]?.text)
+        val identity = ImportedTranslationIdentity(id = "IMPORT-SHY", name = "Soft", abbreviation = "SH", copyright = "Public domain.")
+        val file = java.io.File(ImportFixtures.scratchDirectory(), "IMPORT-SHY.sqlite")
+        ImportedBibleBuilder.write(bible, identity, file, ImportFixtures.jdbcWriter)
+        ImportedStoreReader(file).use { store -> assertEquals(listOf(ref(BookID.GENESIS, 1, 1)), store.search("beginning")) }
+    }
+
+    /**
+     * The problems list says "ran out of order" once per chapter, not once from the coverage and again
+     * from the importer's own note.
+     */
+    @Test fun reportsAnOutOfOrderChapterOnce() {
+        val bible = extract("gen01.xhtml", "<h1>Genesis 1</h1>\n<p><sup>1</sup>One.<sup>3</sup>Three.<sup>2</sup>Two.</p>")
+        val problems = ImportCoverageReport(bible).problems
+        assertEquals(1, problems.count { it == "Genesis 1: verse numbers ran out of order." })
+    }
+
+    /**
+     * SQLite's rollback journal is "<partial>-journal"; one left by a crashed write (here a directory,
+     * which SQLite cannot use) must be cleared, or the next write fails.
+     */
+    @Test fun clearsAStaleRollbackJournal() {
+        val bible = extract("gen01.xhtml", "<h1>Genesis 1</h1><p><sup>1</sup>In the beginning.</p>")
+        val identity = ImportedTranslationIdentity(id = "IMPORT-JRNL", name = "Journal", abbreviation = "JR", copyright = "Public domain.")
+        val directory = ImportFixtures.scratchDirectory()
+        assertTrue(java.io.File(directory, ".IMPORT-JRNL.sqlite.partial-journal").mkdirs())
+        val file = java.io.File(directory, "IMPORT-JRNL.sqlite")
+        ImportedBibleBuilder.write(bible, identity, file, ImportFixtures.jdbcWriter)
+        ImportedStoreReader(file).use { store -> assertEquals(1, store.verseCount(ChapterRef(BookID.GENESIS, 1))) }
+        assertEquals(listOf("IMPORT-JRNL.sqlite"), directory.list()?.toList())
+    }
+
+    /** An entry whose header understates its size is refused (inflating stops just past the claim). */
+    @Test fun refusesAnEntryLargerThanItsHeaderSays() {
+        val bomb = ByteArray(8 * 1024 * 1024) { 0x20 }
+        val zip = ZipReader(ImportFixtures.zip(listOf(ImportFixtures.ZipEntry("OEBPS/big.xhtml", bomb, deflate = true, claimedSize = 10))))
+        assertThrowsImport<BibleImportError.DamagedArchive>(BibleImportError.DamagedArchive("OEBPS/big.xhtml is the wrong size")) {
+            zip.data("OEBPS/big.xhtml")
+        }
+    }
+
+    /** A ZIP64 size of 2^63 or more is refused. */
+    @Test fun refusesAZIP64SizeBeyondInt() {
+        val entry = ImportFixtures.ZipEntry("OEBPS/a.xhtml", "<p>x</p>".toByteArray(), zip64Size = Long.MIN_VALUE)
+        val zip = ZipReader(ImportFixtures.zip(listOf(entry)))
+        assertThrowsImport<BibleImportError.EntryTooLarge>(BibleImportError.EntryTooLarge("OEBPS/a.xhtml")) { zip.data("OEBPS/a.xhtml") }
+    }
+
     private fun extract(path: String, body: String): ExtractedBible {
         val data = ImportFixtures.epub(listOf(ImportFixtures.Document(path, body)))
         return BibleTextExtractor().extract(EPUBPackage(data))

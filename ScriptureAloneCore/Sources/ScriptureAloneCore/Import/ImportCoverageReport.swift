@@ -94,7 +94,11 @@ public struct ImportCoverageReport: Sendable, Hashable, Codable {
                 }
             }
         }
-        lines.append(contentsOf: notes.filter { $0.severity != .info }.map(\.message))
+        // A note that repeats a line already given ("Genesis 3: verse numbers ran out of order.")
+        // is said once.
+        for note in notes where note.severity != .info && !lines.contains(note.message) {
+            lines.append(note.message)
+        }
         return lines
     }
 

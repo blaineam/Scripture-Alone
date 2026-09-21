@@ -158,7 +158,9 @@ public struct USFMPackage: Sendable {
     static func licenseLine(_ text: String) -> String? {
         let lowered = text.lowercased()
         if lowered.contains("public domain") { return "Public domain" }
-        if let range = lowered.range(of: "creative commons") {
+        // Searched in `text` itself: an index found in the lowercased copy does not line up with
+        // `text` when lowercasing changes a length ("İ" becomes two scalars).
+        if let range = text.range(of: "creative commons", options: .caseInsensitive) {
             let tail = text[range.lowerBound...].prefix(90)
             return plainWhitespace(String(tail))
         }
@@ -305,6 +307,9 @@ struct USFMBookParser {
     private var pendingNumber = false
     private var seenVerses: Set<Int> = []
     private var lastVerse = 0
+    /// A verse whose text has so far only appeared in a title (`\d \v 1 …`), and that text.
+    private var titleVerse = 0
+    private var titleVerseText = ""
 
     /// Markers whose text is file metadata, never shown.
     static let skipped: Set<String> = ["id", "usfm", "ide", "h", "toc1", "toc2", "toc3",
@@ -370,7 +375,9 @@ struct USFMBookParser {
                 name.append(characters[cursor])
                 cursor += 1
             }
-            while cursor < characters.count, characters[cursor].isNumber {
+            // A marker name starts with a letter ("q1", "toc2"); "\123" is text, not a marker named
+            // "123" that would swallow the digits.
+            while !name.isEmpty, cursor < characters.count, characters[cursor].isNumber {
                 name.append(characters[cursor])
                 cursor += 1
             }
@@ -389,6 +396,7 @@ struct USFMBookParser {
         }
         addText(text, into: &bible)
         closeBlock(into: &bible)
+        flushTitleVerse(into: &bible)
     }
 
     private mutating func marker(_ name: String, closing: Bool, characters: [Character], index: inout Int,
@@ -436,6 +444,7 @@ struct USFMBookParser {
         }
         if name == "c" {
             closeBlock(into: &bible)
+            flushTitleVerse(into: &bible)
             chapter = number(characters, &index) ?? chapter + 1
             verse = 0
             lastVerse = 0
@@ -565,6 +574,12 @@ struct USFMBookParser {
     private var pendingVerseStart = false
 
     private mutating func startFragment(numbered: Bool, into bible: inout ExtractedBible) {
+        if numbered, let current = block, current.kind == .title, current.fragments.contains(where: { !$0.text.isEmpty }) {
+            // "\d A Psalm of David. \v 1 O LORD…" with no paragraph marker between: the title
+            // already has its text, so the verse starts a text block of its own rather than being
+            // swallowed into the title (where verse text is never stored).
+            startBlock(.continuation, into: &bible)
+        }
         ensureTextBlock(into: &bible)
         var wantsNumber = numbered
         if numbered, block?.kind == .title {
@@ -575,6 +590,9 @@ struct USFMBookParser {
         } else if pendingNumber, block?.kind != .title {
             wantsNumber = true
             pendingNumber = false
+            // The number moved to this line. When the line is the same verse, the title was only
+            // its superscription; when it is a later verse, the title was all that verse had.
+            if titleVerse == verse { titleVerse = 0; titleVerseText = "" } else { flushTitleVerse(into: &bible) }
         }
         block?.fragments.append(ExtractedFragment(verse: verse, numbered: wantsNumber, text: ""))
         fragmentIndex = (block?.fragments.count ?? 1) - 1
@@ -635,7 +653,25 @@ struct USFMBookParser {
         if verse > 0, chapter > 0, block?.kind != .title {
             let red = styles.contains(.wordsOfChrist) ? [ScalarSpan(start: 0, length: length)] : []
             bible.appendVerseText(addition, red: red, to: VerseRef(book, chapter, verse), separate: startsFragment)
+        } else if verse > 0, chapter > 0, pendingNumber, current.fragments[index].verse == verse {
+            // "\d \v 1 A Psalm of David." — held until it is known whether a line of the psalm
+            // carries verse 1 on (the usual shape) or the title was the whole of the verse.
+            titleVerse = verse
+            titleVerseText = current.fragments[index].text
         }
+    }
+
+    /// A verse whose only text sat in a title (`\d \v 1 …` followed by the next verse, chapter
+    /// or book) is stored from that text, rather than going missing.
+    private mutating func flushTitleVerse(into bible: inout ExtractedBible) {
+        defer {
+            titleVerse = 0
+            titleVerseText = ""
+        }
+        guard titleVerse > 0, chapter > 0 else { return }
+        let ref = VerseRef(book, chapter, titleVerse)
+        guard bible.verses[ref] == nil else { return }
+        bible.appendVerseText(titleVerseText, red: [], to: ref, separate: true)
     }
 
     private mutating func finishNote(into bible: inout ExtractedBible) {

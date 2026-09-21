@@ -368,6 +368,62 @@ import Testing
         #expect(try store.search("shepherd").map(\.ref) == [VerseRef(.psalms, 23, 1)])
     }
 
+    // MARK: - Regressions
+
+    /// `\d` then `\v 1` with no paragraph marker between: verse 1 is stored, whether the title had
+    /// its own text first or the verse was all the title held.
+    @Test func aVerseAfterATitleWithNoParagraphMarkerIsStored() throws {
+        let bible = try extract(["""
+            \\id PSA
+            \\c 3
+            \\d A Psalm of David, when he fled.
+            \\v 1 Jehovah, how are mine adversaries increased!
+            \\v 2 Many there are that say of my soul.
+            \\c 4
+            \\d \\v 1 For the Chief Musician; on stringed instruments.
+            \\q1 \\v 2 Answer me when I call.
+            \\c 5
+            \\d \\v 1 For the Chief Musician.
+            \\b
+            \\q1 Give ear to my words, O Jehovah.
+            \\q1 \\v 2 Hearken unto the voice of my cry.
+            """])
+        #expect(bible.verses[VerseRef(.psalms, 3, 1)]?.text == "Jehovah, how are mine adversaries increased!")
+        #expect(bible.verseNumbers(in: ChapterRef(.psalms, 3)) == [1, 2])
+        let psalm3 = bible.blocks(for: ChapterRef(.psalms, 3))
+        #expect(psalm3.first { $0.kind == .title }?.fragments.map(\.text) == ["A Psalm of David, when he fled."])
+        #expect(psalm3.flatMap(\.fragments).first { $0.verse == 1 }?.numbered == true)
+        // A title that was the whole of verse 1 is that verse's text.
+        #expect(bible.verses[VerseRef(.psalms, 4, 1)]?.text == "For the Chief Musician; on stringed instruments.")
+        #expect(bible.verses[VerseRef(.psalms, 4, 2)]?.text == "Answer me when I call.")
+        // The usual shape is unchanged: the superscription is not verse 1, the next line is.
+        #expect(bible.verses[VerseRef(.psalms, 5, 1)]?.text == "Give ear to my words, O Jehovah.")
+    }
+
+    /// A backslash before digits is not a marker, so the digits are not lost.
+    @Test func aBackslashBeforeDigitsIsText() throws {
+        let bible = try extract(["""
+            \\id GEN
+            \\c 1
+            \\p
+            \\v 1 In the \\123 beginning.
+            """])
+        #expect(bible.verses[VerseRef(.genesis, 1, 1)]?.text == "In the \\123 beginning.")
+    }
+
+    @Test func stripsSoftHyphens() throws {
+        let bible = try extract(["\\id GEN\n\\c 1\n\\s1 The Cre\u{00AD}ation\n\\p\n\\v 1 In the be\u{00AD}ginning God created."])
+        #expect(bible.verses[VerseRef(.genesis, 1, 1)]?.text == "In the beginning God created.")
+        #expect(bible.blocks(for: ChapterRef(.genesis, 1)).first?.heading == "The Creation")
+    }
+
+    /// The licence tail is cut from the original text, found without regard to case — not at an
+    /// index found in a lowercased copy, which "İ" (two scalars once lowercased) throws off.
+    @Test func findsACreativeCommonsLicenceAfterALengthChangingLetter() throws {
+        let line = USFMPackage.licenseLine("İİİ İstanbul Bible Society. Licensed under a CREATIVE COMMONS Attribution 4.0 licence.")
+        #expect(line == "CREATIVE COMMONS Attribution 4.0 licence.")
+    }
+
     /// The entry point decides by structure, so a USFM zip and an ePub can be handed to the same
     /// call without the UI sniffing anything.
     @Test func tellsTheTwoFormatsApart() throws {

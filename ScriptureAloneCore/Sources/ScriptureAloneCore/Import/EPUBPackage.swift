@@ -268,14 +268,20 @@ public struct EPUBPackage: Sendable {
     }
 
     static func text(_ data: Data) -> String {
+        // The explicit-endian UTF-16 decoders keep the byte-order mark as a U+FEFF character; it is
+        // not text, so it goes (the UTF-8 decoder already drops its own).
         if data.count >= 2, data[data.startIndex] == 0xFF, data[data.startIndex + 1] == 0xFE {
-            return String(data: data, encoding: .utf16LittleEndian) ?? String(decoding: data, as: UTF8.self)
+            return dropByteOrderMark(String(data: data, encoding: .utf16LittleEndian) ?? String(decoding: data, as: UTF8.self))
         }
         if data.count >= 2, data[data.startIndex] == 0xFE, data[data.startIndex + 1] == 0xFF {
-            return String(data: data, encoding: .utf16BigEndian) ?? String(decoding: data, as: UTF8.self)
+            return dropByteOrderMark(String(data: data, encoding: .utf16BigEndian) ?? String(decoding: data, as: UTF8.self))
         }
         if let utf8 = String(data: data, encoding: .utf8) { return utf8 }
         return String(data: data, encoding: .isoLatin1) ?? String(decoding: data, as: UTF8.self)
+    }
+
+    private static func dropByteOrderMark(_ text: String) -> String {
+        text.unicodeScalars.first == "\u{FEFF}" ? String(String.UnicodeScalarView(text.unicodeScalars.dropFirst())) : text
     }
 }
 #endif

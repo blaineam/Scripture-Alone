@@ -99,7 +99,11 @@ class ImportCoverageReport(bible: ExtractedBible) {
                     if (chapter.outOfOrder) lines.add("$name ${chapter.chapter}: verse numbers ran out of order.")
                 }
             }
-            lines.addAll(notes.filter { it.severity != ImportNote.Severity.INFO }.map { it.message })
+            // A note that repeats a line already given ("Genesis 3: verse numbers ran out of order.")
+            // is said once.
+            for (note in notes) {
+                if (note.severity != ImportNote.Severity.INFO && note.message !in lines) lines.add(note.message)
+            }
             return lines
         }
 

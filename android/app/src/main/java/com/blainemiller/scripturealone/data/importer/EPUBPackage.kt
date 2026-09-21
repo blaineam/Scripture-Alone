@@ -288,15 +288,15 @@ class EPUBPackage internal constructor(private val zip: ZipReader) {
 
         /**
          * Text in whatever encoding the file used: UTF-16 by its byte-order mark, else UTF-8, else
-         * Latin-1. A UTF-8 byte-order mark is dropped, as Foundation's UTF-8 decoding drops it; a
-         * UTF-16 one is kept as U+FEFF, as an explicit-endian decode keeps it.
+         * Latin-1. A byte-order mark is not text, so it is dropped: Foundation's UTF-8 decoding drops
+         * its own, and the Swift reader drops the U+FEFF an explicit-endian UTF-16 decode keeps.
          */
         fun text(data: ByteArray): String {
             if (data.size >= 2 && data[0] == 0xFF.toByte() && data[1] == 0xFE.toByte()) {
-                return decodeStrictly(data, Charsets.UTF_16LE) ?: String(data, Charsets.UTF_8)
+                return (decodeStrictly(data, Charsets.UTF_16LE) ?: String(data, Charsets.UTF_8)).removePrefix("\uFEFF")
             }
             if (data.size >= 2 && data[0] == 0xFE.toByte() && data[1] == 0xFF.toByte()) {
-                return decodeStrictly(data, Charsets.UTF_16BE) ?: String(data, Charsets.UTF_8)
+                return (decodeStrictly(data, Charsets.UTF_16BE) ?: String(data, Charsets.UTF_8)).removePrefix("\uFEFF")
             }
             decodeStrictly(data, Charsets.UTF_8)?.let { return it.removePrefix("﻿") }
             return String(data, Charsets.ISO_8859_1)

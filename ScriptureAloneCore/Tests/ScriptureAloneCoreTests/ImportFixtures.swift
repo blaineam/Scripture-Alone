@@ -12,6 +12,11 @@ enum ImportFixtures {
         var name: String
         var data: Data
         var deflate: Bool
+        /// When set, the central directory claims this uncompressed size through a ZIP64 extra
+        /// field (the 32-bit field saturated), whatever the data really is.
+        var zip64Size: UInt64?
+        /// When set, both headers claim this uncompressed size instead of the real one.
+        var claimedSize: UInt32?
 
         init(_ name: String, _ text: String, deflate: Bool = false) {
             self.name = name
@@ -19,10 +24,12 @@ enum ImportFixtures {
             self.deflate = deflate
         }
 
-        init(_ name: String, data: Data, deflate: Bool = false) {
+        init(_ name: String, data: Data, deflate: Bool = false, zip64Size: UInt64? = nil, claimedSize: UInt32? = nil) {
             self.name = name
             self.data = data
             self.deflate = deflate
+            self.zip64Size = zip64Size
+            self.claimedSize = claimedSize
         }
     }
 
@@ -41,6 +48,13 @@ enum ImportFixtures {
                 method = 8
             }
             let offset = UInt32(output.count)
+            let size = entry.claimedSize ?? UInt32(entry.data.count)
+            var extra = Data()
+            if let zip64Size = entry.zip64Size {
+                extra.append(le16: 0x0001)
+                extra.append(le16: 8)
+                extra.append(le64: zip64Size)
+            }
 
             output.append(le32: 0x0403_4B50)
             output.append(le16: 20)
@@ -50,7 +64,7 @@ enum ImportFixtures {
             output.append(le16: 0)
             output.append(le32: crc)
             output.append(le32: UInt32(payload.count))
-            output.append(le32: UInt32(entry.data.count))
+            output.append(le32: size)
             output.append(le16: UInt16(name.count))
             output.append(le16: 0)
             output.append(name)
@@ -65,15 +79,16 @@ enum ImportFixtures {
             central.append(le16: 0)
             central.append(le32: crc)
             central.append(le32: UInt32(payload.count))
-            central.append(le32: UInt32(entry.data.count))
+            central.append(le32: entry.zip64Size == nil ? size : 0xFFFF_FFFF)
             central.append(le16: UInt16(name.count))
-            central.append(le16: 0)
+            central.append(le16: UInt16(extra.count))
             central.append(le16: 0)
             central.append(le16: 0)
             central.append(le16: 0)
             central.append(le32: 0)
             central.append(le32: offset)
             central.append(name)
+            central.append(extra)
         }
         let centralOffset = UInt32(output.count)
         output.append(central)
@@ -93,6 +108,15 @@ enum ImportFixtures {
     struct Document {
         var path: String
         var xhtml: String
+        /// The file's exact bytes, when a test needs an encoding or a prefix `xhtml` cannot carry.
+        var raw: Data?
+
+        /// A document whose bytes are given as they are, not wrapped.
+        init(_ path: String, raw: Data) {
+            self.path = path
+            self.xhtml = ""
+            self.raw = raw
+        }
 
         init(_ path: String, _ body: String) {
             self.path = path
@@ -153,7 +177,8 @@ enum ImportFixtures {
             """
         entries.append(ZipEntry("OEBPS/content.opf", opf, deflate: deflate))
         for document in documents {
-            entries.append(ZipEntry("OEBPS/\(document.path)", document.xhtml, deflate: deflate))
+            entries.append(document.raw.map { ZipEntry("OEBPS/\(document.path)", data: $0, deflate: deflate) }
+                           ?? ZipEntry("OEBPS/\(document.path)", document.xhtml, deflate: deflate))
         }
         entries.append(contentsOf: extra)
         return zip(entries)
@@ -205,5 +230,9 @@ private extension Data {
     mutating func append(le16 value: UInt16) { append(contentsOf: [UInt8(value & 0xFF), UInt8(value >> 8)]) }
     mutating func append(le32 value: UInt32) {
         append(contentsOf: [UInt8(value & 0xFF), UInt8((value >> 8) & 0xFF), UInt8((value >> 16) & 0xFF), UInt8(value >> 24)])
+    }
+    mutating func append(le64 value: UInt64) {
+        append(le32: UInt32(value & 0xFFFF_FFFF))
+        append(le32: UInt32(value >> 32))
     }
 }

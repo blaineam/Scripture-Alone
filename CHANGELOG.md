@@ -2,6 +2,13 @@
 
 ## After 1.0.0
 
+- Imported ePub and USFM Bibles come out whole. Words of Christ marked `class="WJ"` are red;
+  footnote letters no longer stick to the word before them ("saidb"), and a verse number styled
+  as a superscript no longer loses its verse; a line break keeps its space ("children. These");
+  a psalm title written straight before verse 1 no longer swallows the verse; soft hyphens are
+  removed, so the words they sat in can be searched. Damaged or hostile files are refused rather
+  than exhausting memory, and a crashed import leaves no stale journal behind. The bundled
+  ASV, BSB and KJV import exactly as before.
 - Importing notes from Life Bible or a pasted list no longer invents highlights. A highlight that
   crossed a chapter break (Genesis 1:30–2:2) was filled in verse by verse through every possible
   verse number, nearly a thousand verses that don't exist; it now follows the chapter's real

@@ -114,12 +114,16 @@ internal class DocumentScanner(private val options: BibleTextExtractor.Options) 
         val buffers = ArrayList<MutableList<FlowItem>>().apply { add(ArrayList()) } // innermost capture buffer is last
         var skipDepth = 0
         var redDepth = 0
+        // Text before the first element (a byte-order mark, stray bytes before `<html>`) is not in the
+        // document at all. Kept, it would be carried onto the previous file's last verse.
+        var seenElement = false
 
         val emit: (FlowItem) -> Unit = { item -> if (skipDepth == 0) buffers.last().add(item) }
 
         for (event in XMLScanner.scan(xhtml)) {
             when (event) {
                 is XMLEvent.Start -> {
+                    seenElement = true
                     val tag = event.tag
                     val frame = Frame(tag.name)
                     val epubType = tag.epubType
@@ -135,6 +139,12 @@ internal class DocumentScanner(private val options: BibleTextExtractor.Options) 
                         continue
                     }
                     if (skipDepth > 0) {
+                        stack.add(frame)
+                        continue
+                    }
+                    // A line break separates words: "children.<br/>These" is two sentences, not one word.
+                    if (tag.name == "br") {
+                        emit(FlowItem.Text(" ", redDepth > 0))
                         stack.add(frame)
                         continue
                     }
@@ -219,7 +229,7 @@ internal class DocumentScanner(private val options: BibleTextExtractor.Options) 
                 }
 
                 is XMLEvent.Text -> {
-                    if (skipDepth != 0) continue
+                    if (skipDepth != 0 || !seenElement) continue
                     val collapsed = collapse(event.text)
                     if (collapsed.isEmpty()) continue
                     emit(FlowItem.Text(collapsed, redDepth > 0))
@@ -251,6 +261,9 @@ internal class DocumentScanner(private val options: BibleTextExtractor.Options) 
                     emit(FlowItem.MarkerItem(marker))
                     return
                 }
+                // A superscript footnote letter ("said<sup>b</sup>") whose note is not linked: it is
+                // neither a verse number nor text, so it goes, rather than reading "saidb".
+                if (VerseMarkupShape.SUPERSCRIPT in capture.marker.shapes && isFootnoteLabel(text)) return
                 // Not a number after all: it was an ordinary span that happened to be called "verse".
                 for (item in captured) emit(item)
             }
@@ -403,6 +416,9 @@ internal class DocumentScanner(private val options: BibleTextExtractor.Options) 
             val output = StringBuilder(raw.length)
             var pendingSpace = false
             for (i in 0 until characters.count) {
+                // A soft hyphen is a hint for where a line may break, not text. Left in, "be\u00ADginning"
+                // no longer matches a search for "beginning" (FTS5's tokenizer splits on it).
+                if (characters.isChar(i, '\u00AD')) continue
                 if (characters.isWhitespace(i) || characters.isChar(i, ' ')) {
                     pendingSpace = true
                     continue
@@ -428,23 +444,48 @@ internal class DocumentScanner(private val options: BibleTextExtractor.Options) 
 
         private val bridgeSeparators = setOf('-', '‐', '‑', '‒', '–', '—')
 
-        /** "12", "[12]", "1-2", "1–2" — a verse number, and the last number of a bridged pair. */
+        /**
+         * "12", "[12]", "1-2", "1–2" — a verse number, and the last number of a bridged pair. A dangling
+         * separator ("7–", a bridge the typesetter split across two superscripts) is the number alone.
+         */
         fun verseNumber(raw: String): Pair<Int, Int?>? {
             val characters = SwiftCharacters(raw)
             val split = (0 until characters.count).firstOrNull { i -> bridgeSeparators.any { characters.isChar(i, it) } }
             if (split != null) {
                 val first = number(raw.substring(0, characters.start(split)))
-                val last = number(raw.substring(characters.end(split)))
-                if (first != null && last != null && last > first && last - first < 20) return first to last
+                if (first != null) {
+                    val rest = raw.substring(characters.end(split))
+                    val last = number(rest)
+                    if (last != null && last > first && last - first < 20) return first to last
+                    if (SwiftText.trim(rest, ::isNumberTrim).isEmpty()) return first to null
+                }
             }
             return number(raw)?.let { it to null }
         }
 
+        /**
+         * A footnote or cross-reference caller printed as a superscript: "a", "b", "aa", "[c]", "*",
+         * "†". Ordinal endings ("1<sup>st</sup>") are not callers.
+         */
+        fun isFootnoteLabel(raw: String): Boolean {
+            val label = SwiftText.trim(raw) { cp ->
+                cp == 0x20 || cp == 0xA0 || cp == '['.code || cp == ']'.code || cp == '('.code || cp == ')'.code ||
+                    cp == '\n'.code || cp == '\t'.code
+            }
+            val count = SwiftText.characterCount(label)
+            if (label.isEmpty() || count > 3) return false
+            if (label.all { it in "*†‡§¶#" }) return true
+            if (count > 2 || !label.all { it in 'a'..'z' || it in 'A'..'Z' }) return false
+            return label.lowercase() !in setOf("st", "nd", "rd", "th")
+        }
+
         private const val NUMBER_TRIM = "  [](){}.,:;·•*​\n\t"
+
+        private fun isNumberTrim(cp: Int): Boolean = cp < 0x10000 && NUMBER_TRIM.indexOf(cp.toChar()) >= 0
 
         /** "12", " 12 ", "[12]", "12.", "12 " → 12. Anything else → null. */
         fun number(raw: String): Int? {
-            val stripped = SwiftText.trim(raw) { cp -> cp < 0x10000 && NUMBER_TRIM.indexOf(cp.toChar()) >= 0 }
+            val stripped = SwiftText.trim(raw, ::isNumberTrim)
             if (stripped.isEmpty() || SwiftText.characterCount(stripped) > 3 || !SwiftText.allNumbers(stripped)) return null
             val value = SwiftText.int(stripped) ?: return null
             return if (value in 1..999) value else null

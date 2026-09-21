@@ -14,11 +14,11 @@ struct XMLTag: Sendable {
 
     /// Whitespace-separated class tokens, lowercased.
     var classes: [String] {
-        (attributes["class"] ?? "").split(whereSeparator: { $0 == " " || $0 == "\t" || $0 == "\n" }).map(String.init)
+        (attributes["class"] ?? "").lowercased().split(whereSeparator: { $0 == " " || $0 == "\t" || $0 == "\n" }).map(String.init)
     }
 
     /// `epub:type` (OPS 3) or `type` (OPS 2 files sometimes carry it bare), lowercased.
-    var epubType: String { attributes["epub:type"] ?? attributes["type"] ?? "" }
+    var epubType: String { (attributes["epub:type"] ?? attributes["type"] ?? "").lowercased() }
 }
 
 enum XMLEvent: Sendable {
@@ -231,7 +231,9 @@ enum XMLScanner {
         "ndash": "–", "mdash": "—", "hellip": "…", "middot": "·", "bull": "•",
         "lsquo": "‘", "rsquo": "’", "ldquo": "“", "rdquo": "”", "sbquo": "‚", "bdquo": "„",
         "dagger": "†", "Dagger": "‡", "sect": "§", "para": "¶", "copy": "©", "reg": "®",
-        "deg": "°", "prime": "′", "Prime": "″", "eacute": "é", "egrave": "è", "shy": "\u{00AD}",
+        "deg": "°", "prime": "′", "Prime": "″", "eacute": "é", "egrave": "è",
+        // A soft hyphen is a line-breaking hint, not text: kept, it splits the word for search.
+        "shy": "",
     ]
 
     static func decodeEntities(_ raw: String) -> String {

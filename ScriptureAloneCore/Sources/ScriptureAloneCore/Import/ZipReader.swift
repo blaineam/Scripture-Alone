@@ -2,6 +2,7 @@
 // catalogue. It is also 32-bit (arm64_32), where the ZIP64 sentinel 0xFFFF_FFFF does not
 // fit in an Int at all — so this code is not merely unused there, it cannot compile.
 #if !os(watchOS)
+import Compression
 import Foundation
 
 /// The smallest ZIP reader that can open an ePub.
@@ -62,10 +63,10 @@ struct ZipReader: Sendable {
         if count == 0xFFFF || centralOffset == 0xFFFF_FFFF, eocd >= 20 {
             let locator = eocd - 20
             if data.le32(locator) == 0x0706_4B50 {
-                let record = Int(data.le64(locator + 8))
-                if record >= 0, record + 56 <= data.count, data.le32(record) == 0x0606_4B50 {
-                    count = Int(data.le64(record + 32))
-                    centralOffset = Int(data.le64(record + 48))
+                let record = Self.int(data.le64(locator + 8))
+                if record >= 0, record <= data.count - 56, data.le32(record) == 0x0606_4B50 {
+                    count = Self.int(data.le64(record + 32))
+                    centralOffset = Self.int(data.le64(record + 48))
                 }
             }
         }
@@ -103,9 +104,9 @@ struct ZipReader: Sendable {
                     let length = Int(data.le16(field + 2))
                     if tag == 0x0001 {
                         var value = field + 4
-                        if size == 0xFFFF_FFFF, value + 8 <= field + 4 + length { size = Int(data.le64(value)); value += 8 }
-                        if compressed == 0xFFFF_FFFF, value + 8 <= field + 4 + length { compressed = Int(data.le64(value)); value += 8 }
-                        if localOffset == 0xFFFF_FFFF, value + 8 <= field + 4 + length { localOffset = Int(data.le64(value)) }
+                        if size == 0xFFFF_FFFF, value + 8 <= field + 4 + length { size = Self.int(data.le64(value)); value += 8 }
+                        if compressed == 0xFFFF_FFFF, value + 8 <= field + 4 + length { compressed = Self.int(data.le64(value)); value += 8 }
+                        if localOffset == 0xFFFF_FFFF, value + 8 <= field + 4 + length { localOffset = Self.int(data.le64(value)) }
                         break
                     }
                     field += 4 + length
@@ -140,7 +141,7 @@ struct ZipReader: Sendable {
             throw BibleImportError.entryTooLarge(entry.name)
         }
         let header = entry.localHeaderOffset
-        guard header >= 0, header + 30 <= bytes.count, bytes.le32(header) == 0x0403_4B50 else {
+        guard header >= 0, header <= bytes.count - 30, bytes.le32(header) == 0x0403_4B50 else {
             throw BibleImportError.damagedArchive("\(entry.name) has no local header")
         }
         let start = header + 30 + Int(bytes.le16(header + 26)) + Int(bytes.le16(header + 28))
@@ -154,7 +155,7 @@ struct ZipReader: Sendable {
         case 0:
             contents = stored
         case 8:
-            guard let inflated = try? (stored as NSData).decompressed(using: .zlib) as Data else {
+            guard let inflated = Self.inflate(stored, limit: entry.size) else {
                 throw BibleImportError.damagedArchive("\(entry.name) could not be decompressed")
             }
             contents = inflated
@@ -168,6 +169,53 @@ struct ZipReader: Sendable {
             throw BibleImportError.damagedArchive("\(entry.name) failed its checksum")
         }
         return contents
+    }
+
+    /// A ZIP64 field as an `Int`. A value of 2^63 or more cannot be a real size or offset (and
+    /// `Int(_:)` would trap on it), so it becomes -1, which every caller refuses.
+    static func int(_ value: UInt64) -> Int {
+        Int(exactly: value) ?? -1
+    }
+
+    /// Raw DEFLATE (Apple's `.zlib` is the headerless stream), inflated in chunks. It stops as soon
+    /// as the output passes `limit` — the size the entry declared — so a header that lies about
+    /// the size cannot make it inflate a bomb in full; the size check that follows then fails.
+    /// Nil when the stream is not valid DEFLATE or ends early.
+    static func inflate(_ input: Data, limit: Int) -> Data? {
+        let stream = UnsafeMutablePointer<compression_stream>.allocate(capacity: 1)
+        defer { stream.deallocate() }
+        guard compression_stream_init(stream, COMPRESSION_STREAM_DECODE, COMPRESSION_ZLIB) == COMPRESSION_STATUS_OK else {
+            return nil
+        }
+        defer { compression_stream_destroy(stream) }
+
+        let chunk = 64 * 1024
+        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: chunk)
+        defer { buffer.deallocate() }
+        var output = Data()
+        return input.withUnsafeBytes { (source: UnsafeRawBufferPointer) -> Data? in
+            let empty = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
+            defer { empty.deallocate() }
+            stream.pointee.src_ptr = UnsafePointer(source.bindMemory(to: UInt8.self).baseAddress ?? UnsafePointer(empty))
+            stream.pointee.src_size = source.count
+            while true {
+                stream.pointee.dst_ptr = buffer
+                stream.pointee.dst_size = chunk
+                let status = compression_stream_process(stream, Int32(COMPRESSION_STREAM_FINALIZE.rawValue))
+                let produced = chunk - stream.pointee.dst_size
+                if produced > 0 { output.append(buffer, count: produced) }
+                if output.count > limit { return output }
+                switch status {
+                case COMPRESSION_STATUS_END:
+                    return output
+                case COMPRESSION_STATUS_OK:
+                    // No progress with all input consumed: the stream was cut short.
+                    if produced == 0, stream.pointee.src_size == 0 { return nil }
+                default:
+                    return nil
+                }
+            }
+        }
     }
 }
 
