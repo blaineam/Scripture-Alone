@@ -2,6 +2,8 @@ package com.blainemiller.scripturealone.data
 
 import android.content.Context
 import com.blainemiller.scripturealone.data.layout.ChapterLayout
+import com.blainemiller.scripturealone.data.rights.TranslationRights
+import com.blainemiller.scripturealone.data.rights.rights
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.sabible.ContentKey
 import com.blainemiller.scripturealone.data.sabible.PublisherKeyring
@@ -12,8 +14,19 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
 
-/** Who a translation is, as the reader shows it: the id in the switcher, the copyright in the footer. */
-data class TranslationInfo(val id: String, val name: String, val abbreviation: String, val copyright: String)
+/**
+ * Who a translation is, as the reader shows it: the id in the switcher, the copyright in the footer —
+ * and what its terms let the reader do with it ([rights]: a signed package's own grant, else the
+ * licence line's), the one value the copy and share gates ask.
+ */
+data class TranslationInfo(
+    val id: String,
+    val name: String,
+    val abbreviation: String,
+    val copyright: String,
+    val license: String = "",
+    val rights: TranslationRights = TranslationRights.of(license, copyright),
+)
 
 /** One verse's text and its words-of-Christ ranges, still in **Unicode scalars** as stored. */
 data class ChapterVerse(val ref: VerseRef, val text: String, val red: List<ScalarRange>)
@@ -76,7 +89,9 @@ class SqliteChapterSource(private val context: Context, private val assetName: S
             }
         }
         val id = meta["id"] ?: assetName.substringBefore('.')
-        TranslationInfo(id, meta["name"].orEmpty(), meta["abbreviation"] ?: id, meta["copyright"].orEmpty())
+        TranslationInfo(
+            id, meta["name"].orEmpty(), meta["abbreviation"] ?: id, meta["copyright"].orEmpty(), meta["license"].orEmpty(),
+        )
     }
 
     override fun contains(ref: ChapterRef): Boolean = layoutJson(ref) != null
@@ -115,7 +130,11 @@ class SqliteChapterSource(private val context: Context, private val assetName: S
 class PackageChapterSource(private val pkg: TranslationPackage) : ChapterSource {
 
     override val info: TranslationInfo = pkg.translation.let {
-        TranslationInfo(it.id, it.name, it.abbreviation.ifEmpty { it.id }, it.copyright)
+        // A package's rights are its signed policy's, never derived from the licence line.
+        TranslationInfo(
+            it.id, it.name, it.abbreviation.ifEmpty { it.id }, it.copyright, it.license,
+            rights = runCatching { pkg.policy.rights() }.getOrDefault(TranslationRights.LICENSED_DEFAULT.copy(maxQuotationVerses = 0)),
+        )
     }
 
     override fun contains(ref: ChapterRef): Boolean = pkg.contains(ref)

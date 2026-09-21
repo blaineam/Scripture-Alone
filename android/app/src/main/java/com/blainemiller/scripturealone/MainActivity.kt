@@ -30,12 +30,21 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Opens a chapter named by launch extras — `book`, `chapter` (ints), `translation` and `theme`
-     * (names). The development hook for going straight to a passage from `adb shell am start`; the
-     * `scripturealone://` deep links come later and will route here too. Anything out of range is
-     * ignored rather than trusted.
+     * Opens what the intent names. A link — `scripturealone://open?ref=…`, or a share link
+     * (`scripturealone://…#s=…`, or the web page's `https://wemiller.com/apps/scripture-alone/#s=…`
+     * if one is handed to the app directly) — goes to the passage and selects it, as iOS's
+     * `onOpenURL` does. The https page is deliberately *not* claimed as an App Link (Android can't
+     * match the fragment, and a path match would take over the product page); the web page offers
+     * "Open in Scripture Alone" through the custom scheme instead.
+     *
+     * Otherwise, launch extras — `book`, `chapter` (ints), `translation` and `theme` (names) — the
+     * development hook for going straight to a chapter from `adb shell am start`. Anything out of
+     * range is ignored rather than trusted.
      */
     private fun openFromIntent(intent: Intent?) {
+        intent?.dataString?.let { url ->
+            if (intent.action == Intent.ACTION_VIEW && reader.openLink(url)) return
+        }
         val extras = intent?.extras ?: return
         extras.getString("theme")?.let { name ->
             ReaderTheme.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }?.let { reader.theme = it }
