@@ -2,7 +2,11 @@ package com.blainemiller.scripturealone.wear
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
+import android.util.Log
 import android.speech.tts.UtteranceProgressListener
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import java.util.Locale
 
 /**
@@ -11,10 +15,14 @@ import java.util.Locale
  * speech engine simply reports itself unavailable, and the Speak button is disabled.
  */
 class VerseSpeaker(context: Context, private val onSpeaking: (Boolean) -> Unit) {
-    private var ready = false
+    /** Whether the speech engine bound and initialised; Compose state, so Speak enables when it does. */
+    var ready by mutableStateOf(false)
+        private set
+
     private val tts: TextToSpeech = TextToSpeech(context.applicationContext) { status ->
+        Log.i("VerseSpeaker", "TextToSpeech init: ${if (status == TextToSpeech.SUCCESS) "SUCCESS" else "ERROR ($status)"}")
+        if (status == TextToSpeech.SUCCESS) tts.language = Locale.US
         ready = status == TextToSpeech.SUCCESS
-        if (ready) tts.language = Locale.US
     }
 
     init {

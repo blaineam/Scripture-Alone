@@ -249,6 +249,7 @@ private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: Verse
             item {
                 Chip(
                     onClick = { if (speaking) speaker.stop() else speaker.speak(loaded.joinToString(" ") { it.text }) },
+                    enabled = speaker.ready,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ChipDefaults.secondaryChipColors(),
                     icon = { Icon(painterResource(if (speaking) R.drawable.ic_stop else R.drawable.ic_speaker), null, modifier = Modifier.size(ChipDefaults.IconSize)) },
