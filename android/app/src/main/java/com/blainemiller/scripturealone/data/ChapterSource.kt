@@ -2,18 +2,37 @@ package com.blainemiller.scripturealone.data
 
 import android.content.Context
 import com.blainemiller.scripturealone.data.layout.ChapterLayout
+import com.blainemiller.scripturealone.data.rights.TranslationRights
+import com.blainemiller.scripturealone.data.rights.rights
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.sabible.ContentKey
 import com.blainemiller.scripturealone.data.sabible.PublisherKeyring
 import com.blainemiller.scripturealone.data.sabible.ScalarRange
 import com.blainemiller.scripturealone.data.sabible.TranslationPackage
+import com.blainemiller.scripturealone.data.sql.BundledSqlSource
+import com.blainemiller.scripturealone.data.sql.SqlSource
+import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
 
-/** Who a translation is, as the reader shows it: the id in the switcher, the copyright in the footer. */
-data class TranslationInfo(val id: String, val name: String, val abbreviation: String, val copyright: String)
+/**
+ * Who a translation is, as the reader shows it: the id in the switcher, the copyright in the footer.
+ * [license] and [granted] decide what its text may do beyond being read — see [rights].
+ */
+data class TranslationInfo(
+    val id: String,
+    val name: String,
+    val abbreviation: String,
+    val copyright: String,
+    val license: String = "",
+    /** A signed package's own grant; null for everything else, whose rights follow from the licence line. */
+    val granted: TranslationRights? = null,
+) {
+    /** The one answer every copy, share and export gate asks — `TranslationInfo.rights` on iOS. */
+    val rights: TranslationRights get() = TranslationRights.of(license, copyright, granted)
+}
 
 /** One verse's text and its words-of-Christ ranges, still in **Unicode scalars** as stored. */
 data class ChapterVerse(val ref: VerseRef, val text: String, val red: List<ScalarRange>)
@@ -63,49 +82,52 @@ object ChapterRows {
 }
 
 /**
- * A plain bundled store — BSB.sqlite, KJV.sqlite — read through [BundledDatabase]. The schema is the
- * one every Bible database shares: `meta(key, value)`, `chapters(book, chapter, verses, layout)`,
- * `verses(id, text, red)`.
+ * The reads every plain store answers. Bundled, imported, and an online translation's cache all share
+ * one schema — `meta(key, value)`, `chapters(book, chapter, verses, layout)`, `verses(id, text, red)` —
+ * so one reader serves all three. Over [SqlSource], so the JVM tests run this exact code against real
+ * files through JDBC.
  */
+object StoreChapters {
+    fun meta(db: SqlSource): Map<String, String> =
+        db.query("SELECT key, value FROM meta") { it.text(0) to it.text(1) }.toMap()
+
+    fun info(db: SqlSource, fallbackId: String): TranslationInfo {
+        val meta = meta(db)
+        val id = meta["id"] ?: fallbackId
+        return TranslationInfo(
+            id, meta["name"].orEmpty(), meta["abbreviation"] ?: id, meta["copyright"].orEmpty(), meta["license"].orEmpty(),
+        )
+    }
+
+    fun layoutJson(db: SqlSource, ref: ChapterRef): String? =
+        db.query("SELECT layout FROM chapters WHERE book = ? AND chapter = ?", ref.book, ref.chapter) { it.text(0) }
+            .firstOrNull()
+
+    /** Verses with keys in `first..last`, in order. */
+    fun verses(db: SqlSource, first: Int, last: Int): List<ChapterVerse> =
+        db.query("SELECT id, text, red FROM verses WHERE id BETWEEN ? AND ? ORDER BY id", first, last) { r ->
+            val red = if (r.isNull(2)) null else r.text(2)
+            ChapterVerse(VerseRef.fromKey(r.long(0).toInt()), r.text(1), ChapterRows.parseRed(red))
+        }
+
+    fun chapter(db: SqlSource, info: TranslationInfo, ref: ChapterRef): Chapter {
+        val json = layoutJson(db, ref) ?: throw NoSuchElementException("${info.id} has no $ref")
+        val range = VerseRef.chapterRange(ref.book, ref.chapter)
+        return Chapter(info, ref, ChapterLayout.parse(json), verses(db, range.first, range.last))
+    }
+}
+
+/** A plain bundled store — BSB.sqlite, KJV.sqlite — read through [BundledDatabase]. */
 class SqliteChapterSource(private val context: Context, private val assetName: String) : ChapterSource {
 
-    override val info: TranslationInfo by lazy {
-        val meta = BundledDatabase.withConnection(context, assetName) { db ->
-            db.prepare("SELECT key, value FROM meta").use { st ->
-                buildMap { while (st.step()) put(st.getText(0), st.getText(1)) }
-            }
-        }
-        val id = meta["id"] ?: assetName.substringBefore('.')
-        TranslationInfo(id, meta["name"].orEmpty(), meta["abbreviation"] ?: id, meta["copyright"].orEmpty())
-    }
+    private fun <T> read(block: (SqlSource) -> T): T =
+        BundledDatabase.withConnection(context, assetName) { block(BundledSqlSource(it)) }
 
-    override fun contains(ref: ChapterRef): Boolean = layoutJson(ref) != null
+    override val info: TranslationInfo by lazy { read { StoreChapters.info(it, assetName.substringBefore('.')) } }
 
-    override fun chapter(ref: ChapterRef): Chapter {
-        val json = layoutJson(ref) ?: throw NoSuchElementException("${info.id} has no $ref")
-        val range = VerseRef.chapterRange(ref.book, ref.chapter)
-        val verses = BundledDatabase.withConnection(context, assetName) { db ->
-            db.prepare("SELECT id, text, red FROM verses WHERE id BETWEEN ? AND ? ORDER BY id").use { st ->
-                st.bindLong(1, range.first.toLong())
-                st.bindLong(2, range.last.toLong())
-                buildList {
-                    while (st.step()) {
-                        val red = if (st.isNull(2)) null else st.getText(2)
-                        add(ChapterVerse(VerseRef.fromKey(st.getLong(0).toInt()), st.getText(1), ChapterRows.parseRed(red)))
-                    }
-                }
-            }
-        }
-        return Chapter(info, ref, ChapterLayout.parse(json), verses)
-    }
+    override fun contains(ref: ChapterRef): Boolean = read { StoreChapters.layoutJson(it, ref) } != null
 
-    private fun layoutJson(ref: ChapterRef): String? = BundledDatabase.withConnection(context, assetName) { db ->
-        db.prepare("SELECT layout FROM chapters WHERE book = ? AND chapter = ?").use { st ->
-            st.bindLong(1, ref.book.toLong())
-            st.bindLong(2, ref.chapter.toLong())
-            if (st.step()) st.getText(0) else null
-        }
-    }
+    override fun chapter(ref: ChapterRef): Chapter = read { StoreChapters.chapter(it, info, ref) }
 }
 
 /**
@@ -115,7 +137,7 @@ class SqliteChapterSource(private val context: Context, private val assetName: S
 class PackageChapterSource(private val pkg: TranslationPackage) : ChapterSource {
 
     override val info: TranslationInfo = pkg.translation.let {
-        TranslationInfo(it.id, it.name, it.abbreviation.ifEmpty { it.id }, it.copyright)
+        TranslationInfo(it.id, it.name, it.abbreviation.ifEmpty { it.id }, it.copyright, it.license, pkg.policy.rights())
     }
 
     override fun contains(ref: ChapterRef): Boolean = pkg.contains(ref)
@@ -132,31 +154,46 @@ class PackageChapterSource(private val pkg: TranslationPackage) : ChapterSource 
 }
 
 /**
- * The translations that ship with the app, in the switcher's order. ASV first: it is the default on
- * both platforms, and exists only as the sealed package.
+ * Every translation the reader can open, in the switcher's order: the three that ship with the app,
+ * then any the reader imported, then the online ones their keys unlock. ASV first: it is the default
+ * on both platforms, and exists only as the sealed package.
+ *
+ * The name is historical. This is the seam the reader lists and opens translations through, so
+ * imported and online translations come through it too — [TranslationLibrary] holds those — and the
+ * reader needs no branch for them.
  */
 object BundledTranslations {
-    val ids: List<String> = listOf("ASV", "BSB", "KJV")
+    /** The translations inside the APK. */
+    val bundled: List<String> = listOf("ASV", "BSB", "KJV")
     const val DEFAULT = "ASV"
+
+    /** Everything the reader can switch to right now: [bundled], then imported, then online. */
+    val ids: List<String> get() = bundled + TranslationLibrary.addedIds
 
     private val open = mutableMapOf<String, ChapterSource>()
 
-    /** Opens (once) and returns the source for [id]. Blocks on the first call; call off the main thread. */
+    /**
+     * Opens (once) and returns the source for [id]. Blocks on the first call; call off the main
+     * thread. An online translation's source goes to the network for a chapter it hasn't cached.
+     */
     @Synchronized
-    fun source(context: Context, id: String): ChapterSource = open.getOrPut(id) {
-        val app = context.applicationContext
-        when (id) {
-            "ASV" -> {
-                val key = app.assets.open("bundled-signing.pub").use { it.readBytes() }
-                PackageChapterSource(
-                    TranslationPackage.open(
-                        BundledDatabase.file(app, "ASV.sabible"),
-                        PublisherKeyring(listOf(key)),
-                        ContentKey.derive(ContentKey.BUNDLED_SEED, "ASV"),
-                    ),
-                )
+    fun source(context: Context, id: String): ChapterSource {
+        if (id !in bundled) return TranslationLibrary.source(context, id)
+        return open.getOrPut(id) {
+            val app = context.applicationContext
+            when (id) {
+                "ASV" -> {
+                    val key = app.assets.open("bundled-signing.pub").use { it.readBytes() }
+                    PackageChapterSource(
+                        TranslationPackage.open(
+                            BundledDatabase.file(app, "ASV.sabible"),
+                            PublisherKeyring(listOf(key)),
+                            ContentKey.derive(ContentKey.BUNDLED_SEED, "ASV"),
+                        ),
+                    )
+                }
+                else -> SqliteChapterSource(app, "$id.sqlite")
             }
-            else -> SqliteChapterSource(app, "$id.sqlite")
         }
     }
 }

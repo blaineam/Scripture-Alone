@@ -30,5 +30,6 @@ class BundledSqlSource(private val connection: SQLiteConnection) : SqlSource {
         override fun text(column: Int) = statement.getText(column)
         override fun blob(column: Int) = statement.getBlob(column)
         override fun isNull(column: Int) = statement.isNull(column)
+        override fun double(column: Int) = statement.getDouble(column)
     }
 }
