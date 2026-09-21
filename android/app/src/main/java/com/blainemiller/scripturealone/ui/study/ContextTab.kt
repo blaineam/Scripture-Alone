@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.study
 
+import androidx.compose.ui.semantics.Role
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -239,7 +240,7 @@ private fun WhenSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).clickable(onClick = openTimeline)
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button, onClick = openTimeline)
                 .semantics(mergeDescendants = true) {
                     contentDescription = time?.let { "Timeline. ${it.era.name}, ${it.era.dates}." } ?: "Timeline"
                 },
@@ -283,7 +284,7 @@ private fun EventRow(event: TimelineEvent, compact: Boolean, palette: ReaderPale
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp))
             .background(highlight ?: Color.Transparent)
-            .let { if (range != null) it.clickable { open(range.start) } else it }
+            .let { if (range != null) it.clickable(role = Role.Button) { open(range.start) } else it }
             .semantics(mergeDescendants = true) {}
             .padding(vertical = 2.dp),
         verticalAlignment = Alignment.Top,
@@ -339,7 +340,7 @@ private fun WhereSection(
             }
             Box(
                 Modifier.align(Alignment.TopEnd).padding(10.dp).size(34.dp).glass(palette, CircleShape, palette.page, lifted = true)
-                    .clickable(onClick = openMap).semantics { contentDescription = "Open Large Map" },
+                    .clickable(role = Role.Button, onClick = openMap).semantics { contentDescription = "Open Large Map" },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Rounded.OpenInFull, null, tint = palette.ink, modifier = Modifier.size(17.dp))
@@ -366,7 +367,7 @@ private fun PlaceKind.icon(): ImageVector = when (this) {
 @Composable
 private fun PlaceRow(place: Place, verses: List<Int>, highlight: Int?, palette: ReaderPalette, onClick: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clickable(onClick = onClick).semantics(mergeDescendants = true) {}.padding(vertical = 8.dp),
+        Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick).semantics(mergeDescendants = true) {}.padding(vertical = 8.dp),
         verticalAlignment = Alignment.Top,
     ) {
         Icon(place.kind.icon(), null, tint = palette.accent, modifier = Modifier.padding(top = 1.dp).size(20.dp))
@@ -416,7 +417,7 @@ private fun ChartCard(chart: ChartInfo, palette: ReaderPalette, framed: Boolean,
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
             .background(if (framed) SheetColors.tertiaryFill(palette) else Color.Transparent)
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .semantics(mergeDescendants = true) {}
             .padding(if (framed) 10.dp else 0.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -489,7 +490,7 @@ private fun MapExplorer(chapter: ChapterRef, study: StudyModel, palette: ReaderP
                 ) {
                     results.forEachIndexed { i, place ->
                         if (i > 0) CellDivider(palette)
-                        Column(Modifier.fillMaxWidth().clickable { focus = place; query = "" }.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                        Column(Modifier.fillMaxWidth().clickable(role = Role.Button) { focus = place; query = "" }.padding(horizontal = 16.dp, vertical = 8.dp)) {
                             Text(place.name, color = palette.ink, fontSize = StudyStyle.callout)
                             Text(
                                 if (place.modernName.isEmpty()) "${place.mentions} verses" else "${place.modernName} · ${place.mentions} verses",
@@ -560,7 +561,7 @@ private fun EraCard(era: Era, time: ChapterTime?, chapter: ChapterRef, events: L
             EventRow(event, compact = false, palette = palette, highlight = if (event.id in chapterEvents) color.copy(alpha = 0.14f) else null, open = open)
         }
         if (era.debate.isNotEmpty()) {
-            Row(Modifier.clickable { debate = !debate }.padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.clickable(role = Role.Button) { debate = !debate }.padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("About these dates", color = palette.accent, fontSize = StudyStyle.footnote, fontWeight = FontWeight.SemiBold)
             }
             if (debate) Text(era.debate, color = palette.secondary, fontSize = StudyStyle.footnote)
@@ -621,7 +622,7 @@ fun ChartScreen(id: String, chapter: ChapterRef, reader: ReaderViewModel, palett
 private fun ReferenceButton(range: VerseRange, palette: ReaderPalette, label: String? = null, open: (VerseRange) -> Unit) {
     Text(
         label ?: range.display, color = palette.accent, fontSize = StudyStyle.caption, fontWeight = FontWeight.Medium,
-        modifier = Modifier.clip(RoundedCornerShape(4.dp)).clickable { open(range) }.padding(vertical = 3.dp)
+        modifier = Modifier.clip(RoundedCornerShape(4.dp)).clickable(role = Role.Button) { open(range) }.padding(vertical = 3.dp)
             .semantics { contentDescription = "Read ${range.display}" },
     )
 }
@@ -698,7 +699,7 @@ private fun KingsColumn(title: String, kingdom: String, kings: List<KingsChart.K
                 Modifier.fillMaxWidth().clip(shape)
                     .background(if (isCurrent) palette.accent.copy(alpha = 0.14f) else SheetColors.tertiaryFill(palette).copy(alpha = 0.10f))
                     .let { if (isCurrent) it.border(1.5.dp, palette.accent, shape) else it }
-                    .clickable { open(king.ref) }
+                    .clickable(role = Role.Button) { open(king.ref) }
                     .semantics(mergeDescendants = true) {
                         contentDescription = "${king.name}, $kingdom, ${king.reign}, $years. ${king.verdict.title()}." +
                             (if (isCurrent) " The chapter you are reading." else "")
@@ -758,7 +759,7 @@ private fun JourneysChartView(chart: JourneysChart, chapter: ChapterRef, library
         Column {
             journey.stops.forEachIndexed { index, stop ->
                 Row(
-                    Modifier.fillMaxWidth().clickable { open(stop.ref) }.semantics(mergeDescendants = true) {}.padding(vertical = 6.dp),
+                    Modifier.fillMaxWidth().clickable(role = Role.Button) { open(stop.ref) }.semantics(mergeDescendants = true) {}.padding(vertical = 6.dp),
                     verticalAlignment = Alignment.Top,
                 ) {
                     Box(Modifier.size(22.dp).clip(CircleShape).background(color), contentAlignment = Alignment.Center) {
@@ -945,7 +946,7 @@ fun PlaceDetailScreen(place: Place, reader: ReaderViewModel, palette: ReaderPale
                 keys.forEachIndexed { i, (key, text) ->
                     if (i > 0) CellDivider(palette)
                     val ref = VerseRef.fromKey(key)
-                    Column(Modifier.fillMaxWidth().clickable { reader.go(ref) }.padding(horizontal = 16.dp, vertical = 9.dp)) {
+                    Column(Modifier.fillMaxWidth().clickable(role = Role.Button) { reader.go(ref) }.padding(horizontal = 16.dp, vertical = 9.dp)) {
                         Text(ref.display, color = palette.ink, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.SemiBold)
                         text?.let { Text(it, color = palette.secondary, fontSize = StudyStyle.subheadline, maxLines = 3, overflow = TextOverflow.Ellipsis) }
                     }
@@ -968,7 +969,7 @@ fun ContextCredits(palette: ReaderPalette) {
             Text(title, color = palette.ink, fontSize = StudyStyle.headline, fontWeight = FontWeight.SemiBold)
             Text(detail, color = palette.secondary, fontSize = StudyStyle.subheadline)
             for ((label, url) in links) {
-                Text(label, color = palette.accent, fontSize = StudyStyle.subheadline, modifier = Modifier.clickable { uri.openUri(url) })
+                Text(label, color = palette.accent, fontSize = StudyStyle.subheadline, modifier = Modifier.clickable(role = Role.Button) { uri.openUri(url) })
             }
         }
     }

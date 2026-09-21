@@ -76,7 +76,19 @@ data class RenderedParagraph(
      * which is why marking a verse never re-typesets the chapter.
      */
     val verseSpans: List<VerseSpan> = emptyList(),
+    /** How TalkBack treats the paragraph — see `ReaderAccessibility.kt`. */
+    val role: ParagraphRole = ParagraphRole.TEXT,
+    /** What TalkBack says instead of [text], when the printed text reads badly aloud ("JOHN" over "3"). */
+    val accessibilityLabel: String? = null,
 )
+
+/**
+ * A paragraph's part in the screen reader's reading: the book and chapter heading and the section
+ * headings are headings (TalkBack's heading navigation moves between them), the big chapter numeral is
+ * folded into the heading above it, and everything else is read as text — verse by verse where the
+ * paragraph carries verses.
+ */
+enum class ParagraphRole { TEXT, HEADING, HIDDEN }
 
 /** Verse [key] occupies UTF-16 offsets [start] until [end] of its paragraph's text. */
 data class VerseSpan(val key: Int, val start: Int, val end: Int)
@@ -168,6 +180,8 @@ class ChapterRenderer(
             align = TextAlign.Center,
             spaceAfter = 2f,
             lineHeight = captionSize * NATURAL_LINE_HEIGHT,
+            role = ParagraphRole.HEADING,
+            accessibilityLabel = Canon.display(ref),
         )
         val bigSize = size * 2.6f
         out += RenderedParagraph(
@@ -178,6 +192,7 @@ class ChapterRenderer(
             align = TextAlign.Center,
             spaceAfter = size * 1.1f,
             lineHeight = bigSize * NATURAL_LINE_HEIGHT,
+            role = ParagraphRole.HIDDEN,
         )
     }
 
@@ -201,6 +216,7 @@ class ChapterRenderer(
                 spaceBefore = size * 2 * 2 + nextSize * NATURAL_LINE_HEIGHT,
                 lineHeight = nextSize * NATURAL_LINE_HEIGHT,
                 action = ReaderAction.NEXT_CHAPTER,
+                accessibilityLabel = "Next chapter, ${Canon.display(next)}",
             )
         }
         val fineSize = maxOf(10f, size * 0.55f)
@@ -371,6 +387,10 @@ class ChapterRenderer(
         return RenderedParagraph(
             text = styled, align = align, spaceBefore = before, spaceAfter = after,
             lineHeight = fontSize * NATURAL_LINE_HEIGHT * 1.1f,
+            // A parallel-passage line ("(Genesis 1:1–2)") belongs to the heading above; it isn't one.
+            role = if (block.kind == Kind.PARALLEL) ParagraphRole.TEXT else ParagraphRole.HEADING,
+            // Read as written, not as the capitals a major section is printed in.
+            accessibilityLabel = if (block.kind == Kind.MAJOR_SECTION) text else null,
         )
     }
 

@@ -132,7 +132,8 @@ class ListenPlayer(context: Context, private val listen: ListenController) : Sim
             .setPlayWhenReady(reading, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
             .setPlaybackState(if (phase is ListenController.Phase.Preparing) Player.STATE_BUFFERING else Player.STATE_READY)
             .setAudioAttributes(
-                AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_SPEECH).build(),
+                // The same media / spoken-word route as the voice itself (ListenAudio).
+                AudioAttributes.Builder().setUsage(ListenAudio.USAGE).setContentType(ListenAudio.CONTENT_TYPE).build(),
             )
             .setPlaylist(listOf(item))
             .setCurrentMediaItemIndex(0)

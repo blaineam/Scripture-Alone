@@ -43,6 +43,8 @@ import com.blainemiller.scripturealone.data.search.SearchHit
 import com.blainemiller.scripturealone.data.search.VerseSearch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.properties.ReadWriteProperty
@@ -177,6 +179,20 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
 
     fun next() = Canon.next(location)?.let { show(it) }
     fun previous() = Canon.previous(location)?.let { show(it) }
+
+    /** ⌘+ / ⌘− on iOS: the text size a point at a time, within the Appearance slider's range. */
+    fun stepFontSize(points: Int) {
+        fontSize = (fontSize + points).coerceIn(ReaderStyle.SIZE_RANGE)
+    }
+
+    private val _commands = MutableSharedFlow<ReaderCommand>(extraBufferCapacity = 8)
+
+    /** Keyboard shortcuts, as the activity receives them — carried out by the reader's screen. */
+    val commands: SharedFlow<ReaderCommand> = _commands
+
+    fun send(command: ReaderCommand) {
+        _commands.tryEmit(command)
+    }
 
     /** Switches translation and keeps the reader's place: the verse at the top stays at the top. */
     fun selectTranslation(id: String) {

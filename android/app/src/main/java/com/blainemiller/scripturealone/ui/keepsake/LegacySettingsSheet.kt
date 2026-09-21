@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.keepsake
 
+import androidx.compose.ui.semantics.Role
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -214,7 +215,7 @@ private fun KeepsakeRow(
     var menu by remember { mutableStateOf(false) }
     Box {
         Row(
-            Modifier.fillMaxWidth().combinedClickable(onLongClick = { menu = true }, onClick = onOpen)
+            Modifier.fillMaxWidth().combinedClickable(role = Role.Button, onLongClickLabel = "Show options", onLongClick = { menu = true }, onClick = onOpen)
                 .padding(horizontal = 18.dp, vertical = 12.dp),
             verticalAlignment = Alignment.Top,
         ) {

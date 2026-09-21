@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.export
 
+import com.blainemiller.scripturealone.ui.appearance.RatingPrompt
 import android.content.ActivityNotFoundException
 import android.content.Context
 import androidx.activity.compose.BackHandler
@@ -97,6 +98,8 @@ fun NotesExportSheet(
             }
             working = false
             result.onSuccess { exported = it }.onFailure { failure = it.message ?: it.javaClass.simpleName }
+            // An export written counts toward the review gate; the ask waits for a finished moment.
+            if (result.isSuccess) RatingPrompt.recordSignificantAction(context)
         }
     }
 

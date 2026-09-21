@@ -1,5 +1,9 @@
 package com.blainemiller.scripturealone.ui.export
 
+import com.blainemiller.scripturealone.ui.reader.FitTitle
+import com.blainemiller.scripturealone.ui.reader.CappedFontScale
+import com.blainemiller.scripturealone.ui.reader.takesTaps
+import androidx.compose.ui.semantics.heading
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -79,7 +83,7 @@ fun FormSheet(
         Modifier.fillMaxSize()
             .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
             .background(PanelColors.background(palette))
-            .clickable(interactionSource = null, indication = null) {},
+            .takesTaps(),
     ) {
         if (back) {
             PanelHeader(title, palette, back = true, onLeading = onLeading)
@@ -96,17 +100,17 @@ fun FormSheet(
 
 /** [PanelHeader] with its leading control labelled ("Done", "Cancel") rather than "Close". */
 @Composable
-private fun LabelledHeader(title: String, leading: String, palette: ReaderPalette, onLeading: () -> Unit) {
+private fun LabelledHeader(title: String, leading: String, palette: ReaderPalette, onLeading: () -> Unit) = CappedFontScale {
     Box(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 16.dp)) {
         Box(
             Modifier.align(Alignment.CenterStart).height(44.dp).clip(RoundedCornerShape(22.dp))
                 .background(com.blainemiller.scripturealone.ui.reader.SheetColors.buttonFill(palette))
-                .clickable(onClick = onLeading).padding(horizontal = 18.dp),
+                .clickable(role = Role.Button, onClick = onLeading).padding(horizontal = 18.dp),
             contentAlignment = Alignment.Center,
         ) { Text(leading, color = palette.ink, fontSize = 17.sp) }
-        Text(
-            title, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, maxLines = 1,
-            modifier = Modifier.align(Alignment.Center).padding(horizontal = 100.dp),
+        FitTitle(
+            title, palette.ink, 17.sp,
+            modifier = Modifier.align(Alignment.Center).padding(horizontal = 100.dp).semantics { heading() },
         )
     }
 }
@@ -120,7 +124,7 @@ fun FormHeader(text: String, palette: ReaderPalette) {
     }
     Text(
         text, color = palette.secondary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(start = 32.dp, end = 32.dp, top = 22.dp, bottom = 8.dp),
+        modifier = Modifier.padding(start = 32.dp, end = 32.dp, top = 22.dp, bottom = 8.dp).semantics { heading() },
     )
 }
 
@@ -250,6 +254,8 @@ fun FormField(
     enabled: Boolean = true,
     imeAction: ImeAction = ImeAction.Default,
     onDone: () -> Unit = {},
+    /** What TalkBack calls the field when it has no placeholder (a label printed above it). */
+    label: String? = null,
     onChange: (String) -> Unit,
 ) {
     BasicTextField(
@@ -271,7 +277,7 @@ fun FormField(
         ),
         keyboardActions = androidx.compose.foundation.text.KeyboardActions(onDone = { onDone() }, onGo = { onDone() }),
         modifier = modifier.fillMaxWidth().heightIn(min = maxOf(minHeight, 52).dp).padding(horizontal = 18.dp, vertical = 15.dp)
-            .semantics { if (placeholder.isNotEmpty()) contentDescription = placeholder },
+            .semantics { (label ?: placeholder.takeIf { it.isNotEmpty() })?.let { contentDescription = it } },
         decorationBox = { field ->
             Box {
                 if (value.isEmpty() && placeholder.isNotEmpty()) {

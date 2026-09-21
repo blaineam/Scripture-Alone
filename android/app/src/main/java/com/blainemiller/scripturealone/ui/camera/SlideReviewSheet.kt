@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.camera
 
+import com.blainemiller.scripturealone.ui.reader.takesTaps
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -125,7 +126,7 @@ private class ReviewLine(text: String) {
 @Composable
 internal fun ReviewSheetFrame(visible: Boolean, onDismiss: () -> Unit, content: @Composable () -> Unit) {
     AnimatedVisibility(visible, enter = fadeIn(), exit = fadeOut()) {
-        Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.32f)).clickable(interactionSource = null, indication = null, onClick = onDismiss))
+        Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.32f)).takesTaps(onDismiss))
     }
     AnimatedVisibility(visible, enter = slideInVertically(tween(320)) { it }, exit = slideOutVertically(tween(240)) { it }) {
         Box(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars).padding(top = 10.dp)) { content() }
@@ -253,7 +254,7 @@ internal fun SlideReviewSheet(
     val adding = targetNote != null
     Column(
         Modifier.fillMaxSize().clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)).background(PanelColors.background(palette))
-            .clickable(interactionSource = null, indication = null) {},
+            .takesTaps(),
     ) {
         ReviewHeader(
             if (adding) "Add to Note" else "New Note", if (adding) "Add to Note" else "Create Note", palette,
@@ -270,7 +271,7 @@ internal fun SlideReviewSheet(
                 )
                 PanelSeparator(palette)
                 Row(
-                    Modifier.fillMaxWidth().clickable { keepPhoto = !keepPhoto }.padding(start = 18.dp, end = 14.dp, top = 6.dp, bottom = 6.dp),
+                    Modifier.fillMaxWidth().clickable(role = Role.Button) { keepPhoto = !keepPhoto }.padding(start = 18.dp, end = 14.dp, top = 6.dp, bottom = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text("Keep this photo with the note", color = palette.ink, fontSize = 17.sp, modifier = Modifier.weight(1f))
@@ -391,7 +392,7 @@ private fun ReviewHeader(title: String, saveTitle: String, palette: ReaderPalett
     Box(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 16.dp)) {
         Box(
             Modifier.align(Alignment.CenterStart).height(44.dp).glass(palette, CircleShape, surface, lifted = true)
-                .clickable(onClick = onCancel).padding(horizontal = 18.dp),
+                .clickable(role = Role.Button, onClick = onCancel).padding(horizontal = 18.dp),
             contentAlignment = Alignment.Center,
         ) {
             Text("Cancel", color = palette.ink, fontSize = 17.sp)
@@ -404,7 +405,7 @@ private fun ReviewHeader(title: String, saveTitle: String, palette: ReaderPalett
         Box(
             Modifier.align(Alignment.CenterEnd).height(44.dp)
                 .glass(palette, CircleShape, surface, lifted = true)
-                .clip(CircleShape).clickable(enabled = saveEnabled, onClick = onSave).padding(horizontal = 18.dp),
+                .clip(CircleShape).clickable(enabled = saveEnabled, role = Role.Button, onClick = onSave).padding(horizontal = 18.dp),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -426,7 +427,7 @@ private fun DestinationPicker(choices: List<Note>, selected: Note?, palette: Rea
     var open by remember { mutableStateOf(false) }
     Box {
         Row(
-            Modifier.fillMaxWidth().clickable { open = true }.padding(horizontal = 18.dp, vertical = 13.dp),
+            Modifier.fillMaxWidth().clickable(role = Role.Button) { open = true }.padding(horizontal = 18.dp, vertical = 13.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("Save to", color = palette.ink, fontSize = 17.sp)
@@ -459,7 +460,7 @@ private fun DestinationPicker(choices: List<Note>, selected: Note?, palette: Rea
 @Composable
 private fun PassageChip(range: VerseRange, palette: ReaderPalette, onRemove: () -> Unit) {
     Row(
-        Modifier.clip(CircleShape).background(palette.accent.copy(alpha = 0.14f)).clickable(onClick = onRemove)
+        Modifier.clip(CircleShape).background(palette.accent.copy(alpha = 0.14f)).clickable(role = Role.Button, onClick = onRemove)
             .semantics(mergeDescendants = true) {
                 contentDescription = range.display
                 onClick("Remove") { onRemove(); true }
@@ -479,7 +480,7 @@ private fun PassageChip(range: VerseRange, palette: ReaderPalette, onRemove: () 
 private fun LineRow(line: ReviewLine, palette: ReaderPalette) {
     Row(Modifier.fillMaxWidth().padding(start = 12.dp), verticalAlignment = Alignment.Top) {
         Box(
-            Modifier.padding(top = 6.dp).size(36.dp).clip(CircleShape).clickable { line.included = !line.included }
+            Modifier.padding(top = 6.dp).size(36.dp).clip(CircleShape).clickable(role = Role.Button) { line.included = !line.included }
                 .semantics {
                     role = Role.Checkbox
                     contentDescription = line.text

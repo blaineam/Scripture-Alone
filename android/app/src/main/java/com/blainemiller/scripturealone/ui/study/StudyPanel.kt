@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.study
 
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -132,7 +133,7 @@ private fun VerseHeader(study: StudyModel, reader: ReaderViewModel, palette: Rea
         val previous = study.history.lastOrNull()
         if (previous != null) {
             Row(
-                Modifier.clip(RoundedCornerShape(8.dp)).clickable { study.back(reader) }
+                Modifier.clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button) { study.back(reader) }
                     .padding(horizontal = 4.dp, vertical = 4.dp)
                     .semantics(mergeDescendants = true) { contentDescription = "Back to ${previous.display}" },
                 verticalAlignment = Alignment.CenterVertically,

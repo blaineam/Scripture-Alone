@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.reader
 
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -118,7 +119,7 @@ private fun Progress(fraction: Float, palette: ReaderPalette) {
 @Composable
 private fun Capsule(title: String, palette: ReaderPalette, onClick: () -> Unit) {
     Box(
-        Modifier.clip(CircleShape).background(SheetColors.buttonFill(palette)).clickable(onClick = onClick)
+        Modifier.clip(CircleShape).background(SheetColors.buttonFill(palette)).clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 7.dp),
     ) { Text(title, color = palette.accent, fontSize = 13.sp, fontWeight = FontWeight.SemiBold) }
 }

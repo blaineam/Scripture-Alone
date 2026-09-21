@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.importnotes
 
+import com.blainemiller.scripturealone.ui.appearance.RatingPrompt
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
@@ -143,6 +144,7 @@ fun NotesImportSheet(model: ReaderViewModel, palette: ReaderPalette, onDone: () 
                         val tally = runCatching { model.userData.importNotes(result) }
                         working = false
                         tally.onSuccess { outcome = it }.onFailure { failure = describe(it) }
+                        if (tally.isSuccess) RatingPrompt.afterSuccess(context)
                     }
                 }, onDifferent = { found = null })
                 else -> Instructions(palette, working, onChoose = {

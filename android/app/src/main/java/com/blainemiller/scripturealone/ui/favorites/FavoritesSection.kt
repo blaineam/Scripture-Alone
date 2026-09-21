@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.favorites
 
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -99,7 +100,7 @@ fun FavoritesSection(
                 Box {
                     Column(
                         Modifier.fillMaxWidth()
-                            .combinedClickable(onLongClick = { menu = true }) {
+                            .combinedClickable(role = Role.Button, onLongClickLabel = "Show options", onLongClick = { menu = true }) {
                                 model.go(favorite.range.start)
                                 onOpened()
                             }

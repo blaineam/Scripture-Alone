@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.camera
 
+import androidx.compose.ui.semantics.Role
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.pm.PackageManager
@@ -232,7 +233,7 @@ internal fun FailureAlert(title: String, message: String, palette: ReaderPalette
             Spacer(Modifier.height(16.dp))
             Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp)) {
                 Box(
-                    Modifier.weight(1f).height(46.dp).glass(palette, CircleShape, PanelColors.card(palette)).clickable(onClick = onDismiss),
+                    Modifier.weight(1f).height(46.dp).glass(palette, CircleShape, PanelColors.card(palette)).clickable(role = Role.Button, onClick = onDismiss),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text("OK", color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)

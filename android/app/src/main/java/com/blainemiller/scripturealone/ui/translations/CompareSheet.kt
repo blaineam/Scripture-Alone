@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.ui.translations
 
+import androidx.compose.ui.semantics.Role
+import com.blainemiller.scripturealone.ui.reader.takesTaps
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -98,7 +100,7 @@ fun CompareSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: () ->
     }
 
     Column(Modifier.fillMaxSize().clip(androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)).background(surface)
-        .clickable(interactionSource = null, indication = null) {}) {
+        .takesTaps()) {
         Box(Modifier.fillMaxWidth().height(60.dp).padding(horizontal = 14.dp)) {
             Box(Modifier.align(Alignment.CenterStart)) { GlassTextButton("Close", palette, surface, onClick = onClose) }
             Box(Modifier.align(Alignment.Center)) {
@@ -166,7 +168,7 @@ private fun Picker(left: String, right: String?, candidates: List<String>, palet
     Box {
         Row(
             Modifier.height(40.dp).glass(palette, CircleShape, SheetColors.surface(palette), lifted = true)
-                .clickable(enabled = candidates.isNotEmpty()) { open = true }.padding(horizontal = 16.dp)
+                .clickable(enabled = candidates.isNotEmpty(), role = Role.DropdownList) { open = true }.padding(horizontal = 16.dp)
                 .semantics(mergeDescendants = true) { contentDescription = "Compare $left with ${right ?: "nothing"}" },
             verticalAlignment = Alignment.CenterVertically,
         ) {

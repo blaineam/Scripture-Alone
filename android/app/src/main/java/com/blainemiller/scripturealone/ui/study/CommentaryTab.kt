@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.study
 
+import androidx.compose.ui.semantics.Role
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -137,7 +138,7 @@ private fun Reading(loaded: LoadedCommentary, source: StudySource, study: StudyM
             loaded.introduction?.let { intro ->
                 Column {
                     Row(
-                        Modifier.fillMaxWidth().clickable { introOpen = !introOpen }.padding(vertical = 4.dp),
+                        Modifier.fillMaxWidth().clickable(role = Role.Button) { introOpen = !introOpen }.padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(

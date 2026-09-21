@@ -48,8 +48,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -105,7 +107,7 @@ fun SelectionBar(
             // read through a 92% fill where iOS's glass blurs them away.
             .glass(palette, RoundedCornerShape(26.dp), lifted = true, opacity = 0.985f)
             // Swallows taps between the controls, so they don't fall through and select a verse.
-            .clickable(interactionSource = null, indication = null) {}
+            .takesTaps()
             .padding(horizontal = 18.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -116,7 +118,7 @@ fun SelectionBar(
                 modifier = Modifier.weight(1f),
             )
             Row(
-                Modifier.clip(CircleShape).clickable { actions.onListen(ranges) }.padding(horizontal = 6.dp, vertical = 4.dp),
+                Modifier.clip(CircleShape).clickable(role = Role.Button) { actions.onListen(ranges) }.padding(horizontal = 6.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Rounded.Headphones, null, tint = palette.accent, modifier = Modifier.size(18.dp))
@@ -124,8 +126,8 @@ fun SelectionBar(
                 Text("Listen", color = palette.accent, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
             }
             Box(
-                Modifier.size(32.dp).clip(CircleShape).clickable { model.clearSelection() }
-                    .semantics { contentDescription = "Clear Selection" },
+                Modifier.size(32.dp).clip(CircleShape).clickable(role = Role.Button) { model.clearSelection() }
+                    .clearAndSetSemantics { contentDescription = "Clear Selection" },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Rounded.Close, null, tint = palette.secondary, modifier = Modifier.size(19.dp))
@@ -203,8 +205,11 @@ private fun RowScope.BarCell(label: String, enabled: Boolean = true, onClick: ()
 private fun Cell(modifier: Modifier, label: String, enabled: Boolean, onClick: () -> Unit, content: @Composable () -> Unit) {
     Box(
         modifier.fillMaxWidth().widthIn(min = 28.dp).heightIn(min = 36.dp).clip(RoundedCornerShape(10.dp))
-            .clickable(enabled = enabled, onClick = onClick)
-            .semantics { contentDescription = label },
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .clearAndSetSemantics {
+                contentDescription = label
+                if (!enabled) disabled()
+            },
         contentAlignment = Alignment.Center,
     ) { content() }
 }

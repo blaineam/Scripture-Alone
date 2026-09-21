@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.ui.study
 
+import com.blainemiller.scripturealone.ui.reader.FitTitle
+import com.blainemiller.scripturealone.ui.reader.CappedFontScale
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -30,6 +32,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -139,7 +144,7 @@ fun Cell(
 ) {
     Row(
         Modifier.fillMaxWidth()
-            .let { if (onClick != null) it.clickable(onClick = onClick) else it }
+            .let { if (onClick != null) it.clickable(role = Role.Button, onClick = onClick) else it }
             .padding(horizontal = 16.dp, vertical = verticalPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -155,9 +160,10 @@ fun Cell(
 @Composable
 fun LabeledCell(palette: ReaderPalette, label: String, value: String) {
     Cell(palette) {
-        Text(label, color = palette.ink, fontSize = StudyStyle.body, modifier = Modifier.weight(1f))
+        // The label keeps its width; the value takes the rest and wraps under a large font size.
+        Text(label, color = palette.ink, fontSize = StudyStyle.body)
         Spacer(Modifier.width(12.dp))
-        Text(value, color = palette.secondary, fontSize = StudyStyle.body, textAlign = TextAlign.End)
+        Text(value, color = palette.secondary, fontSize = StudyStyle.body, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
     }
 }
 
@@ -172,7 +178,7 @@ fun SegmentedPicker(
     palette: ReaderPalette,
     modifier: Modifier = Modifier,
     onSelect: (Int) -> Unit,
-) {
+) = CappedFontScale {
     BoxWithConstraints(
         modifier.fillMaxWidth().height(34.dp).clip(RoundedCornerShape(9.dp)).background(SheetColors.tertiaryFill(palette)),
     ) {
@@ -197,10 +203,14 @@ fun SegmentedPicker(
                         },
                     contentAlignment = Alignment.Center,
                 ) {
+                    // Shrinks to fit (to 70%) before truncating, so a larger font size keeps whole words.
+                    var scale by remember(title) { mutableStateOf(1f) }
                     Text(
-                        title, color = palette.ink, fontSize = 13.sp,
+                        title, color = palette.ink, fontSize = 13.sp * scale,
                         fontWeight = if (index == selected) FontWeight.SemiBold else FontWeight.Medium,
-                        maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        maxLines = 1, softWrap = false,
+                        overflow = if (scale > 0.7f) TextOverflow.Clip else TextOverflow.Ellipsis,
+                        onTextLayout = { if (it.didOverflowWidth && scale > 0.7f) scale -= 0.05f },
                         modifier = Modifier.padding(horizontal = 4.dp),
                     )
                 }
@@ -251,7 +261,7 @@ fun AccentButton(
     onClick: () -> Unit,
 ) {
     Row(
-        modifier.clip(RoundedCornerShape(8.dp)).clickable(onClick = onClick).padding(horizontal = 4.dp, vertical = 6.dp),
+        modifier.clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 4.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (icon != null) {
@@ -267,7 +277,7 @@ fun AccentButton(
 fun ProminentButton(title: String, palette: ReaderPalette, modifier: Modifier = Modifier, enabled: Boolean = true, onClick: () -> Unit) {
     Box(
         modifier.clip(CircleShape).background(if (enabled) palette.accent else palette.secondary.copy(alpha = 0.3f))
-            .clickable(enabled = enabled, onClick = onClick).padding(horizontal = 18.dp, vertical = 9.dp),
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick).padding(horizontal = 18.dp, vertical = 9.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(title, color = if (palette.isDark) Color.Black else Color.White, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.SemiBold)
@@ -279,7 +289,7 @@ fun ProminentButton(title: String, palette: ReaderPalette, modifier: Modifier = 
 fun BorderedButton(title: String, palette: ReaderPalette, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Box(
         modifier.clip(CircleShape).background(palette.accent.copy(alpha = 0.14f))
-            .clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp),
+            .clickable(role = Role.Button, onClick = onClick).padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(title, color = palette.accent, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.Medium)
@@ -297,12 +307,11 @@ fun SheetTopBar(
     modifier: Modifier = Modifier,
     leading: (@Composable () -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
-) {
+) = CappedFontScale {
     Box(modifier.fillMaxWidth().height(60.dp).padding(horizontal = 14.dp)) {
         Box(Modifier.align(Alignment.CenterStart)) { leading?.invoke() }
-        Text(
-            title, color = palette.ink, fontSize = StudyStyle.headline, fontWeight = FontWeight.SemiBold,
-            maxLines = 1, overflow = TextOverflow.Ellipsis,
+        FitTitle(
+            title, palette.ink, StudyStyle.headline,
             modifier = Modifier.align(Alignment.Center).padding(horizontal = 100.dp).semantics { heading() },
         )
         Box(Modifier.align(Alignment.CenterEnd)) { trailing?.invoke() }
@@ -313,7 +322,7 @@ fun SheetTopBar(
 @Composable
 fun GlassIconButton(icon: ImageVector, label: String, palette: ReaderPalette, surface: Color, tint: Color = palette.ink, onClick: () -> Unit) {
     Box(
-        Modifier.size(44.dp).glass(palette, CircleShape, surface, lifted = true).clickable(onClick = onClick)
+        Modifier.size(44.dp).glass(palette, CircleShape, surface, lifted = true).clickable(role = Role.Button, onClick = onClick)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
@@ -325,7 +334,7 @@ fun GlassIconButton(icon: ImageVector, label: String, palette: ReaderPalette, su
 @Composable
 fun GlassTextButton(title: String, palette: ReaderPalette, surface: Color, bold: Boolean = false, tint: Color = palette.ink, onClick: () -> Unit) {
     Box(
-        Modifier.height(44.dp).glass(palette, CircleShape, surface, lifted = true).clickable(onClick = onClick)
+        Modifier.height(44.dp).glass(palette, CircleShape, surface, lifted = true).clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 18.dp),
         contentAlignment = Alignment.Center,
     ) {

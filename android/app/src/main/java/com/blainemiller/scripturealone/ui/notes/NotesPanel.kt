@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.ui.notes
 
+import androidx.compose.ui.semantics.Role
+import com.blainemiller.scripturealone.ui.reader.takesTaps
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -109,7 +111,7 @@ fun NotesPanel(
                 .padding(top = 10.dp)
                 .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
                 .background(PanelColors.background(palette))
-                .clickable(interactionSource = null, indication = null) {},
+                .takesTaps(),
         ) {
             if (openNote != null) {
                 if (editing != null) {
@@ -231,7 +233,7 @@ private fun NoteRow(note: Note, palette: ReaderPalette, onOpen: () -> Unit, onDe
     var menu by remember { mutableStateOf(false) }
     Box {
         Column(
-            Modifier.fillMaxWidth().combinedClickable(onLongClick = { menu = true }, onClick = onOpen)
+            Modifier.fillMaxWidth().combinedClickable(role = Role.Button, onLongClickLabel = "Show options", onLongClick = { menu = true }, onClick = onOpen)
                 .padding(horizontal = 18.dp, vertical = 12.dp),
         ) {
             Row(verticalAlignment = Alignment.Bottom) {

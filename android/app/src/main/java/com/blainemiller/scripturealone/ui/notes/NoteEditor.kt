@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.notes
 
+import androidx.compose.ui.semantics.Role
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -190,7 +191,7 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
                     if (model.selection.isNotEmpty()) {
                         Text(
                             "Add Selection", color = palette.accent, fontSize = 16.sp,
-                            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable {
+                            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button) {
                                 val ranges = model.selectedRanges
                                 save { it.copy(anchors = (it.anchors + ranges).distinct().sortedWith(RANGE_ORDER)) }
                                 model.clearSelection()
@@ -202,7 +203,7 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
 
             PanelSectionTitle("Note", palette)
             PanelGroup(palette) {
-                Field(body, "", palette, minHeight = 220) { value ->
+                Field(body, "", palette, minHeight = 220, label = "Note") { value ->
                     body = value
                     save { it.copy(body = value) }
                 }
@@ -232,7 +233,7 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
 private fun PassageRow(range: VerseRange, palette: ReaderPalette, onOpen: () -> Unit, onRemove: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(start = 6.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Row(
-            Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).clickable(onClick = onOpen).padding(horizontal = 12.dp, vertical = 12.dp),
+            Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).clickable(role = Role.Button, onClick = onOpen).padding(horizontal = 12.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(Icons.AutoMirrored.Outlined.MenuBook, null, tint = palette.accent, modifier = Modifier.size(20.dp))
@@ -240,7 +241,7 @@ private fun PassageRow(range: VerseRange, palette: ReaderPalette, onOpen: () -> 
             Text(range.display, color = palette.accent, fontSize = 17.sp)
         }
         Box(
-            Modifier.size(40.dp).clip(CircleShape).clickable(onClick = onRemove)
+            Modifier.size(40.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onRemove)
                 .semantics { contentDescription = "Remove ${range.display}" },
             contentAlignment = Alignment.Center,
         ) {
@@ -261,6 +262,8 @@ private fun Field(
     minHeight: Int = 0,
     imeAction: ImeAction = ImeAction.Default,
     onDone: () -> Unit = {},
+    /** What TalkBack calls a field with no placeholder — the section title printed above it. */
+    label: String? = null,
     onChange: (String) -> Unit,
 ) {
     BasicTextField(
@@ -276,7 +279,7 @@ private fun Field(
         ),
         keyboardActions = KeyboardActions(onDone = { onDone() }),
         modifier = modifier.fillMaxWidth().heightIn(min = minHeight.dp).padding(horizontal = 18.dp, vertical = 13.dp)
-            .semantics { if (placeholder.isNotEmpty()) contentDescription = placeholder },
+            .semantics { (label ?: placeholder.takeIf { it.isNotEmpty() })?.let { contentDescription = it } },
         decorationBox = { field ->
             Box {
                 if (value.isEmpty() && placeholder.isNotEmpty()) {
@@ -290,12 +293,14 @@ private fun Field(
 
 @Composable
 private fun Stamp(label: String, at: Instant, palette: ReaderPalette) {
-    Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp)) {
-        Text(label, color = palette.secondary, fontSize = 13.sp, modifier = Modifier.weight(1f))
+    // The label keeps its width and the date wraps, so a large font size never breaks "Created".
+    Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp).semantics(mergeDescendants = true) {}) {
+        Text(label, color = palette.secondary, fontSize = 13.sp)
+        Spacer(Modifier.width(12.dp))
         Text(
             DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT).withLocale(Locale.getDefault())
                 .format(at.atZone(ZoneId.systemDefault())),
-            color = palette.secondary, fontSize = 13.sp,
+            color = palette.secondary, fontSize = 13.sp, textAlign = TextAlign.End, modifier = Modifier.weight(1f),
         )
     }
 }
@@ -329,7 +334,7 @@ private fun ConfirmDelete(palette: ReaderPalette, onCancel: () -> Unit, onDelete
 @Composable
 private fun DialogButton(title: String, color: Color, palette: ReaderPalette, modifier: Modifier, onClick: () -> Unit) {
     Box(
-        modifier.height(46.dp).glass(palette, CircleShape, PanelColors.card(palette)).clickable(onClick = onClick),
+        modifier.height(46.dp).glass(palette, CircleShape, PanelColors.card(palette)).clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(title, color = color, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)

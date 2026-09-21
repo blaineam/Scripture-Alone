@@ -535,10 +535,8 @@ class ListenController private constructor(private val app: Context) {
     // MARK: Audio focus, noisy output, wake
 
     private val audio = app.getSystemService(AudioManager::class.java)
-    private val speechAttributes: AudioAttributes = AudioAttributes.Builder()
-        .setUsage(AudioAttributes.USAGE_MEDIA)
-        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-        .build()
+    /** Media, spoken word — the loudspeaker, or a headset when one is connected ([ListenAudio]). */
+    private val speechAttributes: AudioAttributes = ListenAudio.attributes()
     private var pausedByFocusLoss = false
     private var hasFocus = false
 
