@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.data.notesimport
 
+import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookID
 import org.junit.Assert.assertEquals
@@ -177,5 +178,35 @@ class LifeBibleImportTest {
             assertFalse("undecoded entity in ${note.title}", entity.containsMatchIn(note.body))
         }
         assertTrue("unresolved: ${result.unresolved.take(5)}", result.unresolved.isEmpty())
+    }
+
+    /**
+     * Genesis 1 has 31 verses. Walking integer keys from 1:30 to 2:2 would pass 1:31…1:999 and 2:0 —
+     * nearly a thousand phantom highlights. It must be exactly the four real verses.
+     */
+    @Test fun aHighlightAcrossAChapterBreakCoversOnlyRealVerses() {
+        val file = html("Genesis${nbsp}1:30-2:2 CSB  #b3e487<br>")
+        val result = ImportedNotes()
+        LifeBibleImport.readHighlights(file, result) { book, chapter ->
+            if (book == BookID.GENESIS && chapter == 1) 31 else 25
+        }
+        assertEquals(listOf(1_001_030, 1_001_031, 1_002_001, 1_002_002), result.highlights.map { it.verse.key })
+        assertTrue(result.highlights.all { it.color == "green" })
+    }
+
+    /** A range over a whole chapter in between, and across a book boundary. */
+    @Test fun versesWalkWholeChaptersAndCrossBooks() {
+        val counts = mapOf(Pair(BookID.GENESIS, 50) to 26, Pair(BookID.EXODUS, 1) to 22, Pair(BookID.EXODUS, 2) to 25)
+        val range = VerseRange.of(ref(BookID.GENESIS, 50, 25), ref(BookID.EXODUS, 2, 1))
+        val keys = LifeBibleImport.verses(range) { book, chapter -> counts[Pair(book, chapter)] ?: 0 }.map { it.key }
+        assertEquals(listOf(1_050_025, 1_050_026) + (1..22).map { 2_001_000 + it } + listOf(2_002_001), keys)
+    }
+
+    /** With no counts, nothing is invented: only the verses the reference names come across. */
+    @Test fun withoutVerseCountsOnlyNamedVersesAreHighlighted() {
+        val across = VerseRange.of(ref(BookID.GENESIS, 1, 30), ref(BookID.GENESIS, 2, 2))
+        assertEquals(listOf(1_001_030, 1_002_001, 1_002_002), LifeBibleImport.verses(across, null).map { it.key })
+        val within = VerseRange.of(ref(BookID.JOHN, 3, 16), ref(BookID.JOHN, 3, 18))
+        assertEquals(listOf(43_003_016, 43_003_017, 43_003_018), LifeBibleImport.verses(within, null).map { it.key })
     }
 }

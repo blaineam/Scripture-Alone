@@ -2,6 +2,11 @@
 
 ## After 1.0.0
 
+- Importing notes from Life Bible or a pasted list no longer invents highlights. A highlight that
+  crossed a chapter break (Genesis 1:30–2:2) was filled in verse by verse through every possible
+  verse number, nearly a thousand verses that don't exist; it now follows the chapter's real
+  length. Six-letter words made of the letters a–f ("decade", "facade") are no longer read as
+  highlight colours, and a catalogue listing with a repeated column no longer crashes the app.
 - Section headings in an online translation's cached chapters keep their words. API.Bible
   chapters were cached with each heading ("Jesus and Nicodemus" in John 3) stored blank, so
   headings vanished once a chapter was read offline; existing caches are discarded and refetched.

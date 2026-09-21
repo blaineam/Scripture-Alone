@@ -80,4 +80,12 @@ struct CatalogLanguageMatchTests {
         #expect(CatalogLanguageMatch.ordered(all, preferred: ["eng"], script: nil).map(\.id)
                 == ["engWEB", "spaRV"])
     }
+
+    /// A caller repeating a code must not crash; the code keeps its first, highest position.
+    @Test func aRepeatedPreferredCodeKeepsItsFirstPosition() {
+        let all = [Self.entry("engWEB", "eng"), Self.entry("spaRV", "spa")]
+        let parts = CatalogLanguageMatch.split(all, preferred: ["spa", "eng", "spa"], script: nil)
+        #expect(parts.mine.map(\.id) == ["spaRV", "engWEB"])
+        #expect(parts.other.isEmpty)
+    }
 }

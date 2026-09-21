@@ -87,4 +87,12 @@ class CatalogLanguageMatchTest {
             CatalogLanguageMatch.ordered(all, preferred = listOf("eng"), script = null).map { it.id },
         )
     }
+
+    /** A caller repeating a code must not crash; the code keeps its first, highest position. */
+    @Test fun aRepeatedPreferredCodeKeepsItsFirstPosition() {
+        val all = listOf(entry("engWEB", "eng"), entry("spaRV", "spa"))
+        val parts = CatalogLanguageMatch.split(all, preferred = listOf("spa", "eng", "spa"), script = null)
+        assertEquals(listOf("spaRV", "engWEB"), parts.mine.map { it.id })
+        assertTrue(parts.other.isEmpty())
+    }
 }

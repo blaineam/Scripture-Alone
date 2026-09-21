@@ -158,4 +158,34 @@ import Testing
         }
         #expect(result.unresolved.isEmpty, "unresolved: \(result.unresolved.prefix(5))")
     }
+
+    /// Genesis 1 has 31 verses. Walking integer keys from 1:30 to 2:2 would pass 1:31…1:999 and 2:0
+    /// — nearly a thousand phantom highlights. It must be exactly the five real verses.
+    @Test func aHighlightAcrossAChapterBreakCoversOnlyRealVerses() {
+        let file = Self.html("Genesis\u{00A0}1:30-2:2 CSB  #b3e487<br>")
+        var result = ImportedNotes()
+        LifeBibleImport.readHighlights(file, verseCount: { $0 == ChapterRef(.genesis, 1) ? 31 : 25 },
+                                       into: &result)
+        #expect(result.highlights.map(\.verse.key) == [1_001_030, 1_001_031, 1_002_001, 1_002_002])
+        #expect(result.highlights.allSatisfy { $0.color == "green" })
+    }
+
+    /// A range over a whole chapter in between, and across a book boundary.
+    @Test func versesWalkWholeChaptersAndCrossBooks() {
+        let counts: (ChapterRef) -> Int = { [ChapterRef(.genesis, 50): 26, ChapterRef(.exodus, 1): 22,
+                                             ChapterRef(.exodus, 2): 25][$0] ?? 0 }
+        let range = VerseRange(VerseRef(.genesis, 50, 25), VerseRef(.exodus, 2, 1))
+        let keys = LifeBibleImport.verses(in: range, verseCount: counts).map(\.key)
+        #expect(keys == [1_050_025, 1_050_026] + (1...22).map { 2_001_000 + $0 } + [2_002_001])
+    }
+
+    /// With no counts, nothing is invented: only the verses the reference names come across.
+    @Test func withoutVerseCountsOnlyNamedVersesAreHighlighted() {
+        let range = VerseRange(VerseRef(.genesis, 1, 30), VerseRef(.genesis, 2, 2))
+        #expect(LifeBibleImport.verses(in: range, verseCount: nil).map(\.key)
+                == [1_001_030, 1_002_001, 1_002_002])
+        let within = VerseRange(VerseRef(.john, 3, 16), VerseRef(.john, 3, 18))
+        #expect(LifeBibleImport.verses(in: within, verseCount: nil).map(\.key)
+                == [43_003_016, 43_003_017, 43_003_018])
+    }
 }

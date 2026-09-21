@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.data.notesimport
 
 import com.blainemiller.scripturealone.data.VerseRange
+import com.blainemiller.scripturealone.data.canon.BookID
 
 /**
  * Reads notes out of text a reader pasted or a spreadsheet they exported, from any app at all.
@@ -32,11 +33,16 @@ object PastedNotesImport {
     private val separators = listOf(",", "\t", ";")
 
     /** @throws NoteImportException [NoteImportError.NOTHING_RECOGNISED] when no reference is found. */
-    fun parse(raw: String): ImportedNotes {
+    /**
+     * @param verseCount how many verses a chapter has, so a highlighted range that crosses a chapter
+     *   break is walked through real verses ([LifeBibleImport.verses]). Without it, only the verses a
+     *   reference names are highlighted.
+     */
+    fun parse(raw: String, verseCount: ((book: BookID, chapter: Int) -> Int)? = null): ImportedNotes {
         val text = raw.replace("\r\n", "\n").replace("\r", "\n").replace('\u00A0', ' ')
         if (text.trimSwiftWhitespaceAndNewlines().isEmpty()) throw NoteImportException(NoteImportError.NOTHING_RECOGNISED)
 
-        var result = if (looksLikeATable(text)) readTable(text) else readBlocks(text)
+        var result = if (looksLikeATable(text)) readTable(text, verseCount) else readBlocks(text)
         // Falling back rather than failing: a table whose references are in none of its columns is
         // better read as prose than reported as empty.
         if (result.isEmpty && looksLikeATable(text)) result = readBlocks(text)
@@ -100,7 +106,7 @@ object PastedNotesImport {
 
     // MARK: Tables
 
-    internal fun readTable(text: String): ImportedNotes {
+    internal fun readTable(text: String, verseCount: ((book: BookID, chapter: Int) -> Int)? = null): ImportedNotes {
         val result = ImportedNotes()
         val separator = bestSeparator(text)
         val rows = rows(text)
@@ -144,11 +150,11 @@ object PastedNotesImport {
             if (body.isEmpty()) {
                 // A row that names a verse and says nothing about it is a highlight when it has a
                 // colour, and a saved verse when it does not.
-                if (swatch != null) appendHighlights(range, swatch, found.translation, result)
+                if (swatch != null) appendHighlights(range, swatch, found.translation, result, verseCount)
                 else result.saved += range
             } else {
                 result.verseNotes += ImportedNotes.Note(range, found.display, body, found.translation)
-                if (swatch != null) appendHighlights(range, swatch, found.translation, result)
+                if (swatch != null) appendHighlights(range, swatch, found.translation, result, verseCount)
             }
         }
         return result
@@ -292,19 +298,35 @@ object PastedNotesImport {
         "gray" to "purple",
     )
 
-    /** A colour cell, as a name or a hex value. Anything else is not a colour. */
+    /**
+     * A colour cell, as a name or a hex value. Anything else is not a colour.
+     *
+     * Hex is accepted only where it cannot be a word: `#rrggbb`, or six bare hex digits with at least
+     * one digit among them (`b3e487`). Six bare *letters* are refused — "facade", "decade", "beaded"
+     * and "accede" are all valid hex and all ordinary English, and a column of notes made of such
+     * words must not be taken for a column of colours.
+     */
     internal fun colour(raw: String): String? {
         val text = raw.trimSwiftWhitespace().lowercase()
         if (text.isEmpty()) return null
-        if (text.startsWith("#") || (text.graphemeCount() == 6 && parseUInt32(text, 16) != null)) {
-            return LifeBibleImport.nearestColor(text)
+        val prefixed = text.startsWith("#")
+        val digits = if (prefixed) text.substring(1) else text
+        if (digits.length == 6 && digits.all { it in "0123456789abcdef" } &&
+            (prefixed || digits.any { it in '0'..'9' })
+        ) {
+            return LifeBibleImport.nearestColor(digits)
         }
         return colourNames[text]
     }
 
-    internal fun appendHighlights(range: VerseRange, colour: String, translation: String?, result: ImportedNotes) {
-        for (key in range.start.key..range.end.key) {
-            val verse = VerseRange.ref(key) ?: continue
+    internal fun appendHighlights(
+        range: VerseRange,
+        colour: String,
+        translation: String?,
+        result: ImportedNotes,
+        verseCount: ((book: BookID, chapter: Int) -> Int)? = null,
+    ) {
+        for (verse in LifeBibleImport.verses(range, verseCount)) {
             result.highlights += ImportedNotes.Highlight(verse, colour, translation)
         }
     }

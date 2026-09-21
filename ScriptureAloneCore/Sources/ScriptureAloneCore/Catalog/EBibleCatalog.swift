@@ -80,10 +80,17 @@ public struct EBibleCatalog: Sendable {
         if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
             throw Failure.http(http.statusCode)
         }
-        guard let text = String(data: data, encoding: .utf8) ?? String(data: data, encoding: .isoLatin1) else {
-            throw Failure.malformed("not text")
-        }
-        return try Self.parse(csv: text)
+        return try Self.parse(csv: Self.decode(data))
+    }
+
+    /// UTF-8, falling back to Latin-1. Latin-1 maps every byte to a character, so this cannot fail
+    /// and there is no "not text" error to report: a response that isn't the catalogue (an HTML
+    /// error page, say) is caught by `parse` instead, which finds none of the columns it needs.
+    static func decode(_ data: Data) -> String {
+        if let text = String(data: data, encoding: .utf8) { return text }
+        var latin1 = String.UnicodeScalarView()
+        latin1.append(contentsOf: data.map { Unicode.Scalar($0) })
+        return String(latin1)
     }
 
     /// Parses the published CSV. Columns are addressed by header name, not position: eBible has
@@ -92,7 +99,9 @@ public struct EBibleCatalog: Sendable {
     public static func parse(csv: String) throws -> [CatalogTranslation] {
         var rows = CSV.rows(in: csv).makeIterator()
         guard let header = rows.next() else { throw Failure.malformed("empty") }
-        let index = Dictionary(uniqueKeysWithValues: header.enumerated().map { ($1, $0) })
+        // First occurrence wins. `uniqueKeysWithValues:` traps on a repeated name, and this is a
+        // file somebody else publishes: a repeated column must not be able to crash the app.
+        let index = Dictionary(header.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
         for required in ["translationId", "languageCode", "title", "Copyright", "Redistributable", "downloadable"]
         where index[required] == nil {
             throw Failure.malformed("no \(required) column")

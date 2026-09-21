@@ -151,4 +151,35 @@ import Testing
         #expect(PastedNotesImport.colour(in: "lavender") == "purple")
         #expect(PastedNotesImport.colour(in: "a note about colour") == nil)
     }
+
+    /// A highlighted range across a chapter break is walked through the verses that exist.
+    @Test func aHighlightedRangeAcrossAChapterBreakCoversOnlyRealVerses() throws {
+        let result = try PastedNotesImport.parse("""
+        Verse,Colour
+        Genesis 1:30-2:2,#b3e487
+        John 1:1,blue
+        """, verseCount: { $0 == ChapterRef(.genesis, 1) ? 31 : 25 })
+        #expect(result.highlights.map(\.verse.key)
+                == [1_001_030, 1_001_031, 1_002_001, 1_002_002, 43_001_001])
+    }
+
+    /// Six hex letters are also ordinary English words. They are not colours; real hex still is.
+    @Test func wordsMadeOfHexLettersAreNotColours() throws {
+        #expect(PastedNotesImport.colour(in: "decade") == nil)
+        #expect(PastedNotesImport.colour(in: "facade") == nil)
+        #expect(PastedNotesImport.colour(in: "beaded") == nil)
+        #expect(PastedNotesImport.colour(in: "#facade") != nil)
+        #expect(PastedNotesImport.colour(in: "b3e487") == "green")
+        #expect(PastedNotesImport.colour(in: "#B3E487") == "green")
+        #expect(PastedNotesImport.colour(in: "#blessed") == nil)
+
+        // A notes column of such words stays a notes column, rather than becoming highlights.
+        let result = try PastedNotesImport.parse("""
+        John 1:1,facade
+        John 1:2,decade
+        John 1:3,beaded
+        """)
+        #expect(result.highlights.isEmpty)
+        #expect(result.verseNotes.map(\.body) == ["facade", "decade", "beaded"])
+    }
 }

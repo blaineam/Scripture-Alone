@@ -167,4 +167,31 @@ class PastedNotesImportTest {
         assertEquals("purple", PastedNotesImport.colour("lavender"))
         assertNull(PastedNotesImport.colour("a note about colour"))
     }
+
+    /** A highlighted range across a chapter break is walked through the verses that exist. */
+    @Test fun aHighlightedRangeAcrossAChapterBreakCoversOnlyRealVerses() {
+        val result = PastedNotesImport.parse(
+            "Verse,Colour\nGenesis 1:30-2:2,#b3e487\nJohn 1:1,blue",
+        ) { book, chapter -> if (book == BookID.GENESIS && chapter == 1) 31 else 25 }
+        assertEquals(
+            listOf(1_001_030, 1_001_031, 1_002_001, 1_002_002, 43_001_001),
+            result.highlights.map { it.verse.key },
+        )
+    }
+
+    /** Six hex letters are also ordinary English words. They are not colours; real hex still is. */
+    @Test fun wordsMadeOfHexLettersAreNotColours() {
+        assertNull(PastedNotesImport.colour("decade"))
+        assertNull(PastedNotesImport.colour("facade"))
+        assertNull(PastedNotesImport.colour("beaded"))
+        assertTrue(PastedNotesImport.colour("#facade") != null)
+        assertEquals("green", PastedNotesImport.colour("b3e487"))
+        assertEquals("green", PastedNotesImport.colour("#B3E487"))
+        assertNull(PastedNotesImport.colour("#blessed"))
+
+        // A notes column of such words stays a notes column, rather than becoming highlights.
+        val result = PastedNotesImport.parse("John 1:1,facade\nJohn 1:2,decade\nJohn 1:3,beaded")
+        assertTrue(result.highlights.isEmpty())
+        assertEquals(listOf("facade", "decade", "beaded"), result.verseNotes.map { it.body })
+    }
 }

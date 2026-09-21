@@ -47,7 +47,9 @@ public enum CatalogLanguageMatch {
         preferred codes: [String] = preferredLanguageCodes(),
         script: String? = preferredScript()
     ) -> (mine: [CatalogTranslation], other: [CatalogTranslation]) {
-        let rank = Dictionary(uniqueKeysWithValues: codes.enumerated().map { ($1, $0) })
+        // First position wins. `preferredLanguageCodes()` never repeats a code, but a caller may,
+        // and `uniqueKeysWithValues:` would trap on it.
+        let rank = Dictionary(codes.enumerated().map { ($1, $0) }, uniquingKeysWith: { first, _ in first })
         var mine: [CatalogTranslation] = []
         var other: [CatalogTranslation] = []
         for entry in entries {

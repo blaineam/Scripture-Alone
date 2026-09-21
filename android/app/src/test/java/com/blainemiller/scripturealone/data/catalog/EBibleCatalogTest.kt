@@ -98,4 +98,12 @@ class EBibleCatalogTest {
         val csv = header + "\r\n" + row() + "\r\n"
         assertEquals(1, EBibleCatalog.parse(csv).size)
     }
+
+    /** A repeated column name keeps its first occurrence, as Swift now does, rather than failing. */
+    @Test fun aRepeatedColumnKeepsTheFirst() {
+        val header = header + ",\"title\""
+        val row = row() + ",\"A Later Title\""
+        val entry = requireNotNull(EBibleCatalog.parse(header + "\n" + row).firstOrNull())
+        assertEquals("World English Bible", entry.title)
+    }
 }

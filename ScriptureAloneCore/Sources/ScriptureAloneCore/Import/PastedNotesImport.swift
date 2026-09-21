@@ -22,7 +22,11 @@ import Foundation
 /// be shown exactly what did not come across.
 public enum PastedNotesImport {
 
-    public static func parse(_ raw: String) throws -> ImportedNotes {
+    /// - Parameter verseCount: how many verses a chapter has, so a highlighted range that crosses a
+    ///   chapter break is walked through real verses (`LifeBibleImport.verses(in:verseCount:)`).
+    ///   Without it, only the verses a reference names are highlighted.
+    public static func parse(_ raw: String,
+                             verseCount: ((ChapterRef) -> Int)? = nil) throws -> ImportedNotes {
         let text = raw.replacingOccurrences(of: "\r\n", with: "\n")
             .replacingOccurrences(of: "\r", with: "\n")
             .replacingOccurrences(of: "\u{00A0}", with: " ")
@@ -30,7 +34,7 @@ public enum PastedNotesImport {
             throw NoteImportError.nothingRecognised
         }
 
-        var result = looksLikeATable(text) ? readTable(text) : readBlocks(text)
+        var result = looksLikeATable(text) ? readTable(text, verseCount: verseCount) : readBlocks(text)
         // Falling back rather than failing: a table whose references are in none of its columns is
         // better read as prose than reported as empty.
         if result.isEmpty, looksLikeATable(text) { result = readBlocks(text) }
@@ -89,7 +93,7 @@ public enum PastedNotesImport {
 
     // MARK: Tables
 
-    static func readTable(_ text: String) -> ImportedNotes {
+    static func readTable(_ text: String, verseCount: ((ChapterRef) -> Int)? = nil) -> ImportedNotes {
         var result = ImportedNotes()
         let separator = bestSeparator(text)
         let rows = rows(in: text, separator: separator)
@@ -135,7 +139,8 @@ public enum PastedNotesImport {
                 // A row that names a verse and says nothing about it is a highlight when it has a
                 // colour, and a saved verse when it does not.
                 if let swatch {
-                    appendHighlights(range, colour: swatch, translation: found.translation, to: &result)
+                    appendHighlights(range, colour: swatch, translation: found.translation,
+                                     verseCount: verseCount, to: &result)
                 } else {
                     result.saved.append(range)
                 }
@@ -143,7 +148,8 @@ public enum PastedNotesImport {
                 result.verseNotes.append(ImportedNotes.Note(range: range, title: found.display,
                                                             body: body, translation: found.translation))
                 if let swatch {
-                    appendHighlights(range, colour: swatch, translation: found.translation, to: &result)
+                    appendHighlights(range, colour: swatch, translation: found.translation,
+                                     verseCount: verseCount, to: &result)
                 }
             }
         }
@@ -278,11 +284,20 @@ public enum PastedNotesImport {
     }
 
     /// A colour cell, as a name or a hex value. Anything else is not a colour.
+    ///
+    /// Hex is accepted only where it cannot be a word: `#rrggbb`, or six bare hex digits with at
+    /// least one digit among them (`b3e487`). Six bare *letters* are refused — "facade", "decade",
+    /// "beaded" and "accede" are all valid hex and all ordinary English, and a column of notes made
+    /// of such words must not be taken for a column of colours.
     static func colour(in raw: String) -> String? {
         let text = raw.trimmingCharacters(in: .whitespaces).lowercased()
         guard !text.isEmpty else { return nil }
-        if text.hasPrefix("#") || (text.count == 6 && UInt32(text, radix: 16) != nil) {
-            return LifeBibleImport.nearestColor(toHex: text)
+        let prefixed = text.hasPrefix("#")
+        let digits = prefixed ? String(text.dropFirst()) : text
+        // ASCII only: `Character.isHexDigit` also admits full-width forms no hex parser reads.
+        if digits.count == 6, digits.allSatisfy({ "0123456789abcdef".contains($0) }),
+           prefixed || digits.contains(where: { "0123456789".contains($0) }) {
+            return LifeBibleImport.nearestColor(toHex: digits)
         }
         // Names people and apps actually use, mapped onto the five this app has.
         let names: [String: String] = [
@@ -297,9 +312,9 @@ public enum PastedNotesImport {
     }
 
     static func appendHighlights(_ range: VerseRange, colour: String, translation: String?,
+                                 verseCount: ((ChapterRef) -> Int)? = nil,
                                  to result: inout ImportedNotes) {
-        for key in stride(from: range.start.key, through: range.end.key, by: 1) {
-            guard let verse = VerseRef(key: key) else { continue }
+        for verse in LifeBibleImport.verses(in: range, verseCount: verseCount) {
             result.highlights.append(ImportedNotes.Highlight(verse: verse, color: colour,
                                                              translation: translation))
         }

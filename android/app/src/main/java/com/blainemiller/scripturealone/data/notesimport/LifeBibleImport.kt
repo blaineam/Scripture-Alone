@@ -2,6 +2,7 @@ package com.blainemiller.scripturealone.data.notesimport
 
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.data.canon.BookID
 import com.blainemiller.scripturealone.data.keepsake.ZipArchive
 import com.blainemiller.scripturealone.data.reference.ReferenceParser
 import java.nio.ByteBuffer
@@ -40,7 +41,13 @@ object LifeBibleImport {
 
     // MARK: Reading the archive
 
-    fun read(archive: ByteArray): ImportedNotes {
+    /**
+     * @param verseCount how many verses a chapter has, in the reader's own translation. It is what
+     *   lets a highlight spanning a chapter break (Genesis 1:30–2:2) be walked through real verses —
+     *   see [verses]. Without it, or where it answers 0, nothing is invented: only the verses the
+     *   reference itself names are highlighted.
+     */
+    fun read(archive: ByteArray, verseCount: ((book: BookID, chapter: Int) -> Int)? = null): ImportedNotes {
         // The Swift reader indexes lazily and skips an entry that fails to inflate; ZipArchive inflates
         // everything up front and refuses the whole archive instead. Either way the reader is told the
         // file couldn't be opened rather than being handed half of it silently.
@@ -65,7 +72,7 @@ object LifeBibleImport {
 
             when (leaf.lowercase()) {
                 "verse-notes.html" -> { sawKnownFile = true; readVerseNotes(html, result) }
-                "highlights.html" -> { sawKnownFile = true; readHighlights(html, result) }
+                "highlights.html" -> { sawKnownFile = true; readHighlights(html, result, verseCount) }
                 "saves-in-this-folder.html" -> { sawKnownFile = true; readSaves(html, result) }
                 else -> {
                     // A journal entry. Its folder path is kept in the title so a reader who organised
@@ -114,7 +121,7 @@ object LifeBibleImport {
     private const val WS = """[\t\n\f\r\p{Z}]"""   // ICU's \s, which NSRegularExpression uses; Java's \s is ASCII
     private val wordOffsets = Regex("""$WS+words?:$WS*\p{Nd}+(-\p{Nd}+)?$""")
 
-    internal fun readHighlights(html: String, result: ImportedNotes) {
+    internal fun readHighlights(html: String, result: ImportedNotes, verseCount: ((book: BookID, chapter: Int) -> Int)? = null) {
         for (line in lines(body(html))) {
             val text = text(line)
             if (text.isEmpty()) continue
@@ -141,11 +148,56 @@ object LifeBibleImport {
             val color = nearestColor(hex)
             // One row per verse: a Life Bible highlight spanning verses exports as one line each, but
             // a range would still be meaningful and is expanded rather than truncated.
-            for (key in range.start.key..range.end.key) {
-                val verse = VerseRange.ref(key) ?: continue
+            for (verse in verses(range, verseCount)) {
                 result.highlights += ImportedNotes.Highlight(verse, color, translation)
             }
         }
+    }
+
+    /**
+     * The real verses a range covers, for expanding a highlight into one row per verse.
+     *
+     * **Not every integer key between the ends.** Keys are `book·10⁶ + chapter·10³ + verse`, so
+     * counting from Genesis 1:30 to 2:2 by one passes 1:31…1:999 and 2:0 — nearly a thousand verses
+     * that do not exist, each of which became a highlight. This walks a chapter to its last verse and
+     * carries on at verse 1 of the next, which crosses a book boundary correctly too.
+     *
+     * Verses the reference names itself — its start verse, and everything up to its end verse in the
+     * end chapter — are always kept, even past [verseCount]: versifications differ, and the reader's
+     * translation disagreeing about a verse is no reason to drop a highlight they made. Only the verses
+     * *filled in* between depend on the counts, and where a count is unknown (no function, or 0 for a
+     * chapter the translation lacks) none are filled in for that chapter.
+     */
+    internal fun verses(range: VerseRange, verseCount: ((book: BookID, chapter: Int) -> Int)?): List<VerseRef> {
+        val start = range.start
+        val end = range.end
+        val out = ArrayList<VerseRef>()
+        var book = BookID.of(start.book) ?: return out
+        var chapter = start.chapter
+        while (true) {
+            val isFirst = book.number == start.book && chapter == start.chapter
+            val isLast = book.number == end.book && chapter == end.chapter
+            val from = if (isFirst) start.verse else 1
+            val known = verseCount?.invoke(book, chapter) ?: 0
+            val through = when {
+                isLast -> end.verse
+                known > 0 -> maxOf(known, if (isFirst) from else 0)
+                // Unknown length: the start verse was named, so it is real; nothing after it is known.
+                isFirst -> from
+                else -> 0
+            }
+            for (verse in from..through) out += VerseRef(book.number, chapter, verse)
+            if (isLast) break
+            // `ChapterRef.next` in Swift: the next chapter, or the first of the next book.
+            if (chapter < book.chapterCount) {
+                chapter += 1
+            } else {
+                book = BookID.of(book.number + 1) ?: break
+                chapter = 1
+            }
+            if (book.number > end.book || (book.number == end.book && chapter > end.chapter)) break
+        }
+        return out
     }
 
     internal fun readSaves(html: String, result: ImportedNotes) {

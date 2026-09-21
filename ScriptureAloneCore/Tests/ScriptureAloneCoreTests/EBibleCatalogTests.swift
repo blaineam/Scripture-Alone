@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import ScriptureAloneCore
 
@@ -90,5 +91,20 @@ struct EBibleCatalogTests {
     @Test func toleratesCRLFAndATrailingNewline() throws {
         let csv = (Self.header + "\r\n" + Self.row() + "\r\n")
         #expect(try EBibleCatalog.parse(csv: csv).count == 1)
+    }
+
+    /// A catalogue we do not control repeating a column name must not crash the app. The first
+    /// occurrence is the one read, which is what the Android port does too.
+    @Test func aRepeatedColumnKeepsTheFirst() throws {
+        let header = Self.header + ",\"title\""
+        let row = Self.row() + ",\"A Later Title\""
+        let entry = try #require(try EBibleCatalog.parse(csv: header + "\n" + row).first)
+        #expect(entry.title == "World English Bible")
+    }
+
+    /// Latin-1 decodes any bytes, so the fallback always yields text; there is no "not text" case.
+    @Test func decodesUTF8AndFallsBackToLatin1() {
+        #expect(EBibleCatalog.decode(Data("Reina–Valera".utf8)) == "Reina–Valera")
+        #expect(EBibleCatalog.decode(Data([0x52, 0xE9, 0x76, 0xFF])) == "R\u{E9}v\u{FF}")
     }
 }

@@ -88,8 +88,10 @@ object EBibleCatalog {
             val status = connection.responseCode
             if (status !in 200 until 300) throw Failure.Http(status)
             val data = connection.inputStream.use { it.readBytes() }
-            // UTF-8, falling back to Latin-1, which decodes any bytes at all — so "not text" cannot
-            // actually happen, in Swift or here.
+            // UTF-8, falling back to Latin-1, which decodes any bytes at all — so there is no "not
+            // text" failure to report. Swift's `EBibleCatalog.decode` is the same, now that its
+            // unreachable `malformed("not text")` is gone; a response that isn't the catalogue is
+            // caught by `parse`, which finds none of the columns it needs.
             val text = decodeStrictUtf8(data) ?: String(data, Charsets.ISO_8859_1)
             return parse(text)
         } finally {
@@ -118,12 +120,10 @@ object EBibleCatalog {
         val rows = CSV.rows(csv).iterator()
         if (!rows.hasNext()) throw Failure.Malformed("empty")
         val header = rows.next()
-        // Swift builds this with `Dictionary(uniqueKeysWithValues:)`, which traps on a repeated column
-        // name. A catalogue we don't control must not crash the app, so here it is refused instead.
+        // First occurrence wins, as in Swift. A catalogue we don't control repeating a column name
+        // must neither crash the app nor take the whole catalogue down with it.
         val index = HashMap<String, Int>()
-        for ((i, name) in header.withIndex()) {
-            if (index.put(name, i) != null) throw Failure.Malformed("a repeated $name column")
-        }
+        for ((i, name) in header.withIndex()) index.putIfAbsent(name, i)
         for (required in requiredColumns) {
             if (required !in index) throw Failure.Malformed("no $required column")
         }

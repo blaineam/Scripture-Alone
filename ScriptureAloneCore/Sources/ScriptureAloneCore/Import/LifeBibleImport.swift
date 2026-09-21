@@ -31,7 +31,12 @@ public enum LifeBibleImport {
 
     // MARK: Reading the archive
 
-    public static func read(archive data: Data) throws -> ImportedNotes {
+    /// - Parameter verseCount: how many verses a chapter has, in the reader's own translation. It is
+    ///   what lets a highlight spanning a chapter break (Genesis 1:30–2:2) be walked through real
+    ///   verses — see `verses(in:verseCount:)`. Without it, or where it answers 0, nothing is
+    ///   invented: only the verses the reference itself names are highlighted.
+    public static func read(archive data: Data,
+                            verseCount: ((ChapterRef) -> Int)? = nil) throws -> ImportedNotes {
         let zip: ZipReader
         do { zip = try ZipReader(data: data) } catch { throw NoteImportError.notAnArchive }
 
@@ -51,7 +56,7 @@ public enum LifeBibleImport {
                 readVerseNotes(html, into: &result)
             case "highlights.html":
                 sawKnownFile = true
-                readHighlights(html, into: &result)
+                readHighlights(html, verseCount: verseCount, into: &result)
             case "saves-in-this-folder.html":
                 sawKnownFile = true
                 readSaves(html, into: &result)
@@ -88,7 +93,8 @@ public enum LifeBibleImport {
         }
     }
 
-    static func readHighlights(_ html: String, into result: inout ImportedNotes) {
+    static func readHighlights(_ html: String, verseCount: ((ChapterRef) -> Int)? = nil,
+                               into result: inout ImportedNotes) {
         for line in lines(in: body(of: html)) {
             let text = text(of: line)
             guard !text.isEmpty else { continue }
@@ -112,12 +118,48 @@ public enum LifeBibleImport {
             let color = nearestColor(toHex: hex)
             // One row per verse: a Life Bible highlight spanning verses exports as one line each,
             // but a range would still be meaningful and is expanded rather than truncated.
-            for key in stride(from: range.start.key, through: range.end.key, by: 1) {
-                guard let verse = VerseRef(key: key) else { continue }
+            for verse in verses(in: range, verseCount: verseCount) {
                 result.highlights.append(ImportedNotes.Highlight(verse: verse, color: color,
                                             translation: reference.translation))
             }
         }
+    }
+
+    /// The real verses a range covers, for expanding a highlight into one row per verse.
+    ///
+    /// **Not every integer key between the ends.** Keys are `book·10⁶ + chapter·10³ + verse`, so
+    /// counting from Genesis 1:30 to 2:2 by one passes 1:31…1:999 and 2:0 — nearly a thousand
+    /// verses that do not exist, each of which became a highlight. This walks a chapter to its last
+    /// verse and carries on at verse 1 of the next, which crosses a book boundary correctly too.
+    ///
+    /// Verses the reference names itself — its start verse, and everything up to its end verse in
+    /// the end chapter — are always kept, even past `verseCount`: versifications differ, and the
+    /// reader's translation disagreeing about a verse is no reason to drop a highlight they made.
+    /// Only the verses *filled in* between depend on the counts, and where a count is unknown (no
+    /// closure, or 0 for a chapter the translation lacks) none are filled in for that chapter.
+    static func verses(in range: VerseRange, verseCount: ((ChapterRef) -> Int)?) -> [VerseRef] {
+        let first = range.start.chapterKey, last = range.end.chapterKey
+        var out: [VerseRef] = []
+        var chapter = first
+        while true {
+            let isFirst = chapter == first, isLast = chapter == last
+            let from = isFirst ? range.start.verse : 1
+            let through: Int
+            if isLast {
+                through = range.end.verse
+            } else if let known = verseCount?(chapter), known > 0 {
+                through = max(known, isFirst ? from : 0)
+            } else {
+                // Unknown length: the start verse was named, so it is real; nothing after it is known.
+                through = isFirst ? from : 0
+            }
+            if from <= through {
+                for verse in from...through { out.append(VerseRef(chapter.book, chapter.chapter, verse)) }
+            }
+            guard !isLast, let next = chapter.next, next <= last else { break }
+            chapter = next
+        }
+        return out
     }
 
     static func readSaves(_ html: String, into result: inout ImportedNotes) {

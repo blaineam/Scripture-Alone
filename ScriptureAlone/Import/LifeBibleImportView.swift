@@ -16,6 +16,7 @@ import UniformTypeIdentifiers
 /// sure whether the import worked can simply do it again.
 struct LifeBibleImportView: View {
     @Environment(\.modelContext) private var context
+    @Environment(ReaderModel.self) private var model
     @Environment(\.dismiss) private var dismiss
 
     @State private var picking = false
@@ -228,9 +229,17 @@ struct LifeBibleImportView: View {
 
     // MARK: Work
 
+    /// Chapter lengths from the translation open in the reader, so a highlight imported as a range
+    /// across a chapter break covers the verses that exist rather than every number in between. With
+    /// no translation open the importers fall back to highlighting only the verses a range names.
+    private var verseCount: ((ChapterRef) -> Int)? {
+        guard let source = model.source else { return nil }
+        return { source.verseCount($0) }
+    }
+
     private func readPasted() {
         do {
-            found = try PastedNotesImport.parse(pasted)
+            found = try PastedNotesImport.parse(pasted, verseCount: verseCount)
             pasting = false
             pasted = ""
         } catch {
@@ -247,10 +256,10 @@ struct LifeBibleImportView: View {
             // A zip is a Life Bible export; anything else is text somebody exported from
             // elsewhere, read by shape rather than by which app wrote it.
             if url.pathExtension.lowercased() == "zip" {
-                found = try LifeBibleImport.read(archive: data)
+                found = try LifeBibleImport.read(archive: data, verseCount: verseCount)
             } else if let text = String(data: data, encoding: .utf8)
                         ?? String(data: data, encoding: .isoLatin1) {
-                found = try PastedNotesImport.parse(text)
+                found = try PastedNotesImport.parse(text, verseCount: verseCount)
             } else {
                 failure = NoteImportError.nothingRecognised.localizedDescription
             }
