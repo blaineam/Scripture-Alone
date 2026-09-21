@@ -85,7 +85,7 @@ val syncBundledData by tasks.registering(Sync::class) {
     val iosResources = rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources")
     from(iosResources) {
         // The publisher key is what the ASV's signature is checked against — the key the iOS build pins.
-        include("Bibles/*.sqlite", "Study/*.sqlite", "Packages/*.sabible", "Packages/bundled-signing.pub")
+        include("Bibles/*.sqlite", "Study/*.sqlite", "Study/Basemap.bin", "Packages/*.sabible", "Packages/bundled-signing.pub")
         // The ASV ships sealed as ASV.sabible; the plaintext store is only the packaging tool's input.
         exclude("Bibles/ASV.sqlite")
         eachFile { path = name }          // flatten, as the iOS bundle does

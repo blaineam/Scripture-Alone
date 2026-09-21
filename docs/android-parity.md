@@ -24,7 +24,7 @@ how each Apple-only piece is replaced. Update the Status column in the same comm
 |---|---|---|
 | Language / UI | Kotlin, Jetpack Compose, Material 3 as a base with a custom design system | Idiomatic Android; the custom layer carries the iOS look |
 | Bundled SQLite | `androidx.sqlite:sqlite-bundled` | **Android's own SQLite has no FTS5** — verified, `no such module: fts5` — and every Bible database searches with it |
-| User data | Room | Highlights, notes, favorites — the SwiftData models, relational |
+| User data | Plain SQLite over the bundled driver (`data/userdata/`) | Highlights, notes, favorites — the SwiftData models as three tables. Chosen over Room: three small tables need no ORM, the bundled driver is already in the app for FTS5, and the store runs unchanged on the JVM through JDBC (`UserDatabase`), with no KSP in the build |
 | Settings | DataStore (Preferences) | The UserDefaults `reader.*` keys |
 | Crypto | JCA (AES-GCM, HMAC, PBKDF2) + Tink (Ed25519, HKDF) + Android Keystore | API 29 has no platform Ed25519; Keystore replaces the Secure Enclave |
 | Background work | WorkManager | Family-share refresh, catalogue downloads |
@@ -105,12 +105,12 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 ### Highlights, notes, favorites
 | Feature | Status | Notes |
 |---|---|---|
-| Selection bar | ⬜ | |
-| Highlights, five colors | ⬜ | Room |
-| Notes with multiple anchors, inline markers, Notes panel | ⬜ | |
-| Favorites | ⬜ | |
+| Selection bar | ✅ | `ui/reader/SelectionBar.kt`: tap a verse to select or deselect it, long-press to extend the selection to it; selected verses get iOS's thick dotted accent underline. Same controls, order and labels as `SelectionBar.swift` (reference, Listen, Clear; five colours, Remove Highlight, divider, Favorite, Add Note, Copy, Original Language for one verse, Share). Listen and Original Language are callbacks (`SelectionActions`), inert until Listen and Study are wired; Study and Compare Translations… likewise (`ReaderScreen` parameters). Share offers Share Image… (disabled until the designer exists), Share Text, Copy Link, and Share Link… for Android's share sheet |
+| Highlights, five colors | ✅ | iOS names and palette (yellow F7D154, green 8CD48A, blue 7FB8F0, pink F29BB8, purple B9A2EC at 42% / 34% dark), full-line-height fills with the gap between same-coloured verses filled, newest wins; the eraser removes. Drawn over the text, so marking never re-typesets. Survive relaunch (verified) |
+| Notes with multiple anchors, inline markers, Notes panel | ✅ | `ui/notes/`: the panel as a sheet (All Notes / This Chapter / Favorites, search by words or a passage, New Note, long-press Delete) and the editor (title, passages with add-by-typing and Add Selection, body, created/edited, Share Note, Delete Note with confirmation). `text.bubble.fill` marker after an anchor's last verse; tapping it opens the popover with Open Note. `Note` maps 1:1 onto `KeepsakeNote` (tested). Not yet: camera slide capture and Export… in the panel |
+| Favorites | ✅ | Heart in the selection bar (filled when every range is a favorite; toggles as iOS), Favorites scope in the Notes panel with each passage's text in the current translation, tap to open, long-press Delete |
 | Export: PDF, Markdown, Markdown folder, plain text | 🔧 | Markdown and text ported (`NotesTextExport.kt`), with the publisher notice on every export. PDF (`android.graphics.pdf.PdfDocument`) and the sheet not yet built |
-| Quotation-limit gate on copy and share | 🔧 | `TranslationRights.mayQuote` ported (500 for licensed text); copy/share UI not yet gated |
+| Quotation-limit gate on copy and share | ✅ | Copy asks `permits(COPY)` and `mayQuote`, Share `mayQuote` (and `permits(SHARE)` for text and links); disabled, not hidden, with iOS's notice beneath. The bundled three are public domain, so the notice is unit-tested rather than seen |
 
 ### Camera notes
 | Feature | Status | Notes |
@@ -133,23 +133,23 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 ### Study
 | Feature | Status | Notes |
 |---|---|---|
-| Study panel following the tapped verse, back trail | ⬜ | Side pane on tablets, bottom sheet on phones |
-| Cross references ranked by votes, preview | 🔧 | Store done, from bundled `CrossReferences.sqlite`, matching the pack exactly; UI not yet |
-| Commentary: Calvin, Gill, JFB, with links | 🔧 | Store done; all 3,192 bodies inflate; UI not yet |
-| Original languages: word, translit, parsing, Strong's, lexicon | 🔧 | Store done; all 443,625 words checked against the BSB text; UI not yet |
-| Context: overview, map, timeline, charts | ⬜ | |
-| Map drawn on a Canvas from `Basemap.bin` | 🔧 | `data/context/Basemap.kt` reads the shipped `Basemap.bin` (tested). Canvas drawing and `ContextStore` not yet ported |
-| Compare two translations | ⬜ | |
+| Study panel following the tapped verse, back trail | ✅ | `ui/study/`: a 45%/full-height bottom sheet on phones that leaves the text live behind it, a 380 dp side pane from 700 dp wide (checked on `haven_tablet`). Opened from the top bar's Study button and the selection bar's Original Language; follows the selected verse; cross-reference and commentary-link jumps leave a back trail. About Study Resources lists every source's licence |
+| Cross references ranked by votes, preview | ✅ | Strongest six, then OT/NT in canonical order, Show All past 40, strength meter, text in the current translation (an online translation previews only what it has cached — never a request). Long-press Copy asks `TranslationRights` first |
+| Commentary: Calvin, Gill, JFB, with links | ✅ | Source picker (persisted as `study.commentarySource`), chapter introduction, references in the text are links that jump. Bundled, not an on-demand pack as on iOS |
+| Original languages: word, translit, parsing, Strong's, lexicon | ✅ | A fourth Study tab (iOS opens it as its own sheet). Always resolved against the BSB's text, with iOS's notice when another translation is open; STEPBible's required attribution lines always shown beneath the words |
+| Context: overview, map, timeline, charts | ✅ | `data/context/ContextStore.kt` ported with every `ContextStoreTests.swift` case (plus chart-decoding guards). When (era band, events), Where (map, places, place detail), Charts (kings, journeys with routes, tribes, feasts), full timeline, large map with place search, Sources & Credits — pushed inside the panel rather than opened in a separate window |
+| Map drawn on a Canvas from `Basemap.bin` | ✅ | `ui/study/BibleMap.kt`: the iOS projection, camera, coarse/fine switch, rivers by rank, collision-free priority labels, authored labels, routes with arrows; pan, pinch, +/−/fit, tap a place. `Basemap.bin` added to `syncBundledData` |
+| Compare two translations | ✅ | `ui/translations/CompareSheet.kt`, from the translation menu: any two of bundled, imported and online; one-sided verses tinted |
 
 ### Translations
 | Feature | Status | Notes |
 |---|---|---|
-| Translations screen | ⬜ | |
-| eBible.org catalogue (16-ID allowlist) | 🔧 | `data/catalog/`: CSV parse, curation (same 16 allowed / 13 excluded IDs), language matching — 25 tests. Download UI not yet built |
-| Import USFM zip / DRM-free ePub, with DRM refusal | 🔧 | `data/importer/`: all 57 Swift tests ported; stores byte-identical to the Swift engine's on the ASV/BSB/KJV USFM zips. File picker and import UI not yet built |
-| Online ESV and API.Bible with the reader's key | 🔧 | `data/online/`: HTML parsing and the chapter cache with Crossway's 500-verse ceiling, LRU eviction and VACUUM on clear (24 tests, incl. real captured responses). Networking and key entry not yet built |
+| Translations screen | ✅ | `ui/translations/TranslationsSheet.kt`, from the translation menu's Manage Translations…: Included, Online, Added by You (remove), Add a Translation, and About This Translation with what its rights allow. Imported and online translations join the reader's switcher through `BundledTranslations` / `data/translations/TranslationLibrary.kt` |
+| eBible.org catalogue (16-ID allowlist) | ✅ | Browse, search, download over `HttpURLConnection` with progress, import under the catalogue's identity (`importIdentity`, tested). Verified live on the emulator: WEB downloaded, 66 books / 31,098 verses, the Luke 17:36 and Acts gaps reported, then read in the reader. Found and fixed: the live CSV starts with a BOM, which made the catalogue fail on Android |
+| Import USFM zip / DRM-free ePub, with DRM refusal | 🔧 | Storage Access Framework picker, copy to cache, import, coverage report; DRM refusal is the engine's (`BibleImportError.ProtectedByDRM`), shown in an alert. The picker itself was not exercised on the emulator (no file on it); everything after the copy is the path the catalogue verified |
+| Online ESV and API.Bible with the reader's key | 🔧 | `ESVClient`/`APIBibleClient` ported (same endpoints, params, errors) over an `HttpTransport` seam; `OnlineChapterLoader` fetches → `OnlineChapterCache` (500-verse ceiling) → reads back as a `Chapter` the reader renders. 15 tests through a fake transport with the captured responses. Key entry, Keystore-sealed storage (verified: only ciphertext on disk, nothing in logcat), and the ESV entry appearing and leaving with the key, verified on the emulator. **Never run against the live services** (no key) |
 | Keys synced across the reader's devices | ⬜ | Block Store |
-| Translation rights gate | 🔧 | `data/rights/`: the same rule as iOS (licence line or a package's signed policy, expiry) — tested; not yet asked by the UI |
+| Translation rights gate | 🔧 | `data/rights/`: the same rule as iOS (licence line or a package's signed policy, expiry) — tested. `TranslationInfo.rights` carries it; the selection bar and Study's cross-reference Copy ask it; online text is licensed (500-verse quotation, no hand-off); an import's unknown licence behaves as licensed. Export and hand-off gates come with those features |
 | `.sabible` reader: signature, per-chapter AES-GCM | ✅ | All 1,189 ASV chapters decrypt to exactly `ASV.sqlite` (31,086 verses, 0 mismatches); tamper, rebinding and wrong-key tests. Tink for Ed25519. |
 | `.sabible` sealed search index | ⬜ | Header's index entries are signature-covered but not yet bounds-checked or read |
 | Content key wrapped by Android Keystore | ⬜ | Derived from the published seed and held in memory for now |
@@ -167,8 +167,8 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Feature | Status | Notes |
 |---|---|---|
 | Verse image designer: 8 templates, 3 aspects | ⬜ | |
-| Share links, same format as iOS | 🔧 | `data/share/ShareLink.kt`: payload, passage composer, decoder; encodes byte-for-byte as Swift does (tested). Share sheet and card UI not yet built |
-| Deep links `scripturealone://` | 🔧 | `AppLink.parse` handles `open?ref=` and `#s=` links; intent filter and navigation not yet wired |
+| Share links, same format as iOS | 🔧 | `data/share/ShareLink.kt`: payload, passage composer, decoder; encodes byte-for-byte as Swift does (tested). Copy Link / Share Link… from the selection bar (red letters converted with `ShareVerse.fromScalars`); an opened link shows its passage on a simple Parchment card. The designer's templates, typefaces and aspects are not built, so links carry none |
+| Deep links `scripturealone://` | ✅ | Intent filter for the custom scheme (`singleTop`, so a link reaches the open reader). `open?ref=` goes to the passage and selects it, across a chapter break too; `#s=` also shows the card. The https share page is deliberately not claimed as an App Link |
 
 ### Widgets and Wear OS
 | Feature | Status | Notes |
@@ -183,7 +183,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Feature | Status | Notes |
 |---|---|---|
 | Launcher icon: the iOS icon as an adaptive icon, with a themed-icon silhouette | ✅ | Rendered from `AppIcon.icon` by `android/tools/render_launcher_icon.py` (Icon Composer's `ictool`); rerun it when the icon changes |
-| Appearance sheet, About, About This Translation | ⬜ | |
+| Appearance sheet, About, About This Translation | 🔧 | About This Translation is in the Translations screen; the Appearance sheet and About not yet |
 | Feedback and rating | ⬜ | Play in-app review |
 | TalkBack labels, font scale, keyboard shortcuts | ⬜ | |
 | English only | ⬜ | Matches iOS |

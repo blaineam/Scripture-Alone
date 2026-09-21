@@ -1,0 +1,210 @@
+package com.blainemiller.scripturealone.ui.notes
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.data.userdata.Favorite
+import com.blainemiller.scripturealone.data.userdata.Note
+import com.blainemiller.scripturealone.data.userdata.NoteSearch
+import com.blainemiller.scripturealone.ui.favorites.FavoritesSection
+import com.blainemiller.scripturealone.ui.reader.ReaderIcons
+import com.blainemiller.scripturealone.ui.reader.ReaderPalette
+import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+/** The panel's scopes — `NotesPanel.Scope`, in the same order and wording. */
+enum class NotesScope(val title: String) { ALL("All Notes"), CHAPTER("This Chapter"), FAVORITES("Favorites") }
+
+/**
+ * Every note, searchable, filterable to the chapter on screen, with the reader's favorites as a third
+ * scope — `ScriptureAlone/Notes/NotesPanel.swift`. On iPhone it is a sheet over the text; so it is
+ * here. A note opens in [NoteEditor] within the same sheet, as iOS pushes it onto the panel's stack;
+ * [openNote] is that stack, hoisted so Add Note in the selection bar can open straight onto a note.
+ *
+ * Not yet: New Note from a camera slide and the Export menu, which belong to later slices.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun NotesPanel(
+    model: ReaderViewModel,
+    palette: ReaderPalette,
+    notes: List<Note>,
+    favorites: List<Favorite>,
+    openNote: String?,
+    onOpenNoteChange: (String?) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val keyboard = LocalSoftwareKeyboardController.current
+    var search by rememberSaveable { mutableStateOf("") }
+    var scope by rememberSaveable { mutableStateOf(NotesScope.ALL) }
+
+    fun dismiss() {
+        keyboard?.hide()
+        onDismiss()
+    }
+
+    val editing = openNote?.let { id -> notes.firstOrNull { it.id.toString() == id } }
+    BackHandler { if (openNote != null) onOpenNoteChange(null) else dismiss() }
+
+    Column(
+        Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.statusBars)
+            .padding(top = 10.dp)
+            .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+            .background(PanelColors.background(palette))
+            .clickable(interactionSource = null, indication = null) {},
+    ) {
+        if (openNote != null) {
+            if (editing != null) {
+                NoteEditor(model, palette, editing, onBack = { onOpenNoteChange(null) }, onClose = ::dismiss)
+            } else {
+                PanelHeader("Note", palette, back = true, onLeading = { onOpenNoteChange(null) })
+                EmptyState(ReaderIcons.NoteText, "Note Deleted", "", palette)
+            }
+            return@Column
+        }
+
+        PanelHeader("Notes", palette, back = false, onLeading = ::dismiss) {
+            PanelHeaderIcon(ReaderIcons.SquareAndPencil, "New Note", palette) {
+                onOpenNoteChange(model.newNote().id.toString())
+            }
+        }
+        PanelSearchField(
+            search, if (scope == NotesScope.FAVORITES) "Search favorites or a passage" else "Search notes or a passage",
+            palette, onChange = { search = it },
+        )
+        Spacer(Modifier.height(12.dp))
+        Segmented(NotesScope.entries, scope, { it.title }, palette) { scope = it }
+        Spacer(Modifier.height(12.dp))
+
+        val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        if (scope == NotesScope.FAVORITES) {
+            FavoritesSection(model, palette, favorites, search, bottom, onOpened = ::dismiss)
+            return@Column
+        }
+
+        val location = model.location
+        val verseCount = { book: com.blainemiller.scripturealone.data.canon.BookID, chapter: Int ->
+            model.verseCount(ChapterRef(book.number, chapter))
+        }
+        val filtered = notes.filter { note ->
+            (scope == NotesScope.ALL || note.touches(location)) && NoteSearch.matches(note, search, verseCount)
+        }
+        if (filtered.isEmpty()) {
+            EmptyState(
+                ReaderIcons.NoteText,
+                if (search.isBlank()) "No Notes Yet" else "No Matches",
+                if (search.isBlank()) "Tap verses in the text, then the pencil, to start a note on a passage."
+                else "Try a word or a passage like Rom 8.",
+                palette,
+            )
+            return@Column
+        }
+        LazyColumn(
+            Modifier.fillMaxSize().imePadding(),
+            contentPadding = PaddingValues(bottom = bottom + 24.dp),
+        ) {
+            itemsIndexed(filtered, key = { _, note -> note.id }) { index, note ->
+                val shape = when {
+                    filtered.size == 1 -> RoundedCornerShape(22.dp)
+                    index == 0 -> RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
+                    index == filtered.lastIndex -> RoundedCornerShape(bottomStart = 22.dp, bottomEnd = 22.dp)
+                    else -> RoundedCornerShape(0.dp)
+                }
+                Column(Modifier.padding(horizontal = 16.dp).clip(shape).background(PanelColors.card(palette))) {
+                    NoteRow(note, palette, onOpen = { onOpenNoteChange(note.id.toString()) }, onDelete = { model.userData.deleteNote(note.id) })
+                    if (index < filtered.lastIndex) PanelSeparator(palette)
+                }
+            }
+        }
+    }
+}
+
+/** A row: title and date, the passages in the accent, then two lines of the body — `NoteRow`. */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun NoteRow(note: Note, palette: ReaderPalette, onOpen: () -> Unit, onDelete: () -> Unit) {
+    // Long press offers Delete — the iOS swipe-to-delete.
+    var menu by remember { mutableStateOf(false) }
+    Box {
+        Column(
+            Modifier.fillMaxWidth().combinedClickable(onLongClick = { menu = true }, onClick = onOpen)
+                .padding(horizontal = 18.dp, vertical = 12.dp),
+        ) {
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    note.displayTitle, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(shortDate(note), color = palette.secondary, fontSize = 12.sp)
+            }
+            if (note.anchors.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    note.anchorSummary, color = palette.accent, fontSize = 12.sp, fontWeight = FontWeight.Medium,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (note.body.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                Text(note.body, color = palette.secondary, fontSize = 16.sp, lineHeight = 21.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            }
+        }
+        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+            DropdownMenuItem(
+                text = { Text("Delete", color = palette.red, fontSize = 15.sp) },
+                onClick = {
+                    menu = false
+                    onDelete()
+                },
+            )
+        }
+    }
+}
+
+/** "Sep 21" — `.dateTime.month(.abbreviated).day()`. */
+private fun shortDate(note: Note): String =
+    DateTimeFormatter.ofPattern("MMM d", Locale.getDefault()).format(note.updatedAt.atZone(ZoneId.systemDefault()))

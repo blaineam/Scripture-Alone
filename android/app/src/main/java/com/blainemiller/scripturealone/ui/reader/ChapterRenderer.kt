@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.reader
 
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.graphics.Color
@@ -64,7 +65,16 @@ data class RenderedParagraph(
     val action: ReaderAction? = null,
     /** Where each verse begins in [text], in reading order — for scrolling to a verse and saving the position. */
     val verses: List<VerseStart> = emptyList(),
+    /**
+     * The characters each verse occupies — its number, words and footnote letters, not its note marker
+     * — in reading order. Taps select by these, and highlights and the selection are drawn over them,
+     * which is why marking a verse never re-typesets the chapter.
+     */
+    val verseSpans: List<VerseSpan> = emptyList(),
 )
+
+/** Verse [key] occupies UTF-16 offsets [start] until [end] of its paragraph's text. */
+data class VerseSpan(val key: Int, val start: Int, val end: Int)
 
 /** A verse's [key] (`VerseRef.key`) and the UTF-16 [offset] in its paragraph where the verse begins. */
 data class VerseStart(val offset: Int, val key: Int)
@@ -92,8 +102,10 @@ data class RenderedChapter(val ref: ChapterRef, val paragraphs: List<RenderedPar
  * Every size, indent and spacing below is the Swift value, written in terms of the reader's size the
  * way Swift writes it, so a change on one side is easy to find on the other.
  *
- * Not ported yet, because the features they belong to aren't: highlights, selection, note markers,
- * the spoken-verse mark, and verse keys on characters (tap targets).
+ * Verse keys on characters are [RenderedParagraph.verseSpans]; note markers are inline content at the
+ * end of a verse's last fragment, as Swift appends its attachment. Highlights and the selection are
+ * not in the text: the reader draws them over the spans (see `ReaderMarks.kt`), so tapping a verse
+ * doesn't lay the chapter out again. Not ported yet: the spoken-verse mark (Listen).
  *
  * Pure: no Android or composition types beyond Compose's text value classes, so it runs in JVM tests.
  */
@@ -112,9 +124,22 @@ class ChapterRenderer(
     private var footnoteCounter = 0
     private var chapter = ChapterRef(0, 0)
 
-    fun render(ref: ChapterRef, layout: ChapterLayout, copyright: String): RenderedChapter {
+    /** Note ids by the verse key whose marker carries them — `ChapterRenderInput.notes`. */
+    private var notes: Map<Int, List<String>> = emptyMap()
+    /** verse → (block, fragment) of the last fragment carrying it, where its note marker goes. */
+    private var lastFragment: Map<Int, Pair<Int, Int>> = emptyMap()
+
+    fun render(
+        ref: ChapterRef, layout: ChapterLayout, copyright: String, notes: Map<Int, List<String>> = emptyMap(),
+    ): RenderedChapter {
         footnoteCounter = 0
         chapter = ref
+        this.notes = notes
+        lastFragment = buildMap {
+            layout.blocks.forEachIndexed { b, block ->
+                block.fragments.forEachIndexed { f, fragment -> if (fragment.verse > 0) put(fragment.verse, b to f) }
+            }
+        }
         val out = mutableListOf<RenderedParagraph>()
         header(ref, out)
         if (style.layout == ReadingLayout.VERSES) verseByVerse(layout, out) else paragraphs(layout, out)
@@ -186,7 +211,7 @@ class ChapterRenderer(
 
     private fun paragraphs(layout: ChapterLayout, out: MutableList<RenderedParagraph>) {
         var pendingBreak = false
-        for (block in layout.blocks) {
+        for ((b, block) in layout.blocks.withIndex()) {
             when {
                 block.kind == Kind.STANZA_BREAK -> {
                     pendingBreak = true
@@ -197,14 +222,16 @@ class ChapterRenderer(
                 else -> {
                     val text = AnnotatedString.Builder()
                     val starts = mutableListOf<VerseStart>()
-                    for (fragment in block.fragments) {
+                    val spans = mutableListOf<VerseSpan>()
+                    for ((f, fragment) in block.fragments.withIndex()) {
                         if (text.length > 0) text.withStyle(body) { append(" ") }
                         if (fragment.numbered && fragment.verse > 0) starts += VerseStart(text.length, verseKey(fragment.verse))
-                        text.append(fragment(fragment, block.kind))
+                        appendVerse(text, fragment, block.kind, b, f, spans)
                     }
                     // An empty paragraph leaves a pending stanza break for the next one, as in Swift.
                     if (text.length == 0) continue
-                    out += paragraph(text.toAnnotatedString(), block.kind, extraSpaceBefore = pendingBreak).copy(verses = starts)
+                    out += paragraph(text.toAnnotatedString(), block.kind, extraSpaceBefore = pendingBreak)
+                        .copy(verses = starts, verseSpans = spans)
                 }
             }
             pendingBreak = false
@@ -214,11 +241,14 @@ class ChapterRenderer(
     private fun verseByVerse(layout: ChapterLayout, out: MutableList<RenderedParagraph>) {
         var current: AnnotatedString.Builder? = null
         var starts = mutableListOf<VerseStart>()
+        var spans = mutableListOf<VerseSpan>()
         fun flush() {
             val line = current ?: return
             current = null
             val lineStarts = starts
+            val lineSpans = spans
             starts = mutableListOf()
+            spans = mutableListOf()
             if (line.length == 0) return
             out += RenderedParagraph(
                 text = line.toAnnotatedString(),
@@ -226,9 +256,10 @@ class ChapterRenderer(
                 spaceAfter = size * 0.45f,
                 lineHeight = size * NATURAL_LINE_HEIGHT * style.lineSpacing,
                 verses = lineStarts,
+                verseSpans = lineSpans,
             )
         }
-        for (block in layout.blocks) {
+        for ((b, block) in layout.blocks.withIndex()) {
             if (block.kind.isHeading) {
                 flush()
                 if (style.headings) heading(block)?.let { out += it }
@@ -241,7 +272,7 @@ class ChapterRenderer(
                 out += paragraph(title.toAnnotatedString(), Kind.TITLE, extraSpaceBefore = false)
                 continue
             }
-            for (fragment in block.fragments) {
+            for ((f, fragment) in block.fragments.withIndex()) {
                 val line = current
                 if (fragment.numbered) {
                     flush()
@@ -253,13 +284,35 @@ class ChapterRenderer(
                 val target = current ?: AnnotatedString.Builder().also { current = it }
                 // Every line reads as plain prose here: Swift renders these as `.continuation`, so a
                 // Selah is not italic in this mode.
-                target.append(fragment(fragment, Kind.CONTINUATION))
+                appendVerse(target, fragment, Kind.CONTINUATION, b, f, spans)
             }
         }
         flush()
     }
 
     // Pieces
+
+    /**
+     * Appends one fragment, records the characters its verse occupies, and — on the verse's last
+     * fragment — the note marker after it, outside the verse's span as Swift puts it outside the
+     * highlight.
+     */
+    private fun appendVerse(
+        into: AnnotatedString.Builder, fragment: Fragment, kind: Kind, block: Int, index: Int, spans: MutableList<VerseSpan>,
+    ) {
+        val start = into.length
+        into.append(fragment(fragment, kind))
+        if (fragment.verse <= 0 || kind == Kind.TITLE) return
+        val key = verseKey(fragment.verse)
+        spans += VerseSpan(key, start, into.length)
+        val ids = notes[key]
+        if (!ids.isNullOrEmpty() && lastFragment[fragment.verse] == (block to index)) {
+            into.withStyle(body) { append("\u2009") }
+            into.pushStringAnnotation(NOTE_TAG, ids.joinToString(","))
+            into.appendInlineContent(NOTE_MARKER, "[note]")
+            into.pop()
+        }
+    }
 
     private fun heading(block: ChapterLayout.Block): RenderedParagraph? {
         val text = block.text?.takeIf { it.isNotEmpty() } ?: return null
@@ -470,6 +523,12 @@ class ChapterRenderer(
     companion object {
         /** The string annotation on a footnote letter; its item is the note's text. */
         const val FOOTNOTE_TAG = "footnote"
+
+        /** The string annotation around a note marker; its item is the notes' ids, comma separated. */
+        const val NOTE_TAG = "notes"
+
+        /** The inline-content id of a note marker — the `text.bubble.fill` attachment. */
+        const val NOTE_MARKER = "noteMarker"
 
         /**
          * The system fonts' natural line height as a multiple of point size. iOS's

@@ -18,4 +18,10 @@ interface SqlRow {
     fun text(column: Int): String
     fun blob(column: Int): ByteArray
     fun isNull(column: Int): Boolean
+
+    /**
+     * A REAL column. Defaults to parsing SQLite's text rendering of the value, which is exact for
+     * the coordinates the context store holds; the drivers the app and its tests use override it.
+     */
+    fun double(column: Int): Double = text(column).toDouble()
 }

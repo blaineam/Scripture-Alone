@@ -33,6 +33,12 @@ class EBibleCatalogTest {
             "\"$otVerses\",\"$nt\",\"260\",\"$ntVerses\",\"0\",\"0\",\"0\",\"ENGWEB\",\"True\",\"\",\"$id\",\"\",\"$direction\"," +
             "\"$downloadable\",\"Gentium\",\"$short\",\"\",\"Latin\",\"2026-01-01\""
 
+    /** The published file begins with a UTF-8 byte-order mark (seen on the live catalogue, 2026-09). */
+    @Test fun ignoresALeadingByteOrderMark() {
+        val entries = EBibleCatalog.parse("﻿" + header + "\n" + row() + "\n")
+        assertEquals(listOf("engwebp"), entries.map { it.id })
+    }
+
     @Test fun readsATranslation() {
         val entries = EBibleCatalog.parse(header + "\n" + row() + "\n")
         assertEquals(1, entries.size)

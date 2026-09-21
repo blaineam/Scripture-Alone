@@ -117,7 +117,10 @@ object EBibleCatalog {
      */
     @Throws(Failure::class)
     fun parse(csv: String): List<CatalogTranslation> {
-        val rows = CSV.rows(csv).iterator()
+        // The live file starts with a UTF-8 byte-order mark. Foundation's UTF-8 decoding drops it;
+        // Kotlin's keeps it, and "﻿languageCode" is then no column at all — the catalogue failed
+        // on the device with "no languageCode column" until this.
+        val rows = CSV.rows(csv.removePrefix("﻿")).iterator()
         if (!rows.hasNext()) throw Failure.Malformed("empty")
         val header = rows.next()
         // First occurrence wins, as in Swift. A catalogue we don't control repeating a column name

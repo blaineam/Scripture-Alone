@@ -26,6 +26,7 @@ class JdbcSqlSource(file: File) : SqlSource, AutoCloseable {
         override fun long(column: Int) = rs.getLong(column + 1)
         override fun text(column: Int): String = rs.getString(column + 1) ?: ""
         override fun blob(column: Int): ByteArray = rs.getBytes(column + 1) ?: ByteArray(0)
+        override fun double(column: Int): Double = rs.getDouble(column + 1)
         override fun isNull(column: Int): Boolean {
             rs.getObject(column + 1)
             return rs.wasNull()
