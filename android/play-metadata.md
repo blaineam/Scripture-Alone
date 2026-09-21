@@ -8,7 +8,8 @@
 Scripture Alone Bible
 
 ## short_description
-A free, private Bible that lives on your phone. No ads, no accounts, offline.
+<!-- Play flags price/promotion words here ("free", "no ads") and may then not feature the app. -->
+A private, offline Bible with study tools, sermon notes and maps. No account.
 
 ## full_description
 Scripture Alone is a free Bible for Android phones, tablets and Wear OS, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. Two complete translations arrive with the app, and a third is a tap away, so reading, searching, highlighting and notes work anywhere in the world, with or without a connection. The large study add-ons — the commentary and the original-language data — download the first time you open them, so the app itself stays small.
@@ -58,7 +59,7 @@ Books & Reference
 Bible, Books & Reference
 
 ## contact_email
-blaine@wemiller.com
+apps@wemiller.com
 
 ## website
 https://wemiller.com/apps/scripture-alone/
