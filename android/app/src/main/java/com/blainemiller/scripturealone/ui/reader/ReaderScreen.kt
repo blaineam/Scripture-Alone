@@ -31,7 +31,23 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.style.TextOverflow
+import com.blainemiller.scripturealone.data.userdata.Note
+import com.blainemiller.scripturealone.data.userdata.Selection
+import com.blainemiller.scripturealone.ui.notes.NotesPanel
+import java.util.UUID
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
@@ -112,16 +128,38 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withTimeoutOrNull
 
+/** The sheets that rise over the reader. */
+enum class ReaderSheet { GO_TO, NOTES }
+
 /**
  * The chapter reader: the rendered chapter full-bleed on the theme's page, with the chrome floating
  * over it in pills, as the iOS reader's Liquid Glass toolbars do. The passage title opens the Go To
- * sheet; the empty places are where Notes, Study, Listen and auto-scroll will go.
+ * sheet, the Notes button the Notes panel; tapping verses selects them and brings up the selection bar.
+ *
+ * [actions], [onStudy] and [onCompare] are the hooks for features built elsewhere — Listen, Original
+ * Language, the Study panel and Compare. Until they are wired, their controls are present and inert.
  */
 @Composable
-fun ReaderScreen(model: ReaderViewModel) {
+fun ReaderScreen(
+    model: ReaderViewModel,
+    actions: SelectionActions = SelectionActions(),
+    onStudy: () -> Unit = {},
+    onCompare: () -> Unit = {},
+) {
     val palette = model.theme.palette(isSystemInDarkTheme()).accented(model.accent)
     val style = model.style(palette)
-    var goTo by rememberSaveable { mutableStateOf(false) }
+    var sheet by rememberSaveable { mutableStateOf<ReaderSheet?>(null) }
+    /** The note the Notes panel opens on — set by Add Note and by a marker's "Open Note". */
+    var openNote by rememberSaveable { mutableStateOf<String?>(null) }
+    val goTo = sheet != null
+    val highlights by model.userData.highlights.collectAsState()
+    val notes by model.userData.notes.collectAsState()
+    val favorites by model.userData.favorites.collectAsState()
+
+    fun showNote(id: UUID) {
+        openNote = id.toString()
+        sheet = ReaderSheet.NOTES
+    }
 
     // How far the Go To sheet has risen, 0…1. As on iOS, the reader behind a sheet recedes: it
     // scales back, rounds its corners and settles onto a black backdrop.
@@ -159,11 +197,21 @@ fun ReaderScreen(model: ReaderViewModel) {
             when {
                 chapter != null && chapter.ref == model.location && chapter.translation.id == model.translationId ->
                     key(chapter.ref, chapter.translation.id) {
+                        val markers = remember(notes, chapter) {
+                            Selection.noteMarkers(notes, chapter.ref, chapter.verses.maxOfOrNull { it.ref.verse } ?: 0)
+                        }
+                        val colors = remember(highlights, chapter.ref) { Selection.highlightColors(highlights, chapter.ref) }
                         ChapterColumn(
-                            rendered = remember(chapter, style) {
+                            rendered = remember(chapter, style, markers) {
                                 ChapterRenderer(style, ReaderTypography.fonts(style.size))
-                                    .render(chapter.ref, chapter.layout, chapter.translation.copyright)
+                                    .render(chapter.ref, chapter.layout, chapter.translation.copyright, markers)
                             },
+                            marks = VerseMarks(colors, model.selection),
+                            markerSize = style.size,
+                            onVerseTap = model::toggle,
+                            onVerseLongPress = model::extendSelection,
+                            notesFor = { ids -> notes.filter { it.id.toString() in ids } },
+                            onOpenNote = ::showNote,
                             palette = palette,
                             scrollTarget = model.scrollTarget,
                             onScrolledToTarget = model::scrolledToTarget,
@@ -184,23 +232,60 @@ fun ReaderScreen(model: ReaderViewModel) {
                     modifier = Modifier.align(Alignment.Center).padding(32.dp),
                 )
             }
-            TopBar(model, palette, onGoTo = { goTo = true })
+            TopBar(
+                model, palette, onGoTo = { sheet = ReaderSheet.GO_TO }, onNotes = { sheet = ReaderSheet.NOTES },
+                onStudy = onStudy, onCompare = onCompare,
+            )
             BottomBar(model, palette, Modifier.align(Alignment.BottomCenter))
+            AnimatedVisibility(
+                model.selection.isNotEmpty(),
+                enter = slideInVertically { it / 2 } + fadeIn(),
+                exit = slideOutVertically { it / 2 } + fadeOut(),
+                modifier = Modifier.align(Alignment.BottomCenter)
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 10.dp + 52.dp + 8.dp),
+            ) {
+                val ranges = model.selectedRanges
+                SelectionBar(
+                    model, palette,
+                    isFavorite = Selection.isFavorite(ranges, favorites),
+                    actions = actions,
+                    onNote = { showNote(model.newNoteFromSelection().id) },
+                )
+            }
         }
 
-            // The Go To sheet, over a dimmed reader, rising from the bottom as an iOS sheet does.
+            // The Go To sheet or the Notes panel, over a dimmed reader, rising from the bottom as an
+            // iOS sheet does. On iPhone the Notes panel is a sheet too.
             AnimatedVisibility(goTo, enter = fadeIn(), exit = fadeOut()) {
                 Box(
                     Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.20f))
-                        .clickable(interactionSource = null, indication = null) { goTo = false },
+                        .clickable(interactionSource = null, indication = null) { sheet = null },
                 )
             }
+            // The last sheet shown stays composed while it slides away.
+            var shown by remember { mutableStateOf(sheet) }
+            LaunchedEffect(sheet) { if (sheet != null) shown = sheet }
             AnimatedVisibility(
                 goTo,
                 enter = slideInVertically(tween(320)) { it },
                 exit = slideOutVertically(tween(240)) { it },
             ) {
-                GoToSheet(model, palette, onDismiss = { goTo = false })
+                when (shown) {
+                    ReaderSheet.NOTES -> NotesPanel(
+                        model, palette, notes, favorites,
+                        openNote = openNote,
+                        onOpenNoteChange = { openNote = it },
+                        onDismiss = {
+                            sheet = null
+                            openNote = null
+                        },
+                    )
+                    else -> GoToSheet(model, palette, onDismiss = { sheet = null })
+                }
+            }
+            model.sharedPassage?.let { payload ->
+                SharedPassageCard(payload, palette, onDismiss = model::dismissSharedPassage)
             }
         }
     }
@@ -218,6 +303,12 @@ fun ReaderScreen(model: ReaderViewModel) {
 @Composable
 private fun ChapterColumn(
     rendered: RenderedChapter,
+    marks: VerseMarks,
+    markerSize: Float,
+    onVerseTap: (Int) -> Unit,
+    onVerseLongPress: (Int) -> Unit,
+    notesFor: (List<String>) -> List<Note>,
+    onOpenNote: (UUID) -> Unit,
     palette: ReaderPalette,
     scrollTarget: Int?,
     onScrolledToTarget: () -> Unit,
@@ -289,7 +380,11 @@ private fun ChapterColumn(
             contentPadding = PaddingValues(start = inset, end = inset, top = status + BAR_HEIGHT + 20.dp, bottom = nav + 140.dp),
         ) {
             itemsIndexed(rendered.paragraphs) { index, paragraph ->
-                Paragraph(paragraph, palette, onAction, onLayout = { layouts[index] = it })
+                Paragraph(
+                    paragraph, palette, onAction, onLayout = { layouts[index] = it },
+                    marks = marks, markerSize = markerSize, onVerseTap = onVerseTap, onVerseLongPress = onVerseLongPress,
+                    notesFor = notesFor, onOpenNote = onOpenNote,
+                )
             }
         }
     }
@@ -315,12 +410,24 @@ private fun Paragraph(
     palette: ReaderPalette,
     onAction: (ReaderAction) -> Unit,
     onLayout: (TextLayoutResult) -> Unit,
+    marks: VerseMarks,
+    markerSize: Float,
+    onVerseTap: (Int) -> Unit,
+    onVerseLongPress: (Int) -> Unit,
+    notesFor: (List<String>) -> List<Note>,
+    onOpenNote: (UUID) -> Unit,
 ) {
     val density = LocalDensity.current
     fun Float.spDp(): Dp = with(density) { this@spDp.sp.toDp() }
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
-    var footnote by remember { mutableStateOf<Footnote?>(null) }
-    val notes = remember(p.text) { p.text.getStringAnnotations(ChapterRenderer.FOOTNOTE_TAG, 0, p.text.length) }
+    var popover by remember { mutableStateOf<Popover?>(null) }
+    val footnotes = remember(p.text) { p.text.getStringAnnotations(ChapterRenderer.FOOTNOTE_TAG, 0, p.text.length) }
+    val noteMarkers = remember(p.text) { p.text.getStringAnnotations(ChapterRenderer.NOTE_TAG, 0, p.text.length) }
+    // Only what this paragraph's verses carry, so selecting a verse repaints just its paragraph.
+    val keys = remember(p.verseSpans) { p.verseSpans.map { it.key }.toSet() }
+    val ownMarks = VerseMarks(marks.highlights.filterKeys { it in keys }, marks.selection.intersect(keys))
+    val tap by rememberUpdatedState(onVerseTap)
+    val longPress by rememberUpdatedState(onVerseLongPress)
 
     var modifier = Modifier
         .fillMaxWidth()
@@ -330,24 +437,39 @@ private fun Paragraph(
             onAction(action)
         }
     }
-    if (notes.isNotEmpty()) {
-        modifier = modifier.pointerInput(notes) {
-            // The letters are small; a tap anywhere within a finger's reach of one opens it.
+    if (footnotes.isNotEmpty() || noteMarkers.isNotEmpty() || p.verseSpans.isNotEmpty()) {
+        modifier = modifier.pointerInput(p.text, p.verseSpans) {
+            // The letters and markers are small; a tap anywhere within a finger's reach of one opens it.
             val reach = 18.dp.toPx()
-            detectTapGestures { tap ->
-                val text = layout ?: return@detectTapGestures
-                val hit = notes.map { it to text.getBoundingBox(it.start) }
-                    .filter { (_, box) -> box.inflate(reach).contains(tap) }
-                    .minByOrNull { (_, box) -> (box.center - tap).getDistanceSquared() }
-                    ?: return@detectTapGestures
-                footnote = Footnote(hit.first.item, hit.second)
-            }
+            val slack = 8.dp.toPx()
+            fun near(ranges: List<AnnotatedString.Range<String>>, at: Offset, text: TextLayoutResult) =
+                ranges.map { it to text.getBoundingBox(it.start) }
+                    .filter { (_, box) -> box.inflate(reach).contains(at) }
+                    .minByOrNull { (_, box) -> (box.center - at).getDistanceSquared() }
+            detectTapGestures(
+                onTap = { at ->
+                    val text = layout ?: return@detectTapGestures
+                    val footnote = near(footnotes, at, text)
+                    val marker = near(noteMarkers, at, text)
+                    when {
+                        footnote != null -> popover = Popover.Footnote(footnote.first.item, footnote.second)
+                        marker != null -> popover = Popover.Notes(marker.first.item.split(','), marker.second)
+                        else -> verseAt(text, p.verseSpans, at, slack)?.let(tap)
+                    }
+                },
+                onLongPress = { at ->
+                    val text = layout ?: return@detectTapGestures
+                    verseAt(text, p.verseSpans, at, slack)?.let(longPress)
+                },
+            )
         }
     }
+    modifier = modifier.verseMarks({ layout }, p.verseSpans, ownMarks, palette)
     Box {
         Text(
             text = p.text,
             modifier = modifier,
+            inlineContent = if (noteMarkers.isEmpty()) emptyMap() else noteMarkerContent(markerSize, palette),
             onTextLayout = {
                 layout = it
                 onLayout(it)
@@ -363,18 +485,70 @@ private fun Paragraph(
                 lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
             ),
         )
-        footnote?.let { note ->
+        popover?.let { shown ->
             val top = with(density) { p.spaceBefore.sp.toPx() }
-            FootnotePopover(note.text, note.anchor.translate(0f, top), palette) { footnote = null }
+            val anchor = shown.anchor.translate(0f, top)
+            when (shown) {
+                is Popover.Footnote -> ReaderPopover(anchor, palette, dismissOnTap = true, onDismiss = { popover = null }) {
+                    Text(shown.text, color = palette.ink, fontSize = 16.sp, lineHeight = 21.sp)
+                }
+                is Popover.Notes -> ReaderPopover(anchor, palette, dismissOnTap = false, onDismiss = { popover = null }) {
+                    NotesPopoverContent(notesFor(shown.ids), palette) { id ->
+                        popover = null
+                        onOpenNote(id)
+                    }
+                }
+            }
         }
     }
 }
 
-/** A tapped footnote: its text and the letter's box, in the paragraph's text coordinates. */
-private data class Footnote(val text: String, val anchor: Rect)
+/** The `text.bubble.fill` attachment, in the accent, 0.82 × the text size — Swift's `noteMarker`. */
+private fun noteMarkerContent(size: Float, palette: ReaderPalette): Map<String, InlineTextContent> {
+    val side = size * 0.82f
+    return mapOf(
+        ChapterRenderer.NOTE_MARKER to InlineTextContent(
+            Placeholder((side * 1.1f).sp, side.sp, PlaceholderVerticalAlign.TextCenter),
+        ) {
+            Icon(ReaderIcons.TextBubbleFill, "Note", tint = palette.accent, modifier = Modifier.fillMaxSize())
+        },
+    )
+}
 
 /**
- * The note in a small rounded card beside its letter, with an arrow pointing at it — the iOS popover,
+ * A marker's popover — `ReaderPopoverView`'s notes case: each note's title, passages and the start of
+ * its body, with Open Note.
+ */
+@Composable
+private fun NotesPopoverContent(notes: List<Note>, palette: ReaderPalette, onOpen: (UUID) -> Unit) {
+    Column(
+        Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        for (note in notes) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(note.displayTitle, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                Text(note.anchorSummary, color = palette.secondary, fontSize = 12.sp)
+                if (note.body.isNotEmpty()) {
+                    Text(note.body, color = palette.ink, fontSize = 16.sp, lineHeight = 21.sp, maxLines = 10, overflow = TextOverflow.Ellipsis)
+                }
+                Text(
+                    "Open Note", color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.clip(RoundedCornerShape(6.dp)).clickable { onOpen(note.id) }.padding(vertical = 2.dp),
+                )
+            }
+        }
+    }
+}
+
+/** What a tap inside the text opened, anchored to the tapped letter's or marker's box. */
+private sealed class Popover(val anchor: Rect) {
+    class Footnote(val text: String, anchor: Rect) : Popover(anchor)
+    class Notes(val ids: List<String>, anchor: Rect) : Popover(anchor)
+}
+
+/**
+ * A footnote, or a marker's notes, in a small rounded card beside its letter, with an arrow pointing at it — the iOS popover,
  * which on a phone is still a popover (`presentationCompactAdaptation(.popover)`). Below the letter
  * when it fits, above when it doesn't; at most 320 wide, the popover's ideal width. Any tap outside
  * dismisses it.
@@ -383,7 +557,13 @@ private data class Footnote(val text: String, val anchor: Rect)
  * content: without room around the card, its shadow is clipped away and it melts into a light page.
  */
 @Composable
-private fun FootnotePopover(text: String, anchor: Rect, palette: ReaderPalette, onDismiss: () -> Unit) {
+private fun ReaderPopover(
+    anchor: Rect,
+    palette: ReaderPalette,
+    dismissOnTap: Boolean,
+    onDismiss: () -> Unit,
+    content: @Composable () -> Unit,
+) {
     val density = LocalDensity.current
     val gap = with(density) { 4.dp.roundToPx() }
     val margin = with(density) { 12.dp.roundToPx() }
@@ -450,10 +630,10 @@ private fun FootnotePopover(text: String, anchor: Rect, palette: ReaderPalette, 
                 .clip(shape)
                 .background(surface)
                 .border(0.5.dp, edge, shape)
-                .clickable(interactionSource = null, indication = null, onClick = onDismiss)
+                .clickable(interactionSource = null, indication = null) { if (dismissOnTap) onDismiss() }
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
-            Text(text, color = palette.ink, fontSize = 16.sp, lineHeight = 21.sp)
+            content()
         }
     }
 }
@@ -469,12 +649,19 @@ private val ARROW = 8.dp
 private val BAR_HEIGHT = 64.dp
 
 /**
- * The top chrome: the passage centred, the translation and appearance in one pill on the right —
- * the iOS arrangement. A fade from the page colour lets the text pass beneath it legibly, standing in
- * for the scroll-edge effect of iOS 26's glass.
+ * The top chrome, in the iOS arrangement: Notes and Study in one pill on the left with the passage
+ * beside it, the translation and appearance in one pill on the right. A fade from the page colour
+ * lets the text pass beneath it legibly, standing in for the scroll-edge effect of iOS 26's glass.
  */
 @Composable
-private fun TopBar(model: ReaderViewModel, palette: ReaderPalette, onGoTo: () -> Unit) {
+private fun TopBar(
+    model: ReaderViewModel,
+    palette: ReaderPalette,
+    onGoTo: () -> Unit,
+    onNotes: () -> Unit,
+    onStudy: () -> Unit,
+    onCompare: () -> Unit,
+) {
     Box(
         Modifier
             .fillMaxWidth()
@@ -483,24 +670,39 @@ private fun TopBar(model: ReaderViewModel, palette: ReaderPalette, onGoTo: () ->
             .height(BAR_HEIGHT + 12.dp),
     ) {
         Row(
-            Modifier.align(Alignment.Center)
-                .clip(RoundedCornerShape(22.dp))
-                .clickable(onClick = onGoTo)
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                .semantics { contentDescription = "Passage, ${Canon.display(model.location)}. Go To" },
+            Modifier.align(Alignment.Center).fillMaxWidth().padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                Canon.display(model.location),
-                color = palette.ink,
-                fontSize = 19.sp,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Icon(Icons.Rounded.KeyboardArrowDown, null, tint = palette.secondary, modifier = Modifier.size(22.dp))
-        }
-        Pill(palette, Modifier.align(Alignment.CenterEnd).padding(end = 16.dp)) {
-            TranslationButton(model, palette)
-            AppearanceButton(model, palette)
+            Pill(palette) {
+                PillIcon(ReaderIcons.NoteText, "Notes", palette, enabled = true, tint = palette.ink, iconSize = 26.dp, onClick = onNotes)
+                PillIcon(Icons.AutoMirrored.Outlined.MenuBook, "Study", palette, enabled = true, tint = palette.ink, iconSize = 26.dp, onClick = onStudy)
+            }
+            Box(Modifier.weight(1f)) {
+            Row(
+                Modifier
+                    .padding(start = 4.dp)
+                    .clip(RoundedCornerShape(22.dp))
+                    .clickable(onClick = onGoTo)
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
+                    .semantics { contentDescription = "Go to passage, currently ${Canon.display(model.location)}" },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    Canon.display(model.location),
+                    color = palette.ink,
+                    fontSize = 19.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                Icon(Icons.Rounded.KeyboardArrowDown, null, tint = palette.secondary, modifier = Modifier.size(22.dp))
+            }
+            }
+            Pill(palette) {
+                TranslationButton(model, palette, onCompare)
+                AppearanceButton(model, palette)
+            }
         }
     }
 }
@@ -550,18 +752,20 @@ private fun PillIcon(
     label: String,
     palette: ReaderPalette,
     enabled: Boolean,
+    tint: Color = palette.accent,
+    iconSize: Dp = 30.dp,
     onClick: () -> Unit,
 ) {
     Box(
         Modifier.size(width = 48.dp, height = 44.dp).clip(RoundedCornerShape(22.dp)).clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, label, tint = if (enabled) palette.accent else palette.secondary.copy(alpha = 0.5f), modifier = Modifier.size(30.dp))
+        Icon(icon, label, tint = if (enabled) tint else palette.secondary.copy(alpha = 0.5f), modifier = Modifier.size(iconSize))
     }
 }
 
 @Composable
-private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette) {
+private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, onCompare: () -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
         Box(
@@ -578,6 +782,14 @@ private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette) {
                     model.selectTranslation(id)
                 }
             }
+            HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
+            DropdownMenuItem(
+                text = { Text("Compare Translations…", color = palette.ink, fontSize = 15.sp) },
+                onClick = {
+                    open = false
+                    onCompare()
+                },
+            )
         }
     }
 }

@@ -18,8 +18,9 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
 
 /**
- * Who a translation is, as the reader shows it: the id in the switcher, the copyright in the footer.
- * [license] and [granted] decide what its text may do beyond being read — see [rights].
+ * Who a translation is, as the reader shows it: the id in the switcher, the copyright in the footer —
+ * and what its terms let the reader do with it ([rights]: a signed package's own grant, else the
+ * licence line's), the one value the copy and share gates ask.
  */
 data class TranslationInfo(
     val id: String,
@@ -27,12 +28,8 @@ data class TranslationInfo(
     val abbreviation: String,
     val copyright: String,
     val license: String = "",
-    /** A signed package's own grant; null for everything else, whose rights follow from the licence line. */
-    val granted: TranslationRights? = null,
-) {
-    /** The one answer every copy, share and export gate asks — `TranslationInfo.rights` on iOS. */
-    val rights: TranslationRights get() = TranslationRights.of(license, copyright, granted)
-}
+    val rights: TranslationRights = TranslationRights.of(license, copyright),
+)
 
 /** One verse's text and its words-of-Christ ranges, still in **Unicode scalars** as stored. */
 data class ChapterVerse(val ref: VerseRef, val text: String, val red: List<ScalarRange>)
@@ -137,7 +134,11 @@ class SqliteChapterSource(private val context: Context, private val assetName: S
 class PackageChapterSource(private val pkg: TranslationPackage) : ChapterSource {
 
     override val info: TranslationInfo = pkg.translation.let {
-        TranslationInfo(it.id, it.name, it.abbreviation.ifEmpty { it.id }, it.copyright, it.license, pkg.policy.rights())
+        // A package's rights are its signed policy's, never derived from the licence line.
+        TranslationInfo(
+            it.id, it.name, it.abbreviation.ifEmpty { it.id }, it.copyright, it.license,
+            rights = runCatching { pkg.policy.rights() }.getOrDefault(TranslationRights.LICENSED_DEFAULT.copy(maxQuotationVerses = 0)),
+        )
     }
 
     override fun contains(ref: ChapterRef): Boolean = pkg.contains(ref)
