@@ -223,6 +223,45 @@ import Testing
         #expect(!plain.contains("For God so loved"))
     }
 
+    @Test func exportCarriesThePublishersNotice() throws {
+        let notes = Array(Self.sample().notes.prefix(1))
+        let options = NotesTextExport.Options(title: "Notes", translation: "CSB", notice: " Copyright © 2017 Holman ")
+        let none: NotesTextExport.VerseText = { _ in nil }
+        let block = "\n---\n\nCopyright © 2017 Holman\n"
+
+        // A single note: the body, a blank line, then the block (the same bytes Android writes).
+        let body = NotesTextExport.markdown(note: notes[0], headingLevel: 1, options: options, verseText: none)
+        #expect(NotesTextExport.markdown(notes, options: options, verseText: none) == body + "\n" + block)
+        #expect(NotesTextExport.plainText(notes, options: options, verseText: none).hasSuffix("—\nCopyright © 2017 Holman\n"))
+        #expect(NotesTextExport.markdown(Self.sample().notes, options: options, verseText: none).hasSuffix(block))
+
+        // Every file of a folder carries it, since each can be shared on its own.
+        let files = NotesTextExport.markdownFiles(Self.sample().notes, options: options, verseText: none)
+        #expect(files.count == 2)
+        for (file, note) in zip(files, Self.sample().notes) {
+            let body = NotesTextExport.markdown(note: note, headingLevel: 1, options: options, verseText: none)
+            #expect(file.contents == body + "\n" + block)
+        }
+    }
+
+    @Test func exportWithoutANoticeIsUnchanged() throws {
+        let notes = Self.sample().notes
+        let none: NotesTextExport.VerseText = { _ in nil }
+        for notice in [nil, "", "  \n "] as [String?] {
+            let options = NotesTextExport.Options(title: "Notes", translation: "ASV", notice: notice)
+            // No notice, no trailing block: the bytes a public-domain export has always had.
+            let single = NotesTextExport.markdown([notes[0]], options: options, verseText: none)
+            #expect(single == NotesTextExport.markdown(note: notes[0], headingLevel: 1, options: options, verseText: none))
+            #expect(!single.hasSuffix("\n"))
+            #expect(!NotesTextExport.markdown(notes, options: options, verseText: none).contains("\n---\n\n\n"))
+            #expect(NotesTextExport.markdown(notes, options: options, verseText: none).hasSuffix("*\n"))
+            let files = NotesTextExport.markdownFiles(notes, options: options, verseText: none)
+            for (file, note) in zip(files, notes) {
+                #expect(file.contents == NotesTextExport.markdown(note: note, headingLevel: 1, options: options, verseText: none) + "\n")
+            }
+        }
+    }
+
     private func rezip(_ files: [String: Data], replacing name: String, with data: Data) throws -> Data {
         var files = files
         files[name] = data

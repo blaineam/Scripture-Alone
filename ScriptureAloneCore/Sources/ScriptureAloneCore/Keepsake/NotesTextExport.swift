@@ -29,12 +29,21 @@ public enum NotesTextExport {
         return markdown ? "\n---\n\n\(notice)\n" : "\n\(String(repeating: "—", count: 24))\n\(notice)\n"
     }
 
+    /// A single-note document with the publisher's line after it, or unchanged when there is none —
+    /// so a public-domain export keeps its exact bytes.
+    static func withNotice(_ markdown: String, options: Options) -> String {
+        let block = noticeBlock(options, markdown: true)
+        return block.isEmpty ? markdown : markdown + "\n" + block
+    }
 
     // MARK: Markdown
 
-    /// One Markdown document holding every note.
+    /// One Markdown document holding every note. Every export that quotes a licensed text ends with
+    /// its notice — a single note too.
     public static func markdown(_ notes: [KeepsakeNote], options: Options, verseText: VerseText) -> String {
-        if notes.count == 1 { return markdown(note: notes[0], headingLevel: 1, options: options, verseText: verseText) }
+        if notes.count == 1 {
+            return withNotice(markdown(note: notes[0], headingLevel: 1, options: options, verseText: verseText), options: options)
+        }
         var parts = ["# \(options.title)", exportedLine(count: notes.count, options: options)]
         for note in notes {
             parts.append("---")
@@ -43,7 +52,8 @@ public enum NotesTextExport {
         return parts.joined(separator: "\n\n") + "\n" + noticeBlock(options, markdown: true)
     }
 
-    /// One Markdown document per note, with unique, file-system-safe names.
+    /// One Markdown document per note, with unique, file-system-safe names. Each file ends with the
+    /// notice, since each can be shared on its own.
     public static func markdownFiles(_ notes: [KeepsakeNote], options: Options, verseText: VerseText) -> [(name: String, contents: String)] {
         var used: Set<String> = []
         return notes.map { note in
@@ -55,7 +65,8 @@ public enum NotesTextExport {
                 n += 1
             }
             used.insert(name.lowercased())
-            return (name, markdown(note: note, headingLevel: 1, options: options, verseText: verseText) + "\n")
+            return (name, markdown(note: note, headingLevel: 1, options: options, verseText: verseText) + "\n"
+                + noticeBlock(options, markdown: true))
         }
     }
 

@@ -34,7 +34,7 @@ struct ContentKeyVaultTests {
     /// answers errSecMissingEntitlement (-34018). Marked known-but-intermittent so it is reported
     /// rather than passing vacuously here, and genuinely passes when run from the app on a device.
     @Test func bootstrapStoresOnceAndUnwrapsToTheDerivedKey() throws {
-        try withKnownIssue("Secure Enclave needs an app identity; real check runs on device",
+        withKnownIssue("Secure Enclave needs an app identity; real check runs on device",
                            isIntermittent: true) {
         let vault = vault()
         defer { vault.erase() }
@@ -55,7 +55,7 @@ struct ContentKeyVaultTests {
     }
 
     @Test func eraseForgetsTheKey() throws {
-        try withKnownIssue("Secure Enclave needs an app identity; real check runs on device",
+        withKnownIssue("Secure Enclave needs an app identity; real check runs on device",
                            isIntermittent: true) {
             let vault = vault()
             try vault.bootstrapIfNeeded(seed: Data(repeating: 0x2A, count: 32))

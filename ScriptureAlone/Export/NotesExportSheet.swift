@@ -154,8 +154,9 @@ struct NotesExportSheet: View {
         let type: UTType
         switch format {
         case .pdf:
-            let data = NotesPDFRenderer.render(notes, options: .init(title: title, subtitle: nil, translation: options.translation),
-                                               verseText: verseText)
+            let pdfOptions = NotesPDFRenderer.Options(title: title, subtitle: nil, translation: options.translation,
+                                                      notice: options.notice)
+            let data = NotesPDFRenderer.render(notes, options: pdfOptions, verseText: verseText)
             (file, name, type) = (ExportFile(.file(data)), "\(base).pdf", .pdf)
         case .markdown:
             let text = NotesTextExport.markdown(notes, options: options, verseText: verseText)

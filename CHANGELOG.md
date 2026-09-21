@@ -2,6 +2,10 @@
 
 ## After 1.0.0
 
+- A notes export that quotes a copyrighted translation always ends with the publisher's notice.
+  It was missing from a single-note Markdown export, from each file of a Markdown folder, and
+  from the PDF. The bundled ASV, BSB and KJV are public domain and carry no notice, so no export
+  so far was affected; a licensed translation's would have been.
 - A verse with two footnotes letters them in reading order. They were lettered "b … a" — the
   markers were inserted from the end of the verse, which is right, but lettered in that same
   reversed pass. 345 verses of the Berean Standard Bible have more than one note, starting at

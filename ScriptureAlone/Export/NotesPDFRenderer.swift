@@ -12,6 +12,9 @@ enum NotesPDFRenderer {
         var subtitle: String?
         /// Translation abbreviation for quoted passages, or nil to leave verse text out.
         var translation: String?
+        /// The publisher's copyright line for the quoted translation, set at the end of the document —
+        /// quotations that leave the device must carry their attribution. Nil or blank for public domain.
+        var notice: String?
     }
 
     static func render(_ notes: [KeepsakeNote], options: Options, verseText: NotesTextExport.VerseText) -> Data {
@@ -84,6 +87,9 @@ enum NotesPDFRenderer {
                 }
             }
             out.append(line(NotesTextExport.dateLine(note), font: sans(8.5), color: Palette.secondary, spacingBefore: 6, spacingAfter: 18))
+        }
+        if let notice = options.notice?.trimmingCharacters(in: .whitespacesAndNewlines), !notice.isEmpty {
+            out.append(line(notice, font: sans(8.5), color: Palette.secondary, lineHeight: 1.3, spacingBefore: 12))
         }
         return out
     }

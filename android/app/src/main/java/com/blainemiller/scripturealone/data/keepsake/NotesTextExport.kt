@@ -47,7 +47,7 @@ object NotesTextExport {
 
     /**
      * One Markdown document holding every note. Every export that quotes a licensed text ends with its
-     * notice — a single note and each file of a folder too, which the Swift original misses.
+     * notice — a single note and each file of a folder too, exactly as the Swift original does.
      */
     fun markdown(notes: List<KeepsakeNote>, options: Options, verseText: (VerseRange) -> String?): String {
         if (notes.size == 1) return withNotice(markdown(notes[0], 1, options, verseText), options)
