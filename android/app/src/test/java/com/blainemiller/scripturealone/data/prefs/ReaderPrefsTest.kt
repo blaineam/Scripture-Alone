@@ -30,13 +30,13 @@ class ReaderPrefsTest {
         val names = listOf(
             ReaderKeys.POSITION, ReaderKeys.TRANSLATION, ReaderKeys.RECENT, ReaderKeys.RECENT_SEARCHES,
             ReaderKeys.THEME, ReaderKeys.ACCENT, ReaderKeys.FONT_SIZE, ReaderKeys.LINE_SPACING, ReaderKeys.LAYOUT,
-            ReaderKeys.RED_LETTERS, ReaderKeys.VERSE_NUMBERS, ReaderKeys.HEADINGS, ReaderKeys.FOOTNOTES,
+            ReaderKeys.RED_LETTERS, ReaderKeys.VERSE_NUMBERS, ReaderKeys.HEADINGS, ReaderKeys.FOOTNOTES, ReaderKeys.AUTO_SCROLL_SPEED,
         ).map { it.name }
         assertEquals(
             listOf(
                 "position", "translation", "recent", "recentSearches",
                 "reader.theme", "reader.accent", "reader.fontSize", "reader.lineSpacing", "reader.layout",
-                "reader.redLetters", "reader.verseNumbers", "reader.headings", "reader.footnotes",
+                "reader.redLetters", "reader.verseNumbers", "reader.headings", "reader.footnotes", "reader.autoScrollSpeed",
             ),
             names,
         )

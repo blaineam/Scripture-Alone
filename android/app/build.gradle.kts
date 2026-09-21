@@ -128,6 +128,9 @@ dependencies {
     implementation("androidx.glance:glance-appwidget:1.1.1")
     implementation("androidx.startup:startup-runtime:1.1.1")
     implementation("com.google.android.gms:play-services-wearable:18.2.0")
+    // Listen: a media session over the TextToSpeech reader — lock screen, notification and headset
+    // controls, and the mediaPlayback foreground service that keeps reading with the screen off.
+    implementation("androidx.media3:media3-session:1.5.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation("junit:junit:4.13.2")

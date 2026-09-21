@@ -52,6 +52,8 @@ object ReaderKeys {
     val VERSE_NUMBERS = booleanPreferencesKey("reader.verseNumbers")
     val HEADINGS = booleanPreferencesKey("reader.headings")
     val FOOTNOTES = booleanPreferencesKey("reader.footnotes")
+    /** Points per second: 16, 28, 44 or 64 (`SettingsKey.autoScrollSpeed`). */
+    val AUTO_SCROLL_SPEED = doublePreferencesKey("reader.autoScrollSpeed")
 }
 
 /**
@@ -76,6 +78,7 @@ data class ReaderSettings(
     val verseNumbers: Boolean?,
     val headings: Boolean?,
     val footnotes: Boolean?,
+    val autoScrollSpeed: Double? = null,
 ) {
     companion object {
         fun from(p: Preferences): ReaderSettings = ReaderSettings(
@@ -92,6 +95,7 @@ data class ReaderSettings(
             verseNumbers = p[ReaderKeys.VERSE_NUMBERS],
             headings = p[ReaderKeys.HEADINGS],
             footnotes = p[ReaderKeys.FOOTNOTES],
+            autoScrollSpeed = p[ReaderKeys.AUTO_SCROLL_SPEED],
         )
 
         /** A verse key naming a real book and chapter. Verse bounds vary by translation and aren't checked. */

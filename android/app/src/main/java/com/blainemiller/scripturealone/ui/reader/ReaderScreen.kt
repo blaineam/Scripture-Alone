@@ -48,6 +48,21 @@ import com.blainemiller.scripturealone.data.userdata.Note
 import com.blainemiller.scripturealone.data.userdata.Selection
 import com.blainemiller.scripturealone.ui.notes.NotesPanel
 import java.util.UUID
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.withFrameNanos
+import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.data.listen.AutoScroll
+import com.blainemiller.scripturealone.ui.listen.ListenAndScrollControls
+import com.blainemiller.scripturealone.ui.listen.ListenController
+import com.blainemiller.scripturealone.ui.listen.NowPlayingBar
+import com.blainemiller.scripturealone.ui.listen.rememberListenStart
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
@@ -146,6 +161,7 @@ fun ReaderScreen(
     onStudy: () -> Unit = {},
     onCompare: () -> Unit = {},
     onManageTranslations: () -> Unit = {},
+    listen: ListenController? = null,
 ) {
     val palette = model.theme.palette(isSystemInDarkTheme()).accented(model.accent)
     val style = model.style(palette)
@@ -160,6 +176,32 @@ fun ReaderScreen(
     fun showNote(id: UUID) {
         openNote = id.toString()
         sheet = ReaderSheet.NOTES
+    }
+
+    // Listen and auto-scroll — ReaderView.swift's `listenButton`, `autoScrollControl` and the Now
+    // Playing bar. Auto-scroll is on only while the reader looks at it, as `@State autoScrolling` is.
+    val scope = rememberCoroutineScope()
+    val listenStart = listen?.let { rememberListenStart(it) }
+    var autoScrolling by remember { mutableStateOf(false) }
+    val listening = listen?.isPresented == true
+    val speaking = if (listening) listen?.speakingVerse else null
+    // Reading moved on into the next chapter: the reader follows (`reader.show(next)`). Only a move made
+    // after this screen appeared — a recreated activity must not replay an old one.
+    var followed by rememberSaveable { mutableIntStateOf(listen?.advance?.first ?: 0) }
+    LaunchedEffect(listen?.advance) {
+        val (count, next) = listen?.advance ?: return@LaunchedEffect
+        if (count == followed) return@LaunchedEffect
+        followed = count
+        if (next != model.location) model.show(next)
+    }
+    val selectionActions = if (listen == null || listenStart == null) actions else actions.copy(onListen = { ranges ->
+        listenStart { scope.launch { listen.playSelection(model.translationId, model.rights, model.verses(ranges)) } }
+    })
+    fun listenFromTop() {
+        val chapter = model.chapter?.takeIf { it.ref == model.location && it.translation.id == model.translationId } ?: return
+        val top = model.topVerse?.let(VerseRef::fromKey)
+            ?.takeIf { it.book == chapter.ref.book && it.chapter == chapter.ref.chapter }?.verse ?: 1
+        listenStart?.invoke { listen.toolbarAction(chapter, top) }
     }
 
     // How far the Go To sheet has risen, 0…1. As on iOS, the reader behind a sheet recedes: it
@@ -207,7 +249,7 @@ fun ReaderScreen(
                                 ChapterRenderer(style, ReaderTypography.fonts(style.size))
                                     .render(chapter.ref, chapter.layout, chapter.translation.copyright, markers)
                             },
-                            marks = VerseMarks(colors, model.selection),
+                            marks = VerseMarks(colors, model.selection, speaking),
                             markerSize = style.size,
                             onVerseTap = model::toggle,
                             onVerseLongPress = model::extendSelection,
@@ -219,6 +261,11 @@ fun ReaderScreen(
                             onTopVerse = model::updateTopVerse,
                             onSwipe = { forward -> if (forward) model.next() else model.previous() },
                             onAction = { if (it == ReaderAction.NEXT_CHAPTER) model.next() },
+                            autoScrollSpeed = if (autoScrolling) model.autoScrollSpeed else 0.0,
+                            onReachedEnd = { if (Canon.next(model.location) != null) model.next() else autoScrolling = false },
+                            onUserScroll = { autoScrolling = false },
+                            revealVerse = speaking,
+                            extraBottom = if (listening) NOW_PLAYING_ROOM else 0.dp,
                         )
                     }
                 model.loadError == null -> CircularProgressIndicator(
@@ -237,22 +284,48 @@ fun ReaderScreen(
                 model, palette, onGoTo = { sheet = ReaderSheet.GO_TO }, onNotes = { sheet = ReaderSheet.NOTES },
                 onStudy = onStudy, onCompare = onCompare, onManageTranslations = onManageTranslations,
             )
-            BottomBar(model, palette, Modifier.align(Alignment.BottomCenter))
-            AnimatedVisibility(
-                model.selection.isNotEmpty(),
-                enter = slideInVertically { it / 2 } + fadeIn(),
-                exit = slideOutVertically { it / 2 } + fadeOut(),
-                modifier = Modifier.align(Alignment.BottomCenter)
+            BottomBar(model, palette, Modifier.align(Alignment.BottomCenter)) {
+                ListenAndScrollControls(
+                    palette,
+                    autoScrolling = autoScrolling,
+                    autoScrollSpeed = model.autoScrollSpeed,
+                    onToggleAutoScroll = { autoScrolling = !autoScrolling },
+                    onPickSpeed = {
+                        model.autoScrollSpeed = it
+                        autoScrolling = true
+                    },
+                    listening = listening && listen?.isPlaying == true,
+                    onListen = ::listenFromTop,
+                )
+            }
+            // The Now Playing bar above the selection bar, both above the toolbar — iOS's bottom inset.
+            Column(
+                Modifier.align(Alignment.BottomCenter)
                     .windowInsetsPadding(WindowInsets.navigationBars)
                     .padding(start = 16.dp, end = 16.dp, bottom = 10.dp + 52.dp + 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                val ranges = model.selectedRanges
-                SelectionBar(
-                    model, palette,
-                    isFavorite = Selection.isFavorite(ranges, favorites),
-                    actions = actions,
-                    onNote = { showNote(model.newNoteFromSelection().id) },
-                )
+                AnimatedVisibility(
+                    listening,
+                    enter = slideInVertically { it / 2 } + fadeIn(),
+                    exit = slideOutVertically { it / 2 } + fadeOut(),
+                ) {
+                    listen?.let { NowPlayingBar(it, palette) }
+                }
+                AnimatedVisibility(
+                    model.selection.isNotEmpty(),
+                    enter = slideInVertically { it / 2 } + fadeIn(),
+                    exit = slideOutVertically { it / 2 } + fadeOut(),
+                ) {
+                    val ranges = model.selectedRanges
+                    SelectionBar(
+                        model, palette,
+                        isFavorite = Selection.isFavorite(ranges, favorites),
+                        actions = selectionActions,
+                        onNote = { showNote(model.newNoteFromSelection().id) },
+                    )
+                }
             }
         }
 
@@ -316,6 +389,11 @@ private fun ChapterColumn(
     onTopVerse: (Int) -> Unit,
     onSwipe: (forward: Boolean) -> Unit,
     onAction: (ReaderAction) -> Unit,
+    autoScrollSpeed: Double = 0.0,
+    onReachedEnd: () -> Unit = {},
+    onUserScroll: () -> Unit = {},
+    revealVerse: Int? = null,
+    extraBottom: Dp = 0.dp,
 ) {
     val state = rememberLazyListState()
     val status = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -357,6 +435,57 @@ private fun ChapterColumn(
             .collect { key -> if (key != null && target == null) report(key) }
     }
 
+    // Auto-scroll: the display-link stepper of `ChapterTextView`, a whole pixel at a time with the
+    // fraction carried. At the end of the chapter it hands over (the next chapter starts at its top and
+    // scrolling carries on); a finger on the page stops it.
+    val speed by rememberUpdatedState(autoScrollSpeed)
+    val reachedEnd by rememberUpdatedState(onReachedEnd)
+    val userScrolled by rememberUpdatedState(onUserScroll)
+    LaunchedEffect(rendered, autoScrollSpeed > 0) {
+        if (autoScrollSpeed <= 0) return@LaunchedEffect
+        val stepper = AutoScroll.Stepper(density.density)
+        while (isActive) {
+            val pixels = withFrameNanos { stepper.step(it, speed) }
+            if (pixels <= 0 || state.layoutInfo.visibleItemsInfo.isEmpty()) continue
+            if (!state.canScrollForward) {
+                reachedEnd()
+                break
+            }
+            try {
+                state.scrollBy(pixels.toFloat())
+            } catch (e: CancellationException) {
+                // A drag took the list over; the drag itself stops auto-scroll.
+                if (!isActive) throw e
+            }
+        }
+    }
+    LaunchedEffect(state) {
+        state.interactionSource.interactions.collect { if (it is DragInteraction.Start) userScrolled() }
+    }
+
+    // Listen keeps the spoken verse in view — `revealIfNeeded` / `reveal(verse:)`: only when it has left
+    // the screen (above the top bar, or down behind the bottom bars), and then brought to 18% down.
+    LaunchedEffect(rendered, revealVerse) {
+        val key = revealVerse ?: return@LaunchedEffect
+        if (target != null) return@LaunchedEffect
+        val (index, offset) = rendered.locate(key) ?: return@LaunchedEffect
+        if (state.layoutInfo.visibleItemsInfo.none { it.index == index }) {
+            state.scrollToItem(index)
+            withTimeoutOrNull(1_000) { snapshotFlow { state.layoutInfo.visibleItemsInfo.any { it.index == index } }.first { it } }
+        }
+        val item = state.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index } ?: return@LaunchedEffect
+        val layout = layouts[index] ?: return@LaunchedEffect
+        val line = layout.getLineForOffset(offset)
+        val info = state.layoutInfo
+        val before = with(density) { rendered.paragraphs[index].spaceBefore.sp.toPx() }
+        val y = info.beforeContentPadding + item.offset + before + layout.getLineTop(line)
+        val lineHeight = minOf(layout.getLineBottom(line) - layout.getLineTop(line), with(density) { 60.dp.toPx() })
+        val top = with(density) { (status + BAR_HEIGHT).toPx() }
+        val bottom = info.viewportSize.height - with(density) { (nav + 72.dp + extraBottom + 180.dp).toPx() }
+        if (y >= top && y + lineHeight <= maxOf(bottom, top + lineHeight)) return@LaunchedEffect
+        state.animateScrollBy(y - (top + info.viewportSize.height * 0.18f))
+    }
+
     BoxWithConstraints(
         Modifier.fillMaxSize().pointerInput(Unit) {
             // Horizontal only past the touch slop, and only if the list hasn't already claimed the
@@ -378,7 +507,7 @@ private fun ChapterColumn(
         LazyColumn(
             state = state,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = inset, end = inset, top = status + BAR_HEIGHT + 20.dp, bottom = nav + 140.dp),
+            contentPadding = PaddingValues(start = inset, end = inset, top = status + BAR_HEIGHT + 20.dp, bottom = nav + 140.dp + extraBottom),
         ) {
             itemsIndexed(rendered.paragraphs) { index, paragraph ->
                 Paragraph(
@@ -426,7 +555,7 @@ private fun Paragraph(
     val noteMarkers = remember(p.text) { p.text.getStringAnnotations(ChapterRenderer.NOTE_TAG, 0, p.text.length) }
     // Only what this paragraph's verses carry, so selecting a verse repaints just its paragraph.
     val keys = remember(p.verseSpans) { p.verseSpans.map { it.key }.toSet() }
-    val ownMarks = VerseMarks(marks.highlights.filterKeys { it in keys }, marks.selection.intersect(keys))
+    val ownMarks = VerseMarks(marks.highlights.filterKeys { it in keys }, marks.selection.intersect(keys), marks.speaking?.takeIf { it in keys })
     val tap by rememberUpdatedState(onVerseTap)
     val longPress by rememberUpdatedState(onVerseLongPress)
 
@@ -649,6 +778,9 @@ private val ARROW = 8.dp
 
 private val BAR_HEIGHT = 64.dp
 
+/** Room kept under the text for the Now Playing bar while it is up (the bar and its gap). */
+private val NOW_PLAYING_ROOM = 72.dp
+
 /**
  * The top chrome, in the iOS arrangement: Notes and Study in one pill on the left with the passage
  * beside it, the translation and appearance in one pill on the right. A fade from the page colour
@@ -710,7 +842,7 @@ private fun TopBar(
 }
 
 @Composable
-private fun BottomBar(model: ReaderViewModel, palette: ReaderPalette, modifier: Modifier) {
+private fun BottomBar(model: ReaderViewModel, palette: ReaderPalette, modifier: Modifier, center: @Composable () -> Unit = {}) {
     Box(
         modifier
             .fillMaxWidth()
@@ -724,6 +856,8 @@ private fun BottomBar(model: ReaderViewModel, palette: ReaderPalette, modifier: 
                     model.previous()
                 }
             }
+            // Auto-Scroll and Listen, between the arrows, as in the iPhone's bottom toolbar.
+            Pill(palette) { center() }
             Pill(palette) {
                 PillIcon(Icons.Rounded.ChevronRight, "Next Chapter", palette, enabled = Canon.next(model.location) != null) {
                     model.next()

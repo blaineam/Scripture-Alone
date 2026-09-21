@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.ui.listen.ListenController
 import com.blainemiller.scripturealone.ui.reader.ReaderScreen
 import com.blainemiller.scripturealone.ui.reader.SelectionActions
 import com.blainemiller.scripturealone.ui.study.StudyHost
@@ -30,6 +31,8 @@ class MainActivity : ComponentActivity() {
                     onStudy = panels.toggleStudy,
                     onCompare = panels.openCompare,
                     onManageTranslations = panels.openTranslations,
+                    // Listen: the toolbar button, the selection bar's Listen and the Now Playing bar.
+                    listen = ListenController.get(this),
                 )
             }
         }

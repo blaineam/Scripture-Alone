@@ -13,8 +13,13 @@ import com.blainemiller.scripturealone.data.userdata.HighlightColor
  * What the reader draws over the chapter's text: highlight colours by verse key, and the selection.
  * Kept out of the rendered text so marking a verse repaints without re-typesetting.
  */
-data class VerseMarks(val highlights: Map<Int, String> = emptyMap(), val selection: Set<Int> = emptySet()) {
-    val isEmpty: Boolean get() = highlights.isEmpty() && selection.isEmpty()
+data class VerseMarks(
+    val highlights: Map<Int, String> = emptyMap(),
+    val selection: Set<Int> = emptySet(),
+    /** The verse Listen is reading, if it is in view. */
+    val speaking: Int? = null,
+) {
+    val isEmpty: Boolean get() = highlights.isEmpty() && selection.isEmpty() && speaking == null
 }
 
 /**
@@ -39,6 +44,10 @@ internal fun highlightRuns(spans: List<VerseSpan>, highlights: Map<Int, String>)
  * Draws highlights and the selection behind a paragraph's text. Highlights are fills of the full line
  * height (TextKit's `backgroundColor`); a selected verse gets the thick dotted accent underline iOS
  * gives it (`.thick | .patternDot`).
+ *
+ * The verse being read aloud is marked as `ChapterRenderer.swift` marks it: an accent tint (13%, or 20%
+ * on a dark page) unless a highlight already fills it, and a thin solid accent rule beneath unless it
+ * is selected — selection is dotted, highlights are fills, listening is a line.
  */
 fun Modifier.verseMarks(
     layout: () -> TextLayoutResult?,
@@ -53,6 +62,18 @@ fun Modifier.verseMarks(
         for ((start, end, color) in highlightRuns(spans, marks.highlights)) {
             if (end > length) continue
             drawPath(text.getPathForRange(start, end), highlightFill(color, palette.isDark))
+        }
+        val speaking = marks.speaking?.let { key -> spans.firstOrNull { it.key == key } }
+        if (speaking != null && speaking.end <= length && speaking.end > speaking.start) {
+            if (HighlightColor.fromRaw(marks.highlights[speaking.key]) == null) {
+                drawPath(text.getPathForRange(speaking.start, speaking.end), palette.accent.copy(alpha = if (palette.isDark) 0.2f else 0.13f))
+            }
+            if (speaking.key !in marks.selection) {
+                val rule = 1.dp.toPx()
+                forEachLine(text, speaking) { x1, x2, baseline ->
+                    drawLine(palette.accent.copy(alpha = 0.7f), Offset(x1, baseline + rule * 2.5f), Offset(x2, baseline + rule * 2.5f), strokeWidth = rule)
+                }
+            }
         }
         val thickness = 2.dp.toPx()
         val dash = PathEffect.dashPathEffect(floatArrayOf(thickness, thickness * 1.2f))
@@ -77,6 +98,24 @@ fun Modifier.verseMarks(
                 )
             }
         }
+    }
+}
+
+/** Each line [span] covers, as its left and right x and its baseline. */
+private inline fun forEachLine(text: TextLayoutResult, span: VerseSpan, draw: (Float, Float, Float) -> Unit) {
+    val firstLine = text.getLineForOffset(span.start)
+    val lastLine = text.getLineForOffset(span.end - 1)
+    for (line in firstLine..lastLine) {
+        val from = maxOf(span.start, text.getLineStart(line))
+        val to = minOf(span.end, text.getLineEnd(line, visibleEnd = true))
+        if (to <= from) continue
+        val x1 = text.getHorizontalPosition(from, usePrimaryDirection = true)
+        val x2 = if (to == text.getLineEnd(line, visibleEnd = true) && to < span.end) {
+            text.getLineRight(line)
+        } else {
+            text.getHorizontalPosition(to, usePrimaryDirection = true)
+        }
+        draw(minOf(x1, x2), maxOf(x1, x2), text.getLineBaseline(line))
     }
 }
 

@@ -13,6 +13,7 @@ import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.Chapter
 import com.blainemiller.scripturealone.data.ChapterVerse
 import com.blainemiller.scripturealone.data.VerseRange
+import com.blainemiller.scripturealone.data.listen.AutoScroll
 import com.blainemiller.scripturealone.data.rights.TranslationRights
 import com.blainemiller.scripturealone.data.share.AppLink
 import com.blainemiller.scripturealone.data.share.SharePassageText
@@ -73,8 +74,9 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     var scrollTarget by mutableStateOf(saved.position?.takeIf { it.verse > 1 }?.key)
         private set
 
-    /** The verse currently at the top of the page, as last reported by the reader. */
-    private var topVerse: Int? = null
+    /** The verse currently at the top of the page, as last reported by the reader — where Listen starts. */
+    var topVerse: Int? = null
+        private set
 
     /** Chapters left behind, most recent first — at most 12. */
     var recent by mutableStateOf(saved.recent.take(Recents.LIMIT))
@@ -97,6 +99,8 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     var verseNumbers by persisted(saved.verseNumbers ?: true) { p, v -> p[ReaderKeys.VERSE_NUMBERS] = v }
     var headings by persisted(saved.headings ?: true) { p, v -> p[ReaderKeys.HEADINGS] = v }
     var footnotes by persisted(saved.footnotes ?: true) { p, v -> p[ReaderKeys.FOOTNOTES] = v }
+    /** Auto-scroll's speed in points per second; 28 ("Relaxed") by default, as on iOS. */
+    var autoScrollSpeed by persisted(AutoScroll.sanitize(saved.autoScrollSpeed)) { p, v -> p[ReaderKeys.AUTO_SCROLL_SPEED] = v }
 
     fun style(palette: ReaderPalette) = ReaderStyle(
         size = fontSize, lineSpacing = lineSpacing, layout = layout,
