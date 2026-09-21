@@ -8,6 +8,32 @@
 set -euo pipefail
 cd "$CI_PRIMARY_REPOSITORY_PATH"
 
+# ---- nothing-to-build guard ------------------------------------------------
+# If EVERY file changed in this commit is outside the iOS app — the Android port under android/,
+# docs, or Markdown — there is nothing to build, and letting the run continue would upload an
+# identical iOS binary to TestFlight. That is not free: App Store Connect caps uploads per app per
+# day. Runs before `brew install` so a skipped run costs seconds, not minutes.
+#
+# A change to ScriptureAlone/Resources is NOT skipped even though Android reads those databases
+# too: it changes what the iOS app ships.
+#
+# NOTE: exiting non-zero is the ONLY way to stop an Xcode Cloud run early. A run that ends with
+# the banner below is a DELIBERATE SKIP, not a broken build.
+if git rev-parse HEAD~1 >/dev/null 2>&1; then
+  CHANGED="$(git diff --name-only HEAD~1 HEAD || true)"
+  RELEVANT="$(printf '%s\n' "$CHANGED" | grep -vE '^android/|(^|/)(docs|\.claude)/|\.md$' || true)"
+  if [ -n "$CHANGED" ] && [ -z "$RELEVANT" ]; then
+    echo "=============================================================="
+    echo "  BUILD SKIPPED — this is NOT a failure."
+    echo "  Nothing in this commit affects the iOS app:"
+    printf '%s\n' "$CHANGED" | sed 's/^/    /'
+    echo "  Stopping now instead of uploading an identical binary."
+    echo "=============================================================="
+    exit 1
+  fi
+fi
+# ---- end guard -------------------------------------------------------------
+
 brew install xcodegen
 xcodegen generate
 
