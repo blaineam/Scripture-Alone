@@ -167,8 +167,8 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Feature | Status | Notes |
 |---|---|---|
 | Verse image designer: 8 templates, 3 aspects | ⬜ | |
-| Share links, same format as iOS | ⬜ | |
-| Deep links `scripturealone://` | ⬜ | |
+| Share links, same format as iOS | 🔧 | `data/share/ShareLink.kt`: payload, passage composer, decoder; encodes byte-for-byte as Swift does (tested). Share sheet and card UI not yet built |
+| Deep links `scripturealone://` | 🔧 | `AppLink.parse` handles `open?ref=` and `#s=` links; intent filter and navigation not yet wired |
 
 ### Widgets and Wear OS
 | Feature | Status | Notes |
