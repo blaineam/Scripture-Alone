@@ -15,8 +15,9 @@ android {
         minSdk = 30
         targetSdk = 36
         // The phone and watch bundles share one package, and Play needs every uploaded bundle's
-        // versionCode to be unique across the app, so the watch counts from 1,000,000 + the phone's.
-        versionCode = 1_000_001
+        // versionCode to be unique across the app, so the watch counts up from 1,000,000. (1,000,001
+        // was consumed by a Play draft that never shipped; a code, once uploaded, can't be reused.)
+        versionCode = 1_000_002
         versionName = "1.0.0"
     }
 
