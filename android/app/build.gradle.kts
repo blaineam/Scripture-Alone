@@ -17,6 +17,12 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildTypes.getByName("debug") {
+        // `-PappIdSuffix=study` installs a debug build beside the others (…scripturealone.study), so
+        // parallel work on one emulator doesn't overwrite each other's app or its saved state.
+        providers.gradleProperty("appIdSuffix").orNull?.let { applicationIdSuffix = ".$it" }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
