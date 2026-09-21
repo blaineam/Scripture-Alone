@@ -1,6 +1,8 @@
 package com.blainemiller.scripturealone.data.sabible
 
 import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.data.search.SearchHit
+import com.blainemiller.scripturealone.data.search.VerseSearch
 import com.blainemiller.scripturealone.data.sabible.PackageHeaderParser.array
 import com.blainemiller.scripturealone.data.sabible.PackageHeaderParser.field
 import com.blainemiller.scripturealone.data.sabible.PackageHeaderParser.obj
@@ -21,6 +23,7 @@ import java.nio.charset.CharacterCodingException
 import java.nio.file.StandardOpenOption
 import java.security.GeneralSecurityException
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicInteger
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -45,8 +48,9 @@ data class PackagedChapter(val ref: ChapterRef, val layoutJson: String, val vers
  * Reads a signed, encrypted `.sabible` translation package — the read path of
  * `ScriptureAloneCore/Package/TranslationPackage.swift`, ported so the same file opens on Android.
  *
- * **Per chapter, never whole-file.** The only function that decrypts is [openChapter], it takes one
- * chapter's index entry, and the file is read one byte range at a time. There is no API that
+ * **Per chapter, never whole-file.** The only functions that decrypt are [openChapter], which takes
+ * one chapter's index entry, and its sibling for one search-index bucket (see [search]); the file is
+ * read one byte range at a time. There is no API that
  * returns more than one chapter's plaintext and no cache of decrypted text, so "a whole Bible in the
  * clear never exists" stays a property of this class's shape, as it is on iOS.
  *
@@ -76,7 +80,19 @@ class TranslationPackage private constructor(
     private val bodyOffset: Long,
     private val contentKey: SecretKeySpec,
     private val index: Map<ChapterRef, PackagedChapterEntry>,
+    private val buckets: Map<Int, PackagedBucketEntry>,
 ) : Closeable {
+
+    /**
+     * What has been decrypted through this reader: chapters and index buckets. So the tests can assert
+     * the cost of a search rather than assume it.
+     */
+    data class AccessCounts(val chapters: Int, val buckets: Int)
+
+    private val chaptersOpened = AtomicInteger()
+    private val bucketsOpened = AtomicInteger()
+
+    val accessCounts: AccessCounts get() = AccessCounts(chaptersOpened.get(), bucketsOpened.get())
 
     val translation: PackagedTranslationIdentity get() = header.translation
     val policy: PackagePolicy get() = header.policy
@@ -112,10 +128,142 @@ class TranslationPackage private constructor(
             )
             cipher.updateAAD(associated)
             cipher.doFinal(sealed, SabibleFormat.NONCE_BYTES, sealed.size - SabibleFormat.NONCE_BYTES)
+                .also { chaptersOpened.incrementAndGet() }
         } catch (e: GeneralSecurityException) {
             // GCM cannot distinguish a wrong key from tampering. Either way this chapter is not shown,
             // and the caller is told which chapter refused.
             throw TranslationPackageException.ChapterTampered(boundAs, e)
+        }
+    }
+
+    // Search — `TranslationPackage.search` in Swift.
+
+    /** Whether this package carries an index this build can read. */
+    val isSearchable: Boolean
+        get() {
+            val parameters = header.index ?: return false
+            return parameters.tokenizer == PackageSearchIndex.TOKENIZER &&
+                parameters.aad == PackageSearchIndex.ASSOCIATED_DATA_VERSION &&
+                buckets.isNotEmpty()
+        }
+
+    /**
+     * Full-text search, answering the same call a plain store answers: every word must appear, the
+     * last word matches as a prefix so results narrow while typing, and a query in double quotes is an
+     * exact phrase. Results are in canonical order.
+     *
+     * What a search costs, and why: the query's tokens are hashed with a key derived from the content
+     * key, which names the buckets holding their postings. Only those buckets are opened — one or two,
+     * tens of kilobytes. The postings are intersected, a phrase is settled by comparing word positions
+     * rather than by scanning text, and only then are chapters decrypted, one at a time, for the verses
+     * that actually matched, because a hit has to carry its text. A search never opens the whole index
+     * and never decrypts the whole Bible; [accessCounts] says exactly how much it did open.
+     */
+    fun search(query: String, limit: Int = VerseSearch.DEFAULT_LIMIT): List<SearchHit> {
+        val parameters = header.index
+        if (parameters == null || buckets.isEmpty()) {
+            throw TranslationPackageException.NotSearchable("this package was built without a search index")
+        }
+        if (parameters.tokenizer != PackageSearchIndex.TOKENIZER || parameters.aad != PackageSearchIndex.ASSOCIATED_DATA_VERSION) {
+            throw TranslationPackageException.NotSearchable("its index was built by ${parameters.tokenizer}, which this app doesn’t implement")
+        }
+        if (limit <= 0) return emptyList()
+        val parsed = PackagedSearchQuery.parse(query, parameters.prefixMin) ?: return emptyList()
+
+        val key = PackageSearchIndex.indexKey(contentKey.encoded, header.translation.id)
+
+        // 1. Name the postings this query needs, and the buckets they live in.
+        val groups = mutableListOf<List<Lookup>>()
+        val longPrefixes = mutableListOf<String>()
+        val wanted = HashMap<Int, MutableSet<Long>>()
+        for (group in parsed.groups) {
+            val lookups = mutableListOf<Lookup>()
+            group.tokens.forEachIndexed { offset, token ->
+                val isPrefix = group.prefix && offset == group.tokens.lastIndex
+                val tag = if (isPrefix) {
+                    val scalars = token.codePointCount(0, token.length)
+                    val cut = minOf(parameters.prefixMax, scalars)
+                    if (cut < scalars) longPrefixes += token
+                    PackageSearchIndex.tag(key, PackageSearchIndex.TagKind.PREFIX, token.substring(0, token.offsetByCodePoints(0, cut)))
+                } else {
+                    PackageSearchIndex.tag(key, PackageSearchIndex.TagKind.WORD, token)
+                }
+                val id = PackageSearchIndex.tokenId(tag)
+                wanted.getOrPut(PackageSearchIndex.bucket(tag, parameters.buckets)) { HashSet() } += id
+                lookups += Lookup(id, isPrefix)
+            }
+            groups += lookups
+        }
+
+        // 2. Open only those buckets.
+        val entries = HashMap<Long, PackageSearchIndex.Entry>()
+        for ((bucket, ids) in wanted) {
+            val entry = buckets[bucket] ?: continue
+            entries.putAll(PackageSearchIndex.decodeBucket(openBucket(entry), ids))
+        }
+
+        // 3. Intersect: every group must be satisfied in the same verse.
+        var candidates: Set<Int>? = null
+        for (lookups in groups) {
+            val verses = versesSatisfying(lookups, entries)
+            candidates = candidates?.intersect(verses) ?: verses
+            if (candidates.isEmpty()) return emptyList()
+        }
+        if (candidates.isNullOrEmpty()) return emptyList()
+
+        // 4. Only now decrypt chapters — those that hold the matches, in canonical order, stopping at
+        //    the limit. A prefix longer than the longest indexed one is a superset, so those hits are
+        //    verified against the verse's own tokens; every other query needs no verification at all.
+        val hits = mutableListOf<SearchHit>()
+        var opened = 0
+        var text: Map<Int, String> = emptyMap()
+        var loaded: ChapterRef? = null
+        for (verseKey in candidates.sorted()) {
+            val ref = VerseRef.fromKey(verseKey)
+            if (ref.book !in SabibleFormat.BOOKS) continue
+            val chapterRef = ChapterRef(ref.book, ref.chapter)
+            if (loaded != chapterRef) {
+                if (opened >= SEARCH_CHAPTER_BUDGET) break
+                if (chapterRef !in index) continue
+                val chapter = chapter(chapterRef)
+                opened += 1
+                loaded = chapterRef
+                text = chapter.verses.associate { it.ref.key to it.text }
+            }
+            val verse = text[verseKey] ?: continue
+            if (longPrefixes.isNotEmpty()) {
+                val tokens = PackageSearchIndex.tokens(verse)
+                if (!longPrefixes.all { prefix -> tokens.any { it.startsWith(prefix) } }) continue
+            }
+            hits += SearchHit(ref, verse)
+            if (hits.size == limit) break
+        }
+        return hits
+    }
+
+    private class Lookup(val id: Long, val isPrefix: Boolean)
+
+    /**
+     * Reads one index bucket's sealed blob and opens it — the sibling of the chapter path, under the
+     * same discipline: one bucket, from its own byte range, bound to this package, this translation,
+     * this bucket number and this exact header. The domain string differs from a chapter's, so a
+     * chapter blob can never be opened as a bucket or the reverse.
+     */
+    private fun openBucket(entry: PackagedBucketEntry): ByteArray {
+        val sealed = readBody(entry.offset, entry.length)
+        val associated = indexAssociatedData(header.packageId, header.translation.id, entry.bucket, headerDigest)
+        return try {
+            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+            cipher.init(
+                Cipher.DECRYPT_MODE,
+                contentKey,
+                GCMParameterSpec(SabibleFormat.TAG_BYTES * 8, sealed, 0, SabibleFormat.NONCE_BYTES),
+            )
+            cipher.updateAAD(associated)
+            cipher.doFinal(sealed, SabibleFormat.NONCE_BYTES, sealed.size - SabibleFormat.NONCE_BYTES)
+                .also { bucketsOpened.incrementAndGet() }
+        } catch (e: GeneralSecurityException) {
+            throw TranslationPackageException.BucketTampered(entry.bucket, e)
         }
     }
 
@@ -276,6 +424,30 @@ class TranslationPackage private constructor(
             }
             if (index.isEmpty()) throw TranslationPackageException.DamagedHeader("no chapters")
 
+            // The search index's entries, held to the same bounds as a chapter's: every bucket inside
+            // the file, sealed-sized, and no larger than a bucket can be. Signed, but a signature only
+            // says who wrote a number — not that it is safe to seek to.
+            val buckets = HashMap<Int, PackagedBucketEntry>()
+            header.index?.let { parameters ->
+                if (parameters.buckets <= 0 || parameters.buckets > PackageSearchIndex.MAXIMUM_BUCKET_COUNT ||
+                    parameters.prefixMin < 1 || parameters.prefixMax < parameters.prefixMin ||
+                    parameters.padding < 0
+                ) {
+                    throw TranslationPackageException.DamagedHeader("index parameters")
+                }
+                for (entry in parameters.entries) {
+                    if (entry.bucket < 0 || entry.bucket >= parameters.buckets ||
+                        entry.offset < 0 ||
+                        entry.length <= SabibleFormat.SEALED_CHAPTER_OVERHEAD ||
+                        entry.length > PackageSearchIndex.MAXIMUM_BUCKET_BYTES ||
+                        bodyOffset + entry.offset + entry.length > size
+                    ) {
+                        throw TranslationPackageException.Truncated()
+                    }
+                    buckets[entry.bucket] = entry
+                }
+            }
+
             return TranslationPackage(
                 channel = channel,
                 header = header,
@@ -283,8 +455,58 @@ class TranslationPackage private constructor(
                 bodyOffset = bodyOffset,
                 contentKey = SecretKeySpec(contentKey.copyOf(), "AES"),
                 index = index,
+                buckets = buckets,
             )
         }
+
+        /**
+         * Chapters one search may decrypt. Only a prefix longer than the longest indexed one can produce
+         * candidates that turn out not to match, and with prefixes indexed to ten characters that is
+         * rare — this is the ceiling that keeps even a pathological query from walking the whole book.
+         */
+        const val SEARCH_CHAPTER_BUDGET = 256
+
+        /**
+         * One group of a query: adjacent word positions for a phrase, and a verse-level check for a
+         * trailing prefix, which has no positions by design.
+         */
+        private fun versesSatisfying(lookups: List<Lookup>, entries: Map<Long, PackageSearchIndex.Entry>): Set<Int> {
+            val positional = mutableListOf<PackageSearchIndex.Entry>()
+            var prefixVerses: Set<Int>? = null
+            for (lookup in lookups) {
+                val entry = entries[lookup.id] ?: return emptySet()
+                if (lookup.isPrefix) prefixVerses = entry.postings.mapTo(HashSet()) { it.verse } else positional += entry
+            }
+            val first = positional.firstOrNull() ?: return prefixVerses ?: emptySet()
+
+            var running = HashMap<Int, Set<Int>>()
+            for (posting in first.postings) running[posting.verse] = posting.positions.toSet()
+            for (entry in positional.drop(1)) {
+                val next = HashMap<Int, Set<Int>>()
+                for (posting in entry.postings) {
+                    val previous = running[posting.verse] ?: continue
+                    val adjacent = posting.positions.filterTo(HashSet()) { (it - 1) in previous }
+                    if (adjacent.isNotEmpty()) next[posting.verse] = adjacent
+                }
+                running = next
+                if (running.isEmpty()) return emptySet()
+            }
+            val matched = running.keys
+            return prefixVerses?.let { matched.intersect(it) } ?: matched.toSet()
+        }
+
+        /**
+         * `sabible-index-v1 ‖ package id ‖ translation id ‖ bucket ‖ header digest (hex)`, newline
+         * separated, UTF-8 — what `TranslationPackage.indexAssociatedData` and the packaging tool write.
+         */
+        fun indexAssociatedData(packageId: String, translationId: String, bucket: Int, headerDigest: ByteArray): ByteArray =
+            listOf(
+                PackageSearchIndex.ASSOCIATED_DATA_VERSION,
+                packageId,
+                translationId,
+                bucket.toString(),
+                SabibleKeys.hex(headerDigest),
+            ).joinToString("\n").toByteArray(Charsets.UTF_8)
 
         /**
          * `sabible-chapter-v1 ‖ package id ‖ translation id ‖ chapter key ‖ header digest (hex)`,

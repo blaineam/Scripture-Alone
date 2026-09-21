@@ -7,8 +7,11 @@ import com.blainemiller.scripturealone.data.rights.rights
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.sabible.ContentKey
 import com.blainemiller.scripturealone.data.sabible.PublisherKeyring
+import com.blainemiller.scripturealone.data.sabible.SealedTranslationKeys
 import com.blainemiller.scripturealone.data.sabible.ScalarRange
 import com.blainemiller.scripturealone.data.sabible.TranslationPackage
+import com.blainemiller.scripturealone.data.search.SearchHit
+import com.blainemiller.scripturealone.data.search.VerseSearch
 import com.blainemiller.scripturealone.data.sql.BundledSqlSource
 import com.blainemiller.scripturealone.data.sql.SqlSource
 import com.blainemiller.scripturealone.data.translations.TranslationLibrary
@@ -55,6 +58,19 @@ interface ChapterSource {
     val info: TranslationInfo
     fun contains(ref: ChapterRef): Boolean
     fun chapter(ref: ChapterRef): Chapter
+
+    /**
+     * Whether [search] can answer. On `ChapterTextSource` for the same reason as on iOS: the one place
+     * in the app that searches shouldn't have to ask what kind of translation it holds.
+     */
+    val isSearchable: Boolean get() = true
+
+    /**
+     * Full-text search in canonical order, at most [limit] hits: every word, the last as a prefix, a
+     * quoted query as a phrase. A plain store answers from FTS5, the sealed ASV from its sealed index,
+     * an online translation at its provider.
+     */
+    fun search(query: String, limit: Int = VerseSearch.DEFAULT_LIMIT): List<SearchHit>
 }
 
 /**
@@ -125,6 +141,8 @@ class SqliteChapterSource(private val context: Context, private val assetName: S
     override fun contains(ref: ChapterRef): Boolean = read { StoreChapters.layoutJson(it, ref) } != null
 
     override fun chapter(ref: ChapterRef): Chapter = read { StoreChapters.chapter(it, info, ref) }
+
+    override fun search(query: String, limit: Int): List<SearchHit> = read { VerseSearch(it).search(query, limit) }
 }
 
 /**
@@ -142,6 +160,11 @@ class PackageChapterSource(private val pkg: TranslationPackage) : ChapterSource 
     }
 
     override fun contains(ref: ChapterRef): Boolean = pkg.contains(ref)
+
+    override val isSearchable: Boolean get() = pkg.isSearchable
+
+    /** The package's sealed index — the same verses the store's FTS5 index finds for the same query. */
+    override fun search(query: String, limit: Int): List<SearchHit> = pkg.search(query, limit)
 
     override fun chapter(ref: ChapterRef): Chapter {
         val packaged = pkg.chapter(ref)
@@ -184,14 +207,19 @@ object BundledTranslations {
             val app = context.applicationContext
             when (id) {
                 "ASV" -> {
-                    val key = app.assets.open("bundled-signing.pub").use { it.readBytes() }
-                    PackageChapterSource(
-                        TranslationPackage.open(
-                            BundledDatabase.file(app, "ASV.sabible"),
-                            PublisherKeyring(listOf(key)),
-                            ContentKey.derive(ContentKey.BUNDLED_SEED, "ASV"),
-                        ),
-                    )
+                    // The publisher key stays in the base module: a trust anchor that came down the
+                    // same channel as the package it vouches for (the ASV's asset pack) would vouch
+                    // for nothing.
+                    val publisher = app.assets.open("bundled-signing.pub").use { it.readBytes() }
+                    val file = BundledDatabase.file(app, "ASV.sabible")
+                    // Derived from the seed and sealed to this device on first use; afterwards only
+                    // the Keystore-wrapped blob is on disk. Zeroed once the package holds its copy.
+                    val contentKey = SealedTranslationKeys.contentKey(app, "ASV", ContentKey.BUNDLED_SEED)
+                    try {
+                        PackageChapterSource(TranslationPackage.open(file, PublisherKeyring(listOf(publisher)), contentKey))
+                    } finally {
+                        contentKey.fill(0)
+                    }
                 }
                 else -> SqliteChapterSource(app, "$id.sqlite")
             }

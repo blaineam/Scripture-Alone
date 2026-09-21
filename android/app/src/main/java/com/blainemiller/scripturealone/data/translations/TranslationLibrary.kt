@@ -18,6 +18,8 @@ import com.blainemiller.scripturealone.data.online.OnlineKeyStore
 import com.blainemiller.scripturealone.data.online.OnlineProvider
 import com.blainemiller.scripturealone.data.online.UrlConnectionTransport
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.data.search.SearchHit
+import com.blainemiller.scripturealone.data.search.VerseSearch
 import com.blainemiller.scripturealone.data.sql.BundledSqlSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -242,6 +244,10 @@ class FileChapterSource(
 
     override fun chapter(ref: ChapterRef): Chapter = StoreChapters.chapter(source, info, ref)
 
+    /** The FTS5 index the importer wrote (`BundledStoreWriter`), the same one a bundled store carries. */
+    override fun search(query: String, limit: Int): List<SearchHit> =
+        synchronized(connection) { VerseSearch(source).search(query, limit) }
+
     fun close() = synchronized(connection) { connection.close() }
 }
 
@@ -254,4 +260,7 @@ class OnlineChapterSource(private val entry: OnlineEntry, private val loader: On
     override val info: TranslationInfo = OnlineChapterLoader.info(entry)
     override fun contains(ref: ChapterRef): Boolean = true
     override fun chapter(ref: ChapterRef): Chapter = loader.chapter(entry, ref)
+
+    /** At the provider, with the reader's key — one request, as on iOS. */
+    override fun search(query: String, limit: Int): List<SearchHit> = loader.search(entry, query, limit)
 }

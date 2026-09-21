@@ -33,6 +33,10 @@ class BundledUserDatabase(file: File) : UserDatabase {
         BundledSQLiteDriver().open(file.path, SQLITE_OPEN_READWRITE or SQLITE_OPEN_CREATE)
 
     init {
+        // The reader and the widgets each hold a connection. On a fresh install both open the new
+        // file at once, and the second to switch it to WAL found it locked and threw ("database is
+        // locked", crashing the first launch). Waiting for the lock instead of failing on it fixes that.
+        query("PRAGMA busy_timeout=5000") { it.long(0) }
         // WAL keeps a write from blocking a read and survives a kill mid-write.
         query("PRAGMA journal_mode=WAL") { it.text(0) }
     }

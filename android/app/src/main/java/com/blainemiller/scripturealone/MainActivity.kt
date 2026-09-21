@@ -4,9 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
+import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.ui.listen.ListenController
 import com.blainemiller.scripturealone.ui.reader.ReaderScreen
@@ -19,8 +21,12 @@ class MainActivity : ComponentActivity() {
 
     private val reader: ReaderViewModel by viewModels()
 
+    /** Play's "download over mobile data?" dialog, for an asset pack Play is holding for Wi-Fi. */
+    private val packConfirmation = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {}
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AssetLibrary.confirmationLauncher = packConfirmation
         if (savedInstanceState == null) openFromIntent(intent)
         setContent {
             // Study, Compare and Translations are hosted around the reader (a side pane or sheet).
@@ -36,6 +42,11 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    override fun onDestroy() {
+        if (AssetLibrary.confirmationLauncher === packConfirmation) AssetLibrary.confirmationLauncher = null
+        super.onDestroy()
     }
 
     override fun onNewIntent(intent: Intent) {

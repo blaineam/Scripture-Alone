@@ -12,9 +12,10 @@ data class SearchHit(val ref: VerseRef, val text: String)
  * `ScriptureAloneCore`. Every bundled plain store (BSB, KJV) carries the same FTS5 index the iOS app
  * queries, built `unicode61 remove_diacritics 2`, so the same query finds the same verses on both.
  *
- * Only for plain stores. The sealed ASV has no `verses_fts`; its own sealed index is a separate
- * piece of work, and searching some other translation in its place would put words under the ASV's
- * name that it doesn't contain.
+ * Only for plain stores — bundled, imported, and an online translation's cache all carry the index.
+ * The sealed ASV has no `verses_fts`; it searches its own sealed index
+ * ([com.blainemiller.scripturealone.data.sabible.TranslationPackage.search]), which answers the same
+ * queries with the same verses.
  */
 class VerseSearch(private val sql: SqlSource) {
 
@@ -56,11 +57,23 @@ class VerseSearch(private val sql: SqlSource) {
                 val phrase = trimmed.substring(1, trimmed.length - 1).replace("\"", "")
                 return if (phrase.isEmpty()) null else "\"$phrase\""
             }
+            val words = words(trimmed)
+            if (words.isEmpty()) return null
+            return words.mapIndexed { index, w ->
+                if (index == words.lastIndex) "\"$w\" *" else "\"$w\""
+            }.joinToString(" ")
+        }
+
+        /**
+         * The words of a query: runs of letters, marks, digits and apostrophes, the curly apostrophe
+         * straightened. Shared with the sealed index's query parser, which splits the same way.
+         */
+        fun words(text: String): List<String> {
             val words = mutableListOf<String>()
             val word = StringBuilder()
             var i = 0
-            while (i < trimmed.length) {
-                val cp = trimmed.codePointAt(i)
+            while (i < text.length) {
+                val cp = text.codePointAt(i)
                 if (isWordCodePoint(cp)) {
                     word.appendCodePoint(if (cp == RIGHT_SINGLE_QUOTE) '\''.code else cp)
                 } else if (word.isNotEmpty()) {
@@ -70,10 +83,7 @@ class VerseSearch(private val sql: SqlSource) {
                 i += Character.charCount(cp)
             }
             if (word.isNotEmpty()) words += word.toString()
-            if (words.isEmpty()) return null
-            return words.mapIndexed { index, w ->
-                if (index == words.lastIndex) "\"$w\" *" else "\"$w\""
-            }.joinToString(" ")
+            return words
         }
 
         private const val RIGHT_SINGLE_QUOTE = 0x2019

@@ -306,6 +306,12 @@ fun ReaderScreen(
                 onStudy = onStudy, onCompare = onCompare, onManageTranslations = onManageTranslations,
                 onAppearance = { appearance = true },
             )
+            if (keepsake == null) {
+                TranslationDownloadBanner(
+                    model, palette,
+                    Modifier.align(Alignment.TopCenter).windowInsetsPadding(WindowInsets.statusBars).padding(top = BAR_HEIGHT + 4.dp),
+                )
+            }
             keepsake?.let { reading ->
                 LegacyBanner(
                     reading, palette, onClose = model::closeKeepsake,

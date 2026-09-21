@@ -2,7 +2,10 @@ package com.blainemiller.scripturealone.data.online
 
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.canon.BookID
+import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.data.reference.ReferenceParser
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.data.search.SearchHit
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -150,9 +153,31 @@ class ESVClient(private val key: String, private val transport: HttpTransport = 
         return passage
     }
 
+    /**
+     * Crossway's own search, so the ESV is searchable like any other translation — `ESVClient.search`.
+     * The whole text can't be indexed on the device (Crossway's terms cap the cache at 500 verses), so
+     * the search happens at their end and costs one request.
+     */
+    fun search(query: String, limit: Int = 100): List<SearchHit> {
+        val response = transport.get(searchUrl(query, limit), mapOf("Authorization" to "Token $key"))
+        checkStatus(response, OnlineProvider.CROSSWAY)
+        val results = ((parseJson(response.body, OnlineProvider.CROSSWAY) as? JsonObject)?.get("results") as? JsonArray)
+            ?: throw OnlineFailure.Malformed(OnlineProvider.CROSSWAY)
+        return results.mapNotNull { element ->
+            val result = element as? JsonObject ?: return@mapNotNull null
+            val reference = result.string("reference") ?: return@mapNotNull null
+            val content = result.string("content") ?: return@mapNotNull null
+            searchHit(reference, content)
+        }
+    }
+
     companion object {
         const val SIGNUP_URL = "https://api.esv.org/account/create-application/"
         private const val ENDPOINT = "https://api.esv.org/v3/passage/html/"
+
+        /** `/v3/passage/search/` with `q` and `page-size` (at most 100), as the Swift client asks. */
+        fun searchUrl(text: String, limit: Int): String =
+            "https://api.esv.org/v3/passage/search/?" + query("q" to text, "page-size" to minOf(limit, 100).toString())
 
         /**
          * The HTML endpoint, because it states its structure instead of drawing it: words of Christ
@@ -224,6 +249,20 @@ class APIBibleClient(
         return passage
     }
 
+    /**
+     * API.Bible's own search, for the same reason Crossway's is used: the text can't be indexed on the
+     * device, so the provider does the searching — `APIBibleClient.search`.
+     */
+    fun search(query: String, limit: Int = 100): List<SearchHit> {
+        val root = get(searchUrl(bibleId, query, limit), query)
+        val data = (root as? JsonObject)?.get("data") as? JsonObject ?: throw OnlineFailure.Malformed(OnlineProvider.API_BIBLE)
+        val verses = data["verses"] as? JsonArray ?: return emptyList()
+        return verses.mapNotNull { element ->
+            val verse = element as? JsonObject ?: return@mapNotNull null
+            searchHit(verse.string("reference") ?: return@mapNotNull null, verse.string("text") ?: return@mapNotNull null)
+        }
+    }
+
     private fun get(url: String, reference: String): JsonElement {
         val response = transport.get(url, mapOf("api-key" to key))
         when (response.status) {
@@ -245,6 +284,14 @@ class APIBibleClient(
          * not text: its markup is USFM with the markers as class names (`wj`, `q1`, `d`, `s1`), the
          * same vocabulary this app's layout speaks.
          */
+        /** `bibles/{id}/search` with `query`, `limit` (at most 100) and canonical order. */
+        fun searchUrl(bibleId: String, text: String, limit: Int): String =
+            "$BASE/bibles/${encode(bibleId)}/search?" + query(
+                "query" to text,
+                "limit" to minOf(limit, 100).toString(),
+                "sort" to "canonical",
+            )
+
         fun chapterUrl(bibleId: String, chapter: ChapterRef): String {
             val code = BookID.of(chapter.book)?.code ?: error("no book ${chapter.book}")
             return "$BASE/bibles/${encode(bibleId)}/chapters/$code.${chapter.chapter}?" + query(
@@ -271,6 +318,15 @@ private fun parseJson(body: ByteArray, provider: OnlineProvider): JsonElement = 
     Json.parseToJsonElement(body.toString(Charsets.UTF_8))
 } catch (_: IllegalArgumentException) {
     throw OnlineFailure.Malformed(provider)
+}
+
+/**
+ * A provider's result as a hit: its reference ("John 3:16", "John 3:16-17") parsed to the first verse,
+ * as `ReferenceParser.parse(...).firstVerse` in Swift. A reference that doesn't parse is dropped.
+ */
+private fun searchHit(reference: String, text: String): SearchHit? {
+    val passage = ReferenceParser.parse(reference) ?: return null
+    return SearchHit(VerseRef(passage.book.number, passage.startChapter, passage.startVerse ?: 1), text)
 }
 
 private fun JsonObject.string(key: String): String? = (this[key] as? JsonPrimitive)?.takeIf { it.isString }?.content
