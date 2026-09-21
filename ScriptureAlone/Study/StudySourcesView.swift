@@ -12,7 +12,7 @@ struct StudySourcesView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
-            ForEach(study.store?.sources ?? []) { source in
+            ForEach(study.crossReferenceStore?.sources ?? []) { source in
                 Section(source.kind == .crossReferences ? "Cross References" : "Commentary") {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(source.name).font(.headline)

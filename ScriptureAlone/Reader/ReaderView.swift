@@ -79,7 +79,12 @@ struct ReaderView: View {
                     // popover(item:) has no onDismiss; the content disappears once dismissal finishes.
                     .onDisappear(perform: presentPendingNote)
                 }
-                .safeAreaInset(edge: .top) { LegacyBanner() }
+                .safeAreaInset(edge: .top) {
+                    VStack(spacing: 6) {
+                        LegacyBanner()
+                        TranslationDownloadBanner()
+                    }
+                }
                 .safeAreaInset(edge: .bottom) {
                     VStack(spacing: 8) {
                         if ListenController.shared.isListening(in: model) {

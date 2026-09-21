@@ -13,11 +13,11 @@ import StoreKit
 /// to exist and to adopt the protocol — `AssetPackManager` states that not doing so is a programmer
 /// error — so this file is the whole of it.
 ///
-/// `shouldDownload` is the one hook worth keeping. The study databases are on demand, so nothing
-/// here is scheduled automatically; a reader asks for them from the app and the app calls
-/// `ensureLocalAvailability`. Returning false keeps the system from fetching 55 MB on behalf of
-/// someone who never opens Commentary.
+/// **There is deliberately no `shouldDownload`.** Each pack's manifest already says when it
+/// downloads: the ASV is `essential`, so it arrives with the install and a fresh install reads
+/// offline; the BSB, the KJV, the commentary and the original languages are `onDemand`, fetched only
+/// when the reader asks. An earlier version returned `false` from `shouldDownload`, which is
+/// harmless for on-demand packs but would veto the essential ASV and leave a new install with no
+/// Bible at all. Apple's guidance is to omit the method when the manifest policies are enough.
 @main
-struct AssetDownloader: StoreDownloaderExtension {
-    func shouldDownload(_ assetPack: AssetPack) -> Bool { false }
-}
+struct AssetDownloader: StoreDownloaderExtension {}

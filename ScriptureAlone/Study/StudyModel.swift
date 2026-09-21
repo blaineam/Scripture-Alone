@@ -19,16 +19,25 @@ final class StudyModel {
     @ObservationIgnored private var loadedStore: StudyStore?
     @ObservationIgnored private var loadFailed = false
 
-    /// The study database, opened on first use.
+    /// Cross references and the list of study sources, which ship inside the app.
     ///
-    /// Commentary is an on-demand resource — 43.6 MB that many readers never open — so the file
-    /// may not be on the device yet, and the system may purge it later. Absence is therefore not a
-    /// failure: it is "not downloaded", and `prepare()` fixes it. Only a file that exists and
-    /// won't open is a real failure worth latching.
+    /// Split out of the commentary database (`Tools/build_study.py`, `CrossReferences.sqlite`, 3.9
+    /// MB) precisely so this never waits on a download: cross references are a core part of study,
+    /// and hiding them behind 44 MB of commentary would hide them from most readers. It has the same
+    /// schema as the commentary database minus the commentary, so the same `StudyStore` reads it.
+    @ObservationIgnored private(set) lazy var crossReferenceStore: StudyStore? =
+        Bundle.main.url(forResource: "CrossReferences", withExtension: "sqlite").flatMap { try? StudyStore(url: $0) }
+
+    /// The commentary database, opened on first use.
+    ///
+    /// An on-demand Background Assets pack — 42 MB that many readers never open — so the file may
+    /// not be on the device yet. Absence is therefore not a failure: it is "not downloaded", and
+    /// `prepareStore()` fixes it. Only a file that exists and won't open is a real failure worth
+    /// latching. Cross references do not come from here; see `crossReferenceStore`.
     var store: StudyStore? {
         if let loadedStore { return loadedStore }
         guard !loadFailed else { return nil }
-        guard let url = StudyAssetLibrary.shared.url(of: .commentary) else { return nil }
+        guard let url = AssetLibrary.shared.url(of: .commentary) else { return nil }
         guard let store = try? StudyStore(url: url) else {
             loadFailed = true
             return nil
@@ -41,14 +50,14 @@ final class StudyModel {
     @discardableResult
     func prepareStore() async -> Bool {
         if store != nil { return true }
-        guard await StudyAssetLibrary.shared.ensure(.commentary) else { return false }
+        guard await AssetLibrary.shared.ensure(.commentary) else { return false }
         return store != nil
     }
 
     /// What to tell the reader while they wait, or nil when there is nothing to wait for.
-    var downloadState: StudyAssetLibrary.State? {
+    var downloadState: AssetLibrary.State? {
         guard loadedStore == nil else { return nil }
-        return StudyAssetLibrary.shared.state(of: .commentary)
+        return AssetLibrary.shared.state(of: .commentary)
     }
 
     /// A tap in the text while study mode is on.

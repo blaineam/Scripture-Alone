@@ -121,15 +121,7 @@ final class ReaderModel {
         // A sealed translation is a bundled translation. The American Standard Version ships as a
         // signed, encrypted package rather than a database, and appears here exactly like the two
         // that don't — which is the point: the reader is never asked to care.
-        let names = ["ASV": "American Standard Version", "BSB": "Berean Standard Bible",
-                     "KJV": "King James Version"]
-        let bundled = ["ASV", "BSB", "KJV"].compactMap { id -> TranslationEntry? in
-            if SealedTranslations.shared.package(id) != nil {
-                return TranslationEntry(id: id, name: names[id] ?? id, source: .package)
-            }
-            guard let url = Bundle.main.url(forResource: id, withExtension: "sqlite") else { return nil }
-            return TranslationEntry(id: id, name: names[id] ?? id, url: url)
-        }
+        let bundled = Self.makeBundledEntries()
         translations = bundled
         bundledTranslations = bundled
 
@@ -148,15 +140,26 @@ final class ReaderModel {
         // it destroyed the preference before the real entry could arrive, so the selection could
         // never come back, on this launch or any later one.
         let preferred = defaults.string(forKey: "translation") ?? Self.defaultTranslation
-        if translations.contains(where: { $0.id == preferred }) {
+        let preferredEntry = translations.first { $0.id == preferred }
+        if let preferredEntry, Self.isOnDevice(preferredEntry) {
             selectTranslation(preferred)
         } else {
             // Hold the wish. `rebuildTranslations` grants it the moment the entry shows up.
-            awaitedTranslation = preferred
-            let fallback = [Self.defaultTranslation, translations.first?.id]
+            if preferredEntry == nil { awaitedTranslation = preferred }
+            let fallback = [Self.defaultTranslation, translations.first(where: Self.isOnDevice)?.id]
                 .compactMap { $0 }
-                .first { id in translations.contains { $0.id == id } }
+                .first { id in translations.contains { $0.id == id && Self.isOnDevice($0) } }
             if let fallback { selectTranslation(fallback, remember: false) }
+            // Listed but not downloaded — a BSB or KJV whose file is gone, after a reinstall say.
+            // Show the fallback now and fetch the reader's own choice; selecting it switches the
+            // reader the moment it arrives, rather than leaving them at a blank page meanwhile.
+            if preferredEntry != nil { selectTranslation(preferred) }
+        }
+        // The ASV is an essential asset pack, so after an App Store install it is already local and
+        // `SealedTranslations` opened it synchronously above. If it wasn't — a build whose pack is
+        // still processing — fetch it, and the awaited choice is granted when it lands.
+        if SealedTranslations.shared.package(Self.defaultTranslation) == nil {
+            Task { [weak self] in await self?.fetchDefaultTranslation() }
         }
         if let saved, saved.verse > 1 { scrollTarget = saved.key }
     }
@@ -169,6 +172,38 @@ final class ReaderModel {
     }
 
     private var importedEntries: [TranslationEntry] = []
+
+    /// The three translations the app offers from the start.
+    ///
+    /// The ASV appears once its package is open. The BSB and KJV appear *whether or not* they have
+    /// been downloaded: they are on-demand asset packs, and choosing one is what fetches it — see
+    /// `selectTranslation`. Their entries point at where the file will be once it arrives.
+    private static func makeBundledEntries() -> [TranslationEntry] {
+        ["ASV", "BSB", "KJV"].compactMap { id -> TranslationEntry? in
+            guard let pack = AssetPack(translationID: id) else { return nil }
+            if SealedTranslations.shared.package(id) != nil {
+                return TranslationEntry(id: id, name: pack.title, source: .package)
+            }
+            if pack == .asv { return nil }
+            return TranslationEntry(id: id, name: pack.title, url: AssetLibrary.installedURL(for: pack))
+        }
+    }
+
+    /// Whether choosing this translation shows it now, rather than starting a download. A
+    /// fallback must only ever pick one of these: silently fetching 15 MB because the preferred
+    /// translation wasn't back yet would be the app spending the reader's data on its own.
+    static func isOnDevice(_ entry: TranslationEntry) -> Bool {
+        guard let url = entry.url else { return true }   // packages are open; online needs no file
+        return FileManager.default.fileExists(atPath: url.path)
+    }
+
+    /// Fetches the ASV when the launch found it missing, then offers it.
+    private func fetchDefaultTranslation() async {
+        guard await AssetLibrary.shared.ensure(.asv),
+              SealedTranslations.shared.reopen(Self.defaultTranslation) else { return }
+        bundledTranslations = Self.makeBundledEntries()
+        rebuildTranslations()
+    }
 
     private func rebuildTranslations() {
         let added = (importedEntries + onlineEntries).sorted {
@@ -188,9 +223,9 @@ final class ReaderModel {
         // whose key would not unwrap — must not stay selected, or the reader is left staring at a
         // chapter that can never load.
         if !translations.contains(where: { $0.id == translationID }) {
-            let fallback = translations.contains { $0.id == Self.defaultTranslation }
+            let fallback = translations.contains { $0.id == Self.defaultTranslation && Self.isOnDevice($0) }
                 ? Self.defaultTranslation
-                : translations.first?.id
+                : translations.first(where: Self.isOnDevice)?.id
             // `remember: false` again: if the reader's translation is merely not back yet, this
             // must not become their new preference.
             if let fallback { selectTranslation(fallback, remember: awaitedTranslation == nil) }
@@ -245,8 +280,6 @@ final class ReaderModel {
     /// device. An online translation has no store, but it still has a licence.
     var translationInfo: TranslationInfo? { onlineTranslation?.info ?? source?.info }
 
-    /// - Parameter remember: false when the app is falling back rather than the reader choosing.
-    ///   A fallback must not overwrite what they asked for, or their choice is lost for good.
     /// Persists the reader's translation and tells the watch.
     ///
     /// Only a change of the stored value counts as the reader switching. The launch restore passes
@@ -261,9 +294,18 @@ final class ReaderModel {
         #endif
     }
 
+    /// The bundled translation being fetched because the reader chose it, for the reader's banner.
+    /// The previous translation stays on screen until it arrives, then the reader switches.
+    private(set) var downloadingPack: AssetPack?
+
+    /// - Parameter remember: false when the app is falling back rather than the reader choosing.
+    ///   A fallback must not overwrite what they asked for, or their choice is lost for good.
     func selectTranslation(_ id: String, remember: Bool = true) {
         guard let entry = translations.first(where: { $0.id == id }) else { return }
-        if remember { awaitedTranslation = nil }
+        if remember {
+            awaitedTranslation = nil
+            AssetLibrary.shared.clearFailedTranslations(except: AssetPack(translationID: id))
+        }
         let persist = remember
         if case .online(let provider, _) = entry.source {
             store = nil
@@ -295,8 +337,23 @@ final class ReaderModel {
             load()
             return
         }
-        packageSource = nil
         guard let url = entry.url else { return }
+        // BSB and KJV are on-demand asset packs: listed from the start, fetched the first time
+        // they're chosen. Nothing changes on screen until the file is here — the reader keeps
+        // reading what they had, with a banner — and then this runs again and switches.
+        if stores[id] == nil, !FileManager.default.fileExists(atPath: url.path),
+           let pack = AssetPack(translationID: id) {
+            guard downloadingPack == nil else { return }
+            downloadingPack = pack
+            Task { [weak self] in
+                let arrived = await AssetLibrary.shared.ensure(pack)
+                guard let self else { return }
+                self.downloadingPack = nil
+                if arrived { self.selectTranslation(id, remember: remember) }
+            }
+            return
+        }
+        packageSource = nil
         do {
             let store = try stores[id] ?? BibleStore(url: url)
             stores[id] = store

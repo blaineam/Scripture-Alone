@@ -1,0 +1,19 @@
+{
+  "assetPackID": "asv",
+  "downloadPolicy": {
+    "essential": {
+      "installationEventTypes": [
+        "firstInstallation"
+      ]
+    }
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Packages/ASV.sabible",
+      "fileDestination": "ASV.sabible"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

@@ -41,6 +41,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCE_DIR = os.path.join(ROOT, "Data", "source", "study")
 OUTPUT_DIR = os.path.join(ROOT, "ScriptureAlone", "Resources", "Study")
 OUTPUT = os.path.join(OUTPUT_DIR, "Study.sqlite")
+# Cross references and the source list, split out of Study.sqlite so they can ship inside the app
+# while the commentary (38 MB of the 42) is an on-demand Background Assets pack. StudyStore opens
+# either file: it reads `sources` at init and touches `crossrefs` or `commentary` only on query.
+CROSSREFS_OUTPUT = os.path.join(OUTPUT_DIR, "CrossReferences.sqlite")
 BIBLE_FOR_COUNTS = os.path.join(ROOT, "ScriptureAlone", "Resources", "Bibles", "KJV.sqlite")
 
 BOOKS = [
@@ -403,6 +407,37 @@ def build():
     print(f"-> {os.path.relpath(OUTPUT, ROOT)} ({os.path.getsize(OUTPUT) / 1e6:.1f} MB)")
 
 
+def split_cross_references():
+    """Writes CrossReferences.sqlite from the existing Study.sqlite: `sources` and `crossrefs` only.
+
+    Derived rather than built from source, so it can be regenerated without re-fetching anything and
+    always matches the Study.sqlite beside it byte for byte in the rows it carries.
+    """
+    fd, tmp = tempfile.mkstemp(suffix=".sqlite", dir=OUTPUT_DIR)
+    os.close(fd)
+    os.remove(tmp)
+    db = sqlite3.connect(tmp)
+    db.executescript(
+        """
+        PRAGMA page_size = 4096;
+        CREATE TABLE sources (id TEXT PRIMARY KEY, kind TEXT NOT NULL, sort INTEGER NOT NULL, name TEXT NOT NULL,
+                              short_name TEXT NOT NULL, author TEXT NOT NULL, year TEXT NOT NULL, license TEXT NOT NULL,
+                              license_url TEXT NOT NULL, url TEXT NOT NULL, attribution TEXT NOT NULL);
+        CREATE TABLE crossrefs (from_key INTEGER PRIMARY KEY, refs BLOB NOT NULL);
+        """
+    )
+    db.execute("ATTACH DATABASE ? AS study", (OUTPUT,))
+    db.execute("INSERT INTO sources SELECT * FROM study.sources")
+    db.execute("INSERT INTO crossrefs SELECT * FROM study.crossrefs")
+    db.commit()
+    db.execute("DETACH DATABASE study")
+    db.execute("VACUUM")
+    db.close()
+    os.chmod(tmp, 0o644)
+    os.replace(tmp, CROSSREFS_OUTPUT)
+    print(f"-> {os.path.relpath(CROSSREFS_OUTPUT, ROOT)} ({os.path.getsize(CROSSREFS_OUTPUT) / 1e6:.1f} MB)")
+
+
 # -- check ---------------------------------------------------------------------
 
 def key(code, chapter, verse):
@@ -509,7 +544,11 @@ def main():
             if not only or c["helloao"] in only or c["id"] in only:
                 fetch(c)
         return
+    if "--cross-references" in sys.argv:
+        split_cross_references()
+        return
     build()
+    split_cross_references()
     if "--check" in sys.argv:
         check()
 

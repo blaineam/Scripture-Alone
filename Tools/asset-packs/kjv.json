@@ -1,0 +1,15 @@
+{
+  "assetPackID": "kjv",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/KJV.sqlite",
+      "fileDestination": "KJV.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

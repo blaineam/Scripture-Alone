@@ -23,7 +23,7 @@ settings:
     GCC_TREAT_WARNINGS_AS_ERRORS: YES
     # The xattr-strip postCompileScript needs script sandboxing off.
     ENABLE_USER_SCRIPT_SANDBOXING: NO
-    MARKETING_VERSION: "1.0.1"
+    MARKETING_VERSION: "1.0.0"
     CURRENT_PROJECT_VERSION: "1"
     # Intel Macs and Intel simulators are out of scope.
     "ARCHS[sdk=macosx*]": arm64
@@ -49,12 +49,29 @@ targets:
           # The American Standard Version ships sealed, so its store stays out of the app; it is
           # kept in the repository as the source the packaging tool reads.
           - "Resources/Bibles/ASV.sqlite"
+          # Apple-hosted Background Assets packs, not app resources (Tools/asset-packs): the ASV
+          # package is `essential` (arrives with the install), the rest `onDemand`. Kept in the
+          # repository as the packs' sources, and copied into Debug builds only — see below.
+          - "Resources/Packages/ASV.sabible"
+          - "Resources/Bibles/BSB.sqlite"
+          - "Resources/Bibles/KJV.sqlite"
+          - "Resources/Study/Study.sqlite"
+          - "Resources/Study/Interlinear.sqlite"
     dependencies:
       - package: MillerKit
       - package: ScriptureAloneCore
         product: ScriptureAloneCore
       # Home/Lock Screen and Mac desktop widgets (embedded on both platforms).
       - target: ScriptureAloneWidgets
+      # Embedded into the app *wrapper*, not the products directory. XcodeGen's default for an
+      # extensionkit-extension is `$(EXTENSIONS_FOLDER_PATH)` under the products directory, which
+      # during `xcodebuild archive` is not where the app is installed — the appex lands in a stray
+      # `Scripture Alone.app` beside the real one and the archive ships without it. Xcode says so
+      # only as a warning; App Store Connect refuses the build.
+      - target: ScriptureAloneAssets
+        copy:
+          destination: wrapper
+          subpath: Extensions
       # The Apple Watch app rides inside the iOS app only.
       - target: ScriptureAloneWatch
         destinationFilters: [iOS]
@@ -84,12 +101,83 @@ targets:
         LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks"
         "LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]": "$(inherited) @executable_path/../Frameworks"
     postCompileScripts:
+      # Development builds have no asset packs — those exist only for App Store and TestFlight
+      # builds — so a build run from Xcode would open with no Bible at all. In Debug only, the pack
+      # sources are copied into the bundle and AssetLibrary installs from there. Release never
+      # carries them: a bundled fallback in Release would hide a broken asset-pack path.
+      # Runs before the xattr strip below, which then cleans these copies too.
+      - name: Copy asset-pack sources into Debug builds
+        basedOnDependencyAnalysis: false
+        script: |
+          [ "$CONFIGURATION" = "Debug" ] || exit 0
+          DEST="$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH"
+          R="$SRCROOT/ScriptureAlone/Resources"
+          for f in Packages/ASV.sabible Bibles/BSB.sqlite Bibles/KJV.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do
+            cp -f "$R/$f" "$DEST/"
+          done
       - name: Strip xattrs (codesign workaround)
         # Must run on EVERY build: iCloud Documents re-tags files with
         # com.apple.provenance between builds, and a stamp-file output lets
         # Xcode skip this phase on incremental builds while codesign still
         # reruns — which then fails with "resource fork, Finder information,
         # or similar detritus not allowed".
+        basedOnDependencyAnalysis: false
+        script: |
+          find "$CODESIGNING_FOLDER_PATH" -exec xattr -c {} + 2>/dev/null
+          true
+
+  # The Background Assets downloader extension. It has no behaviour — adopting
+  # `StoreDownloaderExtension` opts into the system's own downloader — but the framework requires
+  # it to exist, and `AssetPackManager` treats its absence as a programmer error.
+  ScriptureAloneAssets:
+    # ExtensionKit, so Xcode embeds it in Extensions/ rather than PlugIns/. Declared as
+    # `app-extension` it builds locally and then fails App Store export.
+    type: extensionkit-extension
+    supportedDestinations: [iOS, macOS]
+    sources:
+      - path: ScriptureAloneAssets
+        excludes:
+          - "Info.plist"
+          - "*.entitlements"
+    # Apple-Hosted Background Assets requires the app and its downloader extension to share an app
+    # group — the system coordinates between the two through it. The app declares the same group,
+    # plus BAAppGroupID/BAHasManagedAssetPacks/BAUsesAppleHosting in its Info.plist.
+    #
+    # The group MUST be listed under `properties`. XcodeGen writes the entitlements file from this
+    # block on every `xcodegen generate`; with only a `path` it writes an empty <dict/>, silently
+    # erasing anything added to the file by hand. That is what stripped the app-group entitlement
+    # from this extension and produced ITMS-90958 build after build — while the widgets, which
+    # declare `properties`, kept theirs.
+    entitlements:
+      path: ScriptureAloneAssets/ScriptureAloneAssets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.blainemiller.ScriptureAlone
+    dependencies:
+      - sdk: BackgroundAssets.framework
+      - sdk: StoreKit.framework
+    info:
+      path: ScriptureAloneAssets/Info.plist
+      properties:
+        CFBundleDisplayName: Scripture Alone Assets
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # No EXPrincipalClass. `@main` on AssetDownloader emits a `__swift5_entry` section, and
+        # App Store Connect rejects the build when both are present:
+        #   ITMS-90979: Disallowed Info.plist key — The EXPrincipalClass and
+        #   EXExtensionPrincipalClass keys aren't allowed … because the __swift5_entry section is
+        #   detected in the Mach-O header.
+        # The Swift entry point is the principal class; naming it again is the contradiction.
+        EXAppExtensionAttributes:
+          EXExtensionPointIdentifier: com.apple.background-asset-downloader-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAlone.assets
+        PRODUCT_NAME: ScriptureAloneAssets
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: YES
+    postCompileScripts:
+      - name: Strip xattrs (codesign workaround)
         basedOnDependencyAnalysis: false
         script: |
           find "$CODESIGNING_FOLDER_PATH" -exec xattr -c {} + 2>/dev/null

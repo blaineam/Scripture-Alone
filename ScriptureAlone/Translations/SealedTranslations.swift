@@ -46,11 +46,23 @@ final class SealedTranslations {
     /// Called once per identifier at startup. Opening reads and authenticates the header only —
     /// chapters are decrypted when they are read — so this costs a signature check, not a 16 MB
     /// decryption.
+    ///
+    /// **The package arrives as an asset pack, the key does not.** The `.sabible` file is the ASV's
+    /// `essential` Background Assets pack, copied out of the pack on first launch (`AssetLibrary`).
+    /// The publisher key it is verified against stays inside the app binary: a trust anchor that
+    /// came down the same channel as the thing it vouches for would vouch for nothing.
     private func open(_ id: String) {
-        guard let packageURL = Bundle.main.url(forResource: id, withExtension: "sabible"),
-              let keyURL = Bundle.main.url(forResource: "bundled-signing", withExtension: "pub"),
+        guard let keyURL = Bundle.main.url(forResource: "bundled-signing", withExtension: "pub"),
               let publisherKey = try? Data(contentsOf: keyURL) else {
             failures[id] = "\(id) isn't in this build."
+            return
+        }
+        guard let pack = AssetPack(translationID: id),
+              AssetLibrary.shared.installIfLocal(pack),
+              let packageURL = AssetLibrary.shared.url(of: pack) else {
+            // Not on the device yet — the essential pack hasn't landed, which a normal App Store
+            // install never sees. `ReaderModel` fetches it and calls `reopen`.
+            failures[id] = "\(id) hasn't finished installing."
             return
         }
         do {

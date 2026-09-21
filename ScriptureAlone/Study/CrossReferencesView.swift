@@ -78,7 +78,7 @@ struct CrossReferencesView: View {
                     Button("Show All \(rows.count) References") { showAll = true }
                 }
             }
-            if let source = study.store?.crossReferenceSource {
+            if let source = study.crossReferenceStore?.crossReferenceSource {
                 Section {
                     Text(source.attribution)
                         .font(.caption2)
@@ -95,7 +95,7 @@ struct CrossReferencesView: View {
 
     private func load() {
         showAll = false
-        guard let store = study.store, let bible = model.source else { return }
+        guard let store = study.crossReferenceStore, let bible = model.source else { return }
         let references = (try? store.crossReferences(for: verse)) ?? []
         let rows = references.map { reference in
             let verses = (try? bible.verses(in: reference.target)) ?? []

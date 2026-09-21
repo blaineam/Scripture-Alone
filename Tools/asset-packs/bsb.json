@@ -1,0 +1,15 @@
+{
+  "assetPackID": "bsb",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/BSB.sqlite",
+      "fileDestination": "BSB.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}
