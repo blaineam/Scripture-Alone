@@ -79,10 +79,13 @@ class CachedStore(file: File) : AutoCloseable {
     fun contains(chapter: ChapterRef): Boolean = chapter in verseCounts
     fun verseCount(chapter: ChapterRef): Int = verseCounts[chapter] ?: 0
 
-    fun layout(chapter: ChapterRef): ChapterLayout =
-        ChapterLayout.parse(rows("SELECT layout FROM chapters WHERE book = ? AND chapter = ?", chapter.book, chapter.chapter) {
+    fun layout(chapter: ChapterRef): ChapterLayout = ChapterLayout.parse(layoutJSON(chapter))
+
+    /** The layout column exactly as stored — what a bundled store's `chapters.layout` is compared with. */
+    fun layoutJSON(chapter: ChapterRef): String =
+        rows("SELECT layout FROM chapters WHERE book = ? AND chapter = ?", chapter.book, chapter.chapter) {
             it.getString(1)
-        }.single())
+        }.single()
 
     /** Verse rows with `red` turned back from stored scalars into UTF-16, as `BibleStore` does. */
     fun verses(range: VerseRange): List<VerseText> =

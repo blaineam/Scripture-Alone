@@ -18,7 +18,8 @@ public struct ParsedPassage: Sendable {
     /// Flat text per verse, with words of Christ as UTF-16 ranges — what search, quotation,
     /// listening and sharing all work from.
     public var verses: [VerseText] = []
-    /// The chapter's shape: paragraphs, poetry lines, headings, psalm titles.
+    /// The chapter's shape: paragraphs, poetry lines, headings, psalm titles. A heading block
+    /// carries its words in `heading` and no fragments, exactly as the bundled stores do.
     public var blocks: [ExtractedBlock] = []
 
     public var isEmpty: Bool { verses.isEmpty }
@@ -195,9 +196,22 @@ struct PassageBuilder {
         // not be silently lost when it does. So anything still open is closed here, and carried
         // into the next fragment at its start.
         let carried = openStyles.map(\.style)
+        // Trim *before* closing anything. Trimming the head would shift every span; only a
+        // trailing trim is safe here, and the leading side is already handled in `append`. A style
+        // closed first would end past the trimmed text, and `finish()` — rightly refusing a range
+        // outside the verse — would drop the whole span: red letters silently lost.
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        text = String(text.reversed().drop(while: { $0 == " " }).reversed())
         for open in openStyles.reversed() { closeStyle(open.style) }
         openStyles = []
-        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        // A span closed earlier by its own tag can end in the whitespace just trimmed, too
+        // (`<span class="woc">…me. </span>` before the next verse number). Clamp it to the text.
+        let length = cursor
+        spans = spans.compactMap { span in
+            let end = min(span.start + span.length, length)
+            guard end > span.start else { return nil }
+            return StyledSpan(start: span.start, length: end - span.start, style: span.style)
+        }
         defer {
             text = ""
             spans = []
@@ -210,18 +224,24 @@ struct PassageBuilder {
         let belongsToNoVerse = kind.isHeading || kind == .title
         guard !trimmed.isEmpty, verse > 0 || belongsToNoVerse else { return }
         let number = belongsToNoVerse ? 0 : verse
-        // Trimming the head would shift every span; only a trailing trim is safe here, and the
-        // leading side is already handled in `append`.
-        let kept = String(text.reversed().drop(while: { $0 == " " }).reversed())
         fragments.append(ExtractedFragment(verse: number, numbered: numbered && !belongsToNoVerse,
-                                           text: kept, spans: spans))
+                                           text: text, spans: spans))
         numbered = false
     }
 
     mutating func endBlock() {
         endFragment()
         guard !fragments.isEmpty || kind == .stanzaBreak else { return }
-        blocks.append(ExtractedBlock(kind: kind, fragments: fragments))
+        if kind.isHeading {
+            // A heading is stored the way the bundled Bibles store one — `{"k":"s1","t":"Jesus and
+            // Nicodemus"}`, its words on the block and no fragments. `ChapterLayout` reads a
+            // heading's text from `t` alone, and the layout writer writes only `heading`, so words
+            // left in the fragments were written as `"t":""` and the reader drew nothing.
+            let title = fragments.map(\.text).joined(separator: " ")
+            blocks.append(ExtractedBlock(kind: kind, heading: title))
+        } else {
+            blocks.append(ExtractedBlock(kind: kind, fragments: fragments))
+        }
         fragments = []
     }
 

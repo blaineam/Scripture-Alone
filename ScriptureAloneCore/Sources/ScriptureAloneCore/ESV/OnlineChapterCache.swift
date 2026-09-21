@@ -153,9 +153,8 @@ public final class OnlineChapterCache: @unchecked Sendable {
 
     // MARK: - Writing
 
-    /// Inserts or replaces one chapter, evicting whatever must go to stay under the ceiling.
-    ///
-    /// Inserts or replaces one chapter, with whatever structure the provider supplied.
+    /// Inserts or replaces one chapter, with whatever structure the provider supplied, evicting
+    /// whatever must go to stay under the ceiling.
     ///
     /// Both services are asked for HTML now, which names its blocks — so an online psalm arrives
     /// as poetry lines with its superscription, and the words of Christ arrive as red. `blocks`
@@ -248,9 +247,9 @@ public final class OnlineChapterCache: @unchecked Sendable {
 
     // MARK: - Layout
 
-    /// One paragraph, every verse numbered — the same shape as `ChapterLayout.prose(_:)`, encoded
-    /// with the builder's own writer so the JSON matches a bundled store exactly. See the note on
-    /// `store(_:for:)` for why an online chapter carries no poetry blocks.
+    /// The provider's blocks, encoded with the builder's own writer so the JSON matches a bundled
+    /// store exactly — headings included, as `{"k":"s1","t":…}`. With no blocks, one paragraph with
+    /// every verse numbered: the same shape as `ChapterLayout.prose(_:)`.
     static func layout(for rows: [VerseText], blocks: [ExtractedBlock] = []) throws -> String {
         // The provider's own structure when it gave us one — paragraphs, poetry lines, psalm
         // titles, headings. Falling back to a single paragraph only when it did not.
@@ -270,9 +269,9 @@ public final class OnlineChapterCache: @unchecked Sendable {
         }
     }
 
-    /// `VerseText.red` is in UTF-16 ranges; the store's offsets are Unicode scalars. The ESV API
-    /// returns no words-of-Christ markup, so this is usually empty — but a silent mis-conversion
-    /// would be worse than none, so it is done properly.
+    /// `VerseText.red` is in UTF-16 ranges; the store's offsets are Unicode scalars. Both services'
+    /// HTML marks the words of Christ, so these ranges are common, and anything outside the basic
+    /// plane makes the two offset systems disagree — so it is measured, never assumed.
     static func scalarSpans(_ ranges: [NSRange], in text: String) -> [StyledSpan] {
         guard !ranges.isEmpty else { return [] }
         var scalarIndex: [Int: Int] = [:]
@@ -364,7 +363,9 @@ public final class OnlineChapterCache: @unchecked Sendable {
     }
 
     /// Bumped whenever text written into the cache would come out differently. See `isUsable`.
-    static let textFormatVersion = "3"
+    /// "4": headings carry their words (they were written as `"t":""`), and red spans ending in
+    /// whitespace are no longer dropped.
+    static let textFormatVersion = "4"
 
 
     private func create() throws {

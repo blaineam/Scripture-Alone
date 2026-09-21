@@ -362,8 +362,12 @@ class OnlineChapterCache(
     }
 
     companion object {
-        /** Bumped whenever text written into the cache would come out differently. See [isUsable]. */
-        internal const val TEXT_FORMAT_VERSION = "3"
+        /**
+         * Bumped whenever text written into the cache would come out differently. See [isUsable].
+         * "4": headings carry their words (they were written as `"t":""`), and red spans ending in
+         * whitespace are no longer dropped.
+         */
+        internal const val TEXT_FORMAT_VERSION = "4"
 
         /**
          * `ImportedBibleBuilder.schema` — byte for byte the shape `Tools/build_bibles.py` creates —
@@ -386,8 +390,9 @@ class OnlineChapterCache(
 
         /**
          * The provider's own structure when it gave one — paragraphs, poetry lines, psalm titles,
-         * headings — or, when it did not, one paragraph with every verse numbered: the same shape
-         * as [ChapterLayout.prose], encoded with the same writer a bundled store's layout comes from.
+         * headings (as `{"k":"s1","t":…}`, exactly as a bundled store writes them) — or, when it did
+         * not, one paragraph with every verse numbered: the same shape as [ChapterLayout.prose],
+         * encoded with the same writer a bundled store's layout comes from.
          */
         internal fun layout(rows: List<VerseText>, blocks: List<ChapterLayout.Block> = emptyList()): String {
             val shape = blocks.ifEmpty {

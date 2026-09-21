@@ -2,6 +2,10 @@
 
 ## After 1.0.0
 
+- Section headings in an online translation's cached chapters keep their words. API.Bible
+  chapters were cached with each heading ("Jesus and Nicodemus" in John 3) stored blank, so
+  headings vanished once a chapter was read offline; existing caches are discarded and refetched.
+  Words of Christ ending in a space at a verse boundary are no longer dropped.
 - A notes export that quotes a copyrighted translation always ends with the publisher's notice.
   It was missing from a single-note Markdown export, from each file of a Markdown folder, and
   from the PDF. The bundled ASV, BSB and KJV are public domain and carry no notice, so no export

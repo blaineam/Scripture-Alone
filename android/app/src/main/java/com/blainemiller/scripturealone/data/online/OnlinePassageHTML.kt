@@ -53,7 +53,10 @@ data class VerseText(val ref: VerseRef, val text: String, val red: List<Utf16Ran
 data class ParsedPassage(
     /** Flat text per verse, with words of Christ as UTF-16 ranges. */
     val verses: List<VerseText> = emptyList(),
-    /** The chapter's shape: paragraphs, poetry lines, headings, psalm titles. */
+    /**
+     * The chapter's shape: paragraphs, poetry lines, headings, psalm titles. A heading block carries
+     * its words in `text` and no fragments, exactly as the bundled stores do.
+     */
     val blocks: List<ChapterLayout.Block> = emptyList(),
 ) {
     val isEmpty: Boolean get() = verses.isEmpty()
@@ -247,21 +250,32 @@ internal class PassageBuilder(private val chapter: ChapterRef) {
         // not be silently lost when it does. So anything still open is closed here, and carried
         // into the next fragment at its start.
         val carried = openStyles.map { it.style }
+        // Trim *before* closing anything. Trimming the head would shift every span; only a trailing
+        // trim is safe here, and the leading side is already handled in `append`. A style closed
+        // first would end past the trimmed text, and `finish()` — rightly refusing a range outside
+        // the verse — would drop the whole span: red letters silently lost.
+        val blank = text.all(SwiftText::isHorizontalWhitespace)
+        text = text.trimEnd(' ')
         for (open in openStyles.toList().asReversed()) closeStyle(open.style)
         openStyles.clear()
+        // A span closed earlier by its own tag can end in the whitespace just trimmed, too
+        // (`<span class="woc">…me. </span>` before the next verse number). Clamp it to the text.
+        val length = cursor
+        val clamped = spans.mapNotNull { span ->
+            val end = minOf(span.start + span.length, length)
+            if (end > span.start) ChapterLayout.Span(span.start, end - span.start, span.style) else null
+        }
+        spans.clear()
+        spans += clamped
 
         // A heading or a psalm's superscription belongs to no verse. The bundled stores encode
         // those as verse 0 — the ASV's Psalm 23 carries "A Psalm of David" exactly that way — so the
         // same convention is used here, and `finish()` keeps such blocks out of the verse text while
         // the layout still draws them.
         val belongsToNoVerse = kind.isHeading || kind == ChapterLayout.Kind.TITLE
-        val blank = text.all(SwiftText::isHorizontalWhitespace)
         if (!blank && (verse > 0 || belongsToNoVerse)) {
             val number = if (belongsToNoVerse) 0 else verse
-            // Trimming the head would shift every span; only a trailing trim is safe here, and the
-            // leading side is already handled in `append`.
-            val kept = text.trimEnd(' ')
-            fragments += ChapterLayout.Fragment(number, numbered && !belongsToNoVerse, kept, spans.toList())
+            fragments += ChapterLayout.Fragment(number, numbered && !belongsToNoVerse, text, spans.toList())
             numbered = false
         }
 
@@ -274,7 +288,15 @@ internal class PassageBuilder(private val chapter: ChapterRef) {
     fun endBlock() {
         endFragment()
         if (fragments.isEmpty() && kind != ChapterLayout.Kind.STANZA_BREAK) return
-        blocks += ChapterLayout.Block(kind, fragments = fragments.toList())
+        blocks += if (kind.isHeading) {
+            // A heading is stored the way the bundled Bibles store one — `{"k":"s1","t":"Jesus and
+            // Nicodemus"}`, its words on the block and no fragments. `ChapterLayout` reads a
+            // heading's text from `t` alone, and the layout writer writes only `text`, so words
+            // left in the fragments were written as `"t":""` and the reader drew nothing.
+            ChapterLayout.Block(kind, text = fragments.joinToString(" ") { it.text })
+        } else {
+            ChapterLayout.Block(kind, fragments = fragments.toList())
+        }
         fragments.clear()
     }
 

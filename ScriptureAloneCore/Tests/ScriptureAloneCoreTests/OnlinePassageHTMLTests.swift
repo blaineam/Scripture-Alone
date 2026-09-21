@@ -64,6 +64,36 @@ import Testing
         #expect(passage.verses.first?.text == "Spaced out.")
     }
 
+    /// A words-of-Christ span ending in whitespace at a verse boundary — closed by its own tag, or
+    /// still open when the next verse number arrives — must survive the fragment's trailing trim.
+    /// Closing it before trimming left it one scalar past the verse text, and `finish()` dropped it.
+    @Test func esvRedLettersEndingInWhitespaceSurviveTheVerseBoundary() throws {
+        let closed = """
+        <p><b class="verse-num">1&nbsp;</b>He said, <span class="woc">Follow me. </span>\
+        <b class="verse-num">2&nbsp;</b>And they went.</p>
+        """
+        let passage = ESVPassageHTML.parse(closed, in: ChapterRef(.john, 1))
+        #expect(passage.verses.count == 2)
+        let first = try #require(passage.verses.first)
+        #expect(first.text == "He said, Follow me.")
+        let red = try #require(first.red.first, "the red span was dropped")
+        let range = try #require(Range(red, in: first.text))
+        #expect(String(first.text[range]) == "Follow me.")
+        #expect(passage.verses[1].red.isEmpty)
+
+        let open = """
+        <p><b class="verse-num">1&nbsp;</b>He said, <span class="woc">Follow me. \
+        <b class="verse-num">2&nbsp;</b>Come and see.</span> And they went.</p>
+        """
+        let carried = ESVPassageHTML.parse(open, in: ChapterRef(.john, 1))
+        #expect(carried.verses.count == 2)
+        for (verse, quoted) in zip(carried.verses, ["Follow me.", "Come and see."]) {
+            let red = try #require(verse.red.first, "\(verse.ref) lost its red letters")
+            let range = try #require(Range(red, in: verse.text))
+            #expect(String(verse.text[range]) == quoted)
+        }
+    }
+
     // MARK: API.Bible markup
 
     @Test func apiBibleWordsOfJesusBecomeRedRanges() throws {
@@ -77,6 +107,34 @@ import Testing
         #expect(verse.text == "For God loved the world.")
         let range = try #require(Range(verse.red.first ?? NSRange(), in: verse.text))
         #expect(String(verse.text[range]) == "For God loved the world.")
+    }
+
+    @Test func apiBibleRedLettersEndingInWhitespaceSurvive() throws {
+        let html = """
+        <p class="p"><span data-number="16" data-sid="JHN 3:16" class="v">16</span>\
+        <span class="wj">For God loved the world. </span></p>\
+        <p class="p"><span data-number="17" data-sid="JHN 3:17" class="v">17</span>Next. </p>
+        """
+        let passage = APIBiblePassageHTML.parse(html, in: ChapterRef(.john, 3))
+        let verse = try #require(passage.verses.first)
+        #expect(verse.text == "For God loved the world.")
+        let red = try #require(verse.red.first, "the red span was dropped")
+        let range = try #require(Range(red, in: verse.text))
+        #expect(String(verse.text[range]) == "For God loved the world.")
+    }
+
+    /// A heading's words go on the block, the way the bundled stores keep them — not in fragments,
+    /// which the layout writer never writes for a heading.
+    @Test func apiBibleHeadingsCarryTheirWordsOnTheBlock() throws {
+        let html = """
+        <p class="s1">A Heading</p><p class="p">\
+        <span data-number="1" data-sid="JHN 1:1" class="v">1</span>In the beginning.</p>
+        """
+        let passage = APIBiblePassageHTML.parse(html, in: ChapterRef(.john, 1))
+        let heading = try #require(passage.blocks.first)
+        #expect(heading.kind == .heading)
+        #expect(heading.heading == "A Heading")
+        #expect(heading.fragments.isEmpty)
     }
 
     /// The markers are USFM, which is the vocabulary this app's own layout already speaks.

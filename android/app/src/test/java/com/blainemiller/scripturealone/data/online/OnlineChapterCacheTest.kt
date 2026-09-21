@@ -8,6 +8,7 @@ import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -298,6 +299,32 @@ class OnlineChapterCacheTest {
         val row = store(cache) { it.verses(range(ref(BookID.JOHN, 1, 43))) }.first()
         val red = row.red.first()
         assertEquals(quoted, red.substring(row.text))
+    }
+
+    /**
+     * API.Bible's real John 3 has three section headings. They were written as `{"k":"s1","t":""}`,
+     * and the reader — which reads a heading's words from `t` alone — drew nothing. They must come
+     * back with their words, in exactly the shape a bundled Bible's heading has: the bundled BSB's
+     * John 3 layout opens with `{"k":"s1","t":"Jesus and Nicodemus"}`.
+     */
+    @Test fun realAPIBibleHeadingsSurviveTheRoundTrip() {
+        val capture = File(System.getProperty("user.home"), ".scripture-alone-import/online/apibible-JHN3.html")
+        assumeTrue("no captured API.Bible response at $capture", capture.isFile)
+        val chapter = chapter(BookID.JOHN, 3)
+        val passage = APIBiblePassageHTML.parse(capture.readText(), chapter)
+        val cache = cache(limit = EsvTerms.CACHE_VERSE_LIMIT)
+        cache.store(passage.verses, chapter, passage.blocks)
+
+        store(cache) { store ->
+            val headings = store.layout(chapter).blocks.filter { it.kind.isHeading }
+            assertEquals(List(3) { ChapterLayout.Kind.HEADING }, headings.map { it.kind })
+            assertEquals(listOf("Jesus and Nicodemus", "Jesus and John the Baptist", "The One from Heaven"),
+                headings.map { it.text })
+            assertTrue(headings.all { it.fragments.isEmpty() })
+            // Byte for byte what the bundled store holds for the same heading.
+            assertTrue(store.layoutJSON(chapter).contains("{\"k\":\"s1\",\"t\":\"Jesus and Nicodemus\"}"))
+            assertEquals(36, store.verses(range(ref(BookID.JOHN, 3, 1), ref(BookID.JOHN, 3, 36))).size)
+        }
     }
 
     @Test fun writesOffTheMainActor() {

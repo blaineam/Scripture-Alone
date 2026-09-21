@@ -72,6 +72,34 @@ class OnlinePassageHTMLTest {
         assertEquals("Spaced out.", passage.verses.firstOrNull()?.text)
     }
 
+    /**
+     * A words-of-Christ span ending in whitespace at a verse boundary — closed by its own tag, or
+     * still open when the next verse number arrives — must survive the fragment's trailing trim.
+     * Closing it before trimming left it one scalar past the verse text, and `finish()` dropped it.
+     */
+    @Test fun esvRedLettersEndingInWhitespaceSurviveTheVerseBoundary() {
+        val closed = "<p><b class=\"verse-num\">1&nbsp;</b>He said, <span class=\"woc\">Follow me. </span>" +
+            "<b class=\"verse-num\">2&nbsp;</b>And they went.</p>"
+        val passage = ESVPassageHTML.parse(closed, chapter(BookID.JOHN, 1))
+        assertEquals(2, passage.verses.size)
+        val first = passage.verses.first()
+        assertEquals("He said, Follow me.", first.text)
+        val red = first.red.firstOrNull()
+        assertTrue("the red span was dropped", red != null && red.isValid(first.text))
+        assertEquals("Follow me.", red!!.substring(first.text))
+        assertTrue(passage.verses[1].red.isEmpty())
+
+        val open = "<p><b class=\"verse-num\">1&nbsp;</b>He said, <span class=\"woc\">Follow me. " +
+            "<b class=\"verse-num\">2&nbsp;</b>Come and see.</span> And they went.</p>"
+        val carried = ESVPassageHTML.parse(open, chapter(BookID.JOHN, 1))
+        assertEquals(2, carried.verses.size)
+        for ((verse, quoted) in carried.verses.zip(listOf("Follow me.", "Come and see."))) {
+            val range = verse.red.firstOrNull()
+            assertTrue("${verse.ref} lost its red letters", range != null && range.isValid(verse.text))
+            assertEquals(quoted, range!!.substring(verse.text))
+        }
+    }
+
     // ---- API.Bible markup ----
 
     @Test fun apiBibleWordsOfJesusBecomeRedRanges() {
@@ -85,6 +113,32 @@ class OnlinePassageHTMLTest {
         val range = verse.red.firstOrNull() ?: Utf16Range(0, 0)
         assertTrue(range.isValid(verse.text))
         assertEquals("For God loved the world.", range.substring(verse.text))
+    }
+
+    @Test fun apiBibleRedLettersEndingInWhitespaceSurvive() {
+        val html = "<p class=\"p\"><span data-number=\"16\" data-sid=\"JHN 3:16\" class=\"v\">16</span>" +
+            "<span class=\"wj\">For God loved the world. </span></p>" +
+            "<p class=\"p\"><span data-number=\"17\" data-sid=\"JHN 3:17\" class=\"v\">17</span>Next. </p>"
+        val passage = APIBiblePassageHTML.parse(html, chapter(BookID.JOHN, 3))
+        val verse = passage.verses.first()
+        assertEquals("For God loved the world.", verse.text)
+        val range = verse.red.firstOrNull()
+        assertTrue("the red span was dropped", range != null && range.isValid(verse.text))
+        assertEquals("For God loved the world.", range!!.substring(verse.text))
+    }
+
+    /**
+     * A heading's words go on the block, the way the bundled stores keep them — not in fragments,
+     * which the layout writer never writes for a heading.
+     */
+    @Test fun apiBibleHeadingsCarryTheirWordsOnTheBlock() {
+        val html = "<p class=\"s1\">A Heading</p><p class=\"p\">" +
+            "<span data-number=\"1\" data-sid=\"JHN 1:1\" class=\"v\">1</span>In the beginning.</p>"
+        val passage = APIBiblePassageHTML.parse(html, chapter(BookID.JOHN, 1))
+        val heading = passage.blocks.first()
+        assertEquals(Kind.HEADING, heading.kind)
+        assertEquals("A Heading", heading.text)
+        assertTrue(heading.fragments.isEmpty())
     }
 
     /** The markers are USFM, which is the vocabulary this app's own layout already speaks. */

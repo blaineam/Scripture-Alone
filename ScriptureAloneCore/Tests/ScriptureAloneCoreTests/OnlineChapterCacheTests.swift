@@ -272,6 +272,42 @@ import Testing
         #expect((row.text as NSString).substring(with: red) == quoted)
     }
 
+    /// API.Bible's real John 3 has three section headings. They were written as `{"k":"s1","t":""}`,
+    /// and the reader — which reads a heading's words from `t` alone — drew nothing. They must come
+    /// back with their words, in exactly the shape a bundled Bible's heading has.
+    @Test func realAPIBibleHeadingsSurviveTheRoundTrip() throws {
+        let captures = URL(fileURLWithPath: NSHomeDirectory()).appending(path: ".scripture-alone-import/online")
+        guard let html = try? String(contentsOf: captures.appending(path: "apibible-JHN3.html"), encoding: .utf8)
+        else { return }   // licensed text, kept outside the repository; present where it was captured
+        let chapter = ChapterRef(.john, 3)
+        let passage = APIBiblePassageHTML.parse(html, in: chapter)
+        let cache = try cache(limit: ESVClient.cacheVerseLimit)
+        try cache.store(passage.verses, blocks: passage.blocks, for: chapter)
+
+        let layout = try BibleStore(url: cache.url).layout(for: chapter)
+        let headings = layout.blocks.filter(\.kind.isHeading)
+        #expect(headings.map(\.kind) == [.heading, .heading, .heading])
+        #expect(headings.map(\.text) == ["Jesus and Nicodemus", "Jesus and John the Baptist", "The One from Heaven"])
+        #expect(headings.allSatisfy { $0.fragments.isEmpty })
+        // Headings are not verse text.
+        let rows = try BibleStore(url: cache.url).verses(in: VerseRange(VerseRef(.john, 3, 1), VerseRef(.john, 3, 36)))
+        #expect(rows.count == 36)
+        #expect(!rows.contains { $0.text.contains("Nicodemus") && $0.ref.verse == 0 })
+
+        // The bundled BSB stores the same heading the same way, and the reader draws that one.
+        let bsb = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .appending(path: "ScriptureAlone/Resources/Bibles/BSB.sqlite")
+        guard FileManager.default.fileExists(atPath: bsb.path) else { return }
+        let bundledLayout = try BibleStore(url: bsb).layout(for: chapter)
+        let bundled = try #require(bundledLayout.blocks.first { $0.kind == .heading })
+        let online = try #require(headings.first)
+        #expect(bundled.kind == online.kind)
+        #expect(bundled.text == online.text)
+        #expect(bundled.fragments.isEmpty == online.fragments.isEmpty)
+    }
+
     @Test func writesOffTheMainActor() async throws {
         let cache = try cache()
         let chapter = ChapterRef(.john, 3)
