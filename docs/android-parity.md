@@ -146,7 +146,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 |---|---|---|
 | Translations screen | ⬜ | |
 | eBible.org catalogue (16-ID allowlist) | 🔧 | `data/catalog/`: CSV parse, curation (same 16 allowed / 13 excluded IDs), language matching — 25 tests. Download UI not yet built |
-| Import USFM zip / DRM-free ePub, with DRM refusal | ⬜ | Port the importers + 57 tests |
+| Import USFM zip / DRM-free ePub, with DRM refusal | 🔧 | `data/importer/`: all 57 Swift tests ported; stores byte-identical to the Swift engine's on the ASV/BSB/KJV USFM zips. File picker and import UI not yet built |
 | Online ESV and API.Bible with the reader's key | 🔧 | `data/online/`: HTML parsing and the chapter cache with Crossway's 500-verse ceiling, LRU eviction and VACUUM on clear (24 tests, incl. real captured responses). Networking and key entry not yet built |
 | Keys synced across the reader's devices | ⬜ | Block Store |
 | Translation rights gate | 🔧 | `data/rights/`: the same rule as iOS (licence line or a package's signed policy, expiry) — tested; not yet asked by the UI |
