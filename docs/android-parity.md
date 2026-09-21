@@ -138,14 +138,14 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Commentary: Calvin, Gill, JFB, with links | 🔧 | Store done; all 3,192 bodies inflate; UI not yet |
 | Original languages: word, translit, parsing, Strong's, lexicon | 🔧 | Store done; all 443,625 words checked against the BSB text; UI not yet |
 | Context: overview, map, timeline, charts | ⬜ | |
-| Map drawn on a Canvas from `Basemap.bin` | ⬜ | Port the `SABM` reader; no tile provider |
+| Map drawn on a Canvas from `Basemap.bin` | 🔧 | `data/context/Basemap.kt` reads the shipped `Basemap.bin` (tested). Canvas drawing and `ContextStore` not yet ported |
 | Compare two translations | ⬜ | |
 
 ### Translations
 | Feature | Status | Notes |
 |---|---|---|
 | Translations screen | ⬜ | |
-| eBible.org catalogue (16-ID allowlist) | ⬜ | |
+| eBible.org catalogue (16-ID allowlist) | 🔧 | `data/catalog/`: CSV parse, curation (same 16 allowed / 13 excluded IDs), language matching — 25 tests. Download UI not yet built |
 | Import USFM zip / DRM-free ePub, with DRM refusal | ⬜ | Port the importers + 57 tests |
 | Online ESV and API.Bible with the reader's key | 🔧 | `data/online/`: HTML parsing and the chapter cache with Crossway's 500-verse ceiling, LRU eviction and VACUUM on clear (24 tests, incl. real captured responses). Networking and key entry not yet built |
 | Keys synced across the reader's devices | ⬜ | Block Store |
@@ -157,8 +157,8 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 ### Notes import, keepsakes, family
 | Feature | Status | Notes |
 |---|---|---|
-| Life Bible / Tecarta import | ⬜ | |
-| Paste / CSV notes import | ⬜ | |
+| Life Bible / Tecarta import | 🔧 | `data/notesimport/LifeBibleImport.kt` — 11 tests incl. a real export. Import UI not yet built |
+| Paste / CSV notes import | 🔧 | `data/notesimport/PastedNotesImport.kt` — 13 tests. Import UI not yet built |
 | Keepsake Bible, opens files made on iOS | 🔧 | `data/keepsake/`: format, ZIP, PBKDF2 600k + AES-GCM. Opens iPhone-made keepsakes (fixtures in `test/resources/keepsake`), writes byte-identical plain files, and iOS opens its protected ones. Create/open UI not yet built |
 | Live family sharing | ⬜ | Drive shared file |
 | Sync across the reader's Android devices | ⬜ | Drive app-data folder |
