@@ -109,7 +109,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Highlights, five colors | ⬜ | Room |
 | Notes with multiple anchors, inline markers, Notes panel | ⬜ | |
 | Favorites | ⬜ | |
-| Export: PDF, Markdown, Markdown folder, plain text | ⬜ | `android.graphics.pdf.PdfDocument` |
+| Export: PDF, Markdown, Markdown folder, plain text | 🔧 | Markdown and text ported (`NotesTextExport.kt`), with the publisher notice on every export. PDF (`android.graphics.pdf.PdfDocument`) and the sheet not yet built |
 | Quotation-limit gate on copy and share | 🔧 | `TranslationRights.mayQuote` ported (500 for licensed text); copy/share UI not yet gated |
 
 ### Camera notes
@@ -159,7 +159,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 |---|---|---|
 | Life Bible / Tecarta import | ⬜ | |
 | Paste / CSV notes import | ⬜ | |
-| Keepsake Bible, opens files made on iOS | ⬜ | PBKDF2 600k + AES-GCM, byte-compatible |
+| Keepsake Bible, opens files made on iOS | 🔧 | `data/keepsake/`: format, ZIP, PBKDF2 600k + AES-GCM. Opens iPhone-made keepsakes (fixtures in `test/resources/keepsake`), writes byte-identical plain files, and iOS opens its protected ones. Create/open UI not yet built |
 | Live family sharing | ⬜ | Drive shared file |
 | Sync across the reader's Android devices | ⬜ | Drive app-data folder |
 
