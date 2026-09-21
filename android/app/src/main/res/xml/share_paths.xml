@@ -4,4 +4,6 @@
     <cache-path name="shared_images" path="shared_images/" />
     <!-- A slide photo from the system camera, where the live scanner has no back camera (ui/camera/). -->
     <cache-path name="slide_capture" path="slide_capture/" />
+    <!-- Notes exports and keepsakes, for the share sheet (ui/export/ExportFiles.kt). -->
+    <cache-path name="exports" path="exports/" />
 </paths>

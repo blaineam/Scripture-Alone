@@ -84,7 +84,7 @@ import java.util.Locale
  * Every change is saved as it is typed and stamps the note's edited time, as iOS's `touch()` does.
  * Add from Camera adds a sermon slide's text and passages to this note ([capture], hosted by the
  * panel), and a slide photo kept with the note shows beneath the body, as iOS's `SlidePhotoSection`.
- * Not yet: Export…, which comes with the export slice.
+ * Export… opens the notes export sheet on this one note (`ui/export/`).
  */
 @Composable
 fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, capture: SlideCapture, onBack: () -> Unit, onClose: () -> Unit) {
@@ -135,6 +135,15 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
                                 putExtra(Intent.EXTRA_SUBJECT, current.displayTitle)
                             }
                             context.startActivity(Intent.createChooser(intent, null))
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Export…", color = palette.ink, fontSize = 15.sp) },
+                        onClick = {
+                            menu = false
+                            model.legacy.export = com.blainemiller.scripturealone.ui.keepsake.ExportRequest(
+                                listOf(current.toKeepsake()), current.displayTitle,
+                            )
                         },
                     )
                     DropdownMenuItem(

@@ -56,6 +56,13 @@ class MainActivity : ComponentActivity() {
      * range is ignored rather than trusted.
      */
     private fun openFromIntent(intent: Intent?) {
+        // A Keepsake Bible handed to the app (Files, Gmail, Downloads) — `onOpenURL` for a
+        // `.scripturelegacy` file: shown, and its passphrase asked for, before it is added.
+        val data = intent?.data
+        if (intent?.action == Intent.ACTION_VIEW && data != null && data.scheme in setOf("content", "file")) {
+            reader.legacy.pendingFile = data
+            return
+        }
         intent?.dataString?.let { url ->
             if (intent.action == Intent.ACTION_VIEW && reader.openLink(url)) return
         }

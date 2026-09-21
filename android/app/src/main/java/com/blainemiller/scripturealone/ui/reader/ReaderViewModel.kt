@@ -505,6 +505,19 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         return userData.newNote(listOf(VerseRange(VerseRef(location.book, location.chapter, 1), VerseRef(location.book, location.chapter, count))))
     }
 
+    // Keepsakes, notes export and import (ui/keepsake/, ui/export/, ui/importnotes/).
+
+    val legacy = com.blainemiller.scripturealone.ui.keepsake.LegacySession(application, viewModelScope)
+
+    /** Reads someone else's Bible: their marks in place of the reader's own, read-only. */
+    fun openKeepsake(keepsake: com.blainemiller.scripturealone.data.keepsake.Keepsake) {
+        clearSelection()
+        legacy.open(keepsake, translationId, BundledTranslations.ids, ::selectTranslation)
+    }
+
+    /** "My Bible": back to the reader's own marks and translation. */
+    fun closeKeepsake() = legacy.close(translationId, ::selectTranslation)
+
     private companion object {
         val SEALED = setOf("ASV")
     }

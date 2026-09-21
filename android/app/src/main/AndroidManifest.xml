@@ -47,6 +47,31 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="scripturealone" />
             </intent-filter>
+            <!-- Keepsake Bibles (ui/keepsake/): the type the iOS app declares for `.scripturelegacy`
+                 files, `application/vnd.scripturealone.legacy+zip` (docs/heir-mode.md)… -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="application/vnd.scripturealone.legacy+zip" />
+            </intent-filter>
+            <!-- …and, since most senders don't know that type, the file extension where the URI carries
+                 the name (a file manager, a file:// path). Several patterns, because pathPattern stops at
+                 the first dot. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:mimeType="*/*" />
+                <data android:pathPattern=".*\\.scripturelegacy" />
+                <data android:pathPattern=".*\\..*\\.scripturelegacy" />
+                <data android:pathPattern=".*\\..*\\..*\\.scripturelegacy" />
+            </intent-filter>
         </activity>
 
         <!-- Listen's media session: lock-screen and notification controls, headset buttons. -->

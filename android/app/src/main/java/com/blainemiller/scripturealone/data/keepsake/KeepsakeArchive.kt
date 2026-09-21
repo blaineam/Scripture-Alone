@@ -34,6 +34,8 @@ object KeepsakeArchive {
     fun encode(
         keepsake: Keepsake, passphrase: String? = null, hint: String? = null,
         iterations: Int = KeepsakeCrypto.DEFAULT_ITERATIONS,
+        /** Hears the passphrase's key derivation, 0…1 — the slow part of a protected keepsake. */
+        progress: ((Float) -> Unit)? = null,
     ): ByteArray {
         val manifest = keepsake.manifest.copy(
             encryption = null, passphraseHint = null,
@@ -62,7 +64,7 @@ object KeepsakeArchive {
             passphraseHint = trimmedHint,
         )
         val outerData = json(manifestJson(outer))
-        val key = KeepsakeCrypto.deriveKey(passphrase, salt, iterations)
+        val key = KeepsakeCrypto.deriveKey(passphrase, salt, iterations, progress)
         val sealed = KeepsakeCrypto.seal(ZipArchive.write(inner), key, outerData)
         return ZipArchive.write(listOf(
             ZipArchive.Entry("manifest.json", outerData, date),
@@ -74,7 +76,8 @@ object KeepsakeArchive {
     /** The outer manifest, without a passphrase: enough to show a hint or ask for one. */
     fun peek(data: ByteArray): KeepsakeManifest = manifest(entries(data)).first
 
-    fun decode(data: ByteArray, passphrase: String? = null): Keepsake {
+    /** [progress] hears a protected keepsake's key derivation, 0…1. */
+    fun decode(data: ByteArray, passphrase: String? = null, progress: ((Float) -> Unit)? = null): Keepsake {
         val files = entries(data)
         val (outer, outerData) = manifest(files)
         val encryption = outer.encryption ?: return contents(files, outer)
@@ -86,7 +89,7 @@ object KeepsakeArchive {
         val salt = runCatching { Base64.getDecoder().decode(encryption.salt) }.getOrNull()
         val sealed = files[encryption.payload]
         if (salt == null || sealed == null) throw KeepsakeException.Damaged("missing encrypted payload")
-        val key = KeepsakeCrypto.deriveKey(passphrase, salt, encryption.iterations)
+        val key = KeepsakeCrypto.deriveKey(passphrase, salt, encryption.iterations, progress)
         val innerFiles = entries(KeepsakeCrypto.open(sealed, key, outerData))
         return contents(innerFiles, manifest(innerFiles).first)
     }

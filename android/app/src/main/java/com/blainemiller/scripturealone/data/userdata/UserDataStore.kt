@@ -1,8 +1,48 @@
 package com.blainemiller.scripturealone.data.userdata
 
 import com.blainemiller.scripturealone.data.VerseRange
+import com.blainemiller.scripturealone.data.notesimport.ImportedNotes
 import java.time.Instant
 import java.util.UUID
+
+/** What an import added, and what it found already here — `LifeBibleImportView.Outcome`. */
+data class NotesImportTally(
+    var highlights: Int = 0,
+    var notes: Int = 0,
+    var journals: Int = 0,
+    var favorites: Int = 0,
+    var alreadyThere: Int = 0,
+) {
+    val total: Int get() = highlights + notes + journals + favorites
+
+    companion object {
+        /** Marks a note as having come from elsewhere, alongside "manual" and "camera" — as iOS. */
+        const val ORIGIN = "lifebible"
+
+        /**
+         * What makes two notes the same note, for not importing one twice: title and body, whitespace
+         * normalised and lower-cased — not the verse (a reader may write several notes on one) and not
+         * the date (an import carries none). `LifeBibleImportView.fingerprint`.
+         */
+        fun fingerprint(title: String, body: String): String {
+            // Swift's `isWhitespace`, which a JVM `\s` misses (a no-break space) and Android's regex
+            // engine has no Unicode flag for — so by hand.
+            fun flatten(text: String) = buildString {
+                var gap = false
+                for (c in text) {
+                    if (c.isWhitespace()) {
+                        gap = isNotEmpty()
+                    } else {
+                        if (gap) append(' ')
+                        gap = false
+                        append(c)
+                    }
+                }
+            }.lowercase()
+            return flatten(title) + "" + flatten(body)
+        }
+    }
+}
 
 /**
  * Highlights, notes and favorites on disk — the SwiftData store of `Persistence/Models.swift`, as
@@ -156,6 +196,55 @@ class UserDataStore(private val db: UserDatabase) {
     )
 
     fun deleteFavorite(id: UUID) = db.execute("DELETE FROM favorites WHERE id = ?", id.toString())
+
+    // Import
+
+    /**
+     * Writes what a notes import found — `LifeBibleImportView.bring`. Everything checks for its own
+     * presence first, so importing the same file twice adds nothing the second time: a highlight by its
+     * verse, a saved verse by its range, a note by [NotesImportTally.fingerprint] (title and body). One
+     * transaction: all of it lands, or none of it does.
+     *
+     * As on iOS, only what was here *before* the import counts: two identical entries within one file
+     * both come across (two notes reading "Amen" on different verses are two notes).
+     */
+    fun importNotes(found: ImportedNotes, at: Instant = Instant.now()): NotesImportTally = db.transaction {
+        val tally = NotesImportTally()
+        val millis = at.toEpochMilli()
+        val existingHighlights = highlights().map { it.verseKey }.toSet()
+        val existingFavorites = favorites().map { it.range.storageString }.toSet()
+        val existingNotes = notes().map { NotesImportTally.fingerprint(it.title, it.body) }.toSet()
+
+        for (highlight in found.highlights) {
+            if (highlight.verse.key in existingHighlights) {
+                tally.alreadyThere++
+                continue
+            }
+            val color = HighlightColor.fromRaw(highlight.color) ?: HighlightColor.YELLOW
+            db.execute("INSERT INTO highlights (verse_key, color, created_at) VALUES (?, ?, ?)", highlight.verse.key, color.raw, millis)
+            tally.highlights++
+        }
+        fun note(title: String, body: String, anchors: List<VerseRange>): Boolean {
+            if (NotesImportTally.fingerprint(title, body) in existingNotes) {
+                tally.alreadyThere++
+                return false
+            }
+            save(Note(title = title, body = body, anchors = anchors.sortedWith(RANGE_ORDER), createdAt = at, updatedAt = at,
+                origin = NotesImportTally.ORIGIN))
+            return true
+        }
+        for (entry in found.verseNotes) if (note(entry.title, entry.body, listOfNotNull(entry.range))) tally.notes++
+        for (entry in found.journals) if (note(entry.title, entry.body, emptyList())) tally.journals++
+        for (range in found.saved) {
+            if (range.storageString in existingFavorites) {
+                tally.alreadyThere++
+                continue
+            }
+            add(Favorite(range = range, createdAt = at))
+            tally.favorites++
+        }
+        tally
+    }
 
     /**
      * The heart — `FavoriteButton.toggle`: when every range is already a favorite, removes them;

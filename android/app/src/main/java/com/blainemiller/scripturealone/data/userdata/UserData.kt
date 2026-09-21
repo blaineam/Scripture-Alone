@@ -120,6 +120,17 @@ class UserData(
         _favorites.value = it.favorites()
     }
 
+    /** Writes a notes import on the store's lane and republishes everything it may have added. */
+    suspend fun importNotes(found: com.blainemiller.scripturealone.data.notesimport.ImportedNotes): NotesImportTally =
+        withContext(lane) {
+            val s = store ?: open().also { store = it }
+            val tally = s.importNotes(found, Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS))
+            _highlights.value = s.highlights()
+            _notes.value = s.notes()
+            _favorites.value = s.favorites()
+            tally
+        }
+
     fun deleteFavorite(id: UUID) {
         _favorites.value = _favorites.value.filter { it.id != id }
         write { it.deleteFavorite(id) }

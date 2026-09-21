@@ -29,26 +29,34 @@ object KeepsakeCrypto {
     const val SALT_LENGTH = 16
     private const val NONCE_LENGTH = 12
     private const val TAG_BITS = 128
+    private const val PROGRESS_STEP = 5_000
 
     private val random = SecureRandom()
 
     fun randomSalt(): ByteArray = ByteArray(SALT_LENGTH).also(random::nextBytes)
 
-    fun deriveKey(passphrase: String, salt: ByteArray, iterations: Int): ByteArray {
+    /**
+     * The passphrase's key. Deliberately slow (600,000 rounds — seconds on a phone), so callers stay
+     * off the main thread; [progress] hears 0…1 as the rounds run, for a progress bar.
+     */
+    fun deriveKey(passphrase: String, salt: ByteArray, iterations: Int, progress: ((Float) -> Unit)? = null): ByteArray {
         if (iterations !in 1..50_000_000 || salt.isEmpty()) throw KeepsakeException.Damaged("encryption settings")
         val password = Normalizer.normalize(passphrase, Normalizer.Form.NFC).toByteArray(Charsets.UTF_8)
         if (password.isEmpty()) throw KeepsakeException.PassphraseRequired()
-        return pbkdf2Sha256(password, salt, iterations, 32)
+        return pbkdf2Sha256(password, salt, iterations, 32, progress)
     }
 
     /** RFC 8018 PBKDF2 with HMAC-SHA256. */
-    internal fun pbkdf2Sha256(password: ByteArray, salt: ByteArray, iterations: Int, length: Int): ByteArray {
+    internal fun pbkdf2Sha256(
+        password: ByteArray, salt: ByteArray, iterations: Int, length: Int, progress: ((Float) -> Unit)? = null,
+    ): ByteArray {
         val mac = Mac.getInstance("HmacSHA256").apply { init(SecretKeySpec(password, "HmacSHA256")) }
         val hLen = mac.macLength
         val out = ByteArray(length)
         var block = 1
         var offset = 0
         val u = ByteArray(hLen)
+        val total = ((length + hLen - 1) / hLen).toLong() * iterations
         while (offset < length) {
             mac.update(salt)
             mac.update(byteArrayOf((block ushr 24).toByte(), (block ushr 16).toByte(), (block ushr 8).toByte(), block.toByte()))
@@ -58,12 +66,14 @@ object KeepsakeCrypto {
                 mac.update(u)
                 mac.doFinal(u, 0)
                 for (k in 0 until hLen) t[k] = (t[k].toInt() xor u[k].toInt()).toByte()
+                if (progress != null && i % PROGRESS_STEP == 0) progress(((block - 1L) * iterations + i).toFloat() / total)
             }
             val n = minOf(hLen, length - offset)
             System.arraycopy(t, 0, out, offset, n)
             offset += n
             block++
         }
+        progress?.invoke(1f)
         return out
     }
 

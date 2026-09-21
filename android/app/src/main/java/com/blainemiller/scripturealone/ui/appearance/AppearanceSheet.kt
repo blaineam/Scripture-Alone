@@ -98,7 +98,14 @@ import kotlin.math.roundToInt
  * the iOS size (`@ScaledMetric`); the Text section says so when that scale isn't 1.
  */
 @Composable
-fun AppearanceSheet(model: ReaderViewModel, palette: ReaderPalette, visible: Boolean, onDismiss: () -> Unit) {
+fun AppearanceSheet(
+    model: ReaderViewModel,
+    palette: ReaderPalette,
+    visible: Boolean,
+    onDismiss: () -> Unit,
+    /** Keepsake & Export — `LegacyAndExportRow`, which opens its own sheet. */
+    onKeepsake: () -> Unit = {},
+) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
     var licences by rememberSaveable { mutableStateOf(false) }
@@ -168,7 +175,7 @@ fun AppearanceSheet(model: ReaderViewModel, palette: ReaderPalette, visible: Boo
                     if (licences) {
                         FontLicences(palette, onBack = { licences = false })
                     } else {
-                        AppearanceForm(model, palette, onLicences = {
+                        AppearanceForm(model, palette, onKeepsake = onKeepsake, onLicences = {
                             licences = true
                             scope.launch {
                                 expanded = true
@@ -183,7 +190,7 @@ fun AppearanceSheet(model: ReaderViewModel, palette: ReaderPalette, visible: Boo
 }
 
 @Composable
-private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onLicences: () -> Unit) {
+private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKeepsake: () -> Unit, onLicences: () -> Unit) {
     val context = LocalContext.current
     val fontScale = LocalDensity.current.fontScale
     // Each swatch shows its theme as it would look now — Auto follows the device, as `palette(for: colorScheme)`.
@@ -267,6 +274,11 @@ private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onLic
             SwitchRow("Section Headings", model.headings, palette) { model.headings = it }
             PanelSeparator(palette)
             SwitchRow("Footnotes", model.footnotes, palette) { model.footnotes = it }
+        }
+
+        // Keepsake & Export — `Section { LegacyAndExportRow() }`.
+        PanelGroup(palette, Modifier.padding(top = 18.dp)) {
+            LinkRow("Keepsake & Export", palette, push = true, onClick = onKeepsake)
         }
 
         // Feedback & Support — MillerKit's SupportSection.

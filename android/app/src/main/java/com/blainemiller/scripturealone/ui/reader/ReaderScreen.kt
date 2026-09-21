@@ -115,6 +115,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
@@ -137,6 +138,13 @@ import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.ui.navigation.GoToSheet
 import com.blainemiller.scripturealone.ui.appearance.AppearanceSheet
+import com.blainemiller.scripturealone.ui.export.NotesExportSheet
+import com.blainemiller.scripturealone.ui.importnotes.NotesImportSheet
+import com.blainemiller.scripturealone.ui.keepsake.KeepsakeBuilder
+import com.blainemiller.scripturealone.ui.keepsake.KeepsakeImportSheet
+import com.blainemiller.scripturealone.ui.keepsake.LegacyBanner
+import com.blainemiller.scripturealone.ui.keepsake.LegacyNotesPanel
+import com.blainemiller.scripturealone.ui.keepsake.LegacySettingsSheet
 import com.blainemiller.scripturealone.ui.share.ShareDesigner
 import com.blainemiller.scripturealone.ui.study.FullSheet
 import kotlin.math.abs
@@ -174,9 +182,15 @@ fun ReaderScreen(
     /** The note the Notes panel opens on — set by Add Note and by a marker's "Open Note". */
     var openNote by rememberSaveable { mutableStateOf<String?>(null) }
     val goTo = sheet != null
-    val highlights by model.userData.highlights.collectAsState()
-    val notes by model.userData.notes.collectAsState()
+    val ownHighlights by model.userData.highlights.collectAsState()
+    val ownNotes by model.userData.notes.collectAsState()
     val favorites by model.userData.favorites.collectAsState()
+    // A keepsake being read: its owner's marks in place of the reader's own, read-only (ui/keepsake/).
+    val keepsake = model.legacy.reading
+    val highlights = remember(keepsake, ownHighlights) { keepsake?.let(KeepsakeBuilder::highlights) ?: ownHighlights }
+    val notes = remember(keepsake, ownNotes) { keepsake?.let(KeepsakeBuilder::notes) ?: ownNotes }
+    var bannerHeight by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
 
     fun showNote(id: UUID) {
         openNote = id.toString()
@@ -256,8 +270,9 @@ fun ReaderScreen(
                             },
                             marks = VerseMarks(colors, model.selection, speaking),
                             markerSize = style.size,
-                            onVerseTap = model::toggle,
-                            onVerseLongPress = model::extendSelection,
+                            // A keepsake is read-only: no selecting to highlight or annotate.
+                            onVerseTap = { if (keepsake == null) model.toggle(it) },
+                            onVerseLongPress = { if (keepsake == null) model.extendSelection(it) },
                             notesFor = { ids -> notes.filter { it.id.toString() in ids } },
                             onOpenNote = ::showNote,
                             palette = palette,
@@ -271,6 +286,7 @@ fun ReaderScreen(
                             onUserScroll = { autoScrolling = false },
                             revealVerse = speaking,
                             extraBottom = if (listening) NOW_PLAYING_ROOM else 0.dp,
+                            extraTop = if (keepsake != null) bannerHeight + 8.dp else 0.dp,
                         )
                     }
                 model.loadError == null -> CircularProgressIndicator(
@@ -290,6 +306,14 @@ fun ReaderScreen(
                 onStudy = onStudy, onCompare = onCompare, onManageTranslations = onManageTranslations,
                 onAppearance = { appearance = true },
             )
+            keepsake?.let { reading ->
+                LegacyBanner(
+                    reading, palette, onClose = model::closeKeepsake,
+                    modifier = Modifier.align(Alignment.TopCenter).windowInsetsPadding(WindowInsets.statusBars)
+                        .padding(top = BAR_HEIGHT + 4.dp)
+                        .onSizeChanged { bannerHeight = with(density) { it.height.toDp() } },
+                )
+            }
             BottomBar(model, palette, Modifier.align(Alignment.BottomCenter)) {
                 ListenAndScrollControls(
                     palette,
@@ -352,7 +376,15 @@ fun ReaderScreen(
                 exit = slideOutVertically(tween(240)) { it },
             ) {
                 when (shown) {
-                    ReaderSheet.NOTES -> NotesPanel(
+                    ReaderSheet.NOTES -> if (keepsake != null) LegacyNotesPanel(
+                        model, keepsake, palette,
+                        openNote = openNote,
+                        onOpenNoteChange = { openNote = it },
+                        onDismiss = {
+                            sheet = null
+                            openNote = null
+                        },
+                    ) else NotesPanel(
                         model, palette, notes, favorites,
                         openNote = openNote,
                         onOpenNoteChange = { openNote = it },
@@ -364,7 +396,34 @@ fun ReaderScreen(
                     else -> GoToSheet(model, palette, onDismiss = { sheet = null })
                 }
             }
-            AppearanceSheet(model, palette, visible = appearance, onDismiss = { appearance = false })
+            AppearanceSheet(model, palette, visible = appearance, onDismiss = { appearance = false }, onKeepsake = {
+                appearance = false
+                model.legacy.settingsOpen = true
+            })
+
+            // Keepsake & Export, a keepsake file being opened, a notes export and the notes import —
+            // full-height sheets over the reader, in that order of depth.
+            val legacy = model.legacy
+            // Opening a keepsake from any of them steps back to the text so it can be read.
+            LaunchedEffect(keepsake?.id) { if (keepsake != null) sheet = null }
+            FullSheet(legacy.settingsOpen, onDismiss = { legacy.settingsOpen = false }) {
+                LegacySettingsSheet(model, palette, onDone = { legacy.settingsOpen = false })
+            }
+            FullSheet(legacy.importing, onDismiss = { legacy.importing = false }) {
+                NotesImportSheet(model, palette, onDone = { legacy.importing = false })
+            }
+            var exporting by remember { mutableStateOf(legacy.export) }
+            LaunchedEffect(legacy.export) { legacy.export?.let { exporting = it } }
+            FullSheet(legacy.export != null, onDismiss = { legacy.export = null }) {
+                exporting?.let { request ->
+                    key(request) { NotesExportSheet(request, model.translationId, palette, onDone = { legacy.export = null }) }
+                }
+            }
+            var opening by remember { mutableStateOf(legacy.pendingFile) }
+            LaunchedEffect(legacy.pendingFile) { legacy.pendingFile?.let { opening = it } }
+            FullSheet(legacy.pendingFile != null, onDismiss = { legacy.pendingFile = null }) {
+                opening?.let { uri -> key(uri) { KeepsakeImportSheet(model, uri, palette, onDone = { legacy.pendingFile = null }) } }
+            }
 
             // The verse-image designer, over a dimmed reader.
             var designing by remember { mutableStateOf(model.designer) }
@@ -413,6 +472,8 @@ private fun ChapterColumn(
     onUserScroll: () -> Unit = {},
     revealVerse: Int? = null,
     extraBottom: Dp = 0.dp,
+    /** Room for the keepsake banner beneath the top bar. */
+    extraTop: Dp = 0.dp,
 ) {
     val state = rememberLazyListState()
     val status = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -499,7 +560,7 @@ private fun ChapterColumn(
         val before = with(density) { rendered.paragraphs[index].spaceBefore.sp.toPx() }
         val y = info.beforeContentPadding + item.offset + before + layout.getLineTop(line)
         val lineHeight = minOf(layout.getLineBottom(line) - layout.getLineTop(line), with(density) { 60.dp.toPx() })
-        val top = with(density) { (status + BAR_HEIGHT).toPx() }
+        val top = with(density) { (status + BAR_HEIGHT + extraTop).toPx() }
         val bottom = info.viewportSize.height - with(density) { (nav + 72.dp + extraBottom + 180.dp).toPx() }
         if (y >= top && y + lineHeight <= maxOf(bottom, top + lineHeight)) return@LaunchedEffect
         state.animateScrollBy(y - (top + info.viewportSize.height * 0.18f))
@@ -526,7 +587,7 @@ private fun ChapterColumn(
         LazyColumn(
             state = state,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = inset, end = inset, top = status + BAR_HEIGHT + 20.dp, bottom = nav + 140.dp + extraBottom),
+            contentPadding = PaddingValues(start = inset, end = inset, top = status + BAR_HEIGHT + 20.dp + extraTop, bottom = nav + 140.dp + extraBottom),
         ) {
             itemsIndexed(rendered.paragraphs) { index, paragraph ->
                 Paragraph(

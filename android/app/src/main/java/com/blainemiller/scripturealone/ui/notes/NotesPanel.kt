@@ -26,6 +26,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.IosShare
+import com.blainemiller.scripturealone.ui.export.ExportSupport
+import com.blainemiller.scripturealone.ui.keepsake.ExportRequest
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -68,7 +73,8 @@ enum class NotesScope(val title: String) { ALL("All Notes"), CHAPTER("This Chapt
  * Scan Slide starts a note from a photographed sermon slide (`ui/camera/`); the capture flow is hosted
  * here, over the whole panel, for the list and for the open note's Add from Camera alike.
  *
- * Not yet: the Export menu, which belongs to a later slice.
+ * The Export menu exports all notes or those shown (`ui/export/`) and opens Keepsake & Export
+ * (`ui/keepsake/`); both sheets are hosted by the reader.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -115,11 +121,19 @@ fun NotesPanel(
                 return@Column
             }
 
+            val location = model.location
+            val verseCount = { book: com.blainemiller.scripturealone.data.canon.BookID, chapter: Int ->
+                model.verseCount(ChapterRef(book.number, chapter))
+            }
+            val filtered = notes.filter { note ->
+                (scope == NotesScope.ALL || note.touches(location)) && NoteSearch.matches(note, search, verseCount)
+            }
             PanelHeader("Notes", palette, back = false, onLeading = ::dismiss) {
                 PanelHeaderIcon(ReaderIcons.SquareAndPencil, "New Note", palette) {
                     onOpenNoteChange(model.newNote().id.toString())
                 }
                 SlideCaptureMenu(capture, palette)
+                ExportMenu(model, palette, notes, if (scope == NotesScope.FAVORITES) notes else filtered)
             }
             PanelSearchField(
                 search, if (scope == NotesScope.FAVORITES) "Search favorites or a passage" else "Search notes or a passage",
@@ -135,13 +149,6 @@ fun NotesPanel(
                 return@Column
             }
 
-            val location = model.location
-            val verseCount = { book: com.blainemiller.scripturealone.data.canon.BookID, chapter: Int ->
-                model.verseCount(ChapterRef(book.number, chapter))
-            }
-            val filtered = notes.filter { note ->
-                (scope == NotesScope.ALL || note.touches(location)) && NoteSearch.matches(note, search, verseCount)
-            }
             if (filtered.isEmpty()) {
                 EmptyState(
                     ReaderIcons.NoteText,
@@ -173,6 +180,45 @@ fun NotesPanel(
         // A new note from a slide opens once saved; one added to the open note stays where it is.
         SlideCaptureHost(capture, model, palette, notes, appendTo = editing) { note ->
             if (openNote == null) onOpenNoteChange(note.id.toString())
+        }
+    }
+}
+
+/**
+ * The Export menu — `NotesPanel`'s third toolbar item: Export All Notes…, Export N Shown… when a
+ * search or scope narrows the list, and Keepsake & Export….
+ */
+@Composable
+private fun ExportMenu(model: ReaderViewModel, palette: ReaderPalette, notes: List<Note>, shown: List<Note>) {
+    var open by remember { mutableStateOf(false) }
+    fun export(list: List<Note>) {
+        open = false
+        val sorted = ExportSupport.canonicallySorted(list.map { it.toKeepsake() })
+        model.legacy.export = ExportRequest(sorted, if (sorted.size == 1) sorted[0].displayTitle else "Notes")
+    }
+    Box {
+        PanelHeaderIcon(Icons.Outlined.IosShare, "Export", palette) { open = true }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            DropdownMenuItem(
+                text = { Text("Export All Notes…", color = if (notes.isEmpty()) palette.secondary else palette.ink, fontSize = 15.sp) },
+                enabled = notes.isNotEmpty(),
+                onClick = { export(notes) },
+            )
+            if (shown.size != notes.size) {
+                DropdownMenuItem(
+                    text = { Text("Export ${shown.size} Shown…", color = if (shown.isEmpty()) palette.secondary else palette.ink, fontSize = 15.sp) },
+                    enabled = shown.isNotEmpty(),
+                    onClick = { export(shown) },
+                )
+            }
+            HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
+            DropdownMenuItem(
+                text = { Text("Keepsake & Export…", color = palette.ink, fontSize = 15.sp) },
+                onClick = {
+                    open = false
+                    model.legacy.settingsOpen = true
+                },
+            )
         }
     }
 }
