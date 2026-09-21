@@ -77,12 +77,12 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | ASV (sealed), BSB, KJV | ✅ | All three render; every chapter of each parses (1,189) |
 | Chapter layout: headings, paragraphs, poetry indents, Selah, stanza breaks, psalm titles | ✅ | `data/layout/`, `ui/reader/ChapterRenderer.kt`; indents and spacing from the Swift values |
 | Words of Christ in red | ✅ | Scalar offsets converted to UTF-16; tested past a non-BMP character |
-| Footnotes with popovers | ✅ | Tap a letter (18 dp reach) for a rounded popover beside it, in the reader's theme |
+| Footnotes with popovers | ✅ | Tap a letter (18 dp reach) for a rounded popover beside it, in the reader's theme, with a soft painted shadow as on iOS |
 | Divine name in small caps | ✅ | Source Serif 4 has true `smcp`/`c2sc`; italic falls back to 78% capitals |
 | Supplied words in italics | ✅ | |
 | Paragraph vs verse-by-verse | ✅ | |
 | Seven typefaces | 🔧 | Source Serif 4 (OFL) is the default; the other six not yet |
-| Size 12–40 pt, line spacing 1.0–2.0, system font scale | 🔧 | Both persisted (`reader.fontSize`, `reader.lineSpacing`) and applied; size has a 1 pt stepper in the interim appearance menu; line spacing has no control until the Appearance sheet |
+| Size 12–40 pt, line spacing 1.0–2.0, system font scale | 🔧 | Both persisted (`reader.fontSize`, `reader.lineSpacing`) and applied, each with a stepper (1 pt, 0.1×) in the interim appearance menu until the Appearance sheet's sliders exist |
 | Themes: Auto, Light, Sepia, Dark, Black | ✅ | Exact palette values from `ReaderStyle.swift` |
 | Seven accent colors | ✅ | |
 | Show toggles: red letters, verse numbers, headings, footnotes | ✅ | Persisted under the iOS keys; in the interim appearance menu until the Appearance sheet |
@@ -96,7 +96,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 |---|---|---|
 | Passage parser ("jn 3 16", ranges, lists, ordinals) | ✅ | Every Swift test case ported; canon generated from `Canon.swift` |
 | Reference detection in free text | ✅ | Swift tests ported, incl. the sermon slide |
-| Go To sheet: search, recents, book and chapter grids | ✅ | `ui/navigation/GoToSheet.kt`; a reference with a verse scrolls to it |
+| Go To sheet: search, recents, book and chapter grids | ✅ | `ui/navigation/GoToSheet.kt`; a reference with a verse scrolls to it. The reader recedes behind it (scaled, rounded, on black) with light status icons, as behind an iOS sheet |
 | Recent chapters (12) and searches (12) | ✅ | A search is kept only when a result is opened; long-press to Remove; Clear |
 | FTS5 search: all words, last word prefix, quoted phrase, 300 limit | ✅ | `data/search/`; `ftsQuery` ported line for line and tested against the shipped BSB and KJV; matched words bolded |
 | Sealed-package search | ⬜ | The ASV says search is coming and offers to switch to BSB/KJV — it never searches another translation under the ASV's name |

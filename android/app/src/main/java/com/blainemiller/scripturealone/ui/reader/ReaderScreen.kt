@@ -1,7 +1,17 @@
 package com.blainemiller.scripturealone.ui.reader
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.platform.LocalContext
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.tween
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -68,7 +78,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -114,8 +123,38 @@ fun ReaderScreen(model: ReaderViewModel) {
     val style = model.style(palette)
     var goTo by rememberSaveable { mutableStateOf(false) }
 
+    // How far the Go To sheet has risen, 0…1. As on iOS, the reader behind a sheet recedes: it
+    // scales back, rounds its corners and settles onto a black backdrop.
+    val sheetProgress by animateFloatAsState(if (goTo) 1f else 0f, tween(320), label = "sheet")
+
+    // Bar icons follow what is behind them, not the system theme: a Sepia page on a dark-mode phone
+    // still needs dark icons, and with a sheet up the status bar sits over the black backdrop.
+    val activity = LocalContext.current as? ComponentActivity
+    val lightStatusIcons = palette.isDark || goTo
+    LaunchedEffect(lightStatusIcons, palette.isDark) {
+        fun style(dark: Boolean) = if (dark) {
+            SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+        } else {
+            SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+        }
+        activity?.enableEdgeToEdge(statusBarStyle = style(lightStatusIcons), navigationBarStyle = style(palette.isDark))
+    }
+
     MaterialTheme(colorScheme = menuColors(palette)) {
-        Box(Modifier.fillMaxSize().background(palette.page)) {
+        Box(Modifier.fillMaxSize().background(Color.Black)) {
+        Box(
+            Modifier.fillMaxSize()
+                .graphicsLayer {
+                    val scale = 1f - SHEET_RECEDE * sheetProgress
+                    scaleX = scale
+                    scaleY = scale
+                    transformOrigin = TransformOrigin(0.5f, 0f)
+                    translationY = SHEET_DROP.toPx() * sheetProgress
+                    shape = RoundedCornerShape(SHEET_CORNER * sheetProgress)
+                    clip = sheetProgress > 0f
+                }
+                .background(palette.page),
+        ) {
             val chapter = model.chapter
             when {
                 chapter != null && chapter.ref == model.location && chapter.translation.id == model.translationId ->
@@ -147,11 +186,12 @@ fun ReaderScreen(model: ReaderViewModel) {
             }
             TopBar(model, palette, onGoTo = { goTo = true })
             BottomBar(model, palette, Modifier.align(Alignment.BottomCenter))
+        }
 
             // The Go To sheet, over a dimmed reader, rising from the bottom as an iOS sheet does.
             AnimatedVisibility(goTo, enter = fadeIn(), exit = fadeOut()) {
                 Box(
-                    Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.32f))
+                    Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.20f))
                         .clickable(interactionSource = null, indication = null) { goTo = false },
                 )
             }
@@ -393,7 +433,20 @@ private fun FootnotePopover(text: String, anchor: Rect, palette: ReaderPalette, 
                     drawPath(path, edge, style = Stroke(width = 0.5.dp.toPx()))
                 }
                 .padding(top = if (placement.second) ARROW else 0.dp, bottom = if (placement.second) 0.dp else ARROW)
-                .shadow(14.dp, shape, ambientColor = Color.Black.copy(alpha = 0.25f), spotColor = Color.Black.copy(alpha = 0.30f))
+                .drawBehind {
+                    // A blurred shadow painted under the card. An elevation shadow inside a popup
+                    // window is lit as if from far above and comes out faint on a light page; iOS's
+                    // popover shadow is soft, wide and plainly visible, so draw that one directly.
+                    val radius = 14.dp.toPx()
+                    drawIntoCanvas { canvas ->
+                        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                            color = surface.toArgb() // opaque: a transparent paint casts no shadow
+                            setShadowLayer(18.dp.toPx(), 0f, 6.dp.toPx(),
+                                Color.Black.copy(alpha = if (palette.isDark) 0.55f else 0.22f).toArgb())
+                        }
+                        canvas.nativeCanvas.drawRoundRect(0f, 0f, size.width, size.height, radius, radius, paint)
+                    }
+                }
                 .clip(shape)
                 .background(surface)
                 .border(0.5.dp, edge, shape)
@@ -406,6 +459,11 @@ private fun FootnotePopover(text: String, anchor: Rect, palette: ReaderPalette, 
 }
 
 private val SHADOW_ROOM = 20.dp
+
+/** The reader behind an open sheet, as iOS draws it: 8% smaller, 10 dp lower, corners rounded. */
+private const val SHEET_RECEDE = 0.08f
+private val SHEET_DROP = 10.dp
+private val SHEET_CORNER = 12.dp
 private val ARROW = 8.dp
 
 private val BAR_HEIGHT = 64.dp
@@ -557,6 +615,8 @@ private fun AppearanceButton(model: ReaderViewModel, palette: ReaderPalette) {
             HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
             MenuHeader("Text Size", palette)
             SizeStepper(model, palette)
+            MenuHeader("Line Spacing", palette)
+            SpacingStepper(model, palette)
             HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
             MenuHeader("Show", palette)
             MenuChoice("Words of Christ in Red", model.redLetters, palette) { model.redLetters = !model.redLetters }
@@ -582,6 +642,26 @@ private fun SizeStepper(model: ReaderViewModel, palette: ReaderPalette) {
         PillIcon(Icons.Rounded.Add, "Larger Text", palette, enabled = model.fontSize < range.endInclusive) {
             model.fontSize = (model.fontSize + 1f).coerceIn(range)
         }
+    }
+}
+
+/**
+ * Tighter and looser by 0.1 within 1.0–2.0 — the Appearance sheet's spacing slider, stepped.
+ * Snapped to tenths so repeated taps never drift into 1.4999….
+ */
+@Composable
+private fun SpacingStepper(model: ReaderViewModel, palette: ReaderPalette) {
+    Row(Modifier.padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        val range = ReaderStyle.LINE_SPACING_RANGE
+        fun step(by: Float) {
+            model.lineSpacing = (Math.round((model.lineSpacing + by) * 10f) / 10f).coerceIn(range)
+        }
+        PillIcon(Icons.Rounded.Remove, "Tighter Lines", palette, enabled = model.lineSpacing > range.start + 0.001f) { step(-0.1f) }
+        Text(
+            String.format(java.util.Locale.US, "%.1f×", model.lineSpacing), color = palette.ink, fontSize = 15.sp,
+            textAlign = TextAlign.Center, modifier = Modifier.width(64.dp),
+        )
+        PillIcon(Icons.Rounded.Add, "Looser Lines", palette, enabled = model.lineSpacing < range.endInclusive - 0.001f) { step(0.1f) }
     }
 }
 

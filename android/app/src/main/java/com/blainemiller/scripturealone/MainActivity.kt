@@ -1,15 +1,10 @@
 package com.blainemiller.scripturealone
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.LaunchedEffect
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
@@ -25,17 +20,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) openFromIntent(intent)
         setContent {
-            val dark = reader.theme.palette(isSystemInDarkTheme()).isDark
-            // Status and navigation bar icons follow the reader's page, not the system theme: a
-            // Sepia page on a dark-mode phone still needs dark icons.
-            LaunchedEffect(dark) {
-                val bars = if (dark) {
-                    SystemBarStyle.dark(Color.TRANSPARENT)
-                } else {
-                    SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
-                }
-                enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
-            }
             ReaderScreen(reader)
         }
     }
