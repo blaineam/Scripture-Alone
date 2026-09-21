@@ -182,6 +182,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 ### Settings and polish
 | Feature | Status | Notes |
 |---|---|---|
+| Launcher icon: the iOS icon as an adaptive icon, with a themed-icon silhouette | ✅ | Rendered from `AppIcon.icon` by `android/tools/render_launcher_icon.py` (Icon Composer's `ictool`); rerun it when the icon changes |
 | Appearance sheet, About, About This Translation | ⬜ | |
 | Feedback and rating | ⬜ | Play in-app review |
 | TalkBack labels, font scale, keyboard shortcuts | ⬜ | |
