@@ -136,6 +136,9 @@ import androidx.compose.ui.window.PopupProperties
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.ui.navigation.GoToSheet
+import com.blainemiller.scripturealone.ui.appearance.AppearanceSheet
+import com.blainemiller.scripturealone.ui.share.ShareDesigner
+import com.blainemiller.scripturealone.ui.study.FullSheet
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -166,6 +169,8 @@ fun ReaderScreen(
     val palette = model.theme.palette(isSystemInDarkTheme()).accented(model.accent)
     val style = model.style(palette)
     var sheet by rememberSaveable { mutableStateOf<ReaderSheet?>(null) }
+    /** The Appearance sheet, from the AA button — the reader stays live behind it as the preview. */
+    var appearance by rememberSaveable { mutableStateOf(false) }
     /** The note the Notes panel opens on — set by Add Note and by a marker's "Open Note". */
     var openNote by rememberSaveable { mutableStateOf<String?>(null) }
     val goTo = sheet != null
@@ -246,7 +251,7 @@ fun ReaderScreen(
                         val colors = remember(highlights, chapter.ref) { Selection.highlightColors(highlights, chapter.ref) }
                         ChapterColumn(
                             rendered = remember(chapter, style, markers) {
-                                ChapterRenderer(style, ReaderTypography.fonts(style.size))
+                                ChapterRenderer(style, ReaderTypography.fonts(style.size, style.family))
                                     .render(chapter.ref, chapter.layout, chapter.translation.copyright, markers)
                             },
                             marks = VerseMarks(colors, model.selection, speaking),
@@ -283,6 +288,7 @@ fun ReaderScreen(
             TopBar(
                 model, palette, onGoTo = { sheet = ReaderSheet.GO_TO }, onNotes = { sheet = ReaderSheet.NOTES },
                 onStudy = onStudy, onCompare = onCompare, onManageTranslations = onManageTranslations,
+                onAppearance = { appearance = true },
             )
             BottomBar(model, palette, Modifier.align(Alignment.BottomCenter)) {
                 ListenAndScrollControls(
@@ -358,8 +364,21 @@ fun ReaderScreen(
                     else -> GoToSheet(model, palette, onDismiss = { sheet = null })
                 }
             }
+            AppearanceSheet(model, palette, visible = appearance, onDismiss = { appearance = false })
+
+            // The verse-image designer, over a dimmed reader.
+            var designing by remember { mutableStateOf(model.designer) }
+            LaunchedEffect(model.designer) { model.designer?.let { designing = it } }
+            FullSheet(model.designer != null, onDismiss = model::closeDesigner) {
+                // Keyed by the passage, so a new one starts at the top rather than where the last was scrolled.
+                designing?.let { source -> key(source) { ShareDesigner(model, source, palette, onDone = model::closeDesigner) } }
+            }
+
             model.sharedPassage?.let { payload ->
-                SharedPassageCard(payload, palette, onDismiss = model::dismissSharedPassage)
+                SharedPassageCard(
+                    payload, palette, onDismiss = model::dismissSharedPassage,
+                    onDesign = { model.openDesigner(payload) },
+                )
             }
         }
     }
@@ -795,6 +814,7 @@ private fun TopBar(
     onStudy: () -> Unit,
     onCompare: () -> Unit,
     onManageTranslations: () -> Unit,
+    onAppearance: () -> Unit,
 ) {
     Box(
         Modifier
@@ -835,7 +855,7 @@ private fun TopBar(
             }
             Pill(palette) {
                 TranslationButton(model, palette, onCompare, onManageTranslations)
-                AppearanceButton(model, palette)
+                AppearanceButton(palette, onAppearance)
             }
         }
     }
@@ -937,95 +957,17 @@ private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, on
     }
 }
 
-/** A small menu over the theme, accent and layout — a stand-in for the Appearance sheet. */
+/** The AA button: opens the Appearance sheet. */
 @Composable
-private fun AppearanceButton(model: ReaderViewModel, palette: ReaderPalette) {
-    var open by remember { mutableStateOf(false) }
-    Box {
-        Row(
-            Modifier.height(44.dp).clip(RoundedCornerShape(22.dp)).clickable { open = true }.padding(horizontal = 12.dp)
-                .semantics { contentDescription = "Appearance" },
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            Text("A", color = palette.accent, fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 11.dp))
-            Text("A", color = palette.accent, fontSize = 23.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 7.dp))
-        }
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            MenuHeader("Theme", palette)
-            for (theme in ReaderTheme.entries) {
-                MenuChoice(theme.title, theme == model.theme, palette) { model.theme = theme }
-            }
-            HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
-            MenuHeader("Accent", palette)
-            for (accent in ReaderAccent.entries) {
-                MenuChoice(accent.title, accent == model.accent, palette, swatch = accent.color(palette.isDark)) {
-                    model.accent = accent
-                }
-            }
-            HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
-            MenuHeader("Layout", palette)
-            for (layout in ReadingLayout.entries) {
-                MenuChoice(layout.title, layout == model.layout, palette) { model.layout = layout }
-            }
-            HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
-            MenuHeader("Text Size", palette)
-            SizeStepper(model, palette)
-            MenuHeader("Line Spacing", palette)
-            SpacingStepper(model, palette)
-            HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
-            MenuHeader("Show", palette)
-            MenuChoice("Words of Christ in Red", model.redLetters, palette) { model.redLetters = !model.redLetters }
-            MenuChoice("Verse Numbers", model.verseNumbers, palette) { model.verseNumbers = !model.verseNumbers }
-            MenuChoice("Headings", model.headings, palette) { model.headings = !model.headings }
-            MenuChoice("Footnotes", model.footnotes, palette) { model.footnotes = !model.footnotes }
-        }
+private fun AppearanceButton(palette: ReaderPalette, onClick: () -> Unit) {
+    Row(
+        Modifier.height(44.dp).clip(RoundedCornerShape(22.dp)).clickable(onClick = onClick).padding(horizontal = 12.dp)
+            .semantics { contentDescription = "Appearance" },
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        Text("A", color = palette.accent, fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 11.dp))
+        Text("A", color = palette.accent, fontSize = 23.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 7.dp))
     }
-}
-
-/** Smaller and larger by 1 pt within 12–40 — the Appearance sheet's size slider, stepped. */
-@Composable
-private fun SizeStepper(model: ReaderViewModel, palette: ReaderPalette) {
-    Row(Modifier.padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        val range = ReaderStyle.SIZE_RANGE
-        PillIcon(Icons.Rounded.Remove, "Smaller Text", palette, enabled = model.fontSize > range.start) {
-            model.fontSize = (model.fontSize - 1f).coerceIn(range)
-        }
-        Text(
-            "${model.fontSize.roundToInt()} pt", color = palette.ink, fontSize = 15.sp,
-            textAlign = TextAlign.Center, modifier = Modifier.width(64.dp),
-        )
-        PillIcon(Icons.Rounded.Add, "Larger Text", palette, enabled = model.fontSize < range.endInclusive) {
-            model.fontSize = (model.fontSize + 1f).coerceIn(range)
-        }
-    }
-}
-
-/**
- * Tighter and looser by 0.1 within 1.0–2.0 — the Appearance sheet's spacing slider, stepped.
- * Snapped to tenths so repeated taps never drift into 1.4999….
- */
-@Composable
-private fun SpacingStepper(model: ReaderViewModel, palette: ReaderPalette) {
-    Row(Modifier.padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        val range = ReaderStyle.LINE_SPACING_RANGE
-        fun step(by: Float) {
-            model.lineSpacing = (Math.round((model.lineSpacing + by) * 10f) / 10f).coerceIn(range)
-        }
-        PillIcon(Icons.Rounded.Remove, "Tighter Lines", palette, enabled = model.lineSpacing > range.start + 0.001f) { step(-0.1f) }
-        Text(
-            String.format(java.util.Locale.US, "%.1f×", model.lineSpacing), color = palette.ink, fontSize = 15.sp,
-            textAlign = TextAlign.Center, modifier = Modifier.width(64.dp),
-        )
-        PillIcon(Icons.Rounded.Add, "Looser Lines", palette, enabled = model.lineSpacing < range.endInclusive - 0.001f) { step(0.1f) }
-    }
-}
-
-@Composable
-private fun MenuHeader(title: String, palette: ReaderPalette) {
-    Text(
-        title.uppercase(), color = palette.secondary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.2.sp,
-        modifier = Modifier.padding(start = 16.dp, top = 10.dp, bottom = 4.dp),
-    )
 }
 
 @Composable

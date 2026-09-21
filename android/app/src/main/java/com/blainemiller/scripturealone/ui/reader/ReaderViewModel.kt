@@ -16,7 +16,6 @@ import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.listen.AutoScroll
 import com.blainemiller.scripturealone.data.rights.TranslationRights
 import com.blainemiller.scripturealone.data.share.AppLink
-import com.blainemiller.scripturealone.data.share.SharePassageText
 import com.blainemiller.scripturealone.data.share.ShareLinkPayload
 import com.blainemiller.scripturealone.data.share.ShareVerse
 import com.blainemiller.scripturealone.data.userdata.BundledUserDatabase
@@ -26,6 +25,11 @@ import com.blainemiller.scripturealone.data.userdata.Selection
 import com.blainemiller.scripturealone.data.userdata.UserData
 import com.blainemiller.scripturealone.data.userdata.UserDataStore
 import java.io.File
+import com.blainemiller.scripturealone.ui.share.ShareAlignment
+import com.blainemiller.scripturealone.ui.share.ShareAspect
+import com.blainemiller.scripturealone.ui.share.ShareSource
+import com.blainemiller.scripturealone.ui.share.ShareStyle
+import com.blainemiller.scripturealone.ui.share.ShareTemplate
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.prefs.ReaderKeys
 import com.blainemiller.scripturealone.data.prefs.ReaderPrefs
@@ -88,6 +92,7 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     // Appearance. Defaults are the iOS `@AppStorage` defaults in `ReaderView.swift`.
     var theme by persisted(ReaderTheme.fromRaw(saved.theme) ?: ReaderTheme.SYSTEM) { p, v -> p[ReaderKeys.THEME] = v.raw }
     var accent by persisted(ReaderAccent.fromRaw(saved.accent) ?: ReaderAccent.SUNRISE) { p, v -> p[ReaderKeys.ACCENT] = v.raw }
+    var fontFamily by persisted(ReaderFontFamily.fromRaw(saved.fontFamily) ?: ReaderFontFamily.DEFAULT) { p, v -> p[ReaderKeys.FONT_FAMILY] = v.raw }
     var layout by persisted(ReadingLayout.fromRaw(saved.layout) ?: ReadingLayout.PARAGRAPHS) { p, v -> p[ReaderKeys.LAYOUT] = v.raw }
     var fontSize by persisted(
         saved.fontSize?.toFloat()?.coerceIn(ReaderStyle.SIZE_RANGE) ?: ReaderStyle.DEFAULT_SIZE,
@@ -105,8 +110,20 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     fun style(palette: ReaderPalette) = ReaderStyle(
         size = fontSize, lineSpacing = lineSpacing, layout = layout,
         redLetters = redLetters, verseNumbers = verseNumbers, headings = headings, footnotes = footnotes,
-        palette = palette,
+        palette = palette, family = fontFamily,
     )
+
+    // The verse-image designer's remembered choices — `ShareSettingsKey`, per device, iOS defaults.
+    var shareTemplate by persisted(ShareTemplate.fromRaw(saved.shareTemplate) ?: ShareTemplate.PARCHMENT) { p, v -> p[ReaderKeys.SHARE_TEMPLATE] = v.raw }
+    var shareAspect by persisted(ShareAspect.fromRaw(saved.shareAspect) ?: ShareAspect.SQUARE) { p, v -> p[ReaderKeys.SHARE_ASPECT] = v.raw }
+    var shareFamily by persisted(ReaderFontFamily.fromRaw(saved.shareFontFamily) ?: ReaderFontFamily.DEFAULT) { p, v -> p[ReaderKeys.SHARE_FONT_FAMILY] = v.raw }
+    var shareAlignment by persisted(ShareAlignment.fromRaw(saved.shareAlignment) ?: ShareAlignment.CENTER) { p, v -> p[ReaderKeys.SHARE_ALIGNMENT] = v.raw }
+    var shareRedLetters by persisted(saved.shareRedLetters ?: true) { p, v -> p[ReaderKeys.SHARE_RED_LETTERS] = v }
+    var shareVerseNumbers by persisted(saved.shareVerseNumbers ?: true) { p, v -> p[ReaderKeys.SHARE_VERSE_NUMBERS] = v }
+    var shareWordmark by persisted(saved.shareWordmark ?: true) { p, v -> p[ReaderKeys.SHARE_WORDMARK] = v }
+
+    val shareStyle: ShareStyle
+        get() = ShareStyle(shareTemplate, shareAspect, shareFamily, shareAlignment, shareRedLetters, shareVerseNumbers, shareWordmark)
 
     private var loading: Job? = null
 
@@ -300,8 +317,8 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     fun mayQuote(): Boolean = rights.mayQuote(selection.size)
 
     /** The verses [ranges] cover, in the current translation, read chapter by chapter off the main thread. */
-    suspend fun verses(ranges: List<VerseRange>): List<ChapterVerse> {
-        val id = translationId
+    suspend fun verses(ranges: List<VerseRange>, translation: String = translationId): List<ChapterVerse> {
+        val id = translation
         val chapters = ranges.flatMap { range ->
             val first = ChapterRef(range.start.book, range.start.chapter)
             val last = ChapterRef(range.end.book, range.end.chapter)
@@ -315,7 +332,7 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
                 } else {
                     runCatching { BundledTranslations.source(getApplication(), id).chapter(ref).verses }.getOrDefault(emptyList())
                 }
-                verses.maxOfOrNull { it.ref.verse }?.let { verseCounts[ref] = it }
+                if (id == translationId) verses.maxOfOrNull { it.ref.verse }?.let { verseCounts[ref] = it }
                 verses.filter { v -> ranges.any { it.contains(v.ref.key) } }
             }
         }
@@ -331,17 +348,62 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /**
-     * The share link for [ranges], or null when the passage is too long for one or the translation's
-     * terms don't allow sharing. Carries no designer choices: the web card uses its defaults.
+     * The share link for [ranges] with the designer's remembered template, typeface, aspect and red
+     * letters — as `ShareMenu` makes it — or null when the passage is too long for one or the
+     * translation's terms don't allow links (see [ShareSource.linksAllowed]).
      */
-    suspend fun shareLink(ranges: List<VerseRange> = selectedRanges): String? {
-        if (!rights.permits(TranslationRights.Permission.SHARE) || !rights.mayQuote(selection.size)) return null
-        val verses = verses(ranges).map { ShareVerse.fromScalars(it.ref, it.text, it.red.map { r -> r.start to r.length }) }
+    suspend fun shareLink(ranges: List<VerseRange> = selectedRanges): String? = shareSource(ranges)?.link(shareStyle)
+
+    /**
+     * The passage as the designer and share links see it, read from [translation] — the reader's own
+     * by default, a link's sender's when it is installed here — or null when there is nothing to read.
+     */
+    suspend fun shareSource(
+        ranges: List<VerseRange> = selectedRanges,
+        translation: String = translationId,
+        linkStyle: ShareLinkPayload? = null,
+    ): ShareSource? {
+        val id = translation.takeIf { it in BundledTranslations.ids } ?: translationId
+        val loaded = chapter?.translation?.takeIf { it.id == id }
+        val info = loaded ?: withContext(Dispatchers.IO) {
+            runCatching { BundledTranslations.source(getApplication(), id).info }.getOrNull()
+        } ?: return null
+        val verses = verses(ranges, id).map { ShareVerse.fromScalars(it.ref, it.text, it.red.map { r -> r.start to r.length }) }
         if (verses.isEmpty()) return null
-        val payload = ShareLinkPayload.of(
-            ranges, ranges.joinToString(", ") { it.display }, translationAbbreviation, SharePassageText.of(verses),
+        return ShareSource(
+            ranges = ranges, verses = verses, translation = info.abbreviation,
+            notice = TranslationRights.attributionNotice(info.license, info.copyright),
+            rights = info.rights, verseCount = ::verseCount, linkStyle = linkStyle,
         )
-        return if (payload.fitsInLink) payload.webUrl() else null
+    }
+
+    /** The passage the verse-image designer is open on, or null when it is closed. */
+    var designer by mutableStateOf<ShareSource?>(null)
+        private set
+
+    /** Share Image…: opens the designer on the selection, when the translation's terms allow an image. */
+    fun openDesigner(ranges: List<VerseRange> = selectedRanges) {
+        viewModelScope.launch { designer = shareSource(ranges)?.takeIf { it.imagesAllowed } }
+    }
+
+    /**
+     * Opens the designer on a share link's passage, rebuilt from the sender's translation when it is
+     * installed here, else the reader's own — and the link's template, typeface and aspect become the
+     * designer's starting point (`applyLinkStyle`).
+     */
+    fun openDesigner(payload: ShareLinkPayload) {
+        viewModelScope.launch {
+            val source = shareSource(payload.ranges, payload.translation, payload)?.takeIf { it.imagesAllowed } ?: return@launch
+            ShareTemplate.fromRaw(payload.template)?.let { shareTemplate = it }
+            ShareAspect.fromRaw(payload.aspect)?.let { shareAspect = it }
+            ReaderFontFamily.fromShareToken(payload.font)?.let { shareFamily = it }
+            sharedPassage = null
+            designer = source
+        }
+    }
+
+    fun closeDesigner() {
+        designer = null
     }
 
     /**
@@ -391,7 +453,10 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
      * shows the card it carries. Returns false for a URL that is neither.
      */
     fun openLink(url: String): Boolean {
-        when (val link = AppLink.parse(url) ?: return false) {
+        val link = AppLink.parse(url) ?: return false
+        // A link that arrives while the designer is open goes to its own passage, as `reveal` does on iOS.
+        designer = null
+        when (link) {
             is AppLink.Open -> {
                 sharedPassage = null
                 reveal(link.ranges)

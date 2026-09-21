@@ -22,8 +22,8 @@ import com.blainemiller.scripturealone.data.layout.utf16Range
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 
 /**
- * The typefaces a render uses. [body] is the reading face (Source Serif 4, standing in for New
- * York); [display] is the same face cut for large sizes, for the chapter number; [chrome] is the
+ * The typefaces a render uses. [body] is the reading face (one of [ReaderFontFamily]; Source
+ * Serif 4, standing in for New York, by default); [display] is the same face cut for large sizes, for the chapter number; [chrome] is the
  * platform sans, standing in for SF in headings, verse numbers and captions.
  */
 data class ReaderFonts(
@@ -31,12 +31,17 @@ data class ReaderFonts(
     val display: FontFamily = body,
     val chrome: FontFamily = FontFamily.SansSerif,
     /**
-     * Whether [body]'s italic has real small capitals. Source Serif 4's roman does (`smcp`), its
-     * italic does not, and an OpenType feature a face lacks is silently ignored — which would print
-     * "Lord" in plain lowercase. Where it is false, the divine name is drawn as reduced capitals.
+     * Whether [body]'s roman and italic have real small capitals. Source Serif 4's roman does
+     * (`smcp`), its italic does not, and an OpenType feature a face lacks is silently ignored — which
+     * would print "Lord" in plain lowercase. Where it is false, the divine name is drawn as reduced
+     * capitals.
      */
+    val romanHasSmallCaps: Boolean = true,
     val italicHasSmallCaps: Boolean = false,
-)
+) {
+    /** Whether the divine name in [body] must be drawn as reduced capitals rather than `smcp`. */
+    fun syntheticSmallCaps(italic: Boolean): Boolean = !(if (italic) italicHasSmallCaps else romanHasSmallCaps)
+}
 
 /** Tappable chrome inside the chapter. */
 enum class ReaderAction { NEXT_CHAPTER }
@@ -357,8 +362,8 @@ class ChapterRenderer(
         val styled = if (block.kind == Kind.MAJOR_SECTION) {
             AnnotatedString(shown, base)
         } else {
-            // The chrome sans (Roboto / the device's sans) has real small caps; the body italic doesn't.
-            val synthetic = italic && family == fonts.body && !fonts.italicHasSmallCaps
+            // The chrome sans (Roboto / the device's sans) has real small caps; the body face may not.
+            val synthetic = family == fonts.body && fonts.syntheticSmallCaps(italic)
             val runs = Runs(shown, base, palette.red)
             divineNameTails(shown).forEach { runs.smallCaps(it, synthetic) }
             runs.build(emptyList())
@@ -414,7 +419,7 @@ class ChapterRenderer(
             }
         }
         divineNameTails(text).forEach { tail ->
-            runs.smallCaps(tail, synthetic = !fonts.italicHasSmallCaps && runs.isItalic(tail.first))
+            runs.smallCaps(tail, synthetic = fonts.syntheticSmallCaps(runs.isItalic(tail.first)))
         }
 
         val markers = if (style.footnotes) {

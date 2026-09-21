@@ -45,6 +45,8 @@ object ReaderKeys {
 
     val THEME = stringPreferencesKey("reader.theme")
     val ACCENT = stringPreferencesKey("reader.accent")
+    /** The reading face, as the Swift `FontFamily` raw value: "newYork", "charter", … */
+    val FONT_FAMILY = stringPreferencesKey("reader.fontFamily")
     val FONT_SIZE = doublePreferencesKey("reader.fontSize")
     val LINE_SPACING = doublePreferencesKey("reader.lineSpacing")
     val LAYOUT = stringPreferencesKey("reader.layout")
@@ -54,6 +56,19 @@ object ReaderKeys {
     val FOOTNOTES = booleanPreferencesKey("reader.footnotes")
     /** Points per second: 16, 28, 44 or 64 (`SettingsKey.autoScrollSpeed`). */
     val AUTO_SCROLL_SPEED = doublePreferencesKey("reader.autoScrollSpeed")
+
+    // The verse-image designer's remembered choices — `ShareSettingsKey` in `ShareStyle.swift`.
+    /** "parchment", "ink", … (`ShareTemplate` raw values, which are also the links' `tp`). */
+    val SHARE_TEMPLATE = stringPreferencesKey("share.template")
+    /** "square", "story" or "wide". */
+    val SHARE_ASPECT = stringPreferencesKey("share.aspect")
+    /** A `FontFamily` raw value, as `reader.fontFamily`. */
+    val SHARE_FONT_FAMILY = stringPreferencesKey("share.fontFamily")
+    /** "leading" or "center". */
+    val SHARE_ALIGNMENT = stringPreferencesKey("share.alignment")
+    val SHARE_RED_LETTERS = booleanPreferencesKey("share.redLetters")
+    val SHARE_VERSE_NUMBERS = booleanPreferencesKey("share.verseNumbers")
+    val SHARE_WORDMARK = booleanPreferencesKey("share.wordmark")
 }
 
 /**
@@ -79,6 +94,14 @@ data class ReaderSettings(
     val headings: Boolean?,
     val footnotes: Boolean?,
     val autoScrollSpeed: Double? = null,
+    val fontFamily: String? = null,
+    val shareTemplate: String? = null,
+    val shareAspect: String? = null,
+    val shareFontFamily: String? = null,
+    val shareAlignment: String? = null,
+    val shareRedLetters: Boolean? = null,
+    val shareVerseNumbers: Boolean? = null,
+    val shareWordmark: Boolean? = null,
 ) {
     companion object {
         fun from(p: Preferences): ReaderSettings = ReaderSettings(
@@ -96,6 +119,14 @@ data class ReaderSettings(
             headings = p[ReaderKeys.HEADINGS],
             footnotes = p[ReaderKeys.FOOTNOTES],
             autoScrollSpeed = p[ReaderKeys.AUTO_SCROLL_SPEED],
+            fontFamily = p[ReaderKeys.FONT_FAMILY],
+            shareTemplate = p[ReaderKeys.SHARE_TEMPLATE],
+            shareAspect = p[ReaderKeys.SHARE_ASPECT],
+            shareFontFamily = p[ReaderKeys.SHARE_FONT_FAMILY],
+            shareAlignment = p[ReaderKeys.SHARE_ALIGNMENT],
+            shareRedLetters = p[ReaderKeys.SHARE_RED_LETTERS],
+            shareVerseNumbers = p[ReaderKeys.SHARE_VERSE_NUMBERS],
+            shareWordmark = p[ReaderKeys.SHARE_WORDMARK],
         )
 
         /** A verse key naming a real book and chapter. Verse bounds vary by translation and aren't checked. */

@@ -112,6 +112,7 @@ data class ReaderStyle(
     val headings: Boolean = true,
     val footnotes: Boolean = true,
     val palette: ReaderPalette,
+    val family: ReaderFontFamily = ReaderFontFamily.DEFAULT,
 ) {
     companion object {
         const val DEFAULT_SIZE = 19f

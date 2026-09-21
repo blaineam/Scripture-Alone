@@ -42,6 +42,29 @@ class ReaderPrefsTest {
         )
     }
 
+    /** `SettingsKey.fontFamily` and `ShareSettingsKey` in the Swift app. */
+    @Test
+    fun typefaceAndDesignerKeysAreTheIosKeys() {
+        val names = listOf(
+            ReaderKeys.FONT_FAMILY, ReaderKeys.SHARE_TEMPLATE, ReaderKeys.SHARE_ASPECT, ReaderKeys.SHARE_FONT_FAMILY,
+            ReaderKeys.SHARE_ALIGNMENT, ReaderKeys.SHARE_RED_LETTERS, ReaderKeys.SHARE_VERSE_NUMBERS, ReaderKeys.SHARE_WORDMARK,
+        ).map { it.name }
+        assertEquals(
+            listOf(
+                "reader.fontFamily", "share.template", "share.aspect", "share.fontFamily",
+                "share.alignment", "share.redLetters", "share.verseNumbers", "share.wordmark",
+            ),
+            names,
+        )
+        val saved = ReaderSettings.from(
+            mutablePreferencesOf(ReaderKeys.FONT_FAMILY to "charter", ReaderKeys.SHARE_TEMPLATE to "night", ReaderKeys.SHARE_WORDMARK to false),
+        )
+        assertEquals("charter", saved.fontFamily)
+        assertEquals("night", saved.shareTemplate)
+        assertEquals(false, saved.shareWordmark)
+        assertNull(saved.shareAspect)
+    }
+
     @Test
     fun aFirstLaunchHasNothingSaved() {
         val s = ReaderSettings.from(emptyPreferences())

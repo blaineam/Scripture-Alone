@@ -217,10 +217,12 @@ private fun RowScope.BarIcon(icon: ImageVector, label: String, palette: ReaderPa
 }
 
 /**
- * The share button — `ShareMenu` in `ShareSupport.swift`: Share Image…, Share Text and Copy Link, plus
- * Share Link… for Android's share sheet. The image designer isn't built yet, so its item is shown
- * disabled. The link is worked out as the menu opens; a passage too long for a link, or a
- * translation whose terms keep links off, says so instead.
+ * The share button — `ShareMenu` in `ShareSupport.swift`: Share Image… (the verse-image designer),
+ * Share Text and Copy Link, plus Share Link… for Android's share sheet. Share Image… asks the
+ * translation's terms — `permits(VERSE_IMAGES)` and `mayQuote` — and is disabled, not hidden, when
+ * they refuse. The link carries the designer's remembered template, typeface and aspect, and is
+ * worked out as the menu opens; a passage too long for a link, or a translation whose terms keep
+ * links off, says so instead.
  */
 @Composable
 private fun RowScope.ShareMenu(model: ReaderViewModel, palette: ReaderPalette, ranges: List<VerseRange>, enabled: Boolean) {
@@ -230,7 +232,7 @@ private fun RowScope.ShareMenu(model: ReaderViewModel, palette: ReaderPalette, r
     var copied by remember { mutableStateOf(false) }
     var link by remember { mutableStateOf<String?>(null) }
     val selection = model.selection
-    LaunchedEffect(selection, model.translationId) { link = model.shareLink(ranges) }
+    LaunchedEffect(selection, model.translationId, model.shareStyle) { link = model.shareLink(ranges) }
     val shareAllowed = model.rights.permits(TranslationRights.Permission.SHARE)
     val reference = ranges.joinToString(", ") { it.display }
 
@@ -251,7 +253,11 @@ private fun RowScope.ShareMenu(model: ReaderViewModel, palette: ReaderPalette, r
             )
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            MenuItem("Share Image…", palette, enabled = false) {}
+            val imagesAllowed = model.rights.permits(TranslationRights.Permission.VERSE_IMAGES) && model.mayQuote()
+            MenuItem("Share Image…", palette, enabled = imagesAllowed) {
+                open = false
+                model.openDesigner(ranges)
+            }
             MenuItem("Share Text", palette, enabled = shareAllowed) {
                 open = false
                 scope.launch { model.quotation(ranges).takeIf { it.isNotEmpty() }?.let(::send) }

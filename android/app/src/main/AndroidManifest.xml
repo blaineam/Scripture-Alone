@@ -95,6 +95,16 @@
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
             </intent-filter>
         </receiver>
+        <!-- Hands the verse-image designer's PNG to the share sheet (ui/share/ShareExport.kt). -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.shareimages"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/share_paths" />
+        </provider>
         <!-- Keeps the widgets' snapshot and the watch current from process start. -->
         <provider
             android:name="androidx.startup.InitializationProvider"
