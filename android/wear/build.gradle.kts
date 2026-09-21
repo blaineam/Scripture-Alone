@@ -14,7 +14,9 @@ android {
         applicationId = "com.blainemiller.scripturealone"
         minSdk = 30
         targetSdk = 36
-        versionCode = 1
+        // The phone and watch bundles share one package, and Play needs every uploaded bundle's
+        // versionCode to be unique across the app, so the watch counts from 1,000,000 + the phone's.
+        versionCode = 1_000_001
         versionName = "1.0.0"
     }
 
@@ -22,6 +24,19 @@ android {
         // `-PappIdSuffix=…` suffixes the phone's debug build; the watch's follows it, so a debug pair
         // still shares one ID and can talk. Release builds never carry a suffix.
         providers.gradleProperty("appIdSuffix").orNull?.let { applicationIdSuffix = ".$it" }
+    }
+
+    // The same upload key as the phone app (SA_UPLOAD_* in ~/.gradle/gradle.properties, never the
+    // repository): the Data Layer only pairs apps with the same ID *and* signing key.
+    val uploadStore = providers.gradleProperty("SA_UPLOAD_STORE_FILE").orNull
+    if (uploadStore != null) {
+        val upload = signingConfigs.create("upload") {
+            storeFile = file(uploadStore)
+            storePassword = providers.gradleProperty("SA_UPLOAD_STORE_PASSWORD").get()
+            keyAlias = providers.gradleProperty("SA_UPLOAD_KEY_ALIAS").get()
+            keyPassword = providers.gradleProperty("SA_UPLOAD_KEY_PASSWORD").get()
+        }
+        buildTypes.getByName("release").signingConfig = upload
     }
 
     buildTypes {
