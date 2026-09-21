@@ -24,6 +24,13 @@ enum class ReaderTheme(val title: String) {
         LIGHT -> ReaderPalette.Light
         SYSTEM -> if (systemDark) ReaderPalette.Dark else ReaderPalette.Light
     }
+
+    /** The Swift raw value, as stored under `reader.theme`: "system", "sepia", … */
+    val raw: String get() = name.lowercase()
+
+    companion object {
+        fun fromRaw(raw: String?): ReaderTheme? = entries.firstOrNull { it.raw == raw }
+    }
 }
 
 /**
@@ -45,6 +52,13 @@ enum class ReaderAccent(val title: String, private val light: Long, private val 
 
     /** The swatch in a picker, always its light-page value — as on iOS. */
     val swatch: Color get() = rgb(light)
+
+    /** The Swift raw value, as stored under `reader.accent`: "sunrise", "sea", … */
+    val raw: String get() = name.lowercase()
+
+    companion object {
+        fun fromRaw(raw: String?): ReaderAccent? = entries.firstOrNull { it.raw == raw }
+    }
 }
 
 data class ReaderPalette(
@@ -70,7 +84,16 @@ data class ReaderPalette(
     }
 }
 
-enum class ReadingLayout(val title: String) { PARAGRAPHS("Paragraphs"), VERSES("Verse by Verse") }
+enum class ReadingLayout(val title: String) {
+    PARAGRAPHS("Paragraphs"), VERSES("Verse by Verse");
+
+    /** The Swift raw value, as stored under `reader.layout`: "paragraphs" or "verses". */
+    val raw: String get() = name.lowercase()
+
+    companion object {
+        fun fromRaw(raw: String?): ReadingLayout? = entries.firstOrNull { it.raw == raw }
+    }
+}
 
 /**
  * Everything the renderer needs to know about presentation, as one comparable value — `ReaderStyle`

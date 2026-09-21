@@ -1,8 +1,16 @@
 package com.blainemiller.scripturealone.ui.reader
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +29,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -28,10 +37,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ChevronLeft
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.Remove
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -42,40 +53,66 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
+import androidx.compose.ui.window.PopupProperties
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
+import com.blainemiller.scripturealone.ui.navigation.GoToSheet
+import kotlin.math.abs
+import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * The chapter reader: the rendered chapter full-bleed on the theme's page, with the chrome floating
- * over it in pills, as the iOS reader's Liquid Glass toolbars do. Only what this stage needs is here
- * — the passage title, the translation switcher, a minimal appearance menu and chapter paging; the
- * empty places are where Notes, Study, Listen and auto-scroll will go.
+ * over it in pills, as the iOS reader's Liquid Glass toolbars do. The passage title opens the Go To
+ * sheet; the empty places are where Notes, Study, Listen and auto-scroll will go.
  */
 @Composable
 fun ReaderScreen(model: ReaderViewModel) {
     val palette = model.theme.palette(isSystemInDarkTheme()).accented(model.accent)
-    val style = ReaderStyle(palette = palette, layout = model.layout)
+    val style = model.style(palette)
+    var goTo by rememberSaveable { mutableStateOf(false) }
 
     MaterialTheme(colorScheme = menuColors(palette)) {
         Box(Modifier.fillMaxSize().background(palette.page)) {
@@ -89,6 +126,10 @@ fun ReaderScreen(model: ReaderViewModel) {
                                     .render(chapter.ref, chapter.layout, chapter.translation.copyright)
                             },
                             palette = palette,
+                            scrollTarget = model.scrollTarget,
+                            onScrolledToTarget = model::scrolledToTarget,
+                            onTopVerse = model::updateTopVerse,
+                            onSwipe = { forward -> if (forward) model.next() else model.previous() },
                             onAction = { if (it == ReaderAction.NEXT_CHAPTER) model.next() },
                         )
                     }
@@ -104,8 +145,23 @@ fun ReaderScreen(model: ReaderViewModel) {
                     modifier = Modifier.align(Alignment.Center).padding(32.dp),
                 )
             }
-            TopBar(model, palette)
+            TopBar(model, palette, onGoTo = { goTo = true })
             BottomBar(model, palette, Modifier.align(Alignment.BottomCenter))
+
+            // The Go To sheet, over a dimmed reader, rising from the bottom as an iOS sheet does.
+            AnimatedVisibility(goTo, enter = fadeIn(), exit = fadeOut()) {
+                Box(
+                    Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.32f))
+                        .clickable(interactionSource = null, indication = null) { goTo = false },
+                )
+            }
+            AnimatedVisibility(
+                goTo,
+                enter = slideInVertically(tween(320)) { it },
+                exit = slideOutVertically(tween(240)) { it },
+            ) {
+                GoToSheet(model, palette, onDismiss = { goTo = false })
+            }
         }
     }
 }
@@ -114,13 +170,77 @@ fun ReaderScreen(model: ReaderViewModel) {
  * The chapter as a lazy column of paragraphs. Horizontal insets follow `ChapterGeometry`: 22 pt on
  * a phone, 40 pt from 500 pt wide, and never a line longer than 700 pt. Top 20 and bottom 140 are
  * the iOS text container's insets, below the bars.
+ *
+ * Also the three things `ChapterTextView` does around the text: it scrolls a target verse to the top
+ * (12 pt below the bars, as iOS leaves), reports the verse at the top as the reader scrolls, and
+ * turns a horizontal swipe into the next or previous chapter.
  */
 @Composable
-private fun ChapterColumn(rendered: RenderedChapter, palette: ReaderPalette, onAction: (ReaderAction) -> Unit) {
+private fun ChapterColumn(
+    rendered: RenderedChapter,
+    palette: ReaderPalette,
+    scrollTarget: Int?,
+    onScrolledToTarget: () -> Unit,
+    onTopVerse: (Int) -> Unit,
+    onSwipe: (forward: Boolean) -> Unit,
+    onAction: (ReaderAction) -> Unit,
+) {
     val state = rememberLazyListState()
     val status = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val nav = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    val density = LocalDensity.current
+    // Each paragraph's text layout, by index — not state: read only from effects, never to draw.
+    val layouts = remember(rendered) { HashMap<Int, TextLayoutResult>() }
+    val target by rememberUpdatedState(scrollTarget)
+    val report by rememberUpdatedState(onTopVerse)
+
+    LaunchedEffect(rendered, scrollTarget) {
+        val key = scrollTarget ?: return@LaunchedEffect
+        val (index, offset) = rendered.locate(key) ?: run {
+            onScrolledToTarget()
+            return@LaunchedEffect
+        }
+        state.scrollToItem(index)
+        // The verse's line within its paragraph is known only once the paragraph has been laid out.
+        withTimeoutOrNull(1_000) {
+            snapshotFlow { state.layoutInfo.visibleItemsInfo.any { it.index == index } }.first { it }
+        }
+        layouts[index]?.let { layout ->
+            val lineTop = layout.getLineTop(layout.getLineForOffset(offset))
+            val before = with(density) { rendered.paragraphs[index].spaceBefore.sp.toPx() }
+            val lead = with(density) { 12.dp.toPx() }
+            state.scrollToItem(index, (before + lineTop - lead).roundToInt().coerceAtLeast(0))
+        }
+        onScrolledToTarget()
+    }
+
+    // The verse at the top: the first verse beginning at or after the top line, as iOS reports it.
+    LaunchedEffect(rendered) {
+        snapshotFlow { state.firstVisibleItemIndex to state.firstVisibleItemScrollOffset }
+            .map { (index, offset) ->
+                val before = with(density) { rendered.paragraphs.getOrNull(index)?.spaceBefore?.sp?.toPx() ?: 0f }
+                topVerse(rendered, index, offset - before, layouts[index])
+            }
+            .distinctUntilChanged()
+            .collect { key -> if (key != null && target == null) report(key) }
+    }
+
+    BoxWithConstraints(
+        Modifier.fillMaxSize().pointerInput(Unit) {
+            // Horizontal only past the touch slop, and only if the list hasn't already claimed the
+            // gesture as a vertical scroll — so paging never fights reading.
+            var travel = 0f
+            val threshold = 64.dp.toPx()
+            detectHorizontalDragGestures(
+                onDragStart = { travel = 0f },
+                onDragEnd = { if (abs(travel) > threshold) onSwipe(travel < 0) },
+                onHorizontalDrag = { change, amount ->
+                    travel += amount
+                    change.consume()
+                },
+            )
+        },
+    ) {
         val margin = if (maxWidth < 500.dp) 22.dp else 40.dp
         val inset = maxOf(margin, (maxWidth - 700.dp) / 2)
         LazyColumn(
@@ -128,17 +248,40 @@ private fun ChapterColumn(rendered: RenderedChapter, palette: ReaderPalette, onA
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(start = inset, end = inset, top = status + BAR_HEIGHT + 20.dp, bottom = nav + 140.dp),
         ) {
-            itemsIndexed(rendered.paragraphs) { _, paragraph ->
-                Paragraph(paragraph, palette, onAction)
+            itemsIndexed(rendered.paragraphs) { index, paragraph ->
+                Paragraph(paragraph, palette, onAction, onLayout = { layouts[index] = it })
             }
         }
     }
 }
 
+/**
+ * The verse to report for a scroll position: in paragraph [index], the first verse starting at or
+ * after the line at [y] (px into the paragraph's text); failing that, the next paragraph's first
+ * verse; and past the last verse (the footer), the last one.
+ */
+private fun topVerse(rendered: RenderedChapter, index: Int, y: Float, layout: TextLayoutResult?): Int? {
+    val paragraphs = rendered.paragraphs
+    val here = paragraphs.getOrNull(index) ?: return null
+    val lineStart = if (layout != null && y > 0) layout.getLineStart(layout.getLineForVerticalPosition(y)) else 0
+    here.verses.firstOrNull { it.offset >= lineStart }?.let { return it.key }
+    for (i in index + 1 until paragraphs.size) paragraphs[i].verses.firstOrNull()?.let { return it.key }
+    return paragraphs.lastOrNull { it.verses.isNotEmpty() }?.verses?.last()?.key
+}
+
 @Composable
-private fun Paragraph(p: RenderedParagraph, palette: ReaderPalette, onAction: (ReaderAction) -> Unit) {
+private fun Paragraph(
+    p: RenderedParagraph,
+    palette: ReaderPalette,
+    onAction: (ReaderAction) -> Unit,
+    onLayout: (TextLayoutResult) -> Unit,
+) {
     val density = LocalDensity.current
     fun Float.spDp(): Dp = with(density) { this@spDp.sp.toDp() }
+    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    var footnote by remember { mutableStateOf<Footnote?>(null) }
+    val notes = remember(p.text) { p.text.getStringAnnotations(ChapterRenderer.FOOTNOTE_TAG, 0, p.text.length) }
+
     var modifier = Modifier
         .fillMaxWidth()
         .padding(top = p.spaceBefore.spDp(), bottom = p.spaceAfter.spDp(), end = p.endIndent.spDp())
@@ -147,21 +290,123 @@ private fun Paragraph(p: RenderedParagraph, palette: ReaderPalette, onAction: (R
             onAction(action)
         }
     }
-    Text(
-        text = p.text,
-        modifier = modifier,
-        style = TextStyle(
-            color = palette.ink,
-            textAlign = p.align,
-            lineHeight = p.lineHeight.sp,
-            textIndent = TextIndent(firstLine = p.firstLineIndent.sp, restLine = p.restLineIndent.sp),
-            // Every line the same height, the space shared above and below the glyphs, and nothing
-            // trimmed at a paragraph's edges — so the gaps between paragraphs are exactly the
-            // spacing the renderer asked for, as in TextKit.
-            lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
-        ),
-    )
+    if (notes.isNotEmpty()) {
+        modifier = modifier.pointerInput(notes) {
+            // The letters are small; a tap anywhere within a finger's reach of one opens it.
+            val reach = 18.dp.toPx()
+            detectTapGestures { tap ->
+                val text = layout ?: return@detectTapGestures
+                val hit = notes.map { it to text.getBoundingBox(it.start) }
+                    .filter { (_, box) -> box.inflate(reach).contains(tap) }
+                    .minByOrNull { (_, box) -> (box.center - tap).getDistanceSquared() }
+                    ?: return@detectTapGestures
+                footnote = Footnote(hit.first.item, hit.second)
+            }
+        }
+    }
+    Box {
+        Text(
+            text = p.text,
+            modifier = modifier,
+            onTextLayout = {
+                layout = it
+                onLayout(it)
+            },
+            style = TextStyle(
+                color = palette.ink,
+                textAlign = p.align,
+                lineHeight = p.lineHeight.sp,
+                textIndent = TextIndent(firstLine = p.firstLineIndent.sp, restLine = p.restLineIndent.sp),
+                // Every line the same height, the space shared above and below the glyphs, and nothing
+                // trimmed at a paragraph's edges — so the gaps between paragraphs are exactly the
+                // spacing the renderer asked for, as in TextKit.
+                lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
+            ),
+        )
+        footnote?.let { note ->
+            val top = with(density) { p.spaceBefore.sp.toPx() }
+            FootnotePopover(note.text, note.anchor.translate(0f, top), palette) { footnote = null }
+        }
+    }
 }
+
+/** A tapped footnote: its text and the letter's box, in the paragraph's text coordinates. */
+private data class Footnote(val text: String, val anchor: Rect)
+
+/**
+ * The note in a small rounded card beside its letter, with an arrow pointing at it — the iOS popover,
+ * which on a phone is still a popover (`presentationCompactAdaptation(.popover)`). Below the letter
+ * when it fits, above when it doesn't; at most 320 wide, the popover's ideal width. Any tap outside
+ * dismisses it.
+ *
+ * The card sits inside a transparent margin because a popup's window is exactly as large as its
+ * content: without room around the card, its shadow is clipped away and it melts into a light page.
+ */
+@Composable
+private fun FootnotePopover(text: String, anchor: Rect, palette: ReaderPalette, onDismiss: () -> Unit) {
+    val density = LocalDensity.current
+    val gap = with(density) { 4.dp.roundToPx() }
+    val margin = with(density) { 12.dp.roundToPx() }
+    val shade = with(density) { SHADOW_ROOM.roundToPx() }
+    /** Where the provider put the popup: the arrow's x within it, and whether the card is below. */
+    var placement by remember { mutableStateOf(0f to true) }
+    val position = remember(anchor) {
+        object : PopupPositionProvider {
+            override fun calculatePosition(
+                anchorBounds: IntRect, windowSize: IntSize, layoutDirection: LayoutDirection, popupContentSize: IntSize,
+            ): IntOffset {
+                val cardHeight = popupContentSize.height - 2 * shade
+                val centerX = anchorBounds.left + anchor.center.x.roundToInt()
+                val x = (centerX - popupContentSize.width / 2)
+                    .coerceIn(margin - shade, maxOf(margin - shade, windowSize.width - popupContentSize.width - margin + shade))
+                val belowTop = anchorBounds.top + anchor.bottom.roundToInt() + gap
+                val aboveTop = anchorBounds.top + anchor.top.roundToInt() - gap - cardHeight
+                val below = belowTop + cardHeight <= windowSize.height - margin * 8 || aboveTop < margin * 8
+                placement = (centerX - x).toFloat() to below
+                return IntOffset(x, (if (below) belowTop else aboveTop) - shade)
+            }
+        }
+    }
+    val surface = SheetColors.popover(palette)
+    val edge = (if (palette.isDark) Color.White else Color.Black).copy(alpha = 0.10f)
+    val shape = RoundedCornerShape(14.dp)
+    Popup(popupPositionProvider = position, onDismissRequest = onDismiss, properties = PopupProperties(focusable = true)) {
+        Box(
+            Modifier
+                .padding(SHADOW_ROOM)
+                .widthIn(max = 320.dp)
+                .drawBehind {
+                    // The arrow, drawn under the card so the card's hairline doesn't cross it.
+                    val (arrowX, below) = placement
+                    val x = (arrowX - SHADOW_ROOM.toPx()).coerceIn(20.dp.toPx(), size.width - 20.dp.toPx())
+                    val w = 9.dp.toPx()
+                    val h = ARROW.toPx()
+                    val path = Path().apply {
+                        if (below) {
+                            moveTo(x - w, h + 1f); lineTo(x, 0f); lineTo(x + w, h + 1f)
+                        } else {
+                            moveTo(x - w, size.height - h - 1f); lineTo(x, size.height); lineTo(x + w, size.height - h - 1f)
+                        }
+                        close()
+                    }
+                    drawPath(path, surface)
+                    drawPath(path, edge, style = Stroke(width = 0.5.dp.toPx()))
+                }
+                .padding(top = if (placement.second) ARROW else 0.dp, bottom = if (placement.second) 0.dp else ARROW)
+                .shadow(14.dp, shape, ambientColor = Color.Black.copy(alpha = 0.25f), spotColor = Color.Black.copy(alpha = 0.30f))
+                .clip(shape)
+                .background(surface)
+                .border(0.5.dp, edge, shape)
+                .clickable(interactionSource = null, indication = null, onClick = onDismiss)
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+        ) {
+            Text(text, color = palette.ink, fontSize = 16.sp, lineHeight = 21.sp)
+        }
+    }
+}
+
+private val SHADOW_ROOM = 20.dp
+private val ARROW = 8.dp
 
 private val BAR_HEIGHT = 64.dp
 
@@ -171,7 +416,7 @@ private val BAR_HEIGHT = 64.dp
  * for the scroll-edge effect of iOS 26's glass.
  */
 @Composable
-private fun TopBar(model: ReaderViewModel, palette: ReaderPalette) {
+private fun TopBar(model: ReaderViewModel, palette: ReaderPalette, onGoTo: () -> Unit) {
     Box(
         Modifier
             .fillMaxWidth()
@@ -180,7 +425,11 @@ private fun TopBar(model: ReaderViewModel, palette: ReaderPalette) {
             .height(BAR_HEIGHT + 12.dp),
     ) {
         Row(
-            Modifier.align(Alignment.Center).semantics { contentDescription = "Passage, ${Canon.display(model.location)}" },
+            Modifier.align(Alignment.Center)
+                .clip(RoundedCornerShape(22.dp))
+                .clickable(onClick = onGoTo)
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .semantics { contentDescription = "Passage, ${Canon.display(model.location)}. Go To" },
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -228,13 +477,10 @@ private fun BottomBar(model: ReaderViewModel, palette: ReaderPalette, modifier: 
  */
 @Composable
 private fun Pill(palette: ReaderPalette, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    val lift = if (palette.isDark) Color.White else Color.Black
     Row(
         modifier
             .height(52.dp)
-            .clip(CircleShape)
-            .background(lift.copy(alpha = if (palette.isDark) 0.07f else 0.045f).compositeOver(palette.page.copy(alpha = 0.92f)))
-            .border(0.5.dp, lift.copy(alpha = if (palette.isDark) 0.12f else 0.08f), CircleShape)
+            .glass(palette, CircleShape)
             .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) { content() }
@@ -308,6 +554,33 @@ private fun AppearanceButton(model: ReaderViewModel, palette: ReaderPalette) {
             for (layout in ReadingLayout.entries) {
                 MenuChoice(layout.title, layout == model.layout, palette) { model.layout = layout }
             }
+            HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
+            MenuHeader("Text Size", palette)
+            SizeStepper(model, palette)
+            HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
+            MenuHeader("Show", palette)
+            MenuChoice("Words of Christ in Red", model.redLetters, palette) { model.redLetters = !model.redLetters }
+            MenuChoice("Verse Numbers", model.verseNumbers, palette) { model.verseNumbers = !model.verseNumbers }
+            MenuChoice("Headings", model.headings, palette) { model.headings = !model.headings }
+            MenuChoice("Footnotes", model.footnotes, palette) { model.footnotes = !model.footnotes }
+        }
+    }
+}
+
+/** Smaller and larger by 1 pt within 12–40 — the Appearance sheet's size slider, stepped. */
+@Composable
+private fun SizeStepper(model: ReaderViewModel, palette: ReaderPalette) {
+    Row(Modifier.padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        val range = ReaderStyle.SIZE_RANGE
+        PillIcon(Icons.Rounded.Remove, "Smaller Text", palette, enabled = model.fontSize > range.start) {
+            model.fontSize = (model.fontSize - 1f).coerceIn(range)
+        }
+        Text(
+            "${model.fontSize.roundToInt()} pt", color = palette.ink, fontSize = 15.sp,
+            textAlign = TextAlign.Center, modifier = Modifier.width(64.dp),
+        )
+        PillIcon(Icons.Rounded.Add, "Larger Text", palette, enabled = model.fontSize < range.endInclusive) {
+            model.fontSize = (model.fontSize + 1f).coerceIn(range)
         }
     }
 }

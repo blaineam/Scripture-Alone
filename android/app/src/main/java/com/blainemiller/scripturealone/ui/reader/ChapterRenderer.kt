@@ -62,9 +62,30 @@ data class RenderedParagraph(
     /** Absolute line height, sp. */
     val lineHeight: Float,
     val action: ReaderAction? = null,
+    /** Where each verse begins in [text], in reading order — for scrolling to a verse and saving the position. */
+    val verses: List<VerseStart> = emptyList(),
 )
 
-data class RenderedChapter(val ref: ChapterRef, val paragraphs: List<RenderedParagraph>)
+/** A verse's [key] (`VerseRef.key`) and the UTF-16 [offset] in its paragraph where the verse begins. */
+data class VerseStart(val offset: Int, val key: Int)
+
+data class RenderedChapter(val ref: ChapterRef, val paragraphs: List<RenderedParagraph>) {
+    /**
+     * The paragraph and offset where verse [key] begins. A verse the chapter doesn't print (past the
+     * end of this translation's numbering) falls back to the last verse before it, so a position saved
+     * in one translation still lands close in another.
+     */
+    fun locate(key: Int): Pair<Int, Int>? {
+        var best: Triple<Int, Int, Int>? = null
+        paragraphs.forEachIndexed { index, p ->
+            for (v in p.verses) {
+                if (v.key == key) return index to v.offset
+                if (v.key < key && (best == null || v.key > best!!.third)) best = Triple(index, v.offset, v.key)
+            }
+        }
+        return best?.let { it.first to it.second }
+    }
+}
 
 /**
  * Turns a [ChapterLayout] into styled paragraphs — a port of `ScriptureAlone/Reader/ChapterRenderer.swift`.
@@ -89,9 +110,11 @@ class ChapterRenderer(
 
     /** Letters handed out in reading order across the chapter, as the Swift builder's counter does. */
     private var footnoteCounter = 0
+    private var chapter = ChapterRef(0, 0)
 
     fun render(ref: ChapterRef, layout: ChapterLayout, copyright: String): RenderedChapter {
         footnoteCounter = 0
+        chapter = ref
         val out = mutableListOf<RenderedParagraph>()
         header(ref, out)
         if (style.layout == ReadingLayout.VERSES) verseByVerse(layout, out) else paragraphs(layout, out)
@@ -173,13 +196,15 @@ class ChapterRenderer(
                 block.kind == Kind.UNKNOWN -> continue
                 else -> {
                     val text = AnnotatedString.Builder()
+                    val starts = mutableListOf<VerseStart>()
                     for (fragment in block.fragments) {
                         if (text.length > 0) text.withStyle(body) { append(" ") }
+                        if (fragment.numbered && fragment.verse > 0) starts += VerseStart(text.length, verseKey(fragment.verse))
                         text.append(fragment(fragment, block.kind))
                     }
                     // An empty paragraph leaves a pending stanza break for the next one, as in Swift.
                     if (text.length == 0) continue
-                    out += paragraph(text.toAnnotatedString(), block.kind, extraSpaceBefore = pendingBreak)
+                    out += paragraph(text.toAnnotatedString(), block.kind, extraSpaceBefore = pendingBreak).copy(verses = starts)
                 }
             }
             pendingBreak = false
@@ -188,15 +213,19 @@ class ChapterRenderer(
 
     private fun verseByVerse(layout: ChapterLayout, out: MutableList<RenderedParagraph>) {
         var current: AnnotatedString.Builder? = null
+        var starts = mutableListOf<VerseStart>()
         fun flush() {
             val line = current ?: return
             current = null
+            val lineStarts = starts
+            starts = mutableListOf()
             if (line.length == 0) return
             out += RenderedParagraph(
                 text = line.toAnnotatedString(),
                 restLineIndent = if (style.verseNumbers) size * 1.5f else 0f,
                 spaceAfter = size * 0.45f,
                 lineHeight = size * NATURAL_LINE_HEIGHT * style.lineSpacing,
+                verses = lineStarts,
             )
         }
         for (block in layout.blocks) {
@@ -217,6 +246,7 @@ class ChapterRenderer(
                 if (fragment.numbered) {
                     flush()
                     current = AnnotatedString.Builder()
+                    if (fragment.verse > 0) starts += VerseStart(0, verseKey(fragment.verse))
                 } else if (line != null && line.length > 0) {
                     line.withStyle(body) { append(" ") }
                 }
@@ -337,7 +367,7 @@ class ChapterRenderer(
         val markers = if (style.footnotes) {
             fragment.footnotes.map { note ->
                 // Clamped to the text's end, as Swift's `min(text.length, …)`.
-                minOf(text.length, text.utf16Offset(note.position)) to footnoteMarker()
+                minOf(text.length, text.utf16Offset(note.position)) to footnoteMarker(note.text)
             }.sortedBy { it.first }
         } else {
             emptyList()
@@ -359,19 +389,27 @@ class ChapterRenderer(
         return result.toAnnotatedString()
     }
 
-    private fun footnoteMarker(): AnnotatedString {
+    /**
+     * The letter, carrying the note's text as a [FOOTNOTE_TAG] annotation — as Swift carries it in the
+     * `.footnote` attribute — so a tap on the letter can find what to show without a second lookup.
+     */
+    private fun footnoteMarker(note: String): AnnotatedString {
         footnoteCounter += 1
         val label = LETTERS[(footnoteCounter - 1) % LETTERS.length].toString()
         val markerSize = maxOf(9f, size * 0.55f)
-        // The note's text isn't attached yet: it belongs to the footnote popover, a separate feature.
-        return AnnotatedString(
-            label,
+        val marker = AnnotatedString.Builder()
+        marker.pushStringAnnotation(FOOTNOTE_TAG, note)
+        marker.withStyle(
             SpanStyle(
                 fontFamily = fonts.chrome, fontWeight = FontWeight.Medium, fontStyle = FontStyle.Normal,
                 fontSize = markerSize.sp, color = palette.secondary, baselineShift = shift(size * 0.38f, markerSize),
             ),
-        )
+        ) { append(label) }
+        marker.pop()
+        return marker.toAnnotatedString()
     }
+
+    private fun verseKey(verse: Int) = chapter.book * 1_000_000 + chapter.chapter * 1_000 + verse
 
     /**
      * Per-character styling of one run of text, flattened into spans at the end. Styles overlap
@@ -430,6 +468,9 @@ class ChapterRenderer(
     }
 
     companion object {
+        /** The string annotation on a footnote letter; its item is the note's text. */
+        const val FOOTNOTE_TAG = "footnote"
+
         /**
          * The system fonts' natural line height as a multiple of point size. iOS's
          * `lineHeightMultiple` multiplies the font's own line height, not its size; measured on the
