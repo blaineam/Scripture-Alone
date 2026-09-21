@@ -19,7 +19,12 @@ cd "$CI_PRIMARY_REPOSITORY_PATH"
 #
 # NOTE: exiting non-zero is the ONLY way to stop an Xcode Cloud run early. A run that ends with
 # the banner below is a DELIBERATE SKIP, not a broken build.
-if git rev-parse HEAD~1 >/dev/null 2>&1; then
+# Xcode Cloud clones shallowly, so HEAD~1 usually isn't there and the guard silently stood aside —
+# a Markdown-only commit built and uploaded build 40. Fetch the one parent commit it needs.
+if ! git rev-parse -q --verify HEAD~1 >/dev/null 2>&1; then
+  git fetch -q --deepen=1 origin 2>/dev/null || true
+fi
+if git rev-parse -q --verify HEAD~1 >/dev/null 2>&1; then
   CHANGED="$(git diff --name-only HEAD~1 HEAD || true)"
   RELEVANT="$(printf '%s\n' "$CHANGED" | grep -vE '^android/|(^|/)(docs|\.claude)/|\.md$' || true)"
   if [ -n "$CHANGED" ] && [ -z "$RELEVANT" ]; then
@@ -31,6 +36,9 @@ if git rev-parse HEAD~1 >/dev/null 2>&1; then
     echo "=============================================================="
     exit 1
   fi
+  echo "nothing-to-build guard: iOS-relevant changes present, building"
+else
+  echo "nothing-to-build guard: no parent commit reachable, building (cannot tell what changed)"
 fi
 # ---- end guard -------------------------------------------------------------
 
