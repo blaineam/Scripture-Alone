@@ -133,23 +133,23 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 ### Study
 | Feature | Status | Notes |
 |---|---|---|
-| Study panel following the tapped verse, back trail | ⬜ | Side pane on tablets, bottom sheet on phones |
-| Cross references ranked by votes, preview | 🔧 | Store done, from bundled `CrossReferences.sqlite`, matching the pack exactly; UI not yet |
-| Commentary: Calvin, Gill, JFB, with links | 🔧 | Store done; all 3,192 bodies inflate; UI not yet |
-| Original languages: word, translit, parsing, Strong's, lexicon | 🔧 | Store done; all 443,625 words checked against the BSB text; UI not yet |
-| Context: overview, map, timeline, charts | ⬜ | |
-| Map drawn on a Canvas from `Basemap.bin` | 🔧 | `data/context/Basemap.kt` reads the shipped `Basemap.bin` (tested). Canvas drawing and `ContextStore` not yet ported |
-| Compare two translations | ⬜ | |
+| Study panel following the tapped verse, back trail | ✅ | `ui/study/`: a 45%/full-height bottom sheet on phones that leaves the text live behind it, a 380 dp side pane from 700 dp wide (checked on `haven_tablet`). Opened from the top bar's Study button and the selection bar's Original Language; follows the selected verse; cross-reference and commentary-link jumps leave a back trail. About Study Resources lists every source's licence |
+| Cross references ranked by votes, preview | ✅ | Strongest six, then OT/NT in canonical order, Show All past 40, strength meter, text in the current translation (an online translation previews only what it has cached — never a request). Long-press Copy asks `TranslationRights` first |
+| Commentary: Calvin, Gill, JFB, with links | ✅ | Source picker (persisted as `study.commentarySource`), chapter introduction, references in the text are links that jump. Bundled, not an on-demand pack as on iOS |
+| Original languages: word, translit, parsing, Strong's, lexicon | ✅ | A fourth Study tab (iOS opens it as its own sheet). Always resolved against the BSB's text, with iOS's notice when another translation is open; STEPBible's required attribution lines always shown beneath the words |
+| Context: overview, map, timeline, charts | ✅ | `data/context/ContextStore.kt` ported with every `ContextStoreTests.swift` case (plus chart-decoding guards). When (era band, events), Where (map, places, place detail), Charts (kings, journeys with routes, tribes, feasts), full timeline, large map with place search, Sources & Credits — pushed inside the panel rather than opened in a separate window |
+| Map drawn on a Canvas from `Basemap.bin` | ✅ | `ui/study/BibleMap.kt`: the iOS projection, camera, coarse/fine switch, rivers by rank, collision-free priority labels, authored labels, routes with arrows; pan, pinch, +/−/fit, tap a place. `Basemap.bin` added to `syncBundledData` |
+| Compare two translations | ✅ | `ui/translations/CompareSheet.kt`, from the translation menu: any two of bundled, imported and online; one-sided verses tinted |
 
 ### Translations
 | Feature | Status | Notes |
 |---|---|---|
-| Translations screen | ⬜ | |
-| eBible.org catalogue (16-ID allowlist) | 🔧 | `data/catalog/`: CSV parse, curation (same 16 allowed / 13 excluded IDs), language matching — 25 tests. Download UI not yet built |
-| Import USFM zip / DRM-free ePub, with DRM refusal | 🔧 | `data/importer/`: all 57 Swift tests ported; stores byte-identical to the Swift engine's on the ASV/BSB/KJV USFM zips. File picker and import UI not yet built |
-| Online ESV and API.Bible with the reader's key | 🔧 | `data/online/`: HTML parsing and the chapter cache with Crossway's 500-verse ceiling, LRU eviction and VACUUM on clear (24 tests, incl. real captured responses). Networking and key entry not yet built |
+| Translations screen | ✅ | `ui/translations/TranslationsSheet.kt`, from the translation menu's Manage Translations…: Included, Online, Added by You (remove), Add a Translation, and About This Translation with what its rights allow. Imported and online translations join the reader's switcher through `BundledTranslations` / `data/translations/TranslationLibrary.kt` |
+| eBible.org catalogue (16-ID allowlist) | ✅ | Browse, search, download over `HttpURLConnection` with progress, import under the catalogue's identity (`importIdentity`, tested). Verified live on the emulator: WEB downloaded, 66 books / 31,098 verses, the Luke 17:36 and Acts gaps reported, then read in the reader. Found and fixed: the live CSV starts with a BOM, which made the catalogue fail on Android |
+| Import USFM zip / DRM-free ePub, with DRM refusal | 🔧 | Storage Access Framework picker, copy to cache, import, coverage report; DRM refusal is the engine's (`BibleImportError.ProtectedByDRM`), shown in an alert. The picker itself was not exercised on the emulator (no file on it); everything after the copy is the path the catalogue verified |
+| Online ESV and API.Bible with the reader's key | 🔧 | `ESVClient`/`APIBibleClient` ported (same endpoints, params, errors) over an `HttpTransport` seam; `OnlineChapterLoader` fetches → `OnlineChapterCache` (500-verse ceiling) → reads back as a `Chapter` the reader renders. 15 tests through a fake transport with the captured responses. Key entry, Keystore-sealed storage (verified: only ciphertext on disk, nothing in logcat), and the ESV entry appearing and leaving with the key, verified on the emulator. **Never run against the live services** (no key) |
 | Keys synced across the reader's devices | ⬜ | Block Store |
-| Translation rights gate | 🔧 | `data/rights/`: the same rule as iOS (licence line or a package's signed policy, expiry) — tested. `TranslationInfo.rights` carries it; the selection bar asks it. Export and hand-off gates come with those features |
+| Translation rights gate | 🔧 | `data/rights/`: the same rule as iOS (licence line or a package's signed policy, expiry) — tested. `TranslationInfo.rights` carries it; the selection bar and Study's cross-reference Copy ask it; online text is licensed (500-verse quotation, no hand-off); an import's unknown licence behaves as licensed. Export and hand-off gates come with those features |
 | `.sabible` reader: signature, per-chapter AES-GCM | ✅ | All 1,189 ASV chapters decrypt to exactly `ASV.sqlite` (31,086 verses, 0 mismatches); tamper, rebinding and wrong-key tests. Tink for Ed25519. |
 | `.sabible` sealed search index | ⬜ | Header's index entries are signature-covered but not yet bounds-checked or read |
 | Content key wrapped by Android Keystore | ⬜ | Derived from the published seed and held in memory for now |
@@ -183,7 +183,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Feature | Status | Notes |
 |---|---|---|
 | Launcher icon: the iOS icon as an adaptive icon, with a themed-icon silhouette | ✅ | Rendered from `AppIcon.icon` by `android/tools/render_launcher_icon.py` (Icon Composer's `ictool`); rerun it when the icon changes |
-| Appearance sheet, About, About This Translation | ⬜ | |
+| Appearance sheet, About, About This Translation | 🔧 | About This Translation is in the Translations screen; the Appearance sheet and About not yet |
 | Feedback and rating | ⬜ | Play in-app review |
 | TalkBack labels, font scale, keyboard shortcuts | ⬜ | |
 | English only | ⬜ | Matches iOS |

@@ -145,6 +145,7 @@ fun ReaderScreen(
     actions: SelectionActions = SelectionActions(),
     onStudy: () -> Unit = {},
     onCompare: () -> Unit = {},
+    onManageTranslations: () -> Unit = {},
 ) {
     val palette = model.theme.palette(isSystemInDarkTheme()).accented(model.accent)
     val style = model.style(palette)
@@ -234,7 +235,7 @@ fun ReaderScreen(
             }
             TopBar(
                 model, palette, onGoTo = { sheet = ReaderSheet.GO_TO }, onNotes = { sheet = ReaderSheet.NOTES },
-                onStudy = onStudy, onCompare = onCompare,
+                onStudy = onStudy, onCompare = onCompare, onManageTranslations = onManageTranslations,
             )
             BottomBar(model, palette, Modifier.align(Alignment.BottomCenter))
             AnimatedVisibility(
@@ -661,6 +662,7 @@ private fun TopBar(
     onNotes: () -> Unit,
     onStudy: () -> Unit,
     onCompare: () -> Unit,
+    onManageTranslations: () -> Unit,
 ) {
     Box(
         Modifier
@@ -700,7 +702,7 @@ private fun TopBar(
             }
             }
             Pill(palette) {
-                TranslationButton(model, palette, onCompare)
+                TranslationButton(model, palette, onCompare, onManageTranslations)
                 AppearanceButton(model, palette)
             }
         }
@@ -765,7 +767,7 @@ private fun PillIcon(
 }
 
 @Composable
-private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, onCompare: () -> Unit) {
+private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, onCompare: () -> Unit, onManageTranslations: () -> Unit) {
     var open by remember { mutableStateOf(false) }
     Box {
         Box(
@@ -788,6 +790,13 @@ private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, on
                 onClick = {
                     open = false
                     onCompare()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("Manage Translations…", color = palette.ink, fontSize = 15.sp) },
+                onClick = {
+                    open = false
+                    onManageTranslations()
                 },
             )
         }

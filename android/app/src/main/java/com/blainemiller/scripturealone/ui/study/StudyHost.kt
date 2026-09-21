@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
 import com.blainemiller.scripturealone.ui.reader.SheetColors
 import com.blainemiller.scripturealone.ui.translations.CompareSheet
@@ -60,10 +61,13 @@ import kotlin.math.roundToInt
 
 /**
  * What the reader can ask of the panels this host owns. [openStudy] is the `(verseKey) -> Unit` entry
- * point for the Study panel — the selection bar's Study action calls it.
+ * point for the Study panel; [toggleStudy] is the top bar's Study button, which (as on iOS) picks up
+ * the selected verse; [openOriginal] is the selection bar's Original Language action.
  */
 class ReaderPanels(
     val openStudy: (verseKey: Int) -> Unit,
+    val toggleStudy: () -> Unit,
+    val openOriginal: (verseKey: Int) -> Unit,
     val openTranslations: () -> Unit,
     val openCompare: () -> Unit,
 )
@@ -83,7 +87,36 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
     var showTranslations by rememberSaveable { mutableStateOf(false) }
     var showCompare by rememberSaveable { mutableStateOf(false) }
     val palette = reader.theme.palette(isSystemInDarkTheme()).accented(reader.accent)
-    val panels = remember { ReaderPanels(study::open, { showTranslations = true }, { showCompare = true }) }
+    val panels = remember {
+        ReaderPanels(
+            openStudy = study::open,
+            toggleStudy = {
+                if (study.isOpen) {
+                    study.close()
+                } else {
+                    // The verse selected, else the one the panel last showed in this chapter, else the
+                    // chapter's first — `StudyModel.turnOn(selection:)`.
+                    val here = reader.location
+                    val key = reader.selection.maxOrNull()
+                        ?: study.verse?.takeIf { it.book == here.book && it.chapter == here.chapter }?.key
+                        ?: VerseRef(here.book, here.chapter, 1).key
+                    study.open(key)
+                }
+            },
+            openOriginal = { key ->
+                study.select(StudyTab.ORIGINAL)
+                study.open(key)
+            },
+            openTranslations = { showTranslations = true },
+            openCompare = { showCompare = true },
+        )
+    }
+
+    // Study doesn't change what a tap does — a tap still selects — the panel simply follows the verse
+    // most recently selected, as on iOS.
+    LaunchedEffect(reader.selection) {
+        if (study.isOpen) reader.selection.maxOrNull()?.let(study::follow)
+    }
 
     // The development hook, beside MainActivity's: `--ei study <verseKey>` opens Study on a verse,
     // `--es panel translations|compare` opens that screen, `--es studyTab context` picks a tab.

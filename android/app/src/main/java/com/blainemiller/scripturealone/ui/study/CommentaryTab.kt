@@ -20,7 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -138,7 +138,7 @@ private fun Reading(loaded: LoadedCommentary, source: StudySource, study: StudyM
                             modifier = Modifier.weight(1f),
                         )
                         Icon(
-                            if (introOpen) Icons.Rounded.KeyboardArrowDown else Icons.Rounded.KeyboardArrowRight, null,
+                            if (introOpen) Icons.Rounded.KeyboardArrowDown else Icons.AutoMirrored.Rounded.KeyboardArrowRight, null,
                             tint = palette.accent, modifier = Modifier.size(22.dp),
                         )
                     }

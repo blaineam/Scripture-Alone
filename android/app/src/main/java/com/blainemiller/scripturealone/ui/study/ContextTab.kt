@@ -31,12 +31,12 @@ import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Campaign
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.ContrastRounded
+import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.CropFree
 import androidx.compose.material.icons.rounded.Event
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Groups
-import androidx.compose.material.icons.rounded.HelpOutline
+import androidx.compose.material.icons.automirrored.rounded.HelpOutline
 import androidx.compose.material.icons.rounded.Landscape
 import androidx.compose.material.icons.rounded.Map
 import androidx.compose.material.icons.rounded.OpenInFull
@@ -92,7 +92,6 @@ import com.blainemiller.scripturealone.data.context.Era
 import com.blainemiller.scripturealone.data.context.FeastsChart
 import com.blainemiller.scripturealone.data.context.JourneysChart
 import com.blainemiller.scripturealone.data.context.KingsChart
-import com.blainemiller.scripturealone.data.context.MapLabel
 import com.blainemiller.scripturealone.data.context.Place
 import com.blainemiller.scripturealone.data.context.PlaceKind
 import com.blainemiller.scripturealone.data.context.PlaceMention
@@ -298,7 +297,7 @@ private fun EventRow(event: TimelineEvent, compact: Boolean, palette: ReaderPale
                 Text(event.name, color = palette.ink, fontSize = if (compact) StudyStyle.subheadline else StudyStyle.body)
                 if (event.debated) {
                     Spacer(Modifier.width(4.dp))
-                    Icon(Icons.Rounded.HelpOutline, "Date debated", tint = palette.secondary, modifier = Modifier.size(14.dp))
+                    Icon(Icons.AutoMirrored.Rounded.HelpOutline, "Date debated", tint = palette.secondary, modifier = Modifier.size(14.dp))
                 }
             }
             if (range != null) Text(range.display, color = palette.accent, fontSize = StudyStyle.caption)
@@ -397,7 +396,7 @@ private fun ConfidenceBadge(place: Place, palette: ReaderPalette) {
     val parts = listOf(place.confidenceLevel.title) + if (place.isArea && place.kind != PlaceKind.REGION) listOf("approximate area") else emptyList()
     val color = if (uncertain) Color(0xFFE08A1E) else palette.secondary
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(if (uncertain) Icons.Rounded.HelpOutline else Icons.Rounded.GpsFixed, null, tint = color, modifier = Modifier.size(13.dp))
+        Icon(if (uncertain) Icons.AutoMirrored.Rounded.HelpOutline else Icons.Rounded.GpsFixed, null, tint = color, modifier = Modifier.size(13.dp))
         Spacer(Modifier.width(4.dp))
         Text(parts.joinToString(" · "), color = color, fontSize = StudyStyle.caption2, fontWeight = FontWeight.SemiBold)
     }
@@ -546,7 +545,7 @@ private fun EraCard(era: Era, time: ChapterTime?, chapter: ChapterRef, events: L
             Text(era.name, color = palette.ink, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f).semantics { heading() })
             Text(era.dates, color = palette.secondary, fontSize = StudyStyle.subheadline)
         }
-        if (current && time != null) {
+        if (current) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Rounded.Bookmark, null, tint = color, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
@@ -636,7 +635,7 @@ private fun KingsChart.Verdict.title() = when (this) {
 private fun KingsChart.Verdict.icon() = when (this) {
     KingsChart.Verdict.GOOD -> Icons.Rounded.CheckCircle
     KingsChart.Verdict.EVIL -> Icons.Rounded.Cancel
-    KingsChart.Verdict.MIXED -> Icons.Rounded.ContrastRounded
+    KingsChart.Verdict.MIXED -> Icons.Rounded.Contrast
 }
 
 private fun KingsChart.Verdict.color() = when (this) {
@@ -1026,5 +1025,3 @@ private val CHRONOLOGIES = listOf(
     "F. F. Bruce, Paul: Apostle of the Heart Set Free (1977) — Paul’s journeys and letters.",
 )
 
-@Suppress("unused")
-private val labelKinds = MapLabel.Kind.entries

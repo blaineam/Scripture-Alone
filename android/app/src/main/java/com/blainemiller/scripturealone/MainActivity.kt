@@ -9,6 +9,8 @@ import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.ui.reader.ReaderScreen
+import com.blainemiller.scripturealone.ui.reader.SelectionActions
+import com.blainemiller.scripturealone.ui.study.StudyHost
 import com.blainemiller.scripturealone.ui.reader.ReaderTheme
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
 
@@ -20,7 +22,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) openFromIntent(intent)
         setContent {
-            ReaderScreen(reader)
+            // Study, Compare and Translations are hosted around the reader (a side pane or sheet).
+            StudyHost(reader) { panels ->
+                ReaderScreen(
+                    reader,
+                    actions = SelectionActions(onOriginalLanguage = { panels.openOriginal(it.key) }),
+                    onStudy = panels.toggleStudy,
+                    onCompare = panels.openCompare,
+                    onManageTranslations = panels.openTranslations,
+                )
+            }
         }
     }
 
