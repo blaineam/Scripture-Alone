@@ -1,115 +1,90 @@
 # Asset packs
 
-The two study databases do not ship inside the app. They are **Apple-hosted Background Assets**,
-uploaded to App Store Connect separately from the build and fetched when a reader first opens
-Commentary or Original Languages.
+The Bibles and the study databases don't ship inside the app binary. They are **Apple-hosted
+Background Assets** packs, uploaded to App Store Connect separately from the build.
 
-| Pack | File | Size | Manifest |
+| Pack ID | File | Policy | Size |
 |---|---|---|---|
-| `commentary` | `Study.sqlite` | ~40 MB | `commentary.json` |
-| `interlinear` | `Interlinear.sqlite` | ~9 MB | `interlinear.json` |
+| `asv` | `Packages/ASV.sabible` | `essential`, `firstInstallation` only | ~16 MB |
+| `bsb` | `Bibles/BSB.sqlite` | `onDemand` | ~5 MB packed |
+| `kjv` | `Bibles/KJV.sqlite` | `onDemand` | ~5 MB packed |
+| `study-commentary` | `Study/Study.sqlite` | `onDemand` | ~40 MB |
+| `study-interlinear` | `Study/Interlinear.sqlite` | `onDemand` | ~9 MB |
 
-## Why not On-Demand Resources
+Every manifest uses `fileSource` / `fileDestination` so each file sits at the **root** of its pack,
+which is how `AssetLibrary` addresses it (`descriptor(for: FilePath(pack.file))`). A plain `file`
+selector preserves the source directory inside the pack — Mi Speaks shipped that bug and downloaded
+325 MB to fail with "No file was found".
 
-ODR ties a pack to an app *version*. Apple's own answer to "my tagged files are identical between
-builds, why did they download again":
+What stays in the binary: `Study/CrossReferences.sqlite` (derived by `Tools/build_study.py`, so
+cross references never wait on the commentary download), `Study/Context.sqlite`, `Basemap.bin`, and
+`Packages/bundled-signing.pub` — the key the ASV package is verified against. A trust anchor that
+arrived by the same channel as the package it vouches for would vouch for nothing.
 
-> resources are tied to a specific app version as part of the app's submission, and the system does
-> not have any notion of understanding whether the files in an asset pack are identical across app
-> versions
+## Why the ASV is essential on first installation only
 
-So every update re-downloaded 55 MB that had not changed. ODR is also deprecated as of iOS 27 —
-`NSBundleResourceRequest` now carries *"Use Background Assets instead."*
+`AssetLibrary` copies each file out of its pack (Background Assets exposes only `Data` or a file
+descriptor; SQLite and the package reader need a path) and then releases the pack, so nothing is
+stored twice. If the ASV's policy also named `subsequentUpdate`, every app update would re-download
+the pack that was just released — the very ODR behaviour this replaced.
 
 ## Uploading
 
-Needed **whenever a database changes**, and once before the first build that expects a pack. A
-build cannot fetch a pack that was never uploaded; the reader is told the pack "isn't available for
-this version of the app yet".
-
 ```bash
-xcrun ba-package package Tools/asset-packs/commentary.json -o /tmp/commentary.aar
-xcrun altool --upload-asset-pack /tmp/commentary.aar --apple-id 6813729762 \
+rm -f /tmp/asv.aar                       # ba-package will NOT overwrite, and says nothing useful
+xcrun ba-package package Tools/asset-packs/asv.json -o /tmp/asv.aar
+xcrun altool --upload-asset-pack /tmp/asv.aar --apple-id 6813729762 \
     --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
-```
-
-Then watch for `State: AVAILABLE`:
-
-```bash
 xcrun altool --list-asset-pack-versions --apple-id 6813729762 \
-    --asset-pack-identifier commentary --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+    --asset-pack-identifier asv --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
 ```
 
-`ba-package` **will not overwrite an existing archive** and says nothing useful when it declines —
-delete the `.aar` first, or you will upload the previous contents and spend a while confused.
+`xcrun ba-package evaluate <manifest>` checks a manifest without packaging it.
+
+## Submitting
+
+**Packs are reviewed.** They reach App Store users only after App Review, and until the app's first
+version is approved they must be in the **same review submission** as that version (up to ten packs
+per submission). Through the API that is a `reviewSubmissionItems` entry whose relationship is
+`backgroundAssetVersion`. Submit the app without its packs and App Store users get a build with no
+Bible. Later, a pack version can be submitted with or without an app version, but an app version
+that needs a new pack version must be submitted with it.
+
+TestFlight uses a pack version as soon as it is `READY_FOR_TESTING`.
 
 ## Things that bite
 
-- **The identifier cannot contain dots.** `com.blainemiller.ScriptureAlone.commentary` is rejected
-  by App Store Connect with `PARAMETER_ERROR` on `filter[assetPackIdentifier]`. Plain names only;
-  they are scoped to the app already. `StudyPack.id` must match `assetPackID` exactly.
-- **Platforms must match the app's App Store Connect record.** This app has one platform, iOS — the
-  Mac runs the same iPad build — so listing `macOS` earns `ITMS-91139`, and *removing* it from a
-  later version earns `ITMS-91148` warning that earlier versions had it. Both are expected here.
-- **A pack update applies to app versions already installed.** Per WWDC25/325: "all versions of your
-  app downloaded from the App Store will automatically be switched over to using asset pack version
-  2, including older versions that are still installed." So a schema change to either database must
-  stay readable by older builds, or ship under a *new* `assetPackID` rather than a new version of
-  this one.
-- **The extension must be embedded into the app *wrapper*, not the products directory.** XcodeGen's
-  default for an `extensionkit-extension` is a copy phase with `dstPath = $(EXTENSIONS_FOLDER_PATH)`
-  and `dstSubfolderSpec = 16` (products directory). During `xcodebuild archive` that is not where
-  the app is installed — the appex is copied into a second `Scripture Alone.app` sitting in
-  `BuildProductsPath` rather than the one under `InstallationBuildProductsLocation`. Xcode reports
-  it only as a *warning* ("is embedded in the parent app bundle's `../../../BuildProductsPath/…`
-  directory") and the archive and all three exports still succeed, so it passes locally; Xcode
-  Cloud then fails the build at `Preparing build for App Store Connect` with no further detail.
-  The dependency therefore pins the destination itself:
+Every one of these fails only at App Store delivery; Xcode Cloud reports no more than `Preparing
+build for App Store Connect failed`, and the only detail is the ITMS email. **Validate locally**:
+signed archive with `-authenticationKeyPath`, export, then
+`xcrun altool --validate-app -f <ipa> --type ios --apiKey … --apiIssuer … --output-format json`.
+It reports the same errors and creates no build record.
 
-  ```yaml
-  - target: ScriptureAloneAssets
-    copy: { destination: wrapper, subpath: Extensions }
-  ```
+- **XcodeGen wipes a hand-written entitlements file.** With only `entitlements: path:`, every
+  `xcodegen generate` writes an empty `<dict/>`. The extension's app-group entitlement must be under
+  `properties:` in `project.yml`. This — not the portal — was the persistent cause of `ITMS-90958`.
+  Check with `codesign -d --entitlements :- <appex>`, not the source file.
+- **The app group must also be assigned to the extension's bundle ID** in the Developer Portal
+  (Identifiers → `com.blainemiller.ScriptureAlone.assets` → App Groups). The public App Store
+  Connect API can enable `APP_GROUPS` but cannot assign a group.
+- **The app declares Apple hosting**: `BAAppGroupID`, `BAHasManagedAssetPacks`, `BAUsesAppleHosting`
+  in `Info.plist`, and no other `BA*` key. Demands for `BAManifestURL` or `BAMaxInstallSize` mean the
+  app was read as self-hosted, i.e. one of the three is missing.
+- **ExtensionKit, embedded into the wrapper.** `type: extensionkit-extension`, and the dependency
+  pinned to `copy: { destination: wrapper, subpath: Extensions }` — XcodeGen's default puts the appex
+  in a stray `.app` during archive.
+- **No `EXPrincipalClass`** (`ITMS-90979` with `@main`), and **`import ExtensionFoundation`** or
+  `@main` fails at archive time.
+- **No `shouldDownload` in the extension.** Returning `false` would veto the essential ASV.
+- **Identifiers cannot contain dots.**
+- **Archiving a pack is permanent.** An archived pack rejects every change through the API — no new
+  version, no unarchiving. That is why the study packs are `study-commentary` and
+  `study-interlinear`: `commentary` and `interlinear` were archived and can never carry content again.
+- **A pack update applies to app versions already installed.** Keep old builds able to read a new
+  version, or ship it under a new identifier.
 
-  which is what `PlugIns` gets for free, since its subfolder spec is already wrapper-relative.
-- **The download policy is `onDemand` on purpose.** `essential` blocks app launch on 40 MB;
-  `prefetch` spends it on readers who never open Commentary.
+## Development builds
 
-## What the app does with a pack
-
-`StudyAssetLibrary` downloads it, copies the database into Application Support, and then releases
-the pack. Background Assets exposes `Data` or a file descriptor and never a path, and SQLite needs a
-path — so the copy is necessary, and it is also the reason a reader downloads the commentary once
-and keeps it through every future update.
-
-## The app must declare Apple hosting
-
-Apple-Hosted Background Assets is not configured by the extension alone. The app and the downloader
-extension must **share an app group** (the system coordinates between them through it), and the app
-target's `Info.plist` must carry three keys:
-
-```xml
-<key>BAAppGroupID</key>            <string>group.com.blainemiller.ScriptureAlone</string>
-<key>BAHasManagedAssetPacks</key>  <true/>
-<key>BAUsesAppleHosting</key>      <true/>
-```
-
-Apple's instruction is to *omit every other* Background Assets key when using Apple hosting — no
-`BAManifestURL`, no `BAInitialRestrictions*`, no `BAEssentialMaxInstallSize`.
-
-Without them the app builds, archives and exports cleanly, and Xcode says nothing at all. Xcode
-Cloud fails the run at `Preparing build for App Store Connect` with no further detail. The
-extension's bundle identifier also needs the **App Groups** capability enabled in the developer
-portal, or automatic signing cannot build a profile for it.
-
-Get any of it wrong and App Store Connect rejects the *delivery*, so the build never becomes a
-build record — nothing is burned, but the only description of the problem is the ITMS mail Apple
-sends afterwards. Xcode Cloud itself says nothing beyond `Preparing build for App Store Connect
-failed`. Two that cost a round trip each:
-
-- **`ITMS-90979`** — `EXPrincipalClass` and `EXExtensionPrincipalClass` are *disallowed* when the
-  extension binary has a `__swift5_entry` section, which is exactly what `@main` emits. The Swift
-  entry point already is the principal class. Declare only `EXExtensionPointIdentifier`.
-- **`ITMS-90923`/`90924`** demanding `BAManifestURL`, `BAMaxInstallSize` and
-  `BAInitialDownloadRestrictions.*` mean the app was read as *self-hosted*. That is the symptom of
-  the three keys above being absent, not an instruction to add the legacy ones.
+Builds run from Xcode get no asset packs, so the app would open with no Bible. In Debug only, a build
+phase copies the pack sources into the bundle and `AssetLibrary` installs from there. Release never
+carries them, so a broken pack path can't hide behind a bundled copy.

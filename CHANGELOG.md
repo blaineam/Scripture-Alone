@@ -39,17 +39,21 @@
   square, and the burst's left and right arms match its top; the bottom still reaches down into
   the sun.
 
-- The commentary and the original-language database are no longer downloaded at all: both ship
-  inside the app. They had been On-Demand Resources, and ODR ties a pack to an app *version* —
-  Apple's own words: the system "does not have any notion of understanding whether the files in an
-  asset pack are identical across app versions" — so 55 MB came down again on every update even
-  though nothing in it had changed. ODR is also deprecated as of iOS 27, so this was coming
-  regardless. Apple-hosted Background Assets is the intended replacement and would have kept the
-  download small, but it costs a downloader extension, a shared app group, three Info.plist keys
-  and a separate upload pipeline, none of which are validated until App Store delivery. For 48 MB
-  the trade is not worth it: the app is bigger once, and the App Store patches updates, so a
-  database that has not changed is never sent again. Opening Commentary or the original languages
-  is now instant and works on a fresh install with no network.
+- The app itself is about 37 MB instead of about 124 MB. The Bibles and the study databases are
+  Apple-hosted Background Assets now. The American Standard Version arrives with the install, so a
+  fresh install reads offline before it has ever reached a network. The Berean Standard Bible and
+  the King James Version are listed from the start and download once, the first time you choose
+  one — the reader keeps what you were reading, with a banner showing progress, and switches when
+  it arrives. The commentary and the original languages download the first time you open them.
+  Each is downloaded once and kept: they had been On-Demand Resources, and ODR ties a pack to an
+  app *version* — Apple's own words: the system "does not have any notion of understanding whether
+  the files in an asset pack are identical across app versions" — so 55 MB came down again after
+  every update even though nothing in it had changed. ODR is also deprecated as of iOS 27.
+
+- Cross references no longer wait on the commentary. They lived in the same database, so the
+  whole Study panel — references, commentary and even Context — asked for a 44 MB download before
+  showing anything. Cross references are now a small database of their own that ships in the app;
+  only the Commentary tab asks to download.
 
 - The Hebrew and Greek behind a verse is available in every translation, not only the Berean
   Standard Bible. The word-by-word data is keyed to the BSB's wording, and the whole feature was
