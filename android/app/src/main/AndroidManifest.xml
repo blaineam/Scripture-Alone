@@ -144,5 +144,19 @@
                 android:name="com.blainemiller.scripturealone.ui.widget.WidgetSyncInitializer"
                 android:value="androidx.startup" />
         </provider>
+        <!-- ML Kit's text recognition runs on the device, but its SDK also uploads diagnostics (device
+             and app details, a per-install id) to firebaselogging.googleapis.com through Google's
+             datatransport. There is no official switch, so the transport's three entry points are
+             stripped from the merged manifest: nothing can start it, and no such data leaves the
+             phone. Recognition itself never used the network. -->
+        <service
+            android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery"
+            tools:node="remove" />
+        <service
+            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService"
+            tools:node="remove" />
+        <receiver
+            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"
+            tools:node="remove" />
     </application>
 </manifest>

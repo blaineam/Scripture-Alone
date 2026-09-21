@@ -30,6 +30,20 @@ android {
         buildTypes.getByName("release").signingConfig = signingConfigs.getByName("debug")
     }
 
+    // The upload key for Play. It lives outside the repository — the four SA_UPLOAD_* properties
+    // go in ~/.gradle/gradle.properties (or ORG_GRADLE_PROJECT_* environment variables) — and signs
+    // only the bundle uploaded to Play, which re-signs it with the app-signing key it holds.
+    val uploadStore = providers.gradleProperty("SA_UPLOAD_STORE_FILE").orNull
+    if (uploadStore != null && !providers.gradleProperty("debugSignedRelease").isPresent) {
+        val upload = signingConfigs.create("upload") {
+            storeFile = file(uploadStore)
+            storePassword = providers.gradleProperty("SA_UPLOAD_STORE_PASSWORD").get()
+            keyAlias = providers.gradleProperty("SA_UPLOAD_KEY_ALIAS").get()
+            keyPassword = providers.gradleProperty("SA_UPLOAD_KEY_PASSWORD").get()
+        }
+        buildTypes.getByName("release").signingConfig = upload
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
