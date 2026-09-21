@@ -50,6 +50,22 @@ android {
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
+
+    testOptions {
+        unitTests.all { test ->
+            // The .sabible tests read the real package and its plaintext source straight from the
+            // iOS resources, so the proof runs against the bytes that ship, not a copy.
+            test.systemProperty(
+                "scripturealone.resources",
+                rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources").asFile.absolutePath,
+            )
+            test.testLogging {
+                events("passed", "failed", "skipped")
+                showStandardStreams = true
+                exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            }
+        }
+    }
 }
 
 /**
@@ -88,10 +104,16 @@ dependencies {
     // Android's own SQLite has no FTS5 ("no such module: fts5", verified on API 35 / SQLite 3.44.3),
     // and every bundled Bible database searches with it. This ships a SQLite build that does.
     implementation("androidx.sqlite:sqlite-bundled:2.5.0")
+    // The .sabible reader: Tink for Ed25519 (no platform Ed25519 before API 33) and HKDF; the JSON
+    // tree API of kotlinx.serialization for the header, because org.json is a stub on the JVM.
+    implementation("com.google.crypto.tink:tink-android:1.16.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    // Reads ASV.sqlite — the plaintext the sealed ASV was built from — as the tests' ground truth.
+    testImplementation("org.xerial:sqlite-jdbc:3.46.1.3")
     androidTestImplementation(composeBom)
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")

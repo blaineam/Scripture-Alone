@@ -1,0 +1,15 @@
+{
+  "assetPackID": "commentary",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Study/Study.sqlite",
+      "fileDestination": "Study.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

@@ -73,7 +73,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 ### Reading
 | Feature | Status | Notes |
 |---|---|---|
-| ASV (sealed), BSB, KJV | ⬜ | ASV needs the `.sabible` reader — critical path, it's the default |
+| ASV (sealed), BSB, KJV | 🔧 | The `.sabible` reader is done; wiring it to the reader UI is next |
 | Chapter layout: headings, paragraphs, poetry indents, Selah, stanza breaks, psalm titles | ⬜ | `chapters.layout` JSON |
 | Words of Christ in red | ⬜ | |
 | Footnotes with popovers | ⬜ | |
@@ -149,7 +149,9 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Online ESV and API.Bible with the reader's key | ⬜ | Port `OnlinePassageHTML` |
 | Keys synced across the reader's devices | ⬜ | Block Store |
 | Translation rights gate | ⬜ | |
-| `.sabible` reader: signature, per-chapter AES-GCM, sealed index | ⬜ | |
+| `.sabible` reader: signature, per-chapter AES-GCM | ✅ | All 1,189 ASV chapters decrypt to exactly `ASV.sqlite` (31,086 verses, 0 mismatches); tamper, rebinding and wrong-key tests. Tink for Ed25519. |
+| `.sabible` sealed search index | ⬜ | Header's index entries are signature-covered but not yet bounds-checked or read |
+| Content key wrapped by Android Keystore | ⬜ | Derived from the published seed and held in memory for now |
 
 ### Notes import, keepsakes, family
 | Feature | Status | Notes |
