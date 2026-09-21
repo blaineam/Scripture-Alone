@@ -13,3 +13,6 @@ app/src/main/assets/generated/
 packs/*/src/
 reference-ios/
 .kotlin/
+# Play listing working files: rendered screenshots/graphics and upload copies of bundles.
+play-assets/
+__pycache__/
