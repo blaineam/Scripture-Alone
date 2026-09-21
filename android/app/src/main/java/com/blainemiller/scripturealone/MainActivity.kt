@@ -45,16 +45,20 @@ private fun SliceScreen() {
     val context = LocalContext.current
     var verses by remember { mutableStateOf<List<Verse>>(emptyList()) }
 
+    var ftsProbe by remember { mutableStateOf("…") }
+
     LaunchedEffect(Unit) {
-        verses = withContext(Dispatchers.IO) {
-            val db = BundledDatabase.open(context, "BSB.sqlite")
-            val range = VerseRef.chapterRange(book = 43, chapter = 3)   // John 3
-            db.rawQuery(
-                "SELECT id, text FROM verses WHERE id BETWEEN ? AND ? ORDER BY id",
-                arrayOf(range.first.toString(), range.last.toString()),
-            ).use { c ->
-                buildList {
-                    while (c.moveToNext()) add(Verse(VerseRef.fromKey(c.getInt(0)).verse, c.getString(1)))
+        withContext(Dispatchers.IO) {
+            BundledDatabase.withConnection(context, "BSB.sqlite") { db ->
+                val range = VerseRef.chapterRange(book = 43, chapter = 3)   // John 3
+                verses = db.prepare("SELECT id, text FROM verses WHERE id BETWEEN ? AND ? ORDER BY id").use { st ->
+                    st.bindLong(1, range.first.toLong())
+                    st.bindLong(2, range.last.toLong())
+                    buildList { while (st.step()) add(Verse(VerseRef.fromKey(st.getLong(0).toInt()).verse, st.getText(1))) }
+                }
+                // FTS5 probe: fails with "no such module: fts5" on the platform SQLite.
+                ftsProbe = db.prepare("SELECT count(*) FROM verses_fts WHERE verses_fts MATCH 'shepherd'").use { st ->
+                    st.step(); "FTS5 ok — 'shepherd' matches ${st.getLong(0)} verses"
                 }
             }
         }
@@ -63,6 +67,7 @@ private fun SliceScreen() {
     Scaffold { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp)) {
             item { Text("John 3", style = MaterialTheme.typography.headlineMedium) }
+            item { Text(ftsProbe, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary) }
             items(verses) { v -> Text("${v.number}  ${v.text}", Modifier.padding(vertical = 4.dp)) }
         }
     }

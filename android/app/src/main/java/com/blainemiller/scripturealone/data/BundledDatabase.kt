@@ -1,34 +1,45 @@
 package com.blainemiller.scripturealone.data
 
 import android.content.Context
-import android.database.sqlite.SQLiteDatabase
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import androidx.sqlite.driver.bundled.SQLITE_OPEN_READONLY
 import java.io.File
 
 /**
  * Opens a SQLite database that ships inside the app.
  *
+ * **Through the bundled driver, not `android.database.sqlite`.** Android's own SQLite is compiled
+ * without FTS5 — a query against `verses_fts` fails with "no such module: fts5" (verified on API 35,
+ * SQLite 3.44.3) — and every bundled Bible database searches with FTS5, the same files the iOS app
+ * reads. `androidx.sqlite:sqlite-bundled` ships its own SQLite build that has it.
+ *
  * Android cannot open an asset in place as a database — assets live inside the APK, not on the
  * filesystem — so each one is copied into private storage the first time it is needed and opened
  * read-only from there. The copy is keyed to the app's version code: a new build that ships a
- * changed database replaces the old copy, and an unchanged launch touches nothing.
+ * changed database replaces the old copy, and an unchanged launch touches nothing. The assets are
+ * stored uncompressed (`noCompress` in the build script), so the copy is a plain stream.
  *
- * The assets are stored uncompressed (`noCompress` in the build script), so the copy is a plain
- * stream rather than an inflate.
+ * A [SQLiteConnection] is not thread-safe. Callers serialise access; [withConnection] does it for
+ * them.
  */
 object BundledDatabase {
 
-    private val open = mutableMapOf<String, SQLiteDatabase>()
+    private val driver = BundledSQLiteDriver()
+    private val open = mutableMapOf<String, SQLiteConnection>()
+
+    /** Runs [block] against the named database with exclusive access to its connection. */
+    fun <T> withConnection(context: Context, assetName: String, block: (SQLiteConnection) -> T): T {
+        val connection = connection(context, assetName)
+        return synchronized(connection) { block(connection) }
+    }
 
     @Synchronized
-    fun open(context: Context, assetName: String): SQLiteDatabase {
-        open[assetName]?.let { if (it.isOpen) return it }
-        val file = ensureCopied(context, assetName)
-        val db = SQLiteDatabase.openDatabase(
-            file.path, null, SQLiteDatabase.OPEN_READONLY or SQLiteDatabase.NO_LOCALIZED_COLLATORS,
-        )
-        open[assetName] = db
-        return db
-    }
+    private fun connection(context: Context, assetName: String): SQLiteConnection =
+        open.getOrPut(assetName) {
+            val file = ensureCopied(context, assetName)
+            driver.open(file.path, SQLITE_OPEN_READONLY)
+        }
 
     private fun ensureCopied(context: Context, assetName: String): File {
         val dir = File(context.noBackupFilesDir, "bundled").apply { mkdirs() }

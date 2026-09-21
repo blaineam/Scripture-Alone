@@ -85,6 +85,9 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.4")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    // Android's own SQLite has no FTS5 ("no such module: fts5", verified on API 35 / SQLite 3.44.3),
+    // and every bundled Bible database searches with it. This ships a SQLite build that does.
+    implementation("androidx.sqlite:sqlite-bundled:2.5.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation("junit:junit:4.13.2")
