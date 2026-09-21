@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone
 
 import android.app.Application
+import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 
 /**
@@ -11,6 +12,8 @@ import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 class ScriptureAloneApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        // Which asset packs are on the device — before the reader decides what it can open.
+        AssetLibrary.attach(this)
         TranslationLibrary.attach(this)
     }
 }

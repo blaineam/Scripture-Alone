@@ -9,5 +9,7 @@ captures/
 .cxx/
 # Generated at build time from ../ScriptureAlone/Resources — never committed.
 app/src/main/assets/generated/
+# Asset-pack contents, synced from ../ScriptureAlone/Resources at build time — never committed.
+packs/*/src/
 reference-ios/
 .kotlin/

@@ -94,7 +94,7 @@ data class PackagePolicy(
     }
 }
 
-/** The whole plaintext header. The search index parameters are not read — see [PackageHeaderParser]. */
+/** The whole plaintext header. */
 data class TranslationPackageHeader(
     val format: Int,
     /** Distinguishes this build of the package from every other; bound into each chapter. */
@@ -104,6 +104,11 @@ data class TranslationPackageHeader(
     val policy: PackagePolicy,
     val crypto: PackageCryptoParameters,
     val chapters: List<PackagedChapterEntry>,
+    /**
+     * The sealed search index's parameters, when the package carries one. Inside the signed region,
+     * so the bucket count, the prefix lengths and the tokeniser can't be altered under the app.
+     */
+    val index: PackageIndexParameters? = null,
 )
 
 /**
@@ -114,9 +119,8 @@ data class TranslationPackageHeader(
  * the Android framework and exists only as throwing stubs on the JVM — this reader has to run in a
  * plain unit test against the real package. The tree API needs no compiler plugin.
  *
- * The header's `index` (the sealed search index's parameters) is deliberately ignored: search is not
- * ported yet, and nothing on the chapter path depends on it. It is still covered by the signature,
- * since the signature is over the raw bytes, not over what this parser keeps.
+ * The header's optional `index` carries the sealed search index's parameters; like everything else
+ * here it is covered by the signature, which is over the raw bytes.
  */
 internal object PackageHeaderParser {
 
@@ -172,8 +176,26 @@ internal object PackageHeaderParser {
                     length = entry.int("length"),
                 )
             },
+            index = header["index"]?.takeIf { it !is JsonNull }?.let { parseIndex(it.obj("index")) },
         )
     }
+
+    /**
+     * The search index's parameters, every field required as Swift's `Codable` requires them. Their
+     * *values* are checked against the file only after the signature — see `TranslationPackage.open`.
+     */
+    private fun parseIndex(index: JsonObject): PackageIndexParameters = PackageIndexParameters(
+        tokenizer = index.string("tokenizer"),
+        aad = index.string("aad"),
+        buckets = index.int("buckets"),
+        prefixMin = index.int("prefixMin"),
+        prefixMax = index.int("prefixMax"),
+        padding = index.int("padding"),
+        entries = index.field("entries").array("index entries").map { element ->
+            val entry = element.obj("index entry")
+            PackagedBucketEntry(bucket = entry.int("bucket"), offset = entry.long("offset"), length = entry.int("length"))
+        },
+    )
 
     /**
      * Rejects malformed UTF-8 rather than substituting U+FFFD, as Swift's `JSONDecoder` does. A

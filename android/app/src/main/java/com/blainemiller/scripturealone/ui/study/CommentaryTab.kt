@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.reference.ReferenceDetector
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.study.CommentaryEntry
@@ -67,10 +68,17 @@ private class LoadedCommentary(
  */
 @Composable
 fun CommentaryTab(verse: VerseRef, study: StudyModel, reader: ReaderViewModel, palette: ReaderPalette) {
-    val sources = loaded(Unit) { context -> StudyLibrary.commentary(context)?.commentarySources }
+    // Commentary is an on-demand asset pack; cross references and context are in the app, so only
+    // this tab waits on a download — iOS's `commentaryDownload`.
+    val ready = packReady(AssetPack.COMMENTARY)
+    val sources = loaded(ready) { context -> StudyLibrary.commentary(context)?.commentarySources }
     if (sources == null) {
+        if (!ready) {
+            PackDownload(AssetPack.COMMENTARY, "Couldn’t Download Commentary", palette)
+            return
+        }
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            // The first open copies the 45 MB commentary database out of the APK.
+            // The first open copies the 45 MB commentary database out of its pack.
             CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(26.dp))
         }
         return

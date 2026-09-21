@@ -11,11 +11,9 @@ import com.google.crypto.tink.subtle.Hkdf
  * 32 bytes. HKDF rather than the seed itself, so the bytes in the binary are not the content key and
  * one seed can serve more than one translation.
  *
- * TODO(android-keystore): the iOS app never holds this key in memory for long — `ContentKeyVault`
- *   seals it once to a Secure Enclave key and unwraps it per use. The Android equivalent is an
- *   Android Keystore (StrongBox where present) AES key wrapping the derived key, per the parity
- *   ledger. Until that lands, callers derive the key from the seed and hold it in memory. Do not
- *   treat the absence of wrapping as the design.
+ * The app derives it once per device: [ContentKeyVault] seals it with an Android Keystore key and the
+ * reader unwraps it from there ([SealedTranslationKeys]), as `ContentKeyVault` does with the Secure
+ * Enclave on iOS. Tests derive it directly.
  */
 object ContentKey {
     /**

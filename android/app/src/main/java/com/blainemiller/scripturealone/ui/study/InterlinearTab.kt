@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.study.InterlinearAttribution
 import com.blainemiller.scripturealone.data.study.InterlinearWord
@@ -72,6 +73,12 @@ private sealed interface Interlinear {
 @Composable
 fun InterlinearTab(verse: VerseRef, reader: ReaderViewModel, palette: ReaderPalette) {
     val translation = reader.translationId
+    // An on-demand asset pack. Already downloaded: opened without asking. Not downloaded: the reader
+    // is shown the size and taps to fetch, because 11 MB on a mobile connection is their decision.
+    if (!packReady(AssetPack.INTERLINEAR)) {
+        PackDownload(AssetPack.INTERLINEAR, "Couldn’t Download Original Languages", palette)
+        return
+    }
     val state = loaded(verse.key to translation) { context ->
         val store = StudyLibrary.interlinear(context) ?: return@loaded Interlinear.Failure("The original-language data isn't available.")
         // The BSB's own text for the verse — the exact string the word ranges index into.

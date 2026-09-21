@@ -16,7 +16,9 @@ how each Apple-only piece is replaced. Update the Status column in the same comm
   vice versa. Files are the exception: a keepsake, a `.sabible` package and a share link are the same
   format on both and interoperate.
 - **Same data, byte for byte.** Every bundled database is copied from `ScriptureAlone/Resources` at
-  build time (`android/app/build.gradle.kts`, `syncBundledData`). Nothing is committed twice.
+  build time — into the base module by `syncBundledData` (`android/app/build.gradle.kts`), into each
+  Play asset pack by its module's `syncPackContents` (`android/packs/*/build.gradle.kts`). Nothing is
+  committed twice.
 
 ## Architecture
 
@@ -66,8 +68,9 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 ### Foundation
 | Feature | Status | Notes |
 |---|---|---|
-| Bundled databases synced from iOS resources | ✅ | ASV ships as `ASV.sabible` only, as on iOS |
-| Uncompressed assets, copied to `noBackupFilesDir`, version-stamped | ✅ | |
+| Bundled databases synced from iOS resources | ✅ | ASV ships as `ASV.sabible` only, as on iOS. Base module: `CrossReferences.sqlite`, `Context.sqlite`, `Basemap.bin`, `bundled-signing.pub`, `DailyVerses.json` — what iOS keeps in its binary |
+| Play Asset Delivery packs | ✅ | See **Google Play size limits** below. `android/packs/<name>` (`com.android.asset-pack`): `asv` and `bsb` **install-time**; `kjv`, `study_commentary`, `study_interlinear` **on-demand** — iOS's Background Assets split, except the BSB, which iOS fetches on demand but Android installs with the app because Study's original-language words are keyed to its text. Play hosts them (free, no server). `data/assets/AssetLibrary.kt` (`AssetLibrary.swift`): a database comes from its copy in `no_backup/packs`, else the APK's assets (install-time packs, and every pack in a debug APK), else a delivered pack, which is copied out and then `removePack`ed so nothing is stored twice; otherwise `ensure` fetches it through `AssetPackManager` with progress. `AssetPackDefinitionsTest` holds the app's pack table to the pack modules, the build script's lists and iOS's `Tools/asset-packs/*.json`. **Debug:** `installDebug`/Run builds an APK that carries every pack's file in its own assets (`localPacks`, on unless the task is a bundle; `-PlocalPacks=` overrides), so nothing downloads; release never does. **Verified with bundletool local testing** on `haven_phone`: install-time ASV/BSB in split APKs; KJV chosen → "Downloading the King James Version…" banner → switch; the failure banner with Try Again when the pack isn't there (pack files removed); Commentary and Original Languages download screens → content; packs removed after copy-out (`files/` 236 KB). **Differences:** a copied-out database is kept across app updates and not refreshed, as on iOS — a changed database ships under a new file name; a sideloaded release (no Play) can't download on-demand packs and says so |
+| Assets copied to `noBackupFilesDir`, version-stamped | ✅ | Install-time/base assets in `no_backup/bundled` (stamped with the version code); downloaded packs in `no_backup/packs` |
 | SQLite with FTS5 | ✅ | `MATCH 'shepherd'` = 62 on BSB, matching the Mac |
 | Verse key encoding | ✅ | `data/VerseRef.kt` |
 
@@ -99,8 +102,9 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Go To sheet: search, recents, book and chapter grids | ✅ | `ui/navigation/GoToSheet.kt`; a reference with a verse scrolls to it. The reader recedes behind it (scaled, rounded, on black) with light status icons, as behind an iOS sheet |
 | Recent chapters (12) and searches (12) | ✅ | A search is kept only when a result is opened; long-press to Remove; Clear |
 | FTS5 search: all words, last word prefix, quoted phrase, 300 limit | ✅ | `data/search/`; `ftsQuery` ported line for line and tested against the shipped BSB and KJV; matched words bolded |
-| Sealed-package search | ⬜ | The ASV says search is coming and offers to switch to BSB/KJV — it never searches another translation under the ASV's name |
-| Online translation search | ⬜ | |
+| Sealed-package search | ✅ | The Go To sheet searches the ASV through its sealed index (`TranslationPackage.search`), through the same `ChapterSource.search` every translation answers. `PackageSearchTest` (21): the Swift suite's twelve parity queries agree verse for verse and text for text with `ASV.sqlite`'s FTS5 index through the app's `VerseSearch`; seventeen queries match what the **Swift reader returns for the shipped file** (counts, first/last verse, buckets and chapters opened — recorded from `ScriptureAloneCore` run on the Mac); costs (one bucket for "shepherd", ≤30 chapters for "the"); tampering. Emulator: "good shep" → John 10:11, 10:14; "nebuchadnezzar" → 56 verses from 2 Kings 24:1, both as Swift. A package without a readable index says it can't be searched and offers BSB/KJV |
+| Online translation search | ✅ | As iOS: at the provider — Crossway's `/v3/passage/search/`, API.Bible's `bibles/{id}/search` (canonical) — with the reader's key, one request; results' references parsed to their first verse; a failure finds nothing. The online cache's FTS index is kept current but not searched, as iOS doesn't (a search over whichever chapters happen to be cached would look complete and miss most verses). 6 tests through a fake transport; **never run against the live services** (no key) |
+| Imported translation search | ✅ | `FileChapterSource.search` over the FTS5 index the importer writes (`ImportedSearchTest`). Before this, search in an imported translation opened a nonexistent bundled asset and found nothing |
 
 ### Highlights, notes, favorites
 | Feature | Status | Notes |
@@ -136,7 +140,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 |---|---|---|
 | Study panel following the tapped verse, back trail | ✅ | `ui/study/`: a 45%/full-height bottom sheet on phones that leaves the text live behind it, a 380 dp side pane from 700 dp wide (checked on `haven_tablet`). Opened from the top bar's Study button and the selection bar's Original Language; follows the selected verse; cross-reference and commentary-link jumps leave a back trail. About Study Resources lists every source's licence |
 | Cross references ranked by votes, preview | ✅ | Strongest six, then OT/NT in canonical order, Show All past 40, strength meter, text in the current translation (an online translation previews only what it has cached — never a request). Long-press Copy asks `TranslationRights` first |
-| Commentary: Calvin, Gill, JFB, with links | ✅ | Source picker (persisted as `study.commentarySource`), chapter introduction, references in the text are links that jump. Bundled, not an on-demand pack as on iOS |
+| Commentary: Calvin, Gill, JFB, with links | ✅ | Source picker (persisted as `study.commentarySource`), chapter introduction, references in the text are links that jump. An on-demand pack, as on iOS: the tab shows what it is and its size with Download, then progress, then the commentary (emulator-verified). Original Languages likewise |
 | Original languages: word, translit, parsing, Strong's, lexicon | ✅ | A fourth Study tab (iOS opens it as its own sheet). Always resolved against the BSB's text, with iOS's notice when another translation is open; STEPBible's required attribution lines always shown beneath the words |
 | Context: overview, map, timeline, charts | ✅ | `data/context/ContextStore.kt` ported with every `ContextStoreTests.swift` case (plus chart-decoding guards). When (era band, events), Where (map, places, place detail), Charts (kings, journeys with routes, tribes, feasts), full timeline, large map with place search, Sources & Credits — pushed inside the panel rather than opened in a separate window |
 | Map drawn on a Canvas from `Basemap.bin` | ✅ | `ui/study/BibleMap.kt`: the iOS projection, camera, coarse/fine switch, rivers by rank, collision-free priority labels, authored labels, routes with arrows; pan, pinch, +/−/fit, tap a place. `Basemap.bin` added to `syncBundledData` |
@@ -152,8 +156,8 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Keys synced across the reader's devices | ⬜ | Block Store |
 | Translation rights gate | 🔧 | `data/rights/`: the same rule as iOS (licence line or a package's signed policy, expiry) — tested. `TranslationInfo.rights` carries it; the selection bar and Study's cross-reference Copy ask it; online text is licensed (500-verse quotation, no hand-off); an import's unknown licence behaves as licensed. Notes export asks `permits(NOTES_EXPORT)` and `mayQuote` per passage (see Export); Keepsake & Export's Export All Notes… is disabled with iOS's notice when the open translation forbids it |
 | `.sabible` reader: signature, per-chapter AES-GCM | ✅ | All 1,189 ASV chapters decrypt to exactly `ASV.sqlite` (31,086 verses, 0 mismatches); tamper, rebinding and wrong-key tests. Tink for Ed25519. |
-| `.sabible` sealed search index | ⬜ | Header's index entries are signature-covered but not yet bounds-checked or read |
-| Content key wrapped by Android Keystore | ⬜ | Derived from the published seed and held in memory for now |
+| `.sabible` sealed search index | ✅ | `data/sabible/PackageSearchIndex.kt` — tokeniser v1 (NFD, drop Mn, lowercase; letters and digits), HKDF index key, HMAC tags, buckets, bounds-checked varint bucket reader, query parser, phrase adjacency — and the header's `index`, parsed strictly and **bounds-checked after the signature** as Swift does: bucket numbers within the count, offsets and lengths inside the file, sealed-sized, ≤ 8 MB; parameters sane. Buckets open under their own AAD (`sabible-index-v1`), so a moved or edited bucket fails its seal (tested by flipping a byte and by moving a bucket into another's slot). Header edits are tested by re-signing with a throwaway key |
+| Content key wrapped by Android Keystore | ✅ | `ContentKeyVault` (`ContentKeyVault.swift`): derive from the seed once, seal with a non-exportable Android Keystore AES-256-GCM key (StrongBox, else TEE), store only the 60-byte blob in `no_backup/vault`, unwrap per open; the derived key is zeroed after use. 13 JVM tests over a software stand-in for the Keystore (bootstrap once, relaunch reads, nothing in the clear, lost/foreign/altered blob → corrupted, erase). Emulator: first launch logs "sealed to this device", a relaunch only "unwrapped from the vault"; the blob is ciphertext. The emulator's Keystore reports **software** security level — hardware backing needs a real device. **Difference:** a blob the Keystore can no longer open (credential store cleared) is re-sealed from the seed rather than leaving the ASV unreadable; iOS reports it |
 
 ### Notes import, keepsakes, family
 | Feature | Status | Notes |
@@ -190,6 +194,34 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Feedback and rating | 🔧 | Feedback: Report an Issue / Suggest a Feature / Ask a Question write to MillerKit's suite address with its diagnostics, from the Appearance sheet. Rating: Play in-app review, not yet |
 | TalkBack labels, font scale, keyboard shortcuts | ⬜ | |
 | English only | ⬜ | Matches iOS |
+
+## Google Play size limits
+
+Google Play caps the **base module's compressed download at 200 MB** (it was 150 MB until 2024);
+asset packs are counted separately — each pack up to 1.5 GB, install-time packs together up to 1 GB,
+the whole app up to 4 GB (Play's documented limits; the Console is the authority and checks them at
+upload). Sizes below are bundletool's compressed download estimates (`get-size total`) for an arm64
+phone; pack sizes are the pack alone.
+
+| | Before (all in base) | After, debug | After, release (R8) |
+|---|---|---|---|
+| Base module | 113.1 MB (debug) | 36.1 MB | **16.1 MB** |
+| `asv` (install-time) | — | 16.7 MB | 16.7 MB |
+| `bsb` (install-time) | — | 5.1 MB | 5.1 MB |
+| Install-time total (base + asv + bsb) | 113.1 MB | 57.9 MB | **37.8 MB** |
+| `kjv` (on-demand) | — | 5.1 MB | 5.1 MB |
+| `study_commentary` (on-demand) | — | 40.8 MB | 40.8 MB |
+| `study_interlinear` (on-demand) | — | 9.5 MB | 9.5 MB |
+
+The base was under the cap before, but only because Play's download compresses the stored-uncompressed
+databases; the APK itself was ~245 MB and every install carried 55 MB of study data many readers never
+open. The ASV compresses least (it is encrypted). A release bundle for local testing is built with
+`-PdebugSignedRelease` (debug key; never for upload).
+
+**Needs the Play Console to verify:** real delivery of on-demand packs from Play's servers (local
+testing only exercises the API against files pushed by bundletool), the Wi-Fi/confirmation path
+(`REQUIRES_USER_CONFIRMATION`, `WAITING_FOR_WIFI` → Play's dialog through `showConfirmationDialog`),
+progress over a real network, and the Console's own size report for the uploaded bundle.
 
 ## Owner actions needed along the way
 

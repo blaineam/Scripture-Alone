@@ -220,8 +220,8 @@ fun GoToSheet(model: ReaderViewModel, palette: ReaderPalette, onDismiss: () -> U
                         }
                     }
                     when {
-                        isWordSearch && !model.isSearchable -> full("sealed") {
-                            SealedSearchNotice(palette) { id -> model.selectTranslation(id) }
+                        isWordSearch && !model.isSearchable -> full("unsearchable") {
+                            UnsearchableNotice(model.translationAbbreviation, palette) { id -> model.selectTranslation(id) }
                         }
                         results.isNotEmpty() -> resultsSection(results, query, palette, ::openResult)
                         isWordSearch && suggested.isEmpty() && answered == query -> full("empty") {
@@ -457,24 +457,25 @@ private fun GoToCard(display: String, palette: ReaderPalette, onClick: () -> Uni
 }
 
 /**
- * What a words search in the sealed ASV says instead of results. Its encrypted index isn't read on
- * Android yet, and searching the BSB behind the ASV's name would show the reader words the ASV
- * doesn't have — so it says so, and offers the switch as the reader's own choice.
+ * What a words search says in a translation that can't be searched — only a sealed package built
+ * without a search index (the shipped ASV has one). Searching another translation behind its name
+ * would show the reader words it doesn't have, so it says so and offers the switch as the reader's
+ * own choice — iOS's `TranslationPackageError.notSearchable`.
  */
 @Composable
-private fun SealedSearchNotice(palette: ReaderPalette, onSwitch: (String) -> Unit) {
+private fun UnsearchableNotice(translation: String, palette: ReaderPalette, onSwitch: (String) -> Unit) {
     Column(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(palette.accent.copy(alpha = 0.10f)).padding(16.dp),
     ) {
-        Text("Search in the ASV is coming", color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+        Text("$translation can’t be searched", color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(6.dp))
         Text(
-            "Searching the American Standard Version isn’t available on Android yet. The BSB and KJV can be searched now.",
+            "This translation was packaged without a search index. The BSB and KJV can be searched.",
             color = palette.secondary, fontSize = 15.sp, lineHeight = 20.sp,
         )
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (id in listOf("BSB", "KJV")) {
+            for (id in listOf("BSB", "KJV").filter { it != translation }) {
                 Box(
                     Modifier.height(36.dp).clip(CircleShape).background(SheetColors.buttonFill(palette))
                         .clickable { onSwitch(id) }.padding(horizontal = 14.dp),

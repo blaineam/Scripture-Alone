@@ -7,7 +7,8 @@ import androidx.compose.runtime.setValue
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.blainemiller.scripturealone.data.BundledDatabase
+import com.blainemiller.scripturealone.data.assets.AssetLibrary
+import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.Chapter
@@ -40,7 +41,6 @@ import com.blainemiller.scripturealone.data.reference.Passage
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.search.SearchHit
 import com.blainemiller.scripturealone.data.search.VerseSearch
-import com.blainemiller.scripturealone.data.sql.BundledSqlSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -61,7 +61,17 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     /** Where the reader left off; John 1 on a first launch, as on iOS. */
     var location by mutableStateOf(saved.position?.let { ChapterRef(it.book, it.chapter) } ?: ChapterRef(43, 1))
         private set
-    var translationId by mutableStateOf(saved.translation?.takeIf { it in BundledTranslations.ids } ?: BundledTranslations.DEFAULT)
+    var translationId by mutableStateOf(
+        saved.translation?.takeIf { it in BundledTranslations.ids && isOnDevice(it) } ?: BundledTranslations.DEFAULT,
+    )
+        private set
+
+    /**
+     * The bundled translation being fetched because the reader chose it, for the reader's banner. The
+     * previous translation stays on screen until it arrives, then the reader switches — iOS's
+     * `downloadingPack`.
+     */
+    var downloadingPack by mutableStateOf<AssetPack?>(null)
         private set
 
     /** The loaded chapter. Only ever the one for [location] and [translationId] — see [load]. */
@@ -170,7 +180,24 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
 
     /** Switches translation and keeps the reader's place: the verse at the top stays at the top. */
     fun selectTranslation(id: String) {
-        if (id == translationId || id !in BundledTranslations.ids) return
+        if (id !in BundledTranslations.ids) return
+        val pack = AssetPack.forTranslation(id)
+        // A choice made; any other translation's failed download is no longer what the reader wants.
+        AssetLibrary.clearFailedTranslations(except = pack)
+        if (id == translationId) return
+        // The KJV is an on-demand pack: listed from the start, fetched the first time it's chosen.
+        // Nothing changes on screen until the file is here — the reader keeps reading what they had,
+        // with a banner — and then this runs again and switches.
+        if (pack != null && !isOnDevice(id)) {
+            if (downloadingPack != null) return
+            downloadingPack = pack
+            viewModelScope.launch {
+                val arrived = AssetLibrary.ensure(pack)
+                downloadingPack = null
+                if (arrived) selectTranslation(id)
+            }
+            return
+        }
         translationId = id
         prefs.write { it[ReaderKeys.TRANSLATION] = id }
         topVerse?.takeIf { VerseRef.fromKey(it).verse > 1 }?.let { scrollTarget = it }
@@ -199,21 +226,26 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     // Search
 
     /**
-     * The sealed ASV carries its own encrypted search index, which isn't ported yet; the plain
-     * stores carry FTS5. The Go To sheet says so for the ASV rather than quietly searching another
-     * translation and presenting its words.
+     * Whether the translation being read can be searched — `ChapterTextSource.isSearchable`. Every
+     * kind can: a plain store by its FTS5 index, the sealed ASV by its sealed index, an online
+     * translation at its provider. Only a package built without an index can't, and the Go To sheet
+     * says so rather than quietly searching another translation and presenting its words.
      */
-    val isSearchable: Boolean get() = translationId !in SEALED
+    var isSearchable by mutableStateOf(true)
+        private set
 
-    /** Full-text search of the current translation, off the main thread. Empty when not searchable. */
+    /**
+     * Full-text search of the current translation, off the main thread — `ReaderModel.search`, through
+     * whatever the translation is: the same call reaches an FTS5 store, the sealed index, or (for an
+     * online translation) the provider's own search, which costs one request. A failure finds nothing,
+     * as on iOS.
+     */
     suspend fun search(query: String): List<SearchHit> {
         val id = translationId
-        if (id in SEALED) return emptyList()
         return withContext(Dispatchers.IO) {
             runCatching {
-                BundledDatabase.withConnection(getApplication(), "$id.sqlite") { db ->
-                    VerseSearch(BundledSqlSource(db)).search(query)
-                }
+                val source = BundledTranslations.source(getApplication(), id)
+                if (!source.isSearchable) emptyList() else source.search(query, VerseSearch.DEFAULT_LIMIT)
             }.getOrDefault(emptyList())
         }
     }
@@ -249,10 +281,16 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         val id = translationId
         loading?.cancel()
         loading = viewModelScope.launch {
+            var searchable = true
             val result = withContext(Dispatchers.IO) {
-                runCatching { BundledTranslations.source(getApplication(), id).chapter(ref) }
+                runCatching {
+                    val source = BundledTranslations.source(getApplication(), id)
+                    searchable = source.isSearchable
+                    source.chapter(ref)
+                }
             }
             if (ref != location || id != translationId) return@launch
+            isSearchable = searchable
             result.onSuccess {
                 chapter = it
                 it.verses.maxOfOrNull { v -> v.ref.verse }?.let { count -> verseCounts[ref] = count }
@@ -519,6 +557,14 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     fun closeKeepsake() = legacy.close(translationId, ::selectTranslation)
 
     private companion object {
-        val SEALED = setOf("ASV")
+        /**
+         * Whether [id] opens without a download. A launch that restores a translation must only ever
+         * pick one of these: silently fetching 15 MB because the reader's translation wasn't here
+         * would be the app spending the reader's data on its own (iOS's `isOnDevice`).
+         */
+        fun isOnDevice(id: String): Boolean {
+            val pack = AssetPack.forTranslation(id) ?: return true
+            return !AssetLibrary.isAttached || AssetLibrary.isOnDevice(pack)
+        }
     }
 }

@@ -130,10 +130,11 @@ class StudyModel(context: Context) {
 }
 
 /**
- * The study databases, opened once for the app on first use. All of them ship inside the APK (iOS
- * downloads commentary and the interlinear as on-demand packs; Android has no equivalent free of a
- * Play asset-delivery setup, so they are bundled). Each open copies the file out of the APK the first
- * time, so call these off the main thread.
+ * The study databases, opened once for the app on first use. Cross references, context and the map
+ * ship in the app; commentary and the interlinear are on-demand Play asset packs, as on iOS, so
+ * [commentary] and [interlinear] are null until the reader has downloaded them (`PackDownload`), and
+ * are tried again on the next call. Each open copies its file out the first time, so call these off
+ * the main thread.
  */
 object StudyLibrary {
     @Volatile private var crossRefs: StudyStore? = null

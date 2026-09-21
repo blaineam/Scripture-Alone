@@ -23,6 +23,13 @@ android {
         providers.gradleProperty("appIdSuffix").orNull?.let { applicationIdSuffix = ".$it" }
     }
 
+    // Release has no signing key in the repository — Play App Signing holds the real one. For local
+    // bundletool testing only, `-PdebugSignedRelease` signs a release build with the debug key, so a
+    // release bundle can be installed on an emulator. Never used for an upload.
+    if (providers.gradleProperty("debugSignedRelease").isPresent) {
+        buildTypes.getByName("release").signingConfig = signingConfigs.getByName("debug")
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -47,6 +54,18 @@ android {
     // `syncBundledData` below — so there is exactly one copy of each in the repository.
     sourceSets["main"].assets.srcDir(layout.buildDirectory.dir("generated/bundledData"))
 
+    // The Bibles and study databases are Play Asset Delivery packs (`packs/`), which reach a device
+    // only through Google Play or bundletool. A debug APK — `installDebug`, Android Studio's Run —
+    // carries them in its own assets instead, so it runs with everything local and nothing to
+    // download, as iOS's Debug build copies its pack sources into the bundle. Never in release, so a
+    // broken pack can't hide behind a bundled copy; and not in a debug *bundle*, where the packs
+    // themselves carry the files (bundletool refuses the same asset in two modules) and the
+    // download path is what's being tested. `-PlocalPacks=true|false` overrides.
+    val localPacks = providers.gradleProperty("localPacks").orNull?.toBooleanStrictOrNull()
+        ?: gradle.startParameter.taskNames.none { it.contains("bundle", ignoreCase = true) }
+    if (localPacks) sourceSets["debug"].assets.srcDir(layout.buildDirectory.dir("generated/localPackData"))
+    assetPacks += listOf(":asv", ":bsb", ":kjv", ":study_commentary", ":study_interlinear")
+
     androidResources {
         // SQLite files must be stored uncompressed: Android cannot open a compressed asset as a
         // database, and would otherwise have to inflate 100 MB into memory on every launch.
@@ -65,6 +84,8 @@ android {
                 "scripturealone.resources",
                 rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources").asFile.absolutePath,
             )
+            // The asset-pack modules, so a test can hold the app's pack table to their build files.
+            test.systemProperty("scripturealone.packs", rootProject.layout.projectDirectory.dir("packs").asFile.absolutePath)
             test.testLogging {
                 events("passed", "failed", "skipped")
                 showStandardStreams = true
@@ -84,10 +105,12 @@ android {
 val syncBundledData by tasks.registering(Sync::class) {
     val iosResources = rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources")
     from(iosResources) {
-        // The publisher key is what the ASV's signature is checked against — the key the iOS build pins.
-        include("Bibles/*.sqlite", "Study/*.sqlite", "Study/Basemap.bin", "Packages/*.sabible", "Packages/bundled-signing.pub")
-        // The ASV ships sealed as ASV.sabible; the plaintext store is only the packaging tool's input.
-        exclude("Bibles/ASV.sqlite")
+        // What stays in the base module, as on iOS (`Tools/asset-packs/README.md`): cross references
+        // (so they never wait on the commentary download), the context database and map, and the
+        // publisher key the ASV's signature is checked against — a trust anchor that arrived by the
+        // same channel as the package it vouches for would vouch for nothing. The Bibles and the
+        // commentary and interlinear databases are asset packs (`packs/`).
+        include("Study/CrossReferences.sqlite", "Study/Context.sqlite", "Study/Basemap.bin", "Packages/bundled-signing.pub")
         eachFile { path = name }          // flatten, as the iOS bundle does
         includeEmptyDirs = false
     }
@@ -98,6 +121,20 @@ val syncBundledData by tasks.registering(Sync::class) {
     into(layout.buildDirectory.dir("generated/bundledData"))
 }
 tasks.named("preBuild") { dependsOn(syncBundledData) }
+
+/**
+ * The asset packs' files, for a debug APK's own assets — see `localPacks` above. The same list as the
+ * pack modules; `AssetPackDefinitionsTest` checks the app's table against those.
+ */
+val syncLocalPackData by tasks.registering(Sync::class) {
+    from(rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources")) {
+        include("Packages/ASV.sabible", "Bibles/BSB.sqlite", "Bibles/KJV.sqlite", "Study/Study.sqlite", "Study/Interlinear.sqlite")
+        eachFile { path = name }
+        includeEmptyDirs = false
+    }
+    into(layout.buildDirectory.dir("generated/localPackData"))
+}
+tasks.named("preBuild") { dependsOn(syncLocalPackData) }
 
 dependencies {
     // The canon, verse keys, Verse of the Day and the widget snapshot — shared with the Wear OS app.
@@ -117,6 +154,9 @@ dependencies {
     // Android's own SQLite has no FTS5 ("no such module: fts5", verified on API 35 / SQLite 3.44.3),
     // and every bundled Bible database searches with it. This ships a SQLite build that does.
     implementation("androidx.sqlite:sqlite-bundled:2.5.0")
+    // Play Asset Delivery: fetching the on-demand packs (KJV, commentary, original languages) from
+    // Google Play's own hosting — free, no server — with progress for the reader's banner.
+    implementation("com.google.android.play:asset-delivery:2.3.0")
     // The .sabible reader: Tink for Ed25519 (no platform Ed25519 before API 33) and HKDF; the JSON
     // tree API of kotlinx.serialization for the header, because org.json is a stub on the JVM.
     implementation("com.google.crypto.tink:tink-android:1.16.0")

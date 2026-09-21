@@ -19,3 +19,10 @@ include(":app")
 include(":shared")
 // The Wear OS app — the Apple Watch app's counterpart.
 include(":wear")
+// Play Asset Delivery packs: the Bibles and study databases, delivered beside the app rather than
+// inside its base module, whose download Google Play caps. iOS ships the same files as Background
+// Assets packs — see `Tools/asset-packs/` and data/assets/AssetPack.kt.
+for (pack in listOf("asv", "bsb", "kjv", "study_commentary", "study_interlinear")) {
+    include(":$pack")
+    project(":$pack").projectDir = file("packs/$pack")
+}

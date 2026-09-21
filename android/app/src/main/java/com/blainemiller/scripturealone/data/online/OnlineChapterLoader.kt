@@ -5,6 +5,7 @@ import com.blainemiller.scripturealone.data.ChapterVerse
 import com.blainemiller.scripturealone.data.StoreChapters
 import com.blainemiller.scripturealone.data.TranslationInfo
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.data.search.SearchHit
 import java.io.File
 
 /**
@@ -89,6 +90,20 @@ class OnlineChapterLoader(
         val file = cacheFile(entry)
         if (!file.exists()) return emptyList()
         return runCatching { driver.openReadOnly(file).use { StoreChapters.verses(it, first, last) } }.getOrDefault(emptyList())
+    }
+
+    /**
+     * Searches the translation at its provider — `OnlineTextLoader.search`. The whole text can't be
+     * indexed on the device (the cache is capped at 500 verses), so, as on iOS, the provider searches
+     * and it costs one request. The cache's own FTS index is kept current but not searched: a search
+     * over whichever chapters happen to be cached would look complete and quietly miss most verses.
+     */
+    fun search(entry: OnlineEntry, query: String, limit: Int): List<SearchHit> {
+        val key = keyFor(entry.provider) ?: throw OnlineFailure.NeedsKey(entry.provider)
+        return when (entry.provider) {
+            OnlineProvider.CROSSWAY -> ESVClient(key, transport).search(query, limit)
+            OnlineProvider.API_BIBLE -> APIBibleClient(key, entry.remoteId, transport).search(query, limit)
+        }
     }
 
     /** Drops everything cached for the translation — when the reader removes their key. */
