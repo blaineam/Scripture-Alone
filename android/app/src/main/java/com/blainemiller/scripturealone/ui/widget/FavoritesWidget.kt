@@ -2,9 +2,12 @@ package com.blainemiller.scripturealone.ui.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.glance.currentState
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
@@ -25,7 +28,6 @@ import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
-import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
 import androidx.glance.layout.Alignment
@@ -95,11 +97,17 @@ class FavoritesWidget : GlanceAppWidget() {
     override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val source = VerseSource.of(getAppWidgetState<Preferences>(context, PreferencesGlanceStateDefinition, id)[VerseSource.KEY])
-        val snapshot = withContext(Dispatchers.IO) { WidgetSnapshots.read(context) ?: buildNow(context) }
-        val entry = FavoritesEntry.at(snapshot, source, Instant.now(), WidgetPrefs.nudge(context))
+        withContext(Dispatchers.IO) { if (WidgetSnapshots.read(context) == null) buildNow(context) }
         WidgetClock.schedule(context)
-        provideContent { FavoritesContent(entry) }
+        provideContent {
+            // Read inside the composition, as in VerseOfDayWidget: a live session recomposes on update.
+            val revision by WidgetRevision.value.collectAsState()
+            val source = VerseSource.of(currentState(VerseSource.KEY))
+            val entry = remember(revision, source) {
+                FavoritesEntry.at(WidgetSnapshots.read(context), source, Instant.now(), WidgetPrefs.nudge(context))
+            }
+            FavoritesContent(entry)
+        }
     }
 
     /** No snapshot yet (a fresh install, or cleared data): build one rather than show nothing. */
@@ -120,6 +128,7 @@ class FavoritesWidgetReceiver : GlanceAppWidgetReceiver() {
 class ShowNextVerseAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         WidgetPrefs.advanceNudge(context)
+        WidgetRevision.bump()
         FavoritesWidget().updateAll(context)
     }
 }

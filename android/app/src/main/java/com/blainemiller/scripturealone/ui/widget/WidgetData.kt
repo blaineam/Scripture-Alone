@@ -10,6 +10,7 @@ import com.blainemiller.scripturealone.data.daily.DailyVerseCatalog
 import com.blainemiller.scripturealone.data.prefs.ReaderKeys
 import com.blainemiller.scripturealone.data.prefs.readerDataStore
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -166,7 +167,7 @@ object WidgetSnapshots {
      * Blocks on disk and decryption; call off the main thread.
      */
     fun build(context: Context, library: WidgetLibrary, readerTranslation: String, now: Instant = Instant.now()): VerseSnapshot {
-        val translation = readerTranslation.takeIf { it in BundledTranslations.ids } ?: BundledTranslations.DEFAULT
+        val translation = readerTranslation.takeIf { it in offlineTranslations() } ?: BundledTranslations.DEFAULT
         val source = BundledTranslations.source(context, translation)
         val chapters = HashMap<ChapterRef, List<ChapterVerse>>()
         fun verses(book: Int, chapter: Int): List<ChapterVerse> = chapters.getOrPut(ChapterRef(book, chapter)) {
@@ -183,6 +184,14 @@ object WidgetSnapshots {
             text = { range -> textOf(range, ::verses) },
         )
     }
+
+    /**
+     * Translations whose text may be kept in a snapshot: the bundled ones and the reader's imports. An
+     * online translation's terms don't allow storing its text, so its snapshot is in the ASV instead.
+     */
+    private fun offlineTranslations(): List<String> =
+        BundledTranslations.bundled +
+            if (TranslationLibrary.isAttached) TranslationLibrary.state.value.imported.map { it.id } else emptyList()
 
     /**
      * The text of [range], its first chapter only and at most 13 verses — a widget shows the opening of

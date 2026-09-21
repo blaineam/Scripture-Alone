@@ -2,6 +2,8 @@ package com.blainemiller.scripturealone.ui.widget
 
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -22,6 +24,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
 
@@ -70,6 +73,7 @@ object WidgetSync {
     suspend fun refresh(context: Context, library: WidgetLibrary, translation: String) {
         val snapshot = WidgetSnapshots.build(context, library, translation)
         if (WidgetSnapshots.write(context, snapshot)) {
+            WidgetRevision.bump()
             FavoritesWidget().updateAll(context)
         }
         WearPublisher.publishSnapshot(context, WidgetSnapshots.read(context) ?: snapshot)
@@ -82,9 +86,22 @@ object WidgetSync {
     }
 }
 
+/**
+ * Bumped whenever what a widget shows may have changed for a reason its composition can't observe —
+ * the clock, a new snapshot, the "Next" nudge. A live Glance session recomposes on update rather than
+ * calling `provideGlance` again, so the widgets key what they compute on this.
+ */
+object WidgetRevision {
+    val value = kotlinx.coroutines.flow.MutableStateFlow(0)
+    fun bump() = value.update { it + 1 }
+}
+
 /** Starts [WidgetSync] at process start. Registered in the manifest under androidx.startup. */
 class WidgetSyncInitializer : Initializer<Unit> {
-    override fun create(context: Context) = WidgetSync.start(context)
+    override fun create(context: Context) {
+        WidgetContent.install(UserDataWidgetSource(context))
+        WidgetSync.start(context)
+    }
     override fun dependencies(): List<Class<out Initializer<*>>> = emptyList()
 }
 
@@ -118,6 +135,7 @@ class WidgetClockReceiver : BroadcastReceiver() {
         val pending = goAsync()
         CoroutineScope(Dispatchers.Default).launch {
             try {
+                WidgetRevision.bump()
                 VerseOfDayWidget().updateAll(app)
                 FavoritesWidget().updateAll(app)
                 WidgetClock.schedule(app)
@@ -129,22 +147,37 @@ class WidgetClockReceiver : BroadcastReceiver() {
 }
 
 /**
- * DEBUG builds only (registered in `src/debug/AndroidManifest.xml`): switches the demo library on or
- * off for emulator checks and screenshots, as the iOS app's `-seedDemoLibrary` launch argument —
+ * DEBUG builds only (registered in `src/debug/AndroidManifest.xml`): redraws the widgets, and switches
+ * the demo library on or off, for emulator checks and screenshots, as the iOS app's `-seedDemoLibrary` launch argument —
  *
  *     adb shell am broadcast -n <package>/com.blainemiller.scripturealone.ui.widget.WidgetDemoReceiver --ez on true
  */
 class WidgetDemoReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val app = context.applicationContext
-        WidgetContent.setDemoLibrary(app, intent.getBooleanExtra("on", true))
+        // "pin" asks the launcher to place a widget ("votd" or "favorites") — the emulator check's way
+        // to put one on the home screen without dragging it from the picker.
+        when (intent.getStringExtra("pin")) {
+            "votd" -> pin(app, VerseOfDayWidgetReceiver::class.java)
+            "favorites" -> pin(app, FavoritesWidgetReceiver::class.java)
+        }
+        if (intent.hasExtra("on")) WidgetContent.setDemoLibrary(app, intent.getBooleanExtra("on", true))
+        // Then redraw both, as after an app update or a clock tick.
         val pending = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 WidgetSync.refreshNow(app)
+                WidgetRevision.bump()
+                VerseOfDayWidget().updateAll(app)
+                FavoritesWidget().updateAll(app)
             } finally {
                 pending.finish()
             }
         }
+    }
+
+    private fun pin(context: Context, receiver: Class<*>) {
+        val manager = AppWidgetManager.getInstance(context)
+        if (manager.isRequestPinAppWidgetSupported) manager.requestPinAppWidget(ComponentName(context, receiver), null, null)
     }
 }

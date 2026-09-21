@@ -2,6 +2,7 @@ package com.blainemiller.scripturealone.ui.widget
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -52,7 +53,7 @@ object WidgetColors {
 /**
  * Text the launcher draws itself, through `RemoteViews`: Glance's `Text` can neither color part of a
  * string (the words of Christ) nor shrink to fit (`minimumScaleFactor` on iOS), and a TextView can do
- * both — spans for the red, `autoSizeTextType="uniform"` for the fit — in Source Serif 4.
+ * both — spans for the red, `autoSizeTextType="uniform"` for the fit — in the system serif.
  */
 object WidgetText {
 
@@ -98,17 +99,10 @@ object WidgetText {
 }
 
 /**
- * Opens [range] in the reader — the widgets' `widgetURL`. `MainActivity` takes the chapter as launch
- * extras; the verse and the `scripturealone://` link ride along for when it scrolls to a verse.
- * [translation] is left out when null, so the reader stays in whatever it has open.
+ * Opens [range] in the reader — the widgets' `widgetURL`: the `scripturealone://open?ref=` link, which
+ * `MainActivity` routes as iOS's `onOpenURL` does (the passage opened and selected). Explicit, so it
+ * always lands in this app, never another claiming the scheme.
  */
-fun openPassageIntent(context: Context, range: VerseRange, translation: String? = null): Intent =
-    Intent(context, MainActivity::class.java).apply {
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-        putExtra("book", range.start.book)
-        putExtra("chapter", range.start.chapter)
-        putExtra("verse", range.start.verse)
-        putExtra("ref", range.storageString)
-        putExtra("link", ScriptureLink.url(range))
-        translation?.let { putExtra("translation", it) }
-    }
+fun openPassageIntent(context: Context, range: VerseRange): Intent =
+    Intent(Intent.ACTION_VIEW, Uri.parse(ScriptureLink.url(range)), context, MainActivity::class.java)
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)

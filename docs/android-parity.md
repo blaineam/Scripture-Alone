@@ -28,7 +28,7 @@ how each Apple-only piece is replaced. Update the Status column in the same comm
 | Settings | DataStore (Preferences) | The UserDefaults `reader.*` keys |
 | Crypto | JCA (AES-GCM, HMAC, PBKDF2) + Tink (Ed25519, HKDF) + Android Keystore | API 29 has no platform Ed25519; Keystore replaces the Secure Enclave |
 | Background work | WorkManager | Family-share refresh, catalogue downloads |
-| Build | Gradle 8.11.1, AGP 8.7.3, Kotlin 2.0.21, compileSdk 36, minSdk 29 — Haven's known-good set; warnings are errors |
+| Build | Gradle 8.11.1, AGP 8.7.3, Kotlin 2.0.21, compileSdk 36, minSdk 29 (Wear 30) — Haven's known-good set; warnings are errors. Modules: `:app`, `:wear`, and `:shared` (plain Kotlin: canon, verse keys, Verse of the Day, `VerseSnapshot`, the Data Layer vocabulary) |
 | Store access | `data/sql/SqlSource` over the bundled driver in the app, JDBC in tests | So each store is proven on the JVM against the real database file |
 
 Shared invariants, which must never diverge from `ScriptureAloneCore`:
@@ -173,11 +173,13 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 ### Widgets and Wear OS
 | Feature | Status | Notes |
 |---|---|---|
-| Verse of the Day widget | 🔧 | `data/daily/`: same pick as iOS for every date (pinned tests); `DailyVerses.json` synced at build. Glance widget not yet built |
-| Favorites & Notes widget with "Next" | ⬜ | Glance |
+| Verse of the Day widget | ✅ | `ui/widget/VerseOfDayWidget.kt` (Glance). Same pick as iOS for every date (`DailyVerseCatalog`, pinned tests), redrawn at local midnight by a non-waking alarm (`WidgetClock`) and when the clock or zone changes. Small / medium / large layouts as the iOS families; the reader's translation where `DailyVerses.json` has it (labelled with what is actually shown — the ASV otherwise), red letters honouring `reader.redLetters`, the page palette in light and dark. Tap opens `scripturealone://open?ref=`. Emulator-verified: all three sizes, dark mode, following a switch to KJV, tap-to-open. Red-letter spans are unit-tested but not seen on screen (the day's passage had none) |
+| Favorites & Notes widget with "Next" | ✅ | `ui/widget/FavoritesWidget.kt`, reading the real store (`data/userdata/`) through `UserDataWidgetSource` — a file watch on the database's WAL, so any write is seen — into the same `VerseSnapshot` as iOS (`:shared`, Swift tests ported). New verse every three hours, "Next" nudges; long-press → reconfigure picks Everything / Favorites / Highlights / Notes. Emulator-verified: rotation, Next, reconfigure, empty state, a favorite made in the reader appearing, tap opening and selecting the passage |
 | Lock Screen widgets | ➖ | |
-| Wear OS app: VOTD, favorites, notes, reader, translations | ⬜ | Same `*-Watch.sqlite` files |
-| Wear OS Tile and complications | ⬜ | |
+| Widget text face | ➖ | The launcher draws widget text and won't load an app's font resources, so widgets use the system serif (Noto Serif) where iOS uses New York — not the reader's Source Serif 4 |
+| Wear OS app: VOTD, favorites, notes, reader, translations | 🔧 | `android/wear` (applicationId = the phone's). Reads the same `*-Watch.sqlite` editions, synced from `ScriptureAloneWatch/Resources` at build (tested against all three files). Home, verse (red letters, Speak via `TextToSpeech`, notes on it), books → chapters → chapter (highlight tints, focus verse), favorites, notes, note, translation picker — each verified on the `scripture_wear` emulator (Wear OS 6). Favorites/notes are **read-only**, from the phone's snapshot (no shared store on Android); no favoriting on the watch yet. Speak not heard (emulator runs without audio) |
+| Phone ↔ watch (Data Layer) | 🔧 | Phone publishes the translation (with the switch time, `WatchLinkKeys` semantics) and the snapshot as data items (`WearPublisher`); the watch applies them (`PhoneLink`) with iOS's newest-choice-wins rule (`TranslationChoice`, tested). Each side verified alone (the watch reads a snapshot file placed as the Data Layer would; picking a translation on the watch moves tile and complication). **Not verified end to end**: phone and watch emulators may not run together. Imported-translation transfer (a `WatchEdition` file) waits for import on Android |
+| Wear OS Tile and complications | ✅ | Tile: VOTD with "Read", fresh until local midnight. Complication: SHORT_TEXT ("PHIL" over "4:6–7"), LONG_TEXT, MONOCHROMATIC_IMAGE, as a week-long timeline of one entry per local day. Both follow the watch's translation (the Apple Watch's always use the ASV). Emulator-verified: tile shown and "Read" opens the verse; complication on an analog face, tap opens the verse, and it switched to BSB with the picker |
 
 ### Settings and polish
 | Feature | Status | Notes |

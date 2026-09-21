@@ -2,6 +2,9 @@ package com.blainemiller.scripturealone.ui.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.ColorFilter
@@ -54,12 +57,19 @@ class VerseOfDayWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(WidgetFamily.sizes)
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val settings = WidgetReaderSettings.current(context)
-        val entry = withContext(Dispatchers.IO) {
-            VerseOfDayEntry.at(DailyVerseLibrary.catalog(context), Instant.now(), settings.translation)
-        }
+        val initial = WidgetReaderSettings.current(context)
+        val catalog = withContext(Dispatchers.IO) { DailyVerseLibrary.catalog(context) }
         WidgetClock.schedule(context)
-        provideContent { VerseOfDayContent(entry, redLetters = settings.redLetters) }
+        provideContent {
+            // Read inside the composition: while a Glance session is alive an update recomposes it
+            // rather than calling provideGlance again, so anything read above would go stale.
+            val revision by WidgetRevision.value.collectAsState()
+            val settings by remember { WidgetReaderSettings.flow(context) }.collectAsState(initial)
+            val entry = remember(revision, settings.translation) {
+                VerseOfDayEntry.at(catalog, Instant.now(), settings.translation)
+            }
+            VerseOfDayContent(entry, redLetters = settings.redLetters)
+        }
     }
 }
 
@@ -72,7 +82,7 @@ class VerseOfDayWidgetReceiver : GlanceAppWidgetReceiver() {
 fun VerseOfDayContent(entry: VerseOfDayEntry, redLetters: Boolean) {
     val context = LocalContext.current
     val family = WidgetFamily.of(LocalSize.current)
-    val open = entry.range?.let { actionStartActivity(openPassageIntent(context, it, entry.translation)) }
+    val open = entry.range?.let { actionStartActivity(openPassageIntent(context, it)) }
     var root = GlanceModifier.fillMaxSize()
         .appWidgetBackground()
         .background(ImageProvider(R.drawable.widget_page))
@@ -83,7 +93,11 @@ fun VerseOfDayContent(entry: VerseOfDayEntry, redLetters: Boolean) {
 
     Column(modifier = root) {
         if (family == WidgetFamily.SMALL) {
-            AndroidRemoteViews(WidgetText.reference(context, entry.shortReference), GlanceModifier.fillMaxWidth())
+            // In a Row, as the other headers are: as a bare Column child beside the weighted verse,
+            // Glance measured the verse to nothing (seen on the emulator: the small widget lost its text).
+            Row(modifier = GlanceModifier.fillMaxWidth()) {
+                AndroidRemoteViews(WidgetText.reference(context, entry.shortReference), GlanceModifier.defaultWeight())
+            }
         } else {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(

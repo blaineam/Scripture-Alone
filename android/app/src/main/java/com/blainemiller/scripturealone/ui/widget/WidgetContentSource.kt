@@ -19,15 +19,16 @@ import java.time.Instant
 /**
  * Where the Favorites & Notes widget — and the watch — get the reader's library.
  *
- * The favorites, highlights and notes store lives elsewhere (`data/userdata/`); this is the whole of
- * what the widgets need from it, so the two meet only here. An implementation returns the rows as
+ * The favorites, highlights and notes store lives elsewhere (`data/userdata/`, read by
+ * [UserDataWidgetSource]); this is the whole of what the widgets need from it, so the two meet only
+ * here. An implementation returns the rows as
  * they are stored — one highlight per verse, every anchor of a note — and [WidgetSync] turns them into
  * a [com.blainemiller.scripturealone.companion.VerseSnapshot] exactly as `WidgetSnapshotSync.swift` does
  * on iOS: highlights merged into ranges, newest first, at most 60 of each kind, text in the reader's
  * translation.
  *
- * Connect a store with [WidgetContent.install], at process start (an `Application.onCreate` or an
- * androidx.startup `Initializer`), since a widget update can start the process without any activity.
+ * [WidgetSyncInitializer] installs [UserDataWidgetSource] at process start (a widget update can start
+ * the process with no activity); tests and previews use [DemoWidgetContentSource].
  */
 interface WidgetContentSource {
     /**
@@ -61,8 +62,9 @@ object WidgetContent {
     }
 
     /**
-     * The source to read: the installed one; else, in a debuggable build with the demo library
-     * switched on ([WidgetDemoReceiver]), [DemoWidgetContentSource]; else [EmptyWidgetContentSource].
+     * The source to read: in a debuggable build with the demo library switched on ([WidgetDemoReceiver]),
+     * [DemoWidgetContentSource]; else the installed one — [UserDataWidgetSource], installed at process
+     * start by [WidgetSyncInitializer]; else [EmptyWidgetContentSource].
      */
     fun resolve(context: Context): WidgetContentSource = pick(context, installed.value, demoOn(context))
 
@@ -80,8 +82,11 @@ object WidgetContent {
     private fun demoOn(context: Context): Boolean =
         demo.value ?: WidgetPrefs.demoLibrary(context).also { demo.compareAndSet(null, it) }
 
-    private fun pick(context: Context, source: WidgetContentSource?, demoOn: Boolean): WidgetContentSource =
-        source ?: if (demoOn && isDebuggable(context)) DemoWidgetContentSource() else EmptyWidgetContentSource
+    /** The demo, when a debug build has it switched on, stands in for everything else. */
+    private fun pick(context: Context, source: WidgetContentSource?, demoOn: Boolean): WidgetContentSource = when {
+        demoOn && isDebuggable(context) -> DemoWidgetContentSource()
+        else -> source ?: EmptyWidgetContentSource
+    }
 
     private fun isDebuggable(context: Context) =
         context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0

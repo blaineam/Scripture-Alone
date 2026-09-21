@@ -18,7 +18,7 @@
         android:layout_marginTop="8dp"
         android:layout_weight="1"
         android:ellipsize="end"
-        android:fontFamily="@font/widget_serif"
+        android:fontFamily="serif"
         android:text="For I am persuaded, that neither death, nor life, nor angels, nor principalities, nor things present, nor things to come, nor powers, nor height, nor depth, nor any other creature, shall be able to separate us from the love of God, which is in Christ Jesus our Lord."
         android:textColor="@color/widget_ink"
         android:textSize="14sp" />

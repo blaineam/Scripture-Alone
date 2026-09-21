@@ -18,7 +18,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:layout_weight="1"
-        android:fontFamily="@font/widget_serif"
+        android:fontFamily="serif"
         android:text="Jehovah is my shepherd; I shall not want."
         android:textColor="@color/widget_ink"
         android:textSize="16sp" />

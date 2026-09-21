@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Scripture Alone</string>
+    <string name="verse_of_the_day">Verse of the Day</string>
+    <string name="complication_description">Today’s passage on your watch face.</string>
+    <string name="tile_description">Today’s passage, in the translation you read.</string>
+</resources>
