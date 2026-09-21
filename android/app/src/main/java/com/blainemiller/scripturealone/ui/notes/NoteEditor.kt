@@ -63,6 +63,9 @@ import androidx.compose.ui.window.Dialog
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.userdata.Note
 import com.blainemiller.scripturealone.data.userdata.RANGE_ORDER
+import com.blainemiller.scripturealone.ui.camera.SlideCapture
+import com.blainemiller.scripturealone.ui.camera.SlideCaptureMenu
+import com.blainemiller.scripturealone.ui.camera.SlidePhotoSection
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
 import com.blainemiller.scripturealone.ui.reader.glass
@@ -79,10 +82,12 @@ import java.util.Locale
  * created and edited. The More menu shares it as text or deletes it, after asking.
  *
  * Every change is saved as it is typed and stamps the note's edited time, as iOS's `touch()` does.
- * Not yet: slide photos and Export…, which come with the camera and export slices.
+ * Add from Camera adds a sermon slide's text and passages to this note ([capture], hosted by the
+ * panel), and a slide photo kept with the note shows beneath the body, as iOS's `SlidePhotoSection`.
+ * Not yet: Export…, which comes with the export slice.
  */
 @Composable
-fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, onBack: () -> Unit, onClose: () -> Unit) {
+fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, capture: SlideCapture, onBack: () -> Unit, onClose: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     // The fields edit local copies, so the cursor never fights a save coming back.
@@ -99,6 +104,10 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, onBac
     LaunchedEffect(note.id) {
         if (note.title.isEmpty() && note.body.isEmpty()) runCatching { titleFocus.requestFocus() }
     }
+    // A change made elsewhere — a slide added from the camera — reaches the fields. Typing saves the
+    // same text back, so this never fights the cursor.
+    LaunchedEffect(note.title) { if (current.title != title) title = current.title }
+    LaunchedEffect(note.body) { if (current.body != body) body = current.body }
 
     fun addTypedPassages() {
         val text = passageText
@@ -112,6 +121,7 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, onBac
 
     Column(Modifier.fillMaxSize()) {
         PanelHeader(note.copy(title = title).displayTitle, palette, back = true, onLeading = onBack) {
+            SlideCaptureMenu(capture, palette, addingToNote = true)
             Box {
                 PanelHeaderIcon(Icons.Rounded.MoreHoriz, "More", palette) { menu = true }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
@@ -188,6 +198,8 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, onBac
                     save { it.copy(body = value) }
                 }
             }
+
+            SlidePhotoSection(model, palette, note)
 
             Spacer(Modifier.height(22.dp))
             PanelGroup(palette) {

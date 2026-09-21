@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.util.UUID
 
@@ -32,6 +33,7 @@ class UserData(
     private val _notes = MutableStateFlow<List<Note>>(emptyList())
     private val _favorites = MutableStateFlow<List<Favorite>>(emptyList())
     private val _loaded = MutableStateFlow(false)
+    private val _slidePhotos = MutableStateFlow<Map<UUID, Int>>(emptyMap())
 
     val highlights: StateFlow<List<Highlight>> = _highlights.asStateFlow()
     /** Most recently edited first. */
@@ -39,12 +41,15 @@ class UserData(
     /** Newest first. */
     val favorites: StateFlow<List<Favorite>> = _favorites.asStateFlow()
     val loaded: StateFlow<Boolean> = _loaded.asStateFlow()
+    /** The notes with a slide photo kept, each with a revision that changes when its photo is replaced. */
+    val slidePhotos: StateFlow<Map<UUID, Int>> = _slidePhotos.asStateFlow()
 
     init {
         write {
             _highlights.value = it.highlights()
             _notes.value = it.notes()
             _favorites.value = it.favorites()
+            _slidePhotos.value = it.slidePhotoIds().associateWith { 0 }
             _loaded.value = true
         }
     }
@@ -75,7 +80,32 @@ class UserData(
 
     fun deleteNote(id: UUID) {
         _notes.value = _notes.value.filter { it.id != id }
+        _slidePhotos.value -= id
         write { it.deleteNote(id) }
+    }
+
+    /**
+     * Saves [note] and, when given, the slide photo kept with it — the review sheet's save. A null
+     * [photo] leaves any photo the note already has, as iOS's `if let photo { note.slidePhoto = photo }`.
+     */
+    fun save(note: Note, photo: ByteArray?) {
+        save(note)
+        if (photo != null) {
+            _slidePhotos.value += note.id to (_slidePhotos.value[note.id] ?: 0) + 1
+            write { it.setSlidePhoto(note.id, photo) }
+        }
+    }
+
+    /** "Remove Photo" in the note editor; the note counts as edited. */
+    fun removeSlidePhoto(note: Note) {
+        _slidePhotos.value -= note.id
+        write { it.setSlidePhoto(note.id, null) }
+        save(note.copy(updatedAt = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS)))
+    }
+
+    /** The photo kept with a note, read on the store's lane. */
+    suspend fun slidePhoto(id: UUID): ByteArray? = withContext(lane) {
+        (store ?: open().also { store = it }).slidePhoto(id)
     }
 
     /** A new note on [anchors], saved and returned so the caller can open it — `createNoteFromSelection`. */

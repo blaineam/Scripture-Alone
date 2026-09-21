@@ -2,4 +2,6 @@
 <!-- The verse-image designer's exported PNG (ui/share/ShareExport.kt), offered to the share sheet. -->
 <paths>
     <cache-path name="shared_images" path="shared_images/" />
+    <!-- A slide photo from the system camera, where the live scanner has no back camera (ui/camera/). -->
+    <cache-path name="slide_capture" path="slide_capture/" />
 </paths>

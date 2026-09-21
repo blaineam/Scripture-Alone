@@ -131,6 +131,15 @@ dependencies {
     // Listen: a media session over the TextToSpeech reader — lock screen, notification and headset
     // controls, and the mediaPlayback foreground service that keeps reading with the screen off.
     implementation("androidx.media3:media3-session:1.5.1")
+    // Camera notes (ui/camera/, data/camera/): CameraX for the live scanner, and ML Kit's text recognizer
+    // with the Latin model bundled in the APK, so a slide is read on the device, offline, with no Play
+    // services download — VisionKit and Vision on iOS. camera-mlkit-vision maps its boxes onto the preview.
+    val cameraX = "1.4.1"
+    implementation("androidx.camera:camera-camera2:$cameraX")
+    implementation("androidx.camera:camera-lifecycle:$cameraX")
+    implementation("androidx.camera:camera-view:$cameraX")
+    implementation("androidx.camera:camera-mlkit-vision:$cameraX")
+    implementation("com.google.mlkit:text-recognition:16.0.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation("junit:junit:4.13.2")

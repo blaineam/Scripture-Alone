@@ -15,7 +15,7 @@ import java.io.File
  * runs on the device through the bundled SQLite driver ([BundledUserDatabase]) and is proven on the JVM
  * through JDBC, and [UserDataStore] never knows which it has.
  *
- * Arguments are Long, Int, String or null.
+ * Arguments are Long, Int, String, ByteArray or null.
  */
 interface UserDatabase {
     fun execute(sql: String, vararg args: Any?)
@@ -71,6 +71,7 @@ class BundledUserDatabase(file: File) : UserDatabase {
             is Long -> statement.bindLong(position, value)
             is Int -> statement.bindLong(position, value.toLong())
             is String -> statement.bindText(position, value)
+            is ByteArray -> statement.bindBlob(position, value)
             else -> throw IllegalArgumentException("Unsupported bind type ${value::class.simpleName}")
         }
     }

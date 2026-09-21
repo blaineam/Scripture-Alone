@@ -10,6 +10,10 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Camera notes: photographing a sermon slide (ui/camera/). Asked for at the first scan; the app
+         works without a camera, where photos, files and paste still bring a slide in. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" />
 
     <!-- From Android 11 an app must declare the speech engines it binds to, or TextToSpeech finds none. -->
     <queries>

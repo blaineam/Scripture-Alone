@@ -108,6 +108,26 @@ class UserDataStoreTest {
         assertEquals(1, store().notes().size)
     }
 
+    @Test fun slidePhotosAreKeptReplacedAndRemovedWithTheirNote() {
+        val s = store()
+        val note = Note(title = "The Shepherd Who Pursues", origin = "camera")
+        s.save(note)
+        assertNull(s.slidePhoto(note.id))
+        s.setSlidePhoto(note.id, byteArrayOf(1, 2, 3))
+        // Survives a relaunch, and listing notes is untouched by it.
+        assertTrue(store().slidePhoto(note.id)!!.contentEquals(byteArrayOf(1, 2, 3)))
+        assertEquals(setOf(note.id), store().slidePhotoIds())
+        assertEquals(listOf("The Shepherd Who Pursues"), store().notes().map { it.title })
+        s.setSlidePhoto(note.id, byteArrayOf(9))
+        assertTrue(s.slidePhoto(note.id)!!.contentEquals(byteArrayOf(9)))
+        s.setSlidePhoto(note.id, null)
+        assertNull(s.slidePhoto(note.id))
+        // Deleting a note takes its photo with it.
+        s.setSlidePhoto(note.id, byteArrayOf(4))
+        s.deleteNote(note.id)
+        assertEquals(emptySet<UUID>(), store().slidePhotoIds())
+    }
+
     @Test fun favoriteToggleMirrorsTheHeart() {
         val s = store()
         val ranges = listOf(range(45008038, 45008039), range(43003016))

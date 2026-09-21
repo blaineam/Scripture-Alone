@@ -45,6 +45,9 @@ import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.userdata.Favorite
 import com.blainemiller.scripturealone.data.userdata.Note
 import com.blainemiller.scripturealone.data.userdata.NoteSearch
+import com.blainemiller.scripturealone.ui.camera.SlideCapture
+import com.blainemiller.scripturealone.ui.camera.SlideCaptureHost
+import com.blainemiller.scripturealone.ui.camera.SlideCaptureMenu
 import com.blainemiller.scripturealone.ui.favorites.FavoritesSection
 import com.blainemiller.scripturealone.ui.reader.ReaderIcons
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
@@ -62,7 +65,10 @@ enum class NotesScope(val title: String) { ALL("All Notes"), CHAPTER("This Chapt
  * here. A note opens in [NoteEditor] within the same sheet, as iOS pushes it onto the panel's stack;
  * [openNote] is that stack, hoisted so Add Note in the selection bar can open straight onto a note.
  *
- * Not yet: New Note from a camera slide and the Export menu, which belong to later slices.
+ * Scan Slide starts a note from a photographed sermon slide (`ui/camera/`); the capture flow is hosted
+ * here, over the whole panel, for the list and for the open note's Add from Camera alike.
+ *
+ * Not yet: the Export menu, which belongs to a later slice.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -86,78 +92,87 @@ fun NotesPanel(
 
     val editing = openNote?.let { id -> notes.firstOrNull { it.id.toString() == id } }
     BackHandler { if (openNote != null) onOpenNoteChange(null) else dismiss() }
+    val capture = remember { SlideCapture() }
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .padding(top = 10.dp)
-            .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-            .background(PanelColors.background(palette))
-            .clickable(interactionSource = null, indication = null) {},
-    ) {
-        if (openNote != null) {
-            if (editing != null) {
-                NoteEditor(model, palette, editing, onBack = { onOpenNoteChange(null) }, onClose = ::dismiss)
-            } else {
-                PanelHeader("Note", palette, back = true, onLeading = { onOpenNoteChange(null) })
-                EmptyState(ReaderIcons.NoteText, "Note Deleted", "", palette)
-            }
-            return@Column
-        }
-
-        PanelHeader("Notes", palette, back = false, onLeading = ::dismiss) {
-            PanelHeaderIcon(ReaderIcons.SquareAndPencil, "New Note", palette) {
-                onOpenNoteChange(model.newNote().id.toString())
-            }
-        }
-        PanelSearchField(
-            search, if (scope == NotesScope.FAVORITES) "Search favorites or a passage" else "Search notes or a passage",
-            palette, onChange = { search = it },
-        )
-        Spacer(Modifier.height(12.dp))
-        Segmented(NotesScope.entries, scope, { it.title }, palette) { scope = it }
-        Spacer(Modifier.height(12.dp))
-
-        val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        if (scope == NotesScope.FAVORITES) {
-            FavoritesSection(model, palette, favorites, search, bottom, onOpened = ::dismiss)
-            return@Column
-        }
-
-        val location = model.location
-        val verseCount = { book: com.blainemiller.scripturealone.data.canon.BookID, chapter: Int ->
-            model.verseCount(ChapterRef(book.number, chapter))
-        }
-        val filtered = notes.filter { note ->
-            (scope == NotesScope.ALL || note.touches(location)) && NoteSearch.matches(note, search, verseCount)
-        }
-        if (filtered.isEmpty()) {
-            EmptyState(
-                ReaderIcons.NoteText,
-                if (search.isBlank()) "No Notes Yet" else "No Matches",
-                if (search.isBlank()) "Tap verses in the text, then the pencil, to start a note on a passage."
-                else "Try a word or a passage like Rom 8.",
-                palette,
-            )
-            return@Column
-        }
-        LazyColumn(
-            Modifier.fillMaxSize().imePadding(),
-            contentPadding = PaddingValues(bottom = bottom + 24.dp),
+    // The slide capture draws over the whole panel — the scanner and review sheet cover everything.
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(top = 10.dp)
+                .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+                .background(PanelColors.background(palette))
+                .clickable(interactionSource = null, indication = null) {},
         ) {
-            itemsIndexed(filtered, key = { _, note -> note.id }) { index, note ->
-                val shape = when {
-                    filtered.size == 1 -> RoundedCornerShape(22.dp)
-                    index == 0 -> RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
-                    index == filtered.lastIndex -> RoundedCornerShape(bottomStart = 22.dp, bottomEnd = 22.dp)
-                    else -> RoundedCornerShape(0.dp)
+            if (openNote != null) {
+                if (editing != null) {
+                    NoteEditor(model, palette, editing, capture, onBack = { onOpenNoteChange(null) }, onClose = ::dismiss)
+                } else {
+                    PanelHeader("Note", palette, back = true, onLeading = { onOpenNoteChange(null) })
+                    EmptyState(ReaderIcons.NoteText, "Note Deleted", "", palette)
                 }
-                Column(Modifier.padding(horizontal = 16.dp).clip(shape).background(PanelColors.card(palette))) {
-                    NoteRow(note, palette, onOpen = { onOpenNoteChange(note.id.toString()) }, onDelete = { model.userData.deleteNote(note.id) })
-                    if (index < filtered.lastIndex) PanelSeparator(palette)
+                return@Column
+            }
+
+            PanelHeader("Notes", palette, back = false, onLeading = ::dismiss) {
+                PanelHeaderIcon(ReaderIcons.SquareAndPencil, "New Note", palette) {
+                    onOpenNoteChange(model.newNote().id.toString())
+                }
+                SlideCaptureMenu(capture, palette)
+            }
+            PanelSearchField(
+                search, if (scope == NotesScope.FAVORITES) "Search favorites or a passage" else "Search notes or a passage",
+                palette, onChange = { search = it },
+            )
+            Spacer(Modifier.height(12.dp))
+            Segmented(NotesScope.entries, scope, { it.title }, palette) { scope = it }
+            Spacer(Modifier.height(12.dp))
+
+            val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+            if (scope == NotesScope.FAVORITES) {
+                FavoritesSection(model, palette, favorites, search, bottom, onOpened = ::dismiss)
+                return@Column
+            }
+
+            val location = model.location
+            val verseCount = { book: com.blainemiller.scripturealone.data.canon.BookID, chapter: Int ->
+                model.verseCount(ChapterRef(book.number, chapter))
+            }
+            val filtered = notes.filter { note ->
+                (scope == NotesScope.ALL || note.touches(location)) && NoteSearch.matches(note, search, verseCount)
+            }
+            if (filtered.isEmpty()) {
+                EmptyState(
+                    ReaderIcons.NoteText,
+                    if (search.isBlank()) "No Notes Yet" else "No Matches",
+                    if (search.isBlank()) "Tap verses in the text, then the pencil, to start a note on a passage — or scan this Sunday’s sermon slide."
+                    else "Try a word or a passage like Rom 8.",
+                    palette,
+                )
+                return@Column
+            }
+            LazyColumn(
+                Modifier.fillMaxSize().imePadding(),
+                contentPadding = PaddingValues(bottom = bottom + 24.dp),
+            ) {
+                itemsIndexed(filtered, key = { _, note -> note.id }) { index, note ->
+                    val shape = when {
+                        filtered.size == 1 -> RoundedCornerShape(22.dp)
+                        index == 0 -> RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
+                        index == filtered.lastIndex -> RoundedCornerShape(bottomStart = 22.dp, bottomEnd = 22.dp)
+                        else -> RoundedCornerShape(0.dp)
+                    }
+                    Column(Modifier.padding(horizontal = 16.dp).clip(shape).background(PanelColors.card(palette))) {
+                        NoteRow(note, palette, onOpen = { onOpenNoteChange(note.id.toString()) }, onDelete = { model.userData.deleteNote(note.id) })
+                        if (index < filtered.lastIndex) PanelSeparator(palette)
+                    }
                 }
             }
+        }
+        // A new note from a slide opens once saved; one added to the open note stays where it is.
+        SlideCaptureHost(capture, model, palette, notes, appendTo = editing) { note ->
+            if (openNote == null) onOpenNoteChange(note.id.toString())
         }
     }
 }

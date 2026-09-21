@@ -6,7 +6,7 @@ import java.util.UUID
 
 /**
  * Highlights, notes and favorites on disk — the SwiftData store of `Persistence/Models.swift`, as
- * three plain tables.
+ * three plain tables, and a fourth for the slide photos kept with camera notes.
  *
  * Plain SQLite over the bundled driver rather than Room: three small tables don't need an ORM, the
  * bundled driver is already in the app for FTS5, and the same code runs on the JVM through JDBC
@@ -53,6 +53,18 @@ class UserDataStore(private val db: UserDatabase) {
                         created_at INTEGER NOT NULL)""",
                 )
                 db.execute("PRAGMA user_version = 1")
+            }
+        }
+        if (version < 2) {
+            db.transaction {
+                // A camera note's slide photo, kept only when the reader asks — `Note.slidePhoto`, which
+                // SwiftData keeps as external storage. Its own table, so listing notes never reads photos.
+                db.execute(
+                    """CREATE TABLE IF NOT EXISTS slide_photos (
+                        note_id TEXT PRIMARY KEY NOT NULL,
+                        jpeg BLOB NOT NULL)""",
+                )
+                db.execute("PRAGMA user_version = 2")
             }
         }
     }
@@ -109,7 +121,25 @@ class UserDataStore(private val db: UserDatabase) {
         note.createdAt.toEpochMilli(), note.updatedAt.toEpochMilli(), note.origin,
     )
 
-    fun deleteNote(id: UUID) = db.execute("DELETE FROM notes WHERE id = ?", id.toString())
+    fun deleteNote(id: UUID) = db.transaction {
+        db.execute("DELETE FROM notes WHERE id = ?", id.toString())
+        db.execute("DELETE FROM slide_photos WHERE note_id = ?", id.toString())
+    }
+
+    // Slide photos
+
+    /** The JPEG kept with a camera note, or null. */
+    fun slidePhoto(noteId: UUID): ByteArray? =
+        db.query("SELECT jpeg FROM slide_photos WHERE note_id = ?", noteId.toString()) { it.blob(0) }.firstOrNull()
+
+    /** The notes that have a photo kept with them. */
+    fun slidePhotoIds(): Set<UUID> = db.query("SELECT note_id FROM slide_photos") { UUID.fromString(it.text(0)) }.toSet()
+
+    /** Keeps [jpeg] with the note, replacing any photo it had; null removes it ("Remove Photo"). */
+    fun setSlidePhoto(noteId: UUID, jpeg: ByteArray?) {
+        if (jpeg == null) db.execute("DELETE FROM slide_photos WHERE note_id = ?", noteId.toString())
+        else db.execute("INSERT OR REPLACE INTO slide_photos (note_id, jpeg) VALUES (?, ?)", noteId.toString(), jpeg)
+    }
 
     // Favorites
 
