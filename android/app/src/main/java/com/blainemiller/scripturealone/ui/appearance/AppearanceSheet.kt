@@ -1,5 +1,8 @@
 package com.blainemiller.scripturealone.ui.appearance
 
+import com.blainemiller.scripturealone.ui.reader.CappedFontScale
+import com.blainemiller.scripturealone.ui.reader.takesTaps
+import androidx.compose.ui.semantics.heading
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -149,7 +152,7 @@ fun AppearanceSheet(
             Box(
                 Modifier.fillMaxSize()
                     .background(Color.Black.copy(alpha = if (expanded) 0.22f else 0f))
-                    .clickable(interactionSource = null, indication = null, onClick = onDismiss),
+                    .takesTaps(onDismiss),
             )
             val dragState = rememberDraggableState { delta -> scope.launch { top.snapTo((top.value + delta).coerceIn(largeTop, full)) } }
             val surface = PanelColors.background(palette)
@@ -162,7 +165,7 @@ fun AppearanceSheet(
                         ambientColor = Color.Black.copy(alpha = 0.18f), spotColor = Color.Black.copy(alpha = 0.22f))
                     .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
                     .background(surface)
-                    .clickable(interactionSource = null, indication = null) {},
+                    .takesTaps(),
             ) {
                 Box(
                     Modifier.fillMaxWidth().height(22.dp).draggable(dragState, Orientation.Vertical, onDragStopped = { settle(it) }),
@@ -295,8 +298,23 @@ private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKee
             "I can’t fix what I don’t know about. If something is broken, confusing, or missing, email me — one person reads every message, and a fix for you is a fix for everyone.",
             palette,
         )
+        // MillerKit's LoveThisAppSection: Rate opens the store's review page, as iOS's row opens the App
+        // Store's write-review page — somewhere the reader can actually write, which Play's in-app card
+        // (quota-limited, maybe shown, maybe not) can't promise. Only in a copy Play installed: until
+        // there is a listing, the link would lead nowhere.
+        val fromPlay = remember { RatingPrompt.installedFromPlay(context) }
         PanelGroup(palette, Modifier.padding(top = 18.dp)) {
+            if (fromPlay) {
+                LinkRow("Rate Scripture Alone", palette) { Support.rate(context) }
+                PanelSeparator(palette)
+            }
             LinkRow("My Other Apps", palette, subtitle = "Built by one person, same care") { Support.open(context, Support.PORTFOLIO) }
+        }
+        if (fromPlay) {
+            SectionFooter(
+                "Scripture Alone is made by one person, with no ads, no tracking, and no venture money behind it. A rating takes ten seconds and genuinely decides whether anyone else ever sees it.",
+                palette,
+            )
         }
 
         // About — MillerKit's AboutSection, with the font licences.
@@ -332,7 +350,7 @@ private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKee
 internal fun SectionTitle(title: String, palette: ReaderPalette) {
     Text(
         title, color = palette.secondary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(start = 32.dp, top = 22.dp, bottom = 8.dp),
+        modifier = Modifier.padding(start = 32.dp, top = 22.dp, bottom = 8.dp).semantics { heading() },
     )
 }
 
@@ -348,7 +366,7 @@ internal fun SectionFooter(text: String, palette: ReaderPalette) {
 @Composable
 private fun ThemeSwatch(
     option: ReaderTheme, chosen: Boolean, swatch: ReaderPalette, palette: ReaderPalette, modifier: Modifier, onClick: () -> Unit,
-) {
+) = CappedFontScale {
     Column(
         modifier.clip(RoundedCornerShape(12.dp)).clickable(role = Role.Button, onClick = onClick)
             .semantics {
@@ -369,7 +387,7 @@ private fun ThemeSwatch(
         ) {
             Text("Aa", color = swatch.ink, fontSize = 17.sp, fontFamily = ReaderTypography.sourceSerif(17f))
         }
-        Text(option.title, color = palette.ink, fontSize = 12.sp)
+        Text(option.title, color = palette.ink, fontSize = 12.sp, maxLines = 1, softWrap = false)
     }
 }
 
@@ -468,6 +486,16 @@ internal object Support {
         val info = context.packageManager.getPackageInfo(context.packageName, 0)
         "${info.versionName} (${info.longVersionCode})"
     }.getOrDefault("—")
+
+    /** The Play listing's page, in the Play Store app where there is one — iOS's `writeReviewURL`. */
+    fun rate(context: Context) {
+        val id = context.packageName
+        try {
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$id")).setPackage("com.android.vending"))
+        } catch (_: ActivityNotFoundException) {
+            open(context, "https://play.google.com/store/apps/details?id=$id")
+        }
+    }
 
     fun open(context: Context, url: String) {
         try {

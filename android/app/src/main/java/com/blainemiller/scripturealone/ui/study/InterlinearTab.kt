@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.study
 
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -144,7 +145,7 @@ private fun WordList(state: Interlinear.Words, palette: ReaderPalette, readerSiz
 @Composable
 private fun WordRow(word: InterlinearWord, palette: ReaderPalette, isExpanded: Boolean, entry: LexiconEntry?, onTap: () -> Unit) {
     Column(
-        Modifier.fillMaxWidth().clickable(enabled = word.strongs != null, onClick = onTap)
+        Modifier.fillMaxWidth().clickable(enabled = word.strongs != null, role = Role.Button, onClick = onTap)
             .semantics(mergeDescendants = true) {}
             .padding(horizontal = 16.dp, vertical = 9.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),

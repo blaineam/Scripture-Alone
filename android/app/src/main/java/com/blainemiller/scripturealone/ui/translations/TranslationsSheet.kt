@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.ui.translations
 
+import androidx.compose.ui.semantics.Role
+import com.blainemiller.scripturealone.ui.reader.takesTaps
 import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.BackHandler
@@ -184,7 +186,7 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
 
     Box(
         Modifier.fillMaxSize().clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)).background(surface)
-            .clickable(interactionSource = null, indication = null) {},
+            .takesTaps(),
     ) {
         when {
             finished != null -> ImportSummary(finished!!, palette) { finished = null }
@@ -293,7 +295,7 @@ private fun MainPage(
                                 }
                             }
                             Box(
-                                Modifier.padding(end = 8.dp).size(40.dp).clip(CircleShape).clickable { onRemove(entry) }
+                                Modifier.padding(end = 8.dp).size(40.dp).clip(CircleShape).clickable(role = Role.Button) { onRemove(entry) }
                                     .semantics { contentDescription = "Remove ${entry.info.name}" },
                                 contentAlignment = Alignment.Center,
                             ) {
@@ -322,7 +324,7 @@ private fun MainPage(
 @Composable
 private fun TranslationRow(name: String, abbreviation: String, note: String?, palette: ReaderPalette, selected: Boolean, onClick: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 11.dp),
+        Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick).padding(horizontal = 16.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
@@ -420,7 +422,7 @@ private fun CatalogPage(palette: ReaderPalette, onBack: () -> Unit, onPick: (Cat
                     ) {
                         shown.forEachIndexed { i, t ->
                             if (i > 0) CellDivider(palette)
-                            Column(Modifier.fillMaxWidth().clickable { onPick(t) }.padding(horizontal = 16.dp, vertical = 10.dp)) {
+                            Column(Modifier.fillMaxWidth().clickable(role = Role.Button) { onPick(t) }.padding(horizontal = 16.dp, vertical = 10.dp)) {
                                 Text(t.title, color = palette.ink, fontSize = StudyStyle.body)
                                 Text("${t.languageNameInEnglish} · ${t.scope}", color = palette.secondary, fontSize = StudyStyle.caption)
                                 Text(t.copyright, color = palette.secondary, fontSize = StudyStyle.caption2, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -459,7 +461,8 @@ private fun SearchField(query: String, palette: ReaderPalette, surface: Color, o
 /**
  * Where the reader puts their own API keys and picks which translations to add — `OnlineKeysView.swift`.
  * The app never ships a key: both providers' free tiers are per-key allowances meant for one person.
- * Keys are kept encrypted by the Android Keystore ([com.blainemiller.scripturealone.data.online.OnlineKeyStore]).
+ * Keys are kept encrypted by the Android Keystore ([com.blainemiller.scripturealone.data.online.OnlineKeyStore])
+ * and carried to the reader's other devices by Block Store ([com.blainemiller.scripturealone.data.online.OnlineKeySync]).
  */
 @Composable
 private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDone: () -> Unit) {
@@ -511,6 +514,7 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
                     }
                 }
                 TranslationLibrary.rememberPicks(picks)
+                TranslationLibrary.syncKeys()
                 // A translation whose key is gone takes its cached text with it.
                 val after = TranslationLibrary.state.value.online.map { it.id }.toSet()
                 before.filter { it.id !in after }.forEach { runCatching { TranslationLibrary.loader.clear(it) } }
@@ -529,7 +533,7 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
         Column(Modifier.fillMaxSize().background(StudyStyle.groupedBackground(palette)).verticalScroll(rememberScrollState())) {
             for (provider in OnlineProvider.entries) {
                 GroupedSection(palette, header = provider.title, footer = provider.explanation) {
-                    KeyField(entry[provider].orEmpty(), palette) { entry[provider] = it }
+                    KeyField(entry[provider].orEmpty(), "${provider.title} API key", palette) { entry[provider] = it }
                     CellDivider(palette)
                     Cell(palette, onClick = { uri.openUri(provider.signupUrl) }) {
                         Icon(Icons.AutoMirrored.Outlined.OpenInNew, null, tint = palette.accent, modifier = Modifier.size(20.dp))
@@ -582,7 +586,7 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
 
 /** A secure field: the key is masked, never autocorrected, never suggested. */
 @Composable
-private fun KeyField(value: String, palette: ReaderPalette, onChange: (String) -> Unit) {
+private fun KeyField(value: String, label: String, palette: ReaderPalette, onChange: (String) -> Unit) {
     Box(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
         BasicTextField(
             value, onChange, singleLine = true,
@@ -590,7 +594,7 @@ private fun KeyField(value: String, palette: ReaderPalette, onChange: (String) -
             cursorBrush = SolidColor(palette.accent),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
-            modifier = Modifier.fillMaxWidth().semantics { contentDescription = "API key" },
+            modifier = Modifier.fillMaxWidth().semantics { contentDescription = label },
             decorationBox = { field ->
                 if (value.isEmpty()) Text("API key", color = palette.secondary.copy(alpha = 0.7f), fontSize = 17.sp)
                 field()
@@ -671,7 +675,7 @@ internal fun gapSummary(book: ImportCoverageReport.BookCoverage): String {
 @Composable
 private fun ProgressOverlay(name: String, progress: Double?, palette: ReaderPalette) {
     Box(
-        Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.25f)).clickable(interactionSource = null, indication = null) {},
+        Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.25f)).takesTaps(),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -707,7 +711,7 @@ internal fun Alert(
     onConfirm: () -> Unit,
 ) {
     Box(
-        Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)).clickable(interactionSource = null, indication = null) {},
+        Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)).takesTaps(),
         contentAlignment = Alignment.Center,
     ) {
         Column(Modifier.width(290.dp).clip(RoundedCornerShape(16.dp)).background(SheetColors.popover(palette))) {
@@ -730,7 +734,7 @@ internal fun Alert(
 
 @Composable
 private fun AlertButton(title: String, color: Color, weight: FontWeight, modifier: Modifier, onClick: () -> Unit) {
-    Box(modifier.height(46.dp).clickable(onClick = onClick), contentAlignment = Alignment.Center) {
+    Box(modifier.height(46.dp).clickable(role = Role.Button, onClick = onClick), contentAlignment = Alignment.Center) {
         Text(title, color = color, fontSize = StudyStyle.body, fontWeight = weight)
     }
 }

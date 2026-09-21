@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.ui.listen
 
+import androidx.compose.ui.semantics.Role
+import com.blainemiller.scripturealone.ui.reader.takesTaps
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -80,7 +82,7 @@ fun NowPlayingBar(listen: ListenController, palette: ReaderPalette, modifier: Mo
             .fillMaxWidth()
             .glass(palette, RoundedCornerShape(24.dp), lifted = true, opacity = 0.985f)
             // Swallows taps between the controls, so they don't fall through and select a verse.
-            .clickable(interactionSource = null, indication = null) {}
+            .takesTaps()
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -116,7 +118,7 @@ private fun NoticeRow(notice: String, palette: ReaderPalette, onDismiss: () -> U
         Icon(Icons.Outlined.Info, null, tint = palette.secondary, modifier = Modifier.padding(top = 1.dp).size(15.dp))
         Text(notice, color = palette.ink, fontSize = 12.sp, lineHeight = 16.sp, modifier = Modifier.weight(1f))
         Box(
-            Modifier.size(22.dp).clip(CircleShape).clickable(onClick = onDismiss).semantics { contentDescription = "Dismiss" },
+            Modifier.size(22.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onDismiss).semantics { contentDescription = "Dismiss" },
             contentAlignment = Alignment.Center,
         ) {
             Icon(Icons.Rounded.Cancel, null, tint = palette.secondary.copy(alpha = 0.55f), modifier = Modifier.size(17.dp))
@@ -151,7 +153,7 @@ private fun SpeedMenu(listen: ListenController, palette: ReaderPalette) {
     var open by remember { mutableStateOf(false) }
     Box {
         Box(
-            Modifier.heightIn(min = 34.dp).widthIn(min = 38.dp).clip(RoundedCornerShape(10.dp)).clickable { open = true }
+            Modifier.heightIn(min = 34.dp).widthIn(min = 38.dp).clip(RoundedCornerShape(10.dp)).clickable(role = Role.Button) { open = true }
                 .semantics { contentDescription = "Speed, ${ListenSpeed.label(listen.speed)}" },
             contentAlignment = Alignment.Center,
         ) {
@@ -226,7 +228,7 @@ private fun BarButton(
     onClick: () -> Unit,
 ) {
     Box(
-        Modifier.size(width = width, height = 34.dp).clip(RoundedCornerShape(10.dp)).clickable(onClick = onClick)
+        Modifier.size(width = width, height = 34.dp).clip(RoundedCornerShape(10.dp)).clickable(role = Role.Button, onClick = onClick)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
@@ -272,7 +274,7 @@ fun ListenAndScrollControls(
         Box {
             Box(
                 Modifier.size(width = 48.dp, height = 44.dp).clip(RoundedCornerShape(22.dp))
-                    .combinedClickable(onClick = onToggleAutoScroll, onLongClick = { menu = true })
+                    .combinedClickable(role = Role.Button, onLongClickLabel = "Choose speed", onClick = onToggleAutoScroll, onLongClick = { menu = true })
                     .semantics { contentDescription = if (autoScrolling) "Pause Scrolling" else "Auto-Scroll" },
                 contentAlignment = Alignment.Center,
             ) {
@@ -292,7 +294,7 @@ fun ListenAndScrollControls(
             }
         }
         Box(
-            Modifier.size(width = 48.dp, height = 44.dp).clip(RoundedCornerShape(22.dp)).clickable(onClick = onListen)
+            Modifier.size(width = 48.dp, height = 44.dp).clip(RoundedCornerShape(22.dp)).clickable(role = Role.Button, onClick = onListen)
                 .semantics { contentDescription = if (listening) "Pause Listening" else "Listen" },
             contentAlignment = Alignment.Center,
         ) {

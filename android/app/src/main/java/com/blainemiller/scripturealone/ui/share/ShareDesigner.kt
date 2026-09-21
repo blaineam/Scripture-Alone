@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.share
 
+import com.blainemiller.scripturealone.ui.reader.takesTaps
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -143,13 +144,13 @@ fun ShareDesigner(model: ReaderViewModel, source: ShareSource, palette: ReaderPa
     val nav = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     Column(
         Modifier.fillMaxSize().clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)).background(surface)
-            .clickable(interactionSource = null, indication = null) {},
+            .takesTaps(),
     ) {
         // Done · Share Image · share.
         Box(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 16.dp)) {
             Box(
                 Modifier.align(Alignment.CenterStart).height(44.dp).glass(palette, CircleShape, surface, lifted = true)
-                    .clickable(onClick = onDone).padding(horizontal = 18.dp),
+                    .clickable(role = Role.Button, onClick = onDone).padding(horizontal = 18.dp),
                 contentAlignment = Alignment.Center,
             ) { Text("Done", color = palette.ink, fontSize = 17.sp) }
             Text(
@@ -158,7 +159,7 @@ fun ShareDesigner(model: ReaderViewModel, source: ShareSource, palette: ReaderPa
             )
             Box(
                 Modifier.align(Alignment.CenterEnd).size(44.dp).glass(palette, CircleShape, surface, lifted = true)
-                    .clickable(enabled = fit != null && !busy) {
+                    .clickable(enabled = fit != null && !busy, role = Role.Button) {
                         export { bitmap, name ->
                             val uri = ShareExport.write(context, bitmap, name)
                             context.startActivity(ShareExport.shareIntent(uri, fit?.content?.reference ?: name))
@@ -337,7 +338,7 @@ private fun TypefaceRow(family: ReaderFontFamily, palette: ReaderPalette, onSele
         Text("Typeface", color = palette.ink, fontSize = 17.sp, modifier = Modifier.weight(1f))
         Box {
             Row(
-                Modifier.clip(RoundedCornerShape(10.dp)).clickable { open = true }.padding(horizontal = 8.dp, vertical = 6.dp)
+                Modifier.clip(RoundedCornerShape(10.dp)).clickable(role = Role.Button) { open = true }.padding(horizontal = 8.dp, vertical = 6.dp)
                     .semantics { contentDescription = "Typeface, ${family.title}" },
                 verticalAlignment = Alignment.CenterVertically,
             ) {

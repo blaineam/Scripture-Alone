@@ -1,5 +1,9 @@
 package com.blainemiller.scripturealone.ui.navigation
 
+import com.blainemiller.scripturealone.ui.reader.CappedFontScale
+import kotlin.math.pow
+import androidx.compose.ui.semantics.Role
+import com.blainemiller.scripturealone.ui.reader.takesTaps
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -63,6 +67,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -168,7 +173,7 @@ fun GoToSheet(model: ReaderViewModel, palette: ReaderPalette, onDismiss: () -> U
             .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
             .background(surface)
             // Swallows taps so they don't fall through to the scrim behind the sheet.
-            .clickable(interactionSource = null, indication = null) {},
+            .takesTaps(),
     ) {
         val open = book?.let { BookID.of(it) }
         Header(
@@ -187,7 +192,7 @@ fun GoToSheet(model: ReaderViewModel, palette: ReaderPalette, onDismiss: () -> U
             SearchField(query, palette, surface, onChange = { query = it }, onSubmit = ::submit)
             val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             LazyVerticalGrid(
-                columns = GridCells.Adaptive(86.dp),
+                columns = GridCells.Adaptive(86.dp * gridGrowth()),
                 modifier = Modifier.fillMaxSize().imePadding(),
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 10.dp, bottom = bottom + 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -243,7 +248,7 @@ private fun Header(title: String, palette: ReaderPalette, surface: Color, back: 
             Box(
                 Modifier.align(Alignment.CenterStart).size(44.dp)
                     .glass(palette, CircleShape, surface, lifted = true)
-                    .clickable(onClick = onLeading)
+                    .clickable(role = Role.Button, onClick = onLeading)
                     .semantics { contentDescription = "Back" },
                 contentAlignment = Alignment.Center,
             ) {
@@ -253,7 +258,7 @@ private fun Header(title: String, palette: ReaderPalette, surface: Color, back: 
             Box(
                 Modifier.align(Alignment.CenterStart).height(44.dp)
                     .glass(palette, CircleShape, surface, lifted = true)
-                    .clickable(onClick = onLeading)
+                    .clickable(role = Role.Button, onClick = onLeading)
                     .padding(horizontal = 18.dp),
                 contentAlignment = Alignment.Center,
             ) {
@@ -269,7 +274,7 @@ private fun Header(title: String, palette: ReaderPalette, surface: Color, back: 
 }
 
 @Composable
-private fun SearchField(query: String, palette: ReaderPalette, surface: Color, onChange: (String) -> Unit, onSubmit: () -> Unit) {
+private fun SearchField(query: String, palette: ReaderPalette, surface: Color, onChange: (String) -> Unit, onSubmit: () -> Unit) = CappedFontScale {
     val focus = remember { FocusRequester() }
     // iOS focuses the field as the sheet appears, so typing starts at once.
     LaunchedEffect(Unit) { focus.requestFocus() }
@@ -311,7 +316,7 @@ private fun SearchField(query: String, palette: ReaderPalette, surface: Color, o
         )
         if (query.isNotEmpty()) {
             Box(
-                Modifier.size(36.dp).clip(CircleShape).clickable { onChange("") }.semantics { contentDescription = "Clear" },
+                Modifier.size(36.dp).clip(CircleShape).clickable(role = Role.Button) { onChange("") }.semantics { contentDescription = "Clear" },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Rounded.Cancel, null, tint = palette.secondary, modifier = Modifier.size(20.dp))
@@ -342,7 +347,7 @@ private fun LazyGridScope.recentSection(model: ReaderViewModel, palette: ReaderP
             for (chapter in model.recent) {
                 Box(
                     Modifier.height(36.dp).clip(CircleShape).background(SheetColors.buttonFill(palette))
-                        .clickable { onPick(chapter) }.padding(horizontal = 14.dp),
+                        .clickable(role = Role.Button) { onPick(chapter) }.padding(horizontal = 14.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(Canon.display(chapter), color = palette.accent, fontSize = 17.sp)
@@ -358,7 +363,7 @@ private fun LazyGridScope.recentSearchesSection(model: ReaderViewModel, palette:
     sectionTitle("searches-title", "Recent Searches", palette) {
         Text(
             "Clear", color = palette.accent, fontSize = 15.sp,
-            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { model.clearRecentSearches() }.padding(4.dp),
+            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button) { model.clearRecentSearches() }.padding(4.dp),
         )
     }
     full("searches") {
@@ -369,7 +374,7 @@ private fun LazyGridScope.recentSearchesSection(model: ReaderViewModel, palette:
                 Box {
                     Row(
                         Modifier.fillMaxWidth()
-                            .combinedClickable(onLongClick = { menu = true }) { onPick(term) }
+                            .combinedClickable(role = Role.Button, onLongClickLabel = "Show options", onLongClick = { menu = true }) { onPick(term) }
                             .padding(vertical = 9.dp)
                             .semantics { contentDescription = "Search again for $term" },
                         verticalAlignment = Alignment.CenterVertically,
@@ -410,7 +415,7 @@ private fun LazyGridScope.resultsSection(results: List<SearchHit>, query: String
     }
     items(results, key = { "hit-${it.ref.key}" }, span = { GridItemSpan(maxLineSpan) }) { hit ->
         Column {
-            Column(Modifier.fillMaxWidth().clickable { onOpen(hit) }.padding(vertical = 10.dp)) {
+            Column(Modifier.fillMaxWidth().clickable(role = Role.Button) { onOpen(hit) }.padding(vertical = 10.dp)) {
                 Text(display(hit.ref), color = palette.accent, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(4.dp))
                 Text(emphasized(hit.text, query), color = palette.ink, fontSize = 16.sp, lineHeight = 21.sp)
@@ -443,7 +448,7 @@ private fun GoToCard(display: String, palette: ReaderPalette, onClick: () -> Uni
         Modifier.fillMaxWidth().padding(bottom = 4.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(palette.accent.copy(alpha = 0.12f))
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -478,7 +483,7 @@ private fun UnsearchableNotice(translation: String, palette: ReaderPalette, onSw
             for (id in listOf("BSB", "KJV").filter { it != translation }) {
                 Box(
                     Modifier.height(36.dp).clip(CircleShape).background(SheetColors.buttonFill(palette))
-                        .clickable { onSwitch(id) }.padding(horizontal = 14.dp),
+                        .clickable(role = Role.Button) { onSwitch(id) }.padding(horizontal = 14.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text("Switch to $id", color = palette.accent, fontSize = 15.sp, fontWeight = FontWeight.Medium)
@@ -511,7 +516,7 @@ private fun BookTile(book: BookID, palette: ReaderPalette, onClick: () -> Unit) 
         Modifier.fillMaxWidth().heightIn(min = 54.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(tint.copy(alpha = 0.13f).compositeOver(SheetColors.surface(palette)))
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .semantics { contentDescription = book.displayName },
     ) {
         // matchParentSize, not fillMaxHeight: the tile's height comes from its text, and a child
@@ -525,10 +530,9 @@ private fun BookTile(book: BookID, palette: ReaderPalette, onClick: () -> Unit) 
         ) {
             // SF's headline and caption2 set tighter than Roboto's default line heights; these match
             // the iOS tile's 54 pt.
-            Text(
-                book.abbreviation, color = palette.ink, fontSize = 17.sp, lineHeight = 21.sp,
-                fontWeight = FontWeight.SemiBold, maxLines = 1,
-            )
+            // Both lines shrink rather than wrap or clip — at a large font size "1 Sam" would otherwise
+            // break after the "1" and lose the book.
+            ShrinkingText(book.abbreviation, palette.ink, 17.sp, lineHeight = 21.sp, weight = FontWeight.SemiBold)
             ShrinkingText(book.displayName, palette.secondary, 11.sp)
         }
     }
@@ -536,13 +540,21 @@ private fun BookTile(book: BookID, palette: ReaderPalette, onClick: () -> Unit) 
 
 /** One line that scales down to fit rather than truncating — SwiftUI's `minimumScaleFactor(0.7)`. */
 @Composable
-private fun ShrinkingText(text: String, color: Color, size: TextUnit) {
+private fun ShrinkingText(text: String, color: Color, size: TextUnit, lineHeight: TextUnit = 13.sp, weight: FontWeight? = null) {
     var scale by remember(text) { mutableStateOf(1f) }
     Text(
-        text, color = color, fontSize = size * scale, lineHeight = 13.sp, maxLines = 1, softWrap = false,
+        text, color = color, fontSize = size * scale, lineHeight = lineHeight * scale, fontWeight = weight, maxLines = 1, softWrap = false,
         onTextLayout = { if (it.didOverflowWidth && scale > 0.7f) scale -= 0.05f },
     )
 }
+
+/**
+ * How much wider grid cells get under a larger system font size, so the tiles' text still fits:
+ * none at 1×, three columns of books instead of four around 1.3×, two at 2× — the way iOS's grids
+ * re-flow under Dynamic Type.
+ */
+@Composable
+private fun gridGrowth(): Float = LocalDensity.current.fontScale.coerceAtLeast(1f).pow(0.75f)
 
 /** The iOS system colours `BookTile.tint` uses, in their light and dark variants. */
 private fun groupTint(group: BookGroup, dark: Boolean): Color {
@@ -565,7 +577,7 @@ private fun groupTint(group: BookGroup, dark: Boolean): Color {
 private fun ChapterGrid(book: BookID, current: ChapterRef, palette: ReaderPalette, onPick: (ChapterRef) -> Unit) {
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(52.dp),
+        columns = GridCells.Adaptive(52.dp * gridGrowth()),
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = bottom + 24.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -578,7 +590,7 @@ private fun ChapterGrid(book: BookID, current: ChapterRef, palette: ReaderPalett
                 Modifier.fillMaxWidth().heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(if (here) palette.accent.copy(alpha = 0.25f) else SheetColors.tertiaryFill(palette))
-                    .clickable { onPick(ref) }
+                    .clickable(role = Role.Button) { onPick(ref) }
                     .semantics { contentDescription = "${book.displayName} chapter $chapter" },
                 contentAlignment = Alignment.Center,
             ) {

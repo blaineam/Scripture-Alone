@@ -1,7 +1,12 @@
 package com.blainemiller.scripturealone
 
+import com.blainemiller.scripturealone.ui.appearance.RatingPrompt
 import android.content.Intent
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.KeyboardShortcutGroup
+import android.view.KeyboardShortcutInfo
+import android.view.Menu
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,6 +17,7 @@ import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.ui.listen.ListenController
 import com.blainemiller.scripturealone.ui.reader.ReaderScreen
+import com.blainemiller.scripturealone.ui.reader.ReaderShortcuts
 import com.blainemiller.scripturealone.ui.reader.SelectionActions
 import com.blainemiller.scripturealone.ui.study.StudyHost
 import com.blainemiller.scripturealone.ui.reader.ReaderTheme
@@ -27,7 +33,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AssetLibrary.confirmationLauncher = packConfirmation
-        if (savedInstanceState == null) openFromIntent(intent)
+        if (savedInstanceState == null) {
+            openFromIntent(intent)
+            // A cold launch, for the review gate (MillerKit's `recordLaunch`).
+            RatingPrompt.recordLaunch(this)
+        }
         setContent {
             // Study, Compare and Translations are hosted around the reader (a side pane or sheet).
             StudyHost(reader) { panels ->
@@ -39,9 +49,42 @@ class MainActivity : ComponentActivity() {
                     onManageTranslations = panels.openTranslations,
                     // Listen: the toolbar button, the selection bar's Listen and the Now Playing bar.
                     listen = ListenController.get(this),
+                    studyOpen = panels.studyOpen(),
+                    onStudyBack = panels.studyBack,
+                    onMaps = panels.openMaps,
                 )
             }
         }
+    }
+
+    /**
+     * Hardware-keyboard shortcuts (`ReaderShortcuts`): taken before the views see them, so Ctrl+] turns
+     * the page even while a text field has focus. Esc, when nothing on screen used it, goes Back — but
+     * only to something that handles Back (a sheet, the selection), never out of the app.
+     */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            ReaderShortcuts.match(event.keyCode, event.metaState)?.let { command ->
+                if (event.repeatCount == 0 || ReaderShortcuts.repeats(command)) reader.send(command)
+                return true
+            }
+        }
+        val handled = super.dispatchKeyEvent(event)
+        if (!handled && event.keyCode == KeyEvent.KEYCODE_ESCAPE && event.action == KeyEvent.ACTION_UP &&
+            !event.isCanceled && onBackPressedDispatcher.hasEnabledCallbacks()
+        ) {
+            onBackPressedDispatcher.onBackPressed()
+            return true
+        }
+        return handled
+    }
+
+    /** The shortcuts in the system's keyboard shortcuts helper (Meta+/, or Search+/ on a Chromebook). */
+    override fun onProvideKeyboardShortcuts(data: MutableList<KeyboardShortcutGroup>, menu: Menu?, deviceId: Int) {
+        super.onProvideKeyboardShortcuts(data, menu, deviceId)
+        val shortcuts = ReaderShortcuts.all.map { KeyboardShortcutInfo(it.command.title, it.keyCode, it.modifiers) } +
+            KeyboardShortcutInfo("Clear Selection", KeyEvent.KEYCODE_ESCAPE, 0)
+        data += KeyboardShortcutGroup("Scripture Alone", shortcuts)
     }
 
     override fun onDestroy() {

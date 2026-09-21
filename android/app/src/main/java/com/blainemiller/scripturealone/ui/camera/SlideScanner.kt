@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.ui.camera
 
+import androidx.compose.ui.semantics.Role
+import com.blainemiller.scripturealone.ui.reader.takesTaps
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -111,7 +113,7 @@ internal fun SlideScanner(palette: ReaderPalette, onCapture: (Bitmap) -> Unit, o
     }
     BackHandler(onBack = onCancel)
 
-    Box(Modifier.fillMaxSize().background(Color.Black).clickable(interactionSource = null, indication = null) {}) {
+    Box(Modifier.fillMaxSize().background(Color.Black).takesTaps()) {
         when (access) {
             CameraAccess.GRANTED -> LiveScanner(onCapture, onCancel)
             CameraAccess.ASKING -> Unit
@@ -242,13 +244,13 @@ private fun LiveScanner(onCapture: (Bitmap) -> Unit, onCancel: () -> Unit) {
                     "Cancel", color = Color.White, fontSize = 17.sp,
                     modifier = Modifier.background(Color.Black.copy(alpha = 0.45f), CircleShape)
                         .border(0.5.dp, Color.White.copy(alpha = 0.3f), CircleShape)
-                        .clickable(onClick = onCancel).padding(horizontal = 18.dp, vertical = 11.dp),
+                        .clickable(role = Role.Button, onClick = onCancel).padding(horizontal = 18.dp, vertical = 11.dp),
                 )
             }
             Spacer(Modifier.weight(1f))
             Box(
                 Modifier.size(76.dp).border(4.dp, Color.White, CircleShape).padding(7.dp).background(Color.White, CircleShape)
-                    .clickable(enabled = !capturing, onClick = ::capture)
+                    .clickable(enabled = !capturing, role = Role.Button, onClick = ::capture)
                     .semantics { contentDescription = "Take photo of slide" },
                 contentAlignment = Alignment.Center,
             ) {
@@ -302,7 +304,7 @@ private fun CameraDenied(palette: ReaderPalette, onChoosePhoto: () -> Unit, onCa
         )
         Spacer(Modifier.height(22.dp))
         Box(
-            Modifier.widthIn(min = 180.dp).height(46.dp).background(palette.accent, CircleShape).clickable {
+            Modifier.widthIn(min = 180.dp).height(46.dp).background(palette.accent, CircleShape).clickable(role = Role.Button) {
                 context.startActivity(
                     Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
@@ -321,7 +323,7 @@ private fun CameraDenied(palette: ReaderPalette, onChoosePhoto: () -> Unit, onCa
 @Composable
 private fun DeniedTextButton(title: String, palette: ReaderPalette, onClick: () -> Unit) {
     Box(
-        Modifier.widthIn(min = 180.dp).height(44.dp).clip(CircleShape).clickable(onClick = onClick).padding(horizontal = 18.dp),
+        Modifier.widthIn(min = 180.dp).height(44.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 18.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(title, color = palette.accent, fontSize = 16.sp)

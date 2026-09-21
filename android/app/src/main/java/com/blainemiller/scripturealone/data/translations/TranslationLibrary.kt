@@ -1,6 +1,8 @@
 package com.blainemiller.scripturealone.data.translations
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.util.Log
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.driver.bundled.SQLITE_OPEN_READONLY
@@ -14,14 +16,20 @@ import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.online.BundledCacheDriver
 import com.blainemiller.scripturealone.data.online.OnlineChapterLoader
 import com.blainemiller.scripturealone.data.online.OnlineEntry
+import com.blainemiller.scripturealone.data.online.BlockStoreKeyBackup
 import com.blainemiller.scripturealone.data.online.OnlineKeyStore
+import com.blainemiller.scripturealone.data.online.OnlineKeySync
 import com.blainemiller.scripturealone.data.online.OnlineProvider
 import com.blainemiller.scripturealone.data.online.UrlConnectionTransport
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.search.SearchHit
 import com.blainemiller.scripturealone.data.search.VerseSearch
 import com.blainemiller.scripturealone.data.sql.BundledSqlSource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -70,6 +78,25 @@ object TranslationLibrary {
         app = context.applicationContext
         reloadImported()
         refreshOnline()
+        syncKeys()
+    }
+
+    private val background = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    /**
+     * Hands the reader's keys to Block Store and restores any it holds that this device lacks — iCloud
+     * Keychain's part on iOS (`OnlineKeySync`). At launch and after the keys are edited. A restored key
+     * brings its translations back into the switcher.
+     */
+    fun syncKeys() {
+        background.launch {
+            val result = runCatching { OnlineKeySync.sync(keys(), BlockStoreKeyBackup(app)) }.getOrNull() ?: return@launch
+            if (result.restored.isNotEmpty()) refreshOnline()
+            // Which providers, never the keys: a debug build's record of what the pass did.
+            if (app.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+                Log.i("OnlineKeySync", "restored=${result.restored} backedUp=${result.backedUp} deleted=${result.deleted}")
+            }
+        }
     }
 
     val isAttached: Boolean get() = ::app.isInitialized

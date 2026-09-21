@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.keepsake
 
+import com.blainemiller.scripturealone.ui.appearance.RatingPrompt
 import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.padding
@@ -108,6 +109,8 @@ fun KeepsakeCreateSheet(model: ReaderViewModel, palette: ReaderPalette, onBack: 
             }
             working = false
             result.onSuccess { made = it }.onFailure { failure = it.message ?: it.javaClass.simpleName }
+            // A keepsake made is the app's work done: the moment MillerKit's gate may ask for a review.
+            if (result.isSuccess) RatingPrompt.afterSuccess(context)
         }
     }
 
@@ -126,7 +129,7 @@ fun KeepsakeCreateSheet(model: ReaderViewModel, palette: ReaderPalette, onBack: 
             }
             PanelSeparator(palette)
             Text("Dedication", color = palette.secondary, fontSize = 12.sp, modifier = Modifier.padding(start = 18.dp, top = 10.dp))
-            FormField(dedication, "", palette, singleLine = false, minHeight = 90) { value ->
+            FormField(dedication, "", palette, singleLine = false, minHeight = 90, label = "Dedication") { value ->
                 changed { dedication = value }
                 legacy.remember(LegacySession.KEY_DEDICATION, value)
             }

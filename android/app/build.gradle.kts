@@ -168,6 +168,12 @@ dependencies {
     implementation("androidx.glance:glance-appwidget:1.1.1")
     implementation("androidx.startup:startup-runtime:1.1.1")
     implementation("com.google.android.gms:play-services-wearable:18.2.0")
+    // The reader's ESV and API.Bible keys, carried to their other devices end-to-end encrypted — iCloud
+    // Keychain's part on iOS (data/online/OnlineKeySync.kt). Free, no server.
+    implementation("com.google.android.gms:play-services-auth-blockstore:16.4.0")
+    // Play In-App Review — StoreKit's requestReview on iOS (ui/appearance/RatingPrompt.kt). A no-op until
+    // the app is installed from a Play listing.
+    implementation("com.google.android.play:review:2.0.2")
     // Listen: a media session over the TextToSpeech reader — lock screen, notification and headset
     // controls, and the mediaPlayback foreground service that keeps reading with the screen off.
     implementation("androidx.media3:media3-session:1.5.1")
@@ -189,4 +195,6 @@ dependencies {
     androidTestImplementation(composeBom)
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    // The host activity createComposeRule needs (VerseNodesTest); debug builds only.
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

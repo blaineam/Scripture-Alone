@@ -1,5 +1,10 @@
 package com.blainemiller.scripturealone.ui.notes
 
+import androidx.compose.foundation.selection.selectable
+import com.blainemiller.scripturealone.ui.reader.FitTitle
+import com.blainemiller.scripturealone.ui.reader.CappedFontScale
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -66,14 +71,14 @@ fun PanelHeader(
     back: Boolean,
     onLeading: () -> Unit,
     trailing: @Composable RowScope.() -> Unit = {},
-) {
+) = CappedFontScale {
     val surface = PanelColors.background(palette)
     Box(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 16.dp)) {
         if (back) {
             Box(
                 Modifier.align(Alignment.CenterStart).size(44.dp)
                     .glass(palette, CircleShape, surface, lifted = true)
-                    .clickable(onClick = onLeading)
+                    .clickable(role = Role.Button, onClick = onLeading)
                     .semantics { contentDescription = "Back" },
                 contentAlignment = Alignment.Center,
             ) {
@@ -83,17 +88,16 @@ fun PanelHeader(
             Box(
                 Modifier.align(Alignment.CenterStart).height(44.dp)
                     .glass(palette, CircleShape, surface, lifted = true)
-                    .clickable(onClick = onLeading)
+                    .clickable(role = Role.Button, onClick = onLeading)
                     .padding(horizontal = 18.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text("Close", color = palette.ink, fontSize = 17.sp)
             }
         }
-        Text(
-            title, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
-            maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
-            modifier = Modifier.align(Alignment.Center).padding(horizontal = 100.dp),
+        FitTitle(
+            title, palette.ink, 17.sp,
+            modifier = Modifier.align(Alignment.Center).padding(horizontal = 100.dp).semantics { heading() },
         )
         Row(
             Modifier.align(Alignment.CenterEnd).height(44.dp).glass(palette, CircleShape, surface, lifted = true),
@@ -107,7 +111,7 @@ fun PanelHeader(
 @Composable
 fun PanelHeaderIcon(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, palette: ReaderPalette, onClick: () -> Unit) {
     Box(
-        Modifier.size(width = 48.dp, height = 44.dp).clip(CircleShape).clickable(onClick = onClick)
+        Modifier.size(width = 48.dp, height = 44.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onClick)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
@@ -117,7 +121,7 @@ fun PanelHeaderIcon(icon: androidx.compose.ui.graphics.vector.ImageVector, label
 
 /** The glass search field — `.searchable`. */
 @Composable
-fun PanelSearchField(query: String, prompt: String, palette: ReaderPalette, onChange: (String) -> Unit) {
+fun PanelSearchField(query: String, prompt: String, palette: ReaderPalette, onChange: (String) -> Unit) = CappedFontScale {
     Row(
         Modifier.padding(horizontal = 16.dp).fillMaxWidth().height(44.dp)
             .glass(palette, CircleShape, PanelColors.background(palette), lifted = true)
@@ -143,7 +147,7 @@ fun PanelSearchField(query: String, prompt: String, palette: ReaderPalette, onCh
         )
         if (query.isNotEmpty()) {
             Box(
-                Modifier.size(32.dp).clip(CircleShape).clickable { onChange("") }.semantics { contentDescription = "Clear" },
+                Modifier.size(32.dp).clip(CircleShape).clickable(role = Role.Button) { onChange("") }.semantics { contentDescription = "Clear" },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Rounded.Cancel, null, tint = palette.secondary, modifier = Modifier.size(18.dp))
@@ -154,7 +158,7 @@ fun PanelSearchField(query: String, prompt: String, palette: ReaderPalette, onCh
 
 /** A segmented control — `Picker(...).pickerStyle(.segmented)`: a grey track, the choice on a raised capsule. */
 @Composable
-fun <T> Segmented(options: List<T>, selected: T, title: (T) -> String, palette: ReaderPalette, onSelect: (T) -> Unit) {
+fun <T> Segmented(options: List<T>, selected: T, title: (T) -> String, palette: ReaderPalette, onSelect: (T) -> Unit) = CappedFontScale {
     Row(
         Modifier.padding(horizontal = 16.dp).fillMaxWidth().height(36.dp).clip(CircleShape)
             .background(SheetColors.tertiaryFill(palette)).padding(2.dp),
@@ -164,7 +168,7 @@ fun <T> Segmented(options: List<T>, selected: T, title: (T) -> String, palette: 
             Box(
                 Modifier.weight(1f).height(32.dp).clip(CircleShape)
                     .then(if (on) Modifier.background(PanelColors.card(palette).let { if (palette.isDark) Color.White.copy(alpha = 0.18f).compositeOver(it) else it }) else Modifier)
-                    .clickable { onSelect(option) },
+                    .selectable(selected = on, role = Role.Tab) { onSelect(option) },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -191,7 +195,7 @@ fun PanelGroup(palette: ReaderPalette, modifier: Modifier = Modifier, content: @
 fun PanelSectionTitle(title: String, palette: ReaderPalette) {
     Text(
         title, color = palette.secondary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(start = 32.dp, top = 22.dp, bottom = 8.dp),
+        modifier = Modifier.padding(start = 32.dp, top = 22.dp, bottom = 8.dp).semantics { heading() },
     )
 }
 

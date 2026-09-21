@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.study
 
+import androidx.compose.ui.semantics.Role
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -162,7 +163,7 @@ private fun ReferenceRow(
     Box {
         Column(
             Modifier.fillMaxWidth()
-                .combinedClickable(onClick = onOpen, onLongClick = { menu = true })
+                .combinedClickable(role = Role.Button, onLongClickLabel = "Show options", onClick = onOpen, onLongClick = { menu = true })
                 .semantics(mergeDescendants = true) { onClick("Opens $display in the reader") { onOpen(); true } }
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),

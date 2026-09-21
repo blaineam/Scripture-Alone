@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.reader
 
+import androidx.compose.ui.semantics.Role
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -68,13 +69,13 @@ fun SharedPassageCard(
     }
     Box(
         Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.35f))
-            .clickable(interactionSource = null, indication = null, onClick = onDismiss),
+            .takesTaps(onDismiss),
         contentAlignment = Alignment.Center,
     ) {
         BoxWithConstraints(Modifier.padding(horizontal = 24.dp).widthIn(max = 520.dp)) {
             val cardHeight = (maxHeight.value - 120f).coerceAtLeast(200f)
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                Box(Modifier.clickable(interactionSource = null, indication = null) {}) {
+                Box(Modifier.takesTaps()) {
                     Preview(renderer, content, style, maxHeight = cardHeight, reference = payload.reference)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -89,7 +90,7 @@ fun SharedPassageCard(
 @Composable
 private fun CardButton(title: String, palette: ReaderPalette, onClick: () -> Unit) {
     Box(
-        Modifier.height(44.dp).glass(palette, CircleShape, lifted = true).clickable(onClick = onClick)
+        Modifier.height(44.dp).glass(palette, CircleShape, lifted = true).clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 22.dp),
         contentAlignment = Alignment.Center,
     ) {

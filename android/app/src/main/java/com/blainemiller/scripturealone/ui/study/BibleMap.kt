@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.study
 
+import androidx.compose.ui.semantics.Role
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -365,7 +366,7 @@ private val Size.center: Offset get() = Offset(width / 2, height / 2)
 @Composable
 private fun MapControl(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, palette: ReaderPalette, onClick: () -> Unit) {
     Box(
-        Modifier.size(36.dp).glass(palette, CircleShape, palette.page, lifted = true).clickable(onClick = onClick)
+        Modifier.size(36.dp).glass(palette, CircleShape, palette.page, lifted = true).clickable(role = Role.Button, onClick = onClick)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {

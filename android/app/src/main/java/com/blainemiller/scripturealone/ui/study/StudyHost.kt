@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.ui.study
 
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import com.blainemiller.scripturealone.ui.reader.takesTaps
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
@@ -70,6 +72,12 @@ class ReaderPanels(
     val openOriginal: (verseKey: Int) -> Unit,
     val openTranslations: () -> Unit,
     val openCompare: () -> Unit,
+    /** Whether the Study panel is up (state-backed: reading it recomposes on a change). */
+    val studyOpen: () -> Boolean,
+    /** Study's back trail — the Back to… button, ⌥⌘[. */
+    val studyBack: () -> Unit,
+    /** Maps & Timeline for the chapter — ⇧⌘M: Study on its Context tab. */
+    val openMaps: () -> Unit,
 )
 
 /**
@@ -109,6 +117,14 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
             },
             openTranslations = { showTranslations = true },
             openCompare = { showCompare = true },
+            studyOpen = { study.isOpen },
+            studyBack = { if (study.isOpen) study.back(reader) },
+            openMaps = {
+                val here = reader.location
+                study.select(StudyTab.CONTEXT)
+                study.open(reader.selection.maxOrNull() ?: study.verse?.takeIf { it.book == here.book && it.chapter == here.chapter }?.key
+                    ?: VerseRef(here.book, here.chapter, 1).key)
+            },
         )
     }
 
@@ -133,11 +149,14 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
         }
     }
 
+    // Translations and Compare cover everything: modal to TalkBack, so nothing behind takes focus.
+    val covered = showTranslations || showCompare
+    val behind = if (covered) Modifier.clearAndSetSemantics {} else Modifier
     BoxWithConstraints(Modifier.fillMaxSize().background(Color.Black)) {
         val wide = maxWidth >= 700.dp
         if (wide) {
             Row(Modifier.fillMaxSize()) {
-                Box(Modifier.weight(1f).fillMaxHeight()) { content(panels) }
+                Box(Modifier.weight(1f).fillMaxHeight().then(behind)) { content(panels) }
                 AnimatedVisibility(
                     study.isOpen,
                     enter = slideInHorizontally(tween(260)) { it },
@@ -154,7 +173,7 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
                 }
             }
         } else {
-            Box(Modifier.fillMaxSize()) {
+            Box(Modifier.fillMaxSize().then(behind)) {
                 content(panels)
                 StudySheet(study, reader, palette)
             }
@@ -175,7 +194,7 @@ fun FullSheet(visible: Boolean, onDismiss: () -> Unit, content: @Composable () -
     AnimatedVisibility(visible, enter = fadeIn(), exit = fadeOut()) {
         Box(
             Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.32f))
-                .clickable(interactionSource = null, indication = null, onClick = onDismiss),
+                .takesTaps(onDismiss),
         )
     }
     AnimatedVisibility(visible, enter = slideInVertically(tween(320)) { it }, exit = slideOutVertically(tween(240)) { it }) {
@@ -245,7 +264,7 @@ private fun StudySheet(study: StudyModel, reader: ReaderViewModel, palette: com.
         if (study.isOpen && expanded) {
             Box(
                 Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.22f))
-                    .clickable(interactionSource = null, indication = null) { study.close() },
+                    .takesTaps { study.close() },
             )
         }
         if (top.value < full) {
@@ -260,7 +279,7 @@ private fun StudySheet(study: StudyModel, reader: ReaderViewModel, palette: com.
                         ambientColor = Color.Black.copy(alpha = 0.18f), spotColor = Color.Black.copy(alpha = 0.22f))
                     .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
                     .background(surface)
-                    .clickable(interactionSource = null, indication = null) {},
+                    .takesTaps(),
             ) {
                 // The grabber and the header above the tabs are the handle.
                 Column(Modifier.draggable(dragState, Orientation.Vertical, onDragStopped = { settle(it) })) {

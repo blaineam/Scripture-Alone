@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.camera
 
+import androidx.compose.ui.semantics.Role
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -63,7 +64,7 @@ fun SlidePhotoSection(model: ReaderViewModel, palette: ReaderPalette, note: Note
         PanelSeparator(palette)
         Text(
             "Remove Photo", color = palette.red, fontSize = 17.sp,
-            modifier = Modifier.fillMaxWidth().clickable { model.userData.removeSlidePhoto(note) }.padding(horizontal = 18.dp, vertical = 13.dp),
+            modifier = Modifier.fillMaxWidth().clickable(role = Role.Button) { model.userData.removeSlidePhoto(note) }.padding(horizontal = 18.dp, vertical = 13.dp),
         )
     }
 }

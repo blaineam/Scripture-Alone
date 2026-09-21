@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.ui.keepsake
 
+import androidx.compose.ui.semantics.Role
+import com.blainemiller.scripturealone.ui.reader.takesTaps
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -104,14 +106,14 @@ fun LegacyBanner(keepsake: Keepsake, palette: ReaderPalette, onClose: () -> Unit
                 Text(
                     it, color = palette.ink, fontSize = 13.sp, fontStyle = FontStyle.Italic, fontFamily = ReaderTypography.sourceSerif(13f),
                     maxLines = if (expanded) Int.MAX_VALUE else 1, overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.clickable(interactionSource = null, indication = null) { expanded = !expanded },
+                    modifier = Modifier.clickable(interactionSource = null, indication = null, onClickLabel = if (expanded) "Show less" else "Show the whole dedication") { expanded = !expanded },
                 )
             }
             Text("Read-only keepsake", color = palette.secondary, fontSize = 11.sp)
         }
         Spacer(Modifier.width(8.dp))
         Box(
-            Modifier.clip(CircleShape).background(SheetColors.buttonFill(palette)).clickable(onClick = onClose)
+            Modifier.clip(CircleShape).background(SheetColors.buttonFill(palette)).clickable(role = Role.Button, onClick = onClose)
                 .semantics { contentDescription = "Return to My Bible" }
                 .padding(horizontal = 14.dp, vertical = 7.dp),
         ) { Text("My Bible", color = palette.accent, fontSize = 13.sp, fontWeight = FontWeight.SemiBold) }
@@ -141,7 +143,7 @@ fun LegacyNotesPanel(
         Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars).padding(top = 10.dp)
             .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
             .background(PanelColors.background(palette))
-            .clickable(interactionSource = null, indication = null) {},
+            .takesTaps(),
     ) {
         val open = openNote?.let { id -> keepsake.notes.firstOrNull { it.id.toString() == id } }
         if (open != null) {
@@ -200,7 +202,7 @@ fun LegacyNotesPanel(
 
 @Composable
 private fun LegacyNoteRow(note: KeepsakeNote, palette: ReaderPalette, onOpen: () -> Unit) {
-    Column(Modifier.fillMaxWidth().clickable(onClick = onOpen).padding(horizontal = 18.dp, vertical = 12.dp)) {
+    Column(Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onOpen).padding(horizontal = 18.dp, vertical = 12.dp)) {
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
                 note.displayTitle, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
@@ -251,7 +253,7 @@ private fun LegacyNoteDetail(model: ReaderViewModel, note: KeepsakeNote, palette
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     for (range in note.anchors) {
                         Row(
-                            Modifier.clip(RoundedCornerShape(8.dp)).clickable {
+                            Modifier.clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button) {
                                 model.go(range.start)
                                 onClose()
                             }.padding(vertical = 4.dp),

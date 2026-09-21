@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.BackHandler
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.SystemBarStyle
 import androidx.activity.ComponentActivity
@@ -116,7 +117,13 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
@@ -173,6 +180,11 @@ fun ReaderScreen(
     onCompare: () -> Unit = {},
     onManageTranslations: () -> Unit = {},
     listen: ListenController? = null,
+    /** Whether Study is showing — the Study button's On/Off, as iOS's `accessibilityValue`. */
+    studyOpen: Boolean = false,
+    /** Study's back trail (⌥⌘[) and Maps & Timeline (⇧⌘M), for the keyboard shortcuts. */
+    onStudyBack: () -> Unit = {},
+    onMaps: () -> Unit = {},
 ) {
     val palette = model.theme.palette(isSystemInDarkTheme()).accented(model.accent)
     val style = model.style(palette)
@@ -223,6 +235,34 @@ fun ReaderScreen(
         listenStart?.invoke { listen.toolbarAction(chapter, top) }
     }
 
+    // Keyboard shortcuts (ReaderShortcuts.kt). With a sheet over the reader they wait — as on iOS, where
+    // a sheet is modal and the reader's shortcuts are out of reach until it closes.
+    val legacyState = model.legacy
+    val modalUp by rememberUpdatedState(
+        sheet != null || appearance || legacyState.settingsOpen || legacyState.importing || legacyState.export != null ||
+            legacyState.pendingFile != null || model.designer != null || model.sharedPassage != null,
+    )
+    LaunchedEffect(model) {
+        model.commands.collect { command ->
+            if (modalUp) return@collect
+            when (command) {
+                ReaderCommand.GO_TO, ReaderCommand.SEARCH -> sheet = ReaderSheet.GO_TO
+                ReaderCommand.NOTES -> sheet = ReaderSheet.NOTES
+                ReaderCommand.PREVIOUS_CHAPTER -> model.previous()
+                ReaderCommand.NEXT_CHAPTER -> model.next()
+                ReaderCommand.STUDY -> onStudy()
+                ReaderCommand.STUDY_BACK -> onStudyBack()
+                ReaderCommand.MAPS -> onMaps()
+                ReaderCommand.FAVORITE -> if (model.selection.isNotEmpty() && keepsake == null) model.toggleFavoriteSelection()
+                ReaderCommand.LARGER_TEXT -> model.stepFontSize(1)
+                ReaderCommand.SMALLER_TEXT -> model.stepFontSize(-1)
+            }
+        }
+    }
+    // Back — and Esc, which Android turns into Back when nothing takes it — clears a selection first,
+    // as Esc does on iPad and Mac (`keyboardShortcut(.escape)` on the selection bar's Clear).
+    BackHandler(enabled = model.selection.isNotEmpty() && !modalUp) { model.clearSelection() }
+
     // How far the Go To sheet has risen, 0…1. As on iOS, the reader behind a sheet recedes: it
     // scales back, rounds its corners and settles onto a black backdrop.
     val sheetProgress by animateFloatAsState(if (goTo) 1f else 0f, tween(320), label = "sheet")
@@ -253,6 +293,9 @@ fun ReaderScreen(
                     shape = RoundedCornerShape(SHEET_CORNER * sheetProgress)
                     clip = sheetProgress > 0f
                 }
+                // A sheet over the reader is modal to TalkBack, as an iOS sheet is to VoiceOver: the
+                // text and bars behind it can't take focus through the sheet's edges.
+                .then(if (modalUp) Modifier.clearAndSetSemantics {} else Modifier)
                 .background(palette.page),
         ) {
             val chapter = model.chapter
@@ -273,6 +316,7 @@ fun ReaderScreen(
                             // A keepsake is read-only: no selecting to highlight or annotate.
                             onVerseTap = { if (keepsake == null) model.toggle(it) },
                             onVerseLongPress = { if (keepsake == null) model.extendSelection(it) },
+                            selectable = keepsake == null,
                             notesFor = { ids -> notes.filter { it.id.toString() in ids } },
                             onOpenNote = ::showNote,
                             palette = palette,
@@ -304,7 +348,7 @@ fun ReaderScreen(
             TopBar(
                 model, palette, onGoTo = { sheet = ReaderSheet.GO_TO }, onNotes = { sheet = ReaderSheet.NOTES },
                 onStudy = onStudy, onCompare = onCompare, onManageTranslations = onManageTranslations,
-                onAppearance = { appearance = true },
+                onAppearance = { appearance = true }, studyOpen = studyOpen,
             )
             if (keepsake == null) {
                 TranslationDownloadBanner(
@@ -347,7 +391,7 @@ fun ReaderScreen(
                     enter = slideInVertically { it / 2 } + fadeIn(),
                     exit = slideOutVertically { it / 2 } + fadeOut(),
                 ) {
-                    listen?.let { NowPlayingBar(it, palette) }
+                    listen?.let { CappedFontScale { NowPlayingBar(it, palette) } }
                 }
                 AnimatedVisibility(
                     model.selection.isNotEmpty(),
@@ -355,12 +399,14 @@ fun ReaderScreen(
                     exit = slideOutVertically { it / 2 } + fadeOut(),
                 ) {
                     val ranges = model.selectedRanges
-                    SelectionBar(
-                        model, palette,
-                        isFavorite = Selection.isFavorite(ranges, favorites),
-                        actions = selectionActions,
-                        onNote = { showNote(model.newNoteFromSelection().id) },
-                    )
+                    CappedFontScale {
+                        SelectionBar(
+                            model, palette,
+                            isFavorite = Selection.isFavorite(ranges, favorites),
+                            actions = selectionActions,
+                            onNote = { showNote(model.newNoteFromSelection().id) },
+                        )
+                    }
                 }
             }
         }
@@ -370,7 +416,7 @@ fun ReaderScreen(
             AnimatedVisibility(goTo, enter = fadeIn(), exit = fadeOut()) {
                 Box(
                     Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.20f))
-                        .clickable(interactionSource = null, indication = null) { sheet = null },
+                        .takesTaps { sheet = null },
                 )
             }
             // The last sheet shown stays composed while it slides away.
@@ -480,6 +526,8 @@ private fun ChapterColumn(
     extraBottom: Dp = 0.dp,
     /** Room for the keepsake banner beneath the top bar. */
     extraTop: Dp = 0.dp,
+    /** False while a keepsake is read: TalkBack offers no selecting either. */
+    selectable: Boolean = true,
 ) {
     val state = rememberLazyListState()
     val status = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -599,7 +647,7 @@ private fun ChapterColumn(
                 Paragraph(
                     paragraph, palette, onAction, onLayout = { layouts[index] = it },
                     marks = marks, markerSize = markerSize, onVerseTap = onVerseTap, onVerseLongPress = onVerseLongPress,
-                    notesFor = notesFor, onOpenNote = onOpenNote,
+                    notesFor = notesFor, onOpenNote = onOpenNote, selectable = selectable,
                 )
             }
         }
@@ -632,6 +680,7 @@ private fun Paragraph(
     onVerseLongPress: (Int) -> Unit,
     notesFor: (List<String>) -> List<Note>,
     onOpenNote: (UUID) -> Unit,
+    selectable: Boolean = true,
 ) {
     val density = LocalDensity.current
     fun Float.spDp(): Dp = with(density) { this@spDp.sp.toDp() }
@@ -649,8 +698,20 @@ private fun Paragraph(
         .fillMaxWidth()
         .padding(top = p.spaceBefore.spDp(), bottom = p.spaceAfter.spDp(), end = p.endIndent.spDp())
     p.action?.let { action ->
-        modifier = modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+        modifier = modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() }, indication = null, role = Role.Button,
+        ) {
             onAction(action)
+        }
+    }
+    // TalkBack: verses are read by the nodes laid over them (VerseNodes), so the paragraph's own text
+    // is hidden; headings are headings; the chapter numeral is folded into the heading above it.
+    modifier = when {
+        p.role == ParagraphRole.HIDDEN -> modifier.clearAndSetSemantics {}
+        p.verseSpans.isNotEmpty() -> modifier.clearAndSetSemantics {}
+        else -> modifier.semantics(mergeDescendants = true) {
+            if (p.role == ParagraphRole.HEADING) heading()
+            p.accessibilityLabel?.let { contentDescription = it }
         }
     }
     if (footnotes.isNotEmpty() || noteMarkers.isNotEmpty() || p.verseSpans.isNotEmpty()) {
@@ -681,7 +742,7 @@ private fun Paragraph(
         }
     }
     modifier = modifier.verseMarks({ layout }, p.verseSpans, ownMarks, palette)
-    Box {
+    Box(Modifier.semantics { isTraversalGroup = true }) {
         Text(
             text = p.text,
             modifier = modifier,
@@ -701,6 +762,14 @@ private fun Paragraph(
                 lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
             ),
         )
+        if (p.verseSpans.isNotEmpty()) {
+            VerseNodes(
+                p, layout, topInset = with(density) { p.spaceBefore.sp.toPx() }, marks = ownMarks, selectable = selectable,
+                onTap = { tap(it) }, onLongPress = { longPress(it) },
+                onFootnote = { note -> layout?.let { popover = Popover.Footnote(note.text, it.getBoundingBox(note.offset)) } },
+                onNotes = { ids, at -> layout?.let { popover = Popover.Notes(ids, it.getBoundingBox(at)) } },
+            )
+        }
         popover?.let { shown ->
             val top = with(density) { p.spaceBefore.sp.toPx() }
             val anchor = shown.anchor.translate(0f, top)
@@ -750,7 +819,7 @@ private fun NotesPopoverContent(notes: List<Note>, palette: ReaderPalette, onOpe
                 }
                 Text(
                     "Open Note", color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.clip(RoundedCornerShape(6.dp)).clickable { onOpen(note.id) }.padding(vertical = 2.dp),
+                    modifier = Modifier.clip(RoundedCornerShape(6.dp)).clickable(role = Role.Button) { onOpen(note.id) }.padding(vertical = 2.dp),
                 )
             }
         }
@@ -846,7 +915,7 @@ private fun ReaderPopover(
                 .clip(shape)
                 .background(surface)
                 .border(0.5.dp, edge, shape)
-                .clickable(interactionSource = null, indication = null) { if (dismissOnTap) onDismiss() }
+                .takesTaps { if (dismissOnTap) onDismiss() }
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
             content()
@@ -882,7 +951,8 @@ private fun TopBar(
     onCompare: () -> Unit,
     onManageTranslations: () -> Unit,
     onAppearance: () -> Unit,
-) {
+    studyOpen: Boolean,
+) = CappedFontScale {
     Box(
         Modifier
             .fillMaxWidth()
@@ -896,25 +966,36 @@ private fun TopBar(
         ) {
             Pill(palette) {
                 PillIcon(ReaderIcons.NoteText, "Notes", palette, enabled = true, tint = palette.ink, iconSize = 26.dp, onClick = onNotes)
-                PillIcon(Icons.AutoMirrored.Outlined.MenuBook, "Study", palette, enabled = true, tint = palette.ink, iconSize = 26.dp, onClick = onStudy)
+                PillIcon(
+                    Icons.AutoMirrored.Outlined.MenuBook, "Study", palette, enabled = true, tint = palette.ink, iconSize = 26.dp,
+                    // iOS: value On/Off, hint "Shows cross references and commentary for the verse you tap."
+                    state = if (studyOpen) "On" else "Off", actionLabel = "show cross references and commentary for the verse you tap",
+                    onClick = onStudy,
+                )
             }
             Box(Modifier.weight(1f)) {
             Row(
                 Modifier
                     .padding(start = 4.dp)
                     .clip(RoundedCornerShape(22.dp))
-                    .clickable(onClick = onGoTo)
+                    .clickable(role = Role.Button, onClick = onGoTo)
                     .padding(horizontal = 8.dp, vertical = 8.dp)
-                    .semantics { contentDescription = "Go to passage, currently ${Canon.display(model.location)}" },
+                    .clearAndSetSemantics { contentDescription = "Go to passage, currently ${Canon.display(model.location)}" },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                // Shrinks to fit before it truncates — the iOS title's `minimumScaleFactor(0.7)` — so
+                // "Psalms 119" survives a larger system font size.
+                val title = Canon.display(model.location)
+                var titleScale by remember(title) { mutableStateOf(1f) }
                 Text(
-                    Canon.display(model.location),
+                    title,
                     color = palette.ink,
-                    fontSize = 19.sp,
+                    fontSize = 19.sp * titleScale,
+                    softWrap = false,
+                    onTextLayout = { if (it.didOverflowWidth && titleScale > 0.7f) titleScale -= 0.05f },
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = if (titleScale > 0.7f) TextOverflow.Clip else TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false),
                 )
                 Icon(Icons.Rounded.KeyboardArrowDown, null, tint = palette.secondary, modifier = Modifier.size(22.dp))
@@ -929,7 +1010,7 @@ private fun TopBar(
 }
 
 @Composable
-private fun BottomBar(model: ReaderViewModel, palette: ReaderPalette, modifier: Modifier, center: @Composable () -> Unit = {}) {
+private fun BottomBar(model: ReaderViewModel, palette: ReaderPalette, modifier: Modifier, center: @Composable () -> Unit = {}) = CappedFontScale {
     Box(
         modifier
             .fillMaxWidth()
@@ -977,10 +1058,18 @@ private fun PillIcon(
     enabled: Boolean,
     tint: Color = palette.accent,
     iconSize: Dp = 30.dp,
+    state: String? = null,
+    actionLabel: String? = null,
     onClick: () -> Unit,
 ) {
     Box(
-        Modifier.size(width = 48.dp, height = 44.dp).clip(RoundedCornerShape(22.dp)).clickable(enabled = enabled, onClick = onClick),
+        Modifier.size(width = 48.dp, height = 44.dp).clip(RoundedCornerShape(22.dp))
+            .clickable(enabled = enabled, onClickLabel = actionLabel, role = Role.Button, onClick = onClick)
+            .clearAndSetSemantics {
+                contentDescription = label
+                state?.let { stateDescription = it }
+                if (!enabled) disabled()
+            },
         contentAlignment = Alignment.Center,
     ) {
         Icon(icon, label, tint = if (enabled) tint else palette.secondary.copy(alpha = 0.5f), modifier = Modifier.size(iconSize))
@@ -992,11 +1081,12 @@ private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, on
     var open by remember { mutableStateOf(false) }
     Box {
         Box(
-            Modifier.height(44.dp).clip(RoundedCornerShape(22.dp)).clickable { open = true }.padding(horizontal = 12.dp),
+            Modifier.height(44.dp).clip(RoundedCornerShape(22.dp)).clickable(role = Role.DropdownList) { open = true }
+                .clearAndSetSemantics { contentDescription = "Translation, ${model.translationId}" }
+                .padding(horizontal = 12.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Text(model.translationId, color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.semantics { contentDescription = "Translation, ${model.translationId}" })
+            Text(model.translationId, color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             for (id in BundledTranslations.ids) {
@@ -1028,8 +1118,8 @@ private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, on
 @Composable
 private fun AppearanceButton(palette: ReaderPalette, onClick: () -> Unit) {
     Row(
-        Modifier.height(44.dp).clip(RoundedCornerShape(22.dp)).clickable(onClick = onClick).padding(horizontal = 12.dp)
-            .semantics { contentDescription = "Appearance" },
+        Modifier.height(44.dp).clip(RoundedCornerShape(22.dp)).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 12.dp)
+            .clearAndSetSemantics { contentDescription = "Appearance" },
         verticalAlignment = Alignment.Bottom,
     ) {
         Text("A", color = palette.accent, fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 11.dp))
