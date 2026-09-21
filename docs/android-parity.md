@@ -29,6 +29,7 @@ how each Apple-only piece is replaced. Update the Status column in the same comm
 | Crypto | JCA (AES-GCM, HMAC, PBKDF2) + Tink (Ed25519, HKDF) + Android Keystore | API 29 has no platform Ed25519; Keystore replaces the Secure Enclave |
 | Background work | WorkManager | Family-share refresh, catalogue downloads |
 | Build | Gradle 8.11.1, AGP 8.7.3, Kotlin 2.0.21, compileSdk 36, minSdk 29 — Haven's known-good set; warnings are errors |
+| Store access | `data/sql/SqlSource` over the bundled driver in the app, JDBC in tests | So each store is proven on the JVM against the real database file |
 
 Shared invariants, which must never diverge from `ScriptureAloneCore`:
 - Verse key = `book × 1,000,000 + chapter × 1,000 + verse`; verse 0 is a heading / superscription.
@@ -73,28 +74,28 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 ### Reading
 | Feature | Status | Notes |
 |---|---|---|
-| ASV (sealed), BSB, KJV | 🔧 | The `.sabible` reader is done; wiring it to the reader UI is next |
-| Chapter layout: headings, paragraphs, poetry indents, Selah, stanza breaks, psalm titles | ⬜ | `chapters.layout` JSON |
-| Words of Christ in red | ⬜ | |
-| Footnotes with popovers | ⬜ | |
-| Divine name in small caps | ⬜ | `fontFeatureSettings = "smcp"` / `c2sc` |
-| Supplied words in italics | ⬜ | |
-| Paragraph vs verse-by-verse | ⬜ | |
-| Seven typefaces | ⬜ | Open-licensed equivalents |
+| ASV (sealed), BSB, KJV | ✅ | All three render; every chapter of each parses (1,189) |
+| Chapter layout: headings, paragraphs, poetry indents, Selah, stanza breaks, psalm titles | ✅ | `data/layout/`, `ui/reader/ChapterRenderer.kt`; indents and spacing from the Swift values |
+| Words of Christ in red | ✅ | Scalar offsets converted to UTF-16; tested past a non-BMP character |
+| Footnotes with popovers | 🔧 | Letters render in reading order; popovers not yet |
+| Divine name in small caps | ✅ | Source Serif 4 has true `smcp`/`c2sc`; italic falls back to 78% capitals |
+| Supplied words in italics | ✅ | |
+| Paragraph vs verse-by-verse | ✅ | |
+| Seven typefaces | 🔧 | Source Serif 4 (OFL) is the default; the other six not yet |
 | Size 12–40 pt, line spacing 1.0–2.0, system font scale | ⬜ | |
-| Themes: Auto, Light, Sepia, Dark, Black | ⬜ | |
-| Seven accent colors | ⬜ | |
+| Themes: Auto, Light, Sepia, Dark, Black | ✅ | Exact palette values from `ReaderStyle.swift` |
+| Seven accent colors | ✅ | |
 | Show toggles: red letters, verse numbers, headings, footnotes | ⬜ | |
 | Auto-scroll (16/28/44/64 pt/s), continues into next chapter | ⬜ | |
-| Chapter paging: buttons, swipe, "Next chapter →" | ⬜ | |
+| Chapter paging: buttons, swipe, "Next chapter →" | 🔧 | Buttons and the end-of-chapter link; swipe not yet |
 | Reading position restored | ⬜ | |
-| Copyright line in the chapter footer | ⬜ | |
+| Copyright line in the chapter footer | ✅ | |
 
 ### Navigation and search
 | Feature | Status | Notes |
 |---|---|---|
-| Passage parser ("jn 3 16", ranges, lists, ordinals) | ⬜ | Port `ReferenceParser` + its tests |
-| Reference detection in free text | ⬜ | Port `ReferenceDetector` |
+| Passage parser ("jn 3 16", ranges, lists, ordinals) | ✅ | Every Swift test case ported; canon generated from `Canon.swift` |
+| Reference detection in free text | ✅ | Swift tests ported, incl. the sermon slide |
 | Go To sheet: search, recents, book and chapter grids | ⬜ | |
 | Recent chapters (12) and searches (12) | ⬜ | |
 | FTS5 search: all words, last word prefix, quoted phrase, 300 limit | ⬜ | |
@@ -133,9 +134,9 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Feature | Status | Notes |
 |---|---|---|
 | Study panel following the tapped verse, back trail | ⬜ | Side pane on tablets, bottom sheet on phones |
-| Cross references ranked by votes, preview | ⬜ | |
-| Commentary: Calvin, Gill, JFB, with links | ⬜ | |
-| Original languages: word, translit, parsing, Strong's, lexicon | ⬜ | |
+| Cross references ranked by votes, preview | 🔧 | Store done, from bundled `CrossReferences.sqlite`, matching the pack exactly; UI not yet |
+| Commentary: Calvin, Gill, JFB, with links | 🔧 | Store done; all 3,192 bodies inflate; UI not yet |
+| Original languages: word, translit, parsing, Strong's, lexicon | 🔧 | Store done; all 443,625 words checked against the BSB text; UI not yet |
 | Context: overview, map, timeline, charts | ⬜ | |
 | Map drawn on a Canvas from `Basemap.bin` | ⬜ | Port the `SABM` reader; no tile provider |
 | Compare two translations | ⬜ | |

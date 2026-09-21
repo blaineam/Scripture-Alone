@@ -9,3 +9,4 @@ captures/
 .cxx/
 # Generated at build time from ../ScriptureAlone/Resources — never committed.
 app/src/main/assets/generated/
+reference-ios/

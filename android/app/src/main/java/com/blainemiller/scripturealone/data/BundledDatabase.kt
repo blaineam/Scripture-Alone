@@ -37,11 +37,18 @@ object BundledDatabase {
     @Synchronized
     private fun connection(context: Context, assetName: String): SQLiteConnection =
         open.getOrPut(assetName) {
-            val file = ensureCopied(context, assetName)
+            val file = file(context, assetName)
             driver.open(file.path, SQLITE_OPEN_READONLY)
         }
 
-    private fun ensureCopied(context: Context, assetName: String): File {
+    /**
+     * The bundled asset as a file on disk, copied out of the APK if this build hasn't yet. Also the
+     * way to reach `ASV.sabible`, which [com.blainemiller.scripturealone.data.sabible.TranslationPackage]
+     * reads by positional file reads rather than through SQLite. Serialised, so two first opens can't
+     * race on the same `.partial` file.
+     */
+    @Synchronized
+    fun file(context: Context, assetName: String): File {
         val dir = File(context.noBackupFilesDir, "bundled").apply { mkdirs() }
         val target = File(dir, assetName)
         val stamp = File(dir, "$assetName.version")
