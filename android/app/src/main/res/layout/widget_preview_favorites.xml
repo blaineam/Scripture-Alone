@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What the widget picker shows for Favorites & Notes: FavoritesEntry.sample on iOS. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_page"
+    android:orientation="vertical"
+    android:padding="16dp">
+    <TextView
+        style="@style/WidgetReference"
+        android:drawableStart="@drawable/ic_widget_heart"
+        android:drawablePadding="6dp"
+        android:drawableTint="#FFFF3B30"
+        android:text="Romans 8:38–39" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:fontFamily="@font/widget_serif"
+        android:text="For I am persuaded, that neither death, nor life, nor angels, nor principalities, nor things present, nor things to come, nor powers, nor height, nor depth, nor any other creature, shall be able to separate us from the love of God, which is in Christ Jesus our Lord."
+        android:textColor="@color/widget_ink"
+        android:textSize="14sp" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1 of 12"
+        android:textColor="@color/widget_secondary_ink"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+</LinearLayout>

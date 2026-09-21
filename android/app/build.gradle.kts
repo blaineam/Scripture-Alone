@@ -100,6 +100,8 @@ val syncBundledData by tasks.registering(Sync::class) {
 tasks.named("preBuild") { dependsOn(syncBundledData) }
 
 dependencies {
+    // The canon, verse keys, Verse of the Day and the widget snapshot — shared with the Wear OS app.
+    implementation(project(":shared"))
     val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
@@ -121,6 +123,11 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     // Reading position and appearance — the iOS app's UserDefaults `reader.*` keys.
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+    // Home-screen widgets (ui/widget/), their start-up sync, and telling the Wear OS app the reader's
+    // translation and library over the Data Layer.
+    implementation("androidx.glance:glance-appwidget:1.1.1")
+    implementation("androidx.startup:startup-runtime:1.1.1")
+    implementation("com.google.android.gms:play-services-wearable:18.2.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation("junit:junit:4.13.2")

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:allowBackup="true"
@@ -17,5 +18,56 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Home-screen widgets (ui/widget/): the iOS widget extension's two widgets. -->
+        <receiver
+            android:name=".ui.widget.VerseOfDayWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_votd_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_verse_of_day" />
+        </receiver>
+        <receiver
+            android:name=".ui.widget.FavoritesWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_favorites_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_favorites" />
+        </receiver>
+        <activity
+            android:name=".ui.widget.FavoritesConfigureActivity"
+            android:exported="true"
+            android:label="@string/widget_favorites_configure">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+        <!-- Redraws the widgets at local midnight and each three-hour slot, and when the clock changes. -->
+        <receiver
+            android:name=".ui.widget.WidgetClockReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <!-- Keeps the widgets' snapshot and the watch current from process start. -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="com.blainemiller.scripturealone.ui.widget.WidgetSyncInitializer"
+                android:value="androidx.startup" />
+        </provider>
     </application>
 </manifest>

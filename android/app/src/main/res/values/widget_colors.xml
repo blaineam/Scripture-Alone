@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widget page, sunrise to parchment: VerseStyling.palette(.light) in the iOS widgets.
+     values-night holds the dark palette, so a widget follows the system's dark theme on its own. -->
+<resources>
+    <color name="widget_page_top">#FFFFF3DF</color>
+    <color name="widget_page_bottom">#FFF7DDBC</color>
+    <color name="widget_ink">#FF33261A</color>
+    <color name="widget_secondary_ink">#FF6E5A45</color>
+    <color name="widget_accent">#FF9A6B2F</color>
+    <!-- The "Next" capsule: the accent over the page, as a bordered SwiftUI button tints it. -->
+    <color name="widget_capsule">#299A6B2F</color>
+</resources>

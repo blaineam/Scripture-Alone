@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- VerseStyling.palette(.dark) in the iOS widgets. -->
+<resources>
+    <color name="widget_page_top">#FF2E2219</color>
+    <color name="widget_page_bottom">#FF1B1410</color>
+    <color name="widget_ink">#FFF3E9DC</color>
+    <color name="widget_secondary_ink">#FFC9B9A6</color>
+    <color name="widget_accent">#FFE0B872</color>
+    <color name="widget_capsule">#33E0B872</color>
+</resources>

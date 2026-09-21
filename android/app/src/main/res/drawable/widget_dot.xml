@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A highlight's swatch; tinted to the highlight's color where it is drawn. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="#FFFFFFFF" />
+    <size android:width="10dp" android:height="10dp" />
+</shape>

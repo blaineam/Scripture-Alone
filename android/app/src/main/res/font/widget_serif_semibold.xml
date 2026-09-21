@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Source Serif 4 semibold: the references, `.serif` `.weight(.semibold)` on iOS. -->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android">
+    <font
+        android:font="@font/source_serif_4"
+        android:fontStyle="normal"
+        android:fontWeight="600"
+        android:fontVariationSettings="'wght' 600, 'opsz' 15" />
+</font-family>

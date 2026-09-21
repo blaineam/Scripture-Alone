@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Verse text for a small widget. Both copies carry the same words; only the one for the current
+     theme is shown, each with its own words-of-Christ red baked into its spans. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/verse_day"
+        style="@style/WidgetVerse.Small"
+        android:textColor="#FF33261A"
+        android:visibility="visible" />
+    <TextView
+        android:id="@+id/verse_night"
+        style="@style/WidgetVerse.Small"
+        android:textColor="#FFF3E9DC"
+        android:visibility="gone" />
+</FrameLayout>

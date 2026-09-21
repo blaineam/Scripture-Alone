@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widgets' words, as the iOS widget extension has them. -->
+<resources>
+    <string name="widget_votd_name">Verse of the Day</string>
+    <string name="widget_votd_description">A beloved passage each day, in the translation you read.</string>
+    <string name="widget_favorites_name">Favorites &amp; Notes</string>
+    <string name="widget_favorites_description">Your favorited, highlighted and noted verses, one at a time.</string>
+    <string name="widget_favorites_configure">Show</string>
+</resources>
