@@ -117,7 +117,7 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 |---|---|---|
 | Live scanner, camera, photo, file, paste | ⬜ | CameraX + ML Kit |
 | On-device recognition with Bible book names | ⬜ | |
-| Slide → note parsing | ⬜ | Port `SlideParser` + its 17 tests |
+| Slide → note parsing | ✅ | `data/slides/SlideParser.kt`; every Swift case ported (18 tests). The camera/OCR capture is its own row |
 | Review sheet, keep photo | ⬜ | |
 
 ### Listen
