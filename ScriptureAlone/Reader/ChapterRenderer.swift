@@ -348,9 +348,15 @@ enum ChapterRenderer {
             applyDivineNameSmallCaps(text, font: font)
 
             if style.footnotes {
-                for note in fragment.footnotes.reversed() {
-                    let at = min(text.length, fragment.text.utf16Offset(ofScalar: note.position))
-                    text.insert(footnoteMarker(note.text, verse: key), at: at)
+                // Letters are assigned in reading order, *then* inserted from the end so an insertion
+                // never shifts the position of one still to come. Doing both in the reversed loop
+                // lettered a verse with two notes "b … a" — Genesis 5:2 and 344 other BSB verses.
+                let markers = fragment.footnotes.map { note in
+                    (position: note.position, marker: footnoteMarker(note.text, verse: key))
+                }
+                for (position, marker) in markers.reversed() {
+                    let at = min(text.length, fragment.text.utf16Offset(ofScalar: position))
+                    text.insert(marker, at: at)
                 }
             }
 

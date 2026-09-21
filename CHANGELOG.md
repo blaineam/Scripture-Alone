@@ -1,6 +1,13 @@
 # Changelog
 
-## Unreleased
+## After 1.0.0
+
+- A verse with two footnotes letters them in reading order. They were lettered "b … a" — the
+  markers were inserted from the end of the verse, which is right, but lettered in that same
+  reversed pass. 345 verses of the Berean Standard Bible have more than one note, starting at
+  Genesis 5:2. The Android port lettered them correctly, which is how this came to light.
+
+## 1.0.0 (in review)
 
 - The Apple Watch reads the ASV, the BSB and the KJV, and follows the translation you are reading
   on your iPhone. It had carried the ASV alone. Each translation the phone bundles now has a
