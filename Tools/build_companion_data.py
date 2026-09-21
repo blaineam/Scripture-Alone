@@ -19,10 +19,14 @@ and Data/daily-verses.tsv, and writes:
   docs/daily-verses.md
       The list, with themes, for people reviewing the choices.
 
-  ScriptureAloneWatch/Resources/ASV-Watch.sqlite
-      A compact ASV for the watch reader: meta, books, per-chapter verse counts and verse
-      text with red letters. It drops the reader's layout JSON and the full-text index, which
-      are most of the phone database's size. ScriptureAloneCore's BibleStore opens it as is.
+  ScriptureAloneWatch/Resources/{ASV,BSB,KJV}-Watch.sqlite
+      A compact edition of each bundled translation for the watch reader: meta, books,
+      per-chapter verse counts and verse text with red letters. It drops the reader's layout
+      JSON and the full-text index, which are most of the phone database's size.
+      ScriptureAloneCore's BibleStore opens it as is.
+
+      ScriptureAloneCore's WatchEdition writes the SAME schema on the phone, for a translation
+      the reader imported, and sends it to the watch. Change one, change both.
 """
 
 import json
@@ -36,9 +40,14 @@ BIBLES = os.path.join(ROOT, "ScriptureAlone", "Resources", "Bibles")
 LIST = os.path.join(ROOT, "Data", "daily-verses.tsv")
 JSON_OUT = os.path.join(ROOT, "ScriptureAlone", "Shared", "DailyVerses.json")
 DOC_OUT = os.path.join(ROOT, "docs", "daily-verses.md")
-WATCH_DB = os.path.join(ROOT, "ScriptureAloneWatch", "Resources", "ASV-Watch.sqlite")
+WATCH_DIR = os.path.join(ROOT, "ScriptureAloneWatch", "Resources")
 TRANSLATIONS = ["ASV", "BSB", "KJV"]
-WATCH_TRANSLATION = "ASV"
+# Verse counts differ by versification: the KJV keeps verses the others fold or omit.
+WATCH_VERSE_COUNTS = {"ASV": 31086, "BSB": 31086, "KJV": 31102}
+
+
+def watch_db(tid):
+    return os.path.join(WATCH_DIR, f"{tid}-Watch.sqlite")
 
 # Same canonical order as ScriptureAloneCore's BookID and Tools/build_bibles.py.
 BOOKS = [
@@ -188,8 +197,14 @@ def display(entry):
     return f"{name} {chapter}:{v1}" + (f"–{v2}" if v2 != v1 else "")
 
 
-def build_watch_db():
-    source = sqlite3.connect(os.path.join(BIBLES, f"{WATCH_TRANSLATION}.sqlite"))
+def build_watch_dbs():
+    for tid in TRANSLATIONS:
+        build_watch_db(tid)
+
+
+def build_watch_db(tid):
+    WATCH_DB = watch_db(tid)
+    source = sqlite3.connect(os.path.join(BIBLES, f"{tid}.sqlite"))
     os.makedirs(os.path.dirname(WATCH_DB), exist_ok=True)
     fd, tmp = tempfile.mkstemp(suffix=".sqlite", dir=os.path.dirname(WATCH_DB))
     os.close(fd)
@@ -214,8 +229,8 @@ def build_watch_db():
     db.close()
     os.chmod(tmp, 0o644)
     os.replace(tmp, WATCH_DB)
-    full = os.path.getsize(os.path.join(BIBLES, f"{WATCH_TRANSLATION}.sqlite"))
-    print(f"watch: {WATCH_TRANSLATION} {full / 1e6:.1f} MB -> {os.path.relpath(WATCH_DB, ROOT)} "
+    full = os.path.getsize(os.path.join(BIBLES, f"{tid}.sqlite"))
+    print(f"watch: {tid} {full / 1e6:.1f} MB -> {os.path.relpath(WATCH_DB, ROOT)} "
           f"({os.path.getsize(WATCH_DB) / 1e6:.1f} MB)")
 
 
@@ -238,10 +253,13 @@ def check(catalog):
     come = verses["43011025-43011026"]
     for start, length in come["red"]["KJV"]:
         assert 0 <= start and start + length <= len(come["text"]["KJV"]), come
-    watch = sqlite3.connect(WATCH_DB)
-    assert watch.execute("SELECT count(*) FROM verses").fetchone()[0] == 31086
-    assert watch.execute("SELECT text FROM verses WHERE id = 43011035").fetchone()[0] == "Jesus wept."
-    assert watch.execute("SELECT sum(chapters) FROM books").fetchone()[0] == 1189
+    for tid in TRANSLATIONS:
+        watch = sqlite3.connect(watch_db(tid))
+        count = watch.execute("SELECT count(*) FROM verses").fetchone()[0]
+        assert count == WATCH_VERSE_COUNTS[tid], (tid, count)
+        assert watch.execute("SELECT text FROM verses WHERE id = 43011035").fetchone()[0] == "Jesus wept.", tid
+        assert watch.execute("SELECT sum(chapters) FROM books").fetchone()[0] == 1189, tid
+        assert watch.execute("SELECT value FROM meta WHERE key = 'edition'").fetchone()[0] == "watch", tid
     print("check: ok")
 
 
@@ -251,7 +269,7 @@ def main():
     entries = parse_list()
     catalog = build_json(entries)
     build_doc(entries)
-    build_watch_db()
+    build_watch_dbs()
     if "--check" in sys.argv:
         check(catalog)
 

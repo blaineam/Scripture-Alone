@@ -15,6 +15,7 @@ struct ScriptureAloneWatchApp: App {
         WindowGroup {
             WatchRootView()
                 .environment(bible)
+                .task { WatchPhoneLink.shared.activate(bible: bible) }
         }
         .modelContainer(container)
     }
@@ -67,6 +68,7 @@ enum WatchRoute: Hashable {
     case favorites
     case notes
     case note(UUID)
+    case translations
 
     @ViewBuilder var destination: some View {
         switch self {
@@ -77,19 +79,135 @@ enum WatchRoute: Hashable {
         case .favorites: WatchFavoritesView()
         case .notes: WatchNotesView()
         case .note(let id): WatchNoteView(id: id)
+        case .translations: WatchTranslationsView()
         }
     }
 }
 
-/// The compact ASV the watch bundles (Tools/build_companion_data.py): verse text and red
-/// letters without the phone's layout JSON or search index.
+/// The Bible the watch reads, in whichever translation the reader chose.
+///
+/// **Editions.** The watch bundles a compact edition of each translation the phone bundles — ASV,
+/// BSB and KJV (`Tools/build_companion_data.py`): verse text and red letters, without the phone's
+/// layout JSON or search index, about 4.5 MB each. A translation the reader imported on the phone
+/// has no bundled edition, so the phone writes one with `WatchEdition` and sends it over
+/// WatchConnectivity (`WatchPhoneLink`); it lands in `receivedDirectory` and reads through the very
+/// same `BibleStore`.
+///
+/// **Which one is shown.** The most recent choice the watch can actually show wins: the reader
+/// picking one here, or the phone reporting that they switched there. So switching to the KJV on
+/// the phone moves the watch too, and picking the BSB on the watch keeps it until the phone
+/// changes again. A phone choice the watch has no edition of — an online translation, whose terms
+/// forbid storing it — is remembered but not applied, and the watch keeps what it had.
 @Observable
 final class WatchBible {
-    static let translation = "ASV"
-    let store: BibleStore?
+    /// Translations with a compact edition in the watch bundle. The phone skips sending these.
+    nonisolated static let bundledIDs = ["ASV", "BSB", "KJV"]
+    nonisolated static let fallback = "ASV"
 
-    init() {
-        store = Bundle.main.url(forResource: "ASV-Watch", withExtension: "sqlite").flatMap { try? BibleStore(url: $0) }
+    struct Edition: Identifiable, Hashable {
+        let id: String
+        let name: String
+        let url: URL
+        let bundled: Bool
+    }
+
+    private(set) var editions: [Edition] = []
+    private(set) var translation: String = WatchBible.fallback
+    private(set) var store: BibleStore?
+
+    /// The phone's translation, even when the watch can't show it, for the picker to explain.
+    private(set) var phoneTranslation: String?
+
+    @ObservationIgnored private var stores: [String: BibleStore] = [:]
+    @ObservationIgnored private let defaults = UserDefaults.standard
+
+    init() { reloadEditions() }
+
+    /// Editions the phone sent. Documents rather than Caches: the system may clear Caches, and a
+    /// translation the reader chose should not silently revert to the ASV.
+    nonisolated static var receivedDirectory: URL {
+        let url = URL.documentsDirectory.appending(path: "Translations")
+        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+
+    nonisolated static func receivedURL(for id: String) -> URL {
+        receivedDirectory.appending(path: "\(id)-Watch.sqlite")
+    }
+
+    func reloadEditions() {
+        let bundled = Self.bundledIDs.compactMap { id -> Edition? in
+            guard let url = Bundle.main.url(forResource: "\(id)-Watch", withExtension: "sqlite"),
+                  let store = open(id: id, url: url) else { return nil }
+            return Edition(id: id, name: store.info.name, url: url, bundled: true)
+        }
+        let files = (try? FileManager.default.contentsOfDirectory(
+            at: Self.receivedDirectory, includingPropertiesForKeys: nil)) ?? []
+        let received = files
+            .filter { $0.lastPathComponent.hasSuffix("-Watch.sqlite") }
+            .compactMap { url -> Edition? in
+                let id = String(url.lastPathComponent.dropLast("-Watch.sqlite".count))
+                // A bundled translation always reads from the bundle; a stray copy is ignored.
+                guard !Self.bundledIDs.contains(id), let store = open(id: id, url: url) else { return nil }
+                return Edition(id: id, name: store.info.name, url: url, bundled: false)
+            }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        editions = bundled + received
+        phoneTranslation = defaults.string(forKey: Keys.phone)
+        resolve()
+    }
+
+    /// The reader picked a translation on the watch.
+    func choose(_ id: String) {
+        defaults.set(id, forKey: Keys.choice)
+        defaults.set(Date().timeIntervalSince1970, forKey: Keys.choiceAt)
+        resolve()
+    }
+
+    /// The phone reported the translation the reader switched to, and when.
+    func phoneChose(_ id: String, at changedAt: TimeInterval) {
+        defaults.set(id, forKey: Keys.phone)
+        defaults.set(changedAt, forKey: Keys.phoneAt)
+        phoneTranslation = id
+        resolve()
+    }
+
+    func removeReceived(_ edition: Edition) {
+        guard !edition.bundled else { return }
+        stores[edition.id] = nil
+        try? FileManager.default.removeItem(at: edition.url)
+        reloadEditions()
+    }
+
+    private func resolve() {
+        let available = Set(editions.map(\.id))
+        var candidates: [(id: String, at: TimeInterval)] = []
+        if let id = defaults.string(forKey: Keys.choice), available.contains(id) {
+            candidates.append((id, defaults.double(forKey: Keys.choiceAt)))
+        }
+        if let id = defaults.string(forKey: Keys.phone), available.contains(id) {
+            candidates.append((id, defaults.double(forKey: Keys.phoneAt)))
+        }
+        let pick = candidates.max { $0.at < $1.at }?.id
+            ?? (available.contains(Self.fallback) ? Self.fallback : editions.first?.id ?? Self.fallback)
+        if pick != translation || store == nil {
+            translation = pick
+            store = editions.first { $0.id == pick }.flatMap { open(id: $0.id, url: $0.url) }
+        }
+    }
+
+    private func open(id: String, url: URL) -> BibleStore? {
+        if let cached = stores[id] { return cached }
+        let store = try? BibleStore(url: url)
+        stores[id] = store
+        return store
+    }
+
+    private enum Keys {
+        static let choice = "watch.translation.choice"
+        static let choiceAt = "watch.translation.choiceAt"
+        static let phone = "watch.translation.phone"
+        static let phoneAt = "watch.translation.phoneAt"
     }
 
     func verses(_ range: VerseRange) -> [VerseText] {

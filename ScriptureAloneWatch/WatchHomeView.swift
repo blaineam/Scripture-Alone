@@ -26,6 +26,13 @@ struct WatchHomeView: View {
                 NavigationLink(value: WatchRoute.books) {
                     row("Read", systemImage: "book.fill", tint: .accentColor, count: nil)
                 }
+                NavigationLink(value: WatchRoute.translations) {
+                    HStack {
+                        Label("Translation", systemImage: "character.book.closed.fill")
+                        Spacer()
+                        Text(bible.translation).foregroundStyle(.secondary)
+                    }
+                }
             }
         }
         .navigationTitle("Scripture Alone")
@@ -49,6 +56,7 @@ struct WatchHomeView: View {
 }
 
 private struct VerseOfDayCard: View {
+    @Environment(WatchBible.self) private var bible
     let verse: DailyVerse
     let range: VerseRange
 
@@ -61,7 +69,7 @@ private struct VerseOfDayCard: View {
             Text(range.display)
                 .font(.headline)
                 .foregroundStyle(.tint)
-            Text(verse.text(in: WatchBible.translation))
+            Text(verse.text(in: bible.translation))
                 .font(.body)
                 .lineLimit(4)
         }

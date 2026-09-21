@@ -23,7 +23,7 @@ settings:
     GCC_TREAT_WARNINGS_AS_ERRORS: YES
     # The xattr-strip postCompileScript needs script sandboxing off.
     ENABLE_USER_SCRIPT_SANDBOXING: NO
-    MARKETING_VERSION: "1.0.0"
+    MARKETING_VERSION: "1.0.1"
     CURRENT_PROJECT_VERSION: "1"
     # Intel Macs and Intel simulators are out of scope.
     "ARCHS[sdk=macosx*]": arm64
@@ -162,6 +162,8 @@ targets:
       - ScriptureAlone/Shared/DemoLibrary.swift
       - ScriptureAlone/Shared/DailyVerseLibrary.swift
       - ScriptureAlone/Shared/DailyVerses.json
+      # Phone ↔ watch vocabulary for translation sync (WatchLink / WatchPhoneLink).
+      - ScriptureAlone/Shared/WatchLinkKeys.swift
       - ScriptureAloneWidgets/VerseStyling.swift
       # The same Icon Composer document as the phone and Mac; it declares watchOS circles.
       - ScriptureAlone/Resources/AppIcon.icon

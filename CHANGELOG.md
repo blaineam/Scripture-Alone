@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- The Apple Watch reads the ASV, the BSB and the KJV, and follows the translation you are reading
+  on your iPhone. It had carried the ASV alone. Each translation the phone bundles now has a
+  compact watch edition — verse text and red letters without the phone's layout data or search
+  index, about 4.5 MB each — and a Translation row on the watch's home screen picks between them.
+  Switch translation on the phone and the watch switches too; pick one on the watch and it keeps
+  that until you change the phone again — the most recent choice wins. A translation you imported
+  on the phone reaches the watch as well: the phone writes a compact edition of it and sends it
+  over WatchConnectivity, but only if its terms allow offline storage, and only if the watch
+  doesn't already hold it. Online translations stay on the phone, since their terms forbid storing
+  them, and the watch says so rather than silently showing something else.
+
 - Signed, encrypted translation packages (`.sabible`), for a licensed translation a publisher has
   agreed to: a plaintext, Ed25519-signed header carrying the translation's identity and the
   publisher's terms, and a body of chapters sealed one at a time with AES-256-GCM, each bound to

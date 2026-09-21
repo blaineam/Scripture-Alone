@@ -23,11 +23,13 @@
 		23F6430073ED541558AAB62E /* BSB.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = CDD77D54BC488F1DA738D64F /* BSB.sqlite */; };
 		25C2BE3906986CBDB86CE152 /* StudyModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F17EC67413B118E11B84EC /* StudyModel.swift */; };
 		26B899BB800FDA7453A4BE77 /* WatchReaderViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCA7C3E8E3AADBA0719A1ECC /* WatchReaderViews.swift */; };
+		27BEB865D8AFE43FDA089FF5 /* WatchLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E17B2E2DC4C88D10A3C4A05 /* WatchLink.swift */; };
 		28A9DAD1BF4B0CC0B116FD9C /* MillerKit in Frameworks */ = {isa = PBXBuildFile; productRef = 699B8CC67C93C7D72125C106 /* MillerKit */; };
 		2AC732D4592B52494983760B /* VerseStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0BEC0687ECE009ECE357AB /* VerseStyling.swift */; };
 		2CE7A8DCC9AEA9D0B7A90CDB /* ScriptureAloneCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1A7205FD5FCA11838150D9A8 /* ScriptureAloneCore */; };
 		2D67D62C9CA59B847EA766CA /* Basemap.bin in Resources */ = {isa = PBXBuildFile; fileRef = CD26A00921ADE7C04FC80237 /* Basemap.bin */; };
 		2DB39BE64A22CA7256CD1D9A /* ScriptureAloneWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 2544CC6D255BC8BECC33D29C /* ScriptureAloneWatch.app */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3184EE3BAD4D480DE43925EE /* KJV-Watch.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 2A1587A781119160F94D0100 /* KJV-Watch.sqlite */; };
 		31C68B8F127E821D23A383BD /* ImportedLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B428BCAE12449F8C77B44484 /* ImportedLibrary.swift */; };
 		34EEE38976C8CB13024D9B34 /* ChartViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 037E94E8953976654834491D /* ChartViews.swift */; };
 		375DF89AEBFA8910FCA271AA /* MiSpeaksClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57092597A336A50B343F9912 /* MiSpeaksClient.swift */; };
@@ -36,6 +38,7 @@
 		458F54193454C89DE6F698E7 /* NowPlayingBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5588F9A87B421F8DCA9755A9 /* NowPlayingBar.swift */; };
 		46004442636C39F82714B4AA /* SlideReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39247E7AAA95CDD87B0CBD9C /* SlideReviewView.swift */; };
 		4770DFEA1BC39A2844D7DA92 /* SelectionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 293DBAA61F3889B10D77CBFE /* SelectionBar.swift */; };
+		48EB71121A5D4E37CA3A1CB3 /* WatchLinkKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE06851FE4E25ED3FC97B0B /* WatchLinkKeys.swift */; };
 		4A1199AD2E4912A1A3257659 /* FavoritesWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55CDE11E8282F3CD1FF8EB74 /* FavoritesWidget.swift */; };
 		4A5EA3EFDE3C74379D47A50A /* CatalogDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FCF3BC4B64741451E8DC375 /* CatalogDownloader.swift */; };
 		4AA2A511CBD4F3B94FFE9656 /* OnlineKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516CA9EE0C2D72ED9057AC6E /* OnlineKeysView.swift */; };
@@ -46,6 +49,7 @@
 		57828EF5983539D10AB2ABF6 /* CrossReferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 060801F1607F15B63E34EFF7 /* CrossReferencesView.swift */; };
 		581B9288A814AD5AA93E385B /* LegacySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFE4FE8B7E7BFDE0693CADF /* LegacySettingsView.swift */; };
 		58AA92EA5928A397E0556F9C /* ContextServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F32FA504E1D64ABEE007588 /* ContextServices.swift */; };
+		5AAD64D40AF187BC39ACBE5D /* WatchTranslations.swift in Sources */ = {isa = PBXBuildFile; fileRef = A366981F70F0236C453C9222 /* WatchTranslations.swift */; };
 		5E6D7A57E26E8901C389D81E /* WatchVerseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8336CBEF8FA208CEC7AB8F7 /* WatchVerseView.swift */; };
 		5EAD4346E4DB8A50570A9868 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 392230810B0A26093991E9F3 /* CatalogView.swift */; };
 		60FC358C80B4C02DF0C7A784 /* NotesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D74C961BED0B7388ED862C /* NotesPanel.swift */; };
@@ -63,6 +67,7 @@
 		6E6914307A950EB418658595 /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14F3A5CAF08690618C671B97 /* ReaderView.swift */; };
 		6E867677D577ACAFA6CAA5F9 /* DailyVerses.json in Resources */ = {isa = PBXBuildFile; fileRef = 7FB470D843314F7FBBD87D39 /* DailyVerses.json */; };
 		6F5236F8B372562A114682EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */; };
+		71F27B9DBFCAD733A9343103 /* WatchLinkKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE06851FE4E25ED3FC97B0B /* WatchLinkKeys.swift */; };
 		71F9CBDE1502FFAA63C7935F /* NotesExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496B1CCA51D2F3EAD0E3555E /* NotesExportSheet.swift */; };
 		7568CB6A7B4A079D596EF5A2 /* FamilySharingOwner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA03FA7F0926AB19032EACDB /* FamilySharingOwner.swift */; };
 		75ABBF6B748B18E4ECAF8EA7 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 83FA6232CC192A9E359F659F /* AppIcon.icon */; };
@@ -95,6 +100,7 @@
 		BD0C4E58EEB61F180F6808DC /* KJV.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = D05D293260369FD553FC2DA9 /* KJV.sqlite */; };
 		BD97245C0F9E040DB7BE11A0 /* DailyVerseLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F0BC99CE5196F68A181398 /* DailyVerseLibrary.swift */; };
 		BE2CB76530956EBCDDEC58D5 /* ChapterRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF5F2289267C3D0B0E64A70 /* ChapterRenderer.swift */; };
+		C069E594E250C129B358B628 /* BSB-Watch.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = E43E742CE34D9A8A1C25B724 /* BSB-Watch.sqlite */; };
 		C0D185BFE3415B5B8BF5DE54 /* FamilyMirrorUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4470393BD0B96BF5FE5F0B0E /* FamilyMirrorUploader.swift */; };
 		C11A56B3EC4153B0651D82C7 /* TranslationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1B91644B5AE4258AB26FA /* TranslationsView.swift */; };
 		C1B77A8C692EE1B04BD44B40 /* NotesPDFRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616925D298ADB5C4615A4DEC /* NotesPDFRenderer.swift */; };
@@ -219,6 +225,7 @@
 		27BEC9EFF1F3BB03BCDA0992 /* Interlinear.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = Interlinear.sqlite; sourceTree = "<group>"; };
 		28B87B651438BBE462790DCD /* StudySourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudySourcesView.swift; sourceTree = "<group>"; };
 		293DBAA61F3889B10D77CBFE /* SelectionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionBar.swift; sourceTree = "<group>"; };
+		2A1587A781119160F94D0100 /* KJV-Watch.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "KJV-Watch.sqlite"; sourceTree = "<group>"; };
 		2B03CE75511938642A77DD8B /* ShareExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareExport.swift; sourceTree = "<group>"; };
 		2B23F521A56070F190FC3B4E /* NoteEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditor.swift; sourceTree = "<group>"; };
 		2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -231,6 +238,7 @@
 		3A35AFE72D4C6C36ABC4153D /* SlideCameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlideCameraView.swift; sourceTree = "<group>"; };
 		3CF99F7EE590AF05C6A9CF56 /* ReaderStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderStyle.swift; sourceTree = "<group>"; };
 		3CFE4FE8B7E7BFDE0693CADF /* LegacySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacySettingsView.swift; sourceTree = "<group>"; };
+		3E17B2E2DC4C88D10A3C4A05 /* WatchLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchLink.swift; sourceTree = "<group>"; };
 		3FCF3BC4B64741451E8DC375 /* CatalogDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogDownloader.swift; sourceTree = "<group>"; };
 		4470393BD0B96BF5FE5F0B0E /* FamilyMirrorUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyMirrorUploader.swift; sourceTree = "<group>"; };
 		44F5E5330A02AA403B91A05D /* ScriptureAloneWidgetsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureAloneWidgetsBundle.swift; sourceTree = "<group>"; };
@@ -248,6 +256,7 @@
 		58AB89103250BA15DA027F24 /* VerseComplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseComplication.swift; sourceTree = "<group>"; };
 		5CF164A29A7059D887F9D530 /* ContextAttributionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextAttributionView.swift; sourceTree = "<group>"; };
 		5D9490E2C2C07074CC5136A9 /* ShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCard.swift; sourceTree = "<group>"; };
+		5DE06851FE4E25ED3FC97B0B /* WatchLinkKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchLinkKeys.swift; sourceTree = "<group>"; };
 		5F2651262AA20DD2F3B106F7 /* CompareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareView.swift; sourceTree = "<group>"; };
 		616925D298ADB5C4615A4DEC /* NotesPDFRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesPDFRenderer.swift; sourceTree = "<group>"; };
 		64254A487F2AB5DE14735746 /* CommentaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentaryView.swift; sourceTree = "<group>"; };
@@ -269,6 +278,7 @@
 		9DE766724AEE6AA9844B429B /* StudyPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyPanel.swift; sourceTree = "<group>"; };
 		A1B1B91644B5AE4258AB26FA /* TranslationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationsView.swift; sourceTree = "<group>"; };
 		A1EE071A16E5CB568DFB3331 /* StudyContextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyContextView.swift; sourceTree = "<group>"; };
+		A366981F70F0236C453C9222 /* WatchTranslations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchTranslations.swift; sourceTree = "<group>"; };
 		A6ECFE14FC10FF50EAF8A454 /* Context.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = Context.sqlite; sourceTree = "<group>"; };
 		AA03FA7F0926AB19032EACDB /* FamilySharingOwner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySharingOwner.swift; sourceTree = "<group>"; };
 		AC8378E99998755AEE18ECB0 /* bundled-signing.pub */ = {isa = PBXFileReference; path = "bundled-signing.pub"; sourceTree = "<group>"; };
@@ -294,6 +304,7 @@
 		DE212F8A5D6BAA5EE89EF732 /* SharedBibleViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedBibleViews.swift; sourceTree = "<group>"; };
 		DF51A40F2B56DE405EF0EDEC /* ScriptureAloneApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureAloneApp.swift; sourceTree = "<group>"; };
 		E257506CFA2AE5AF71BD3E13 /* FamilyDebug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyDebug.swift; sourceTree = "<group>"; };
+		E43E742CE34D9A8A1C25B724 /* BSB-Watch.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BSB-Watch.sqlite"; sourceTree = "<group>"; };
 		E4A2B7F7FABABD02EED02944 /* ASV-Watch.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ASV-Watch.sqlite"; sourceTree = "<group>"; };
 		E7888AAC43ECF30A87D1EBA8 /* ExportSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSupport.swift; sourceTree = "<group>"; };
 		E79D61A66336156A65FD29F3 /* ReaderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderModel.swift; sourceTree = "<group>"; };
@@ -435,6 +446,8 @@
 			isa = PBXGroup;
 			children = (
 				E4A2B7F7FABABD02EED02944 /* ASV-Watch.sqlite */,
+				E43E742CE34D9A8A1C25B724 /* BSB-Watch.sqlite */,
+				2A1587A781119160F94D0100 /* KJV-Watch.sqlite */,
 				C1FDADFCFFC4564BDA767628 /* Localizable.xcstrings */,
 			);
 			path = Resources;
@@ -469,6 +482,7 @@
 				6F623D45503145D4A1FC508E /* WatchHomeView.swift */,
 				11C231CFA598D2C77307F66A /* WatchLibraryViews.swift */,
 				FCA7C3E8E3AADBA0719A1ECC /* WatchReaderViews.swift */,
+				A366981F70F0236C453C9222 /* WatchTranslations.swift */,
 				F8336CBEF8FA208CEC7AB8F7 /* WatchVerseView.swift */,
 			);
 			path = ScriptureAloneWatch;
@@ -677,6 +691,8 @@
 				B4F0BC99CE5196F68A181398 /* DailyVerseLibrary.swift */,
 				7FB470D843314F7FBBD87D39 /* DailyVerses.json */,
 				DBF73DDF91E6EEBFC83A4E4A /* DemoLibrary.swift */,
+				3E17B2E2DC4C88D10A3C4A05 /* WatchLink.swift */,
+				5DE06851FE4E25ED3FC97B0B /* WatchLinkKeys.swift */,
 				2539ED6AC3F6DFA0CE4CCCD5 /* WidgetSnapshotSync.swift */,
 			);
 			path = Shared;
@@ -879,7 +895,9 @@
 				A895C9D5BE7037BDC681CDE0 /* ASV-Watch.sqlite in Resources */,
 				75ABBF6B748B18E4ECAF8EA7 /* AppIcon.icon in Resources */,
 				5493681CFA1710000C4CA0D6 /* Assets.xcassets in Resources */,
+				C069E594E250C129B358B628 /* BSB-Watch.sqlite in Resources */,
 				1CD831ECEEAB5C424AF17EC9 /* DailyVerses.json in Resources */,
+				3184EE3BAD4D480DE43925EE /* KJV-Watch.sqlite in Resources */,
 				D3786BFA34968A6D5CC2D462 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -996,7 +1014,9 @@
 				2AC732D4592B52494983760B /* VerseStyling.swift in Sources */,
 				E306ED72040F902C31B435DF /* WatchHomeView.swift in Sources */,
 				9F1CD12A5489E03C8E1810F2 /* WatchLibraryViews.swift in Sources */,
+				71F27B9DBFCAD733A9343103 /* WatchLinkKeys.swift in Sources */,
 				26B899BB800FDA7453A4BE77 /* WatchReaderViews.swift in Sources */,
+				5AAD64D40AF187BC39ACBE5D /* WatchTranslations.swift in Sources */,
 				5E6D7A57E26E8901C389D81E /* WatchVerseView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1096,6 +1116,8 @@
 				EEFB219B7EF6795D22B864A9 /* StudySourcesView.swift in Sources */,
 				F430E26F04771337A57782F0 /* TimelineViews.swift in Sources */,
 				C11A56B3EC4153B0651D82C7 /* TranslationsView.swift in Sources */,
+				27BEB865D8AFE43FDA089FF5 /* WatchLink.swift in Sources */,
+				48EB71121A5D4E37CA3A1CB3 /* WatchLinkKeys.swift in Sources */,
 				847A42E21724E641C4CA74C4 /* WidgetSnapshotSync.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1293,7 +1315,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1410,7 +1432,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

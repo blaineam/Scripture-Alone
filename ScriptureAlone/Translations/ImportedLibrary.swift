@@ -5,8 +5,10 @@ import ScriptureAloneCore
 /// The translations the reader has added themselves.
 ///
 /// Imported texts live in Application Support, outside the iCloud-synced containers: an imported
-/// translation belongs to the person who imported it, on the device they imported it to, and the
-/// app never copies it anywhere — not to iCloud, not into a keepsake, not into a share link.
+/// translation belongs to the person who imported it, on the device they imported it to. The one
+/// place a copy goes is that same person's paired Apple Watch, as a compact edition, when it is the
+/// translation they are reading and its terms allow offline storage (`WatchLink`). Never to iCloud,
+/// never into a keepsake, never into a share link.
 @MainActor
 @Observable
 final class ImportedLibrary {

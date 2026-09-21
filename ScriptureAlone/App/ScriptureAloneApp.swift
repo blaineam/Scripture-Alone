@@ -12,6 +12,11 @@ struct ScriptureAloneApp: App {
     #endif
 
     init() {
+        #if os(iOS)
+        // Early, so the watch's report of which editions it holds is waiting by the time the
+        // reader's translation is restored.
+        WatchLink.shared.activate()
+        #endif
         #if DEBUG && os(iOS) && !targetEnvironment(simulator)
         // One-time: create every CloudKit record type in the development environment so the
         // schema can be deployed to production (see CloudKitSchemaBootstrap).

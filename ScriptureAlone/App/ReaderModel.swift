@@ -247,6 +247,20 @@ final class ReaderModel {
 
     /// - Parameter remember: false when the app is falling back rather than the reader choosing.
     ///   A fallback must not overwrite what they asked for, or their choice is lost for good.
+    /// Persists the reader's translation and tells the watch.
+    ///
+    /// Only a change of the stored value counts as the reader switching. The launch restore passes
+    /// through here too (`selectTranslation(preferred)` remembers by default), and treating that as
+    /// a switch would stamp a fresh time on every launch — overriding a translation the reader had
+    /// since picked on the watch. So a restore re-reports the choice with its original time.
+    private func rememberTranslation(_ entry: TranslationEntry) {
+        let changed = defaults.string(forKey: "translation") != entry.id
+        defaults.set(entry.id, forKey: "translation")
+        #if os(iOS)
+        if changed { WatchLink.shared.readerSwitched(to: entry) } else { WatchLink.shared.publish(entry) }
+        #endif
+    }
+
     func selectTranslation(_ id: String, remember: Bool = true) {
         guard let entry = translations.first(where: { $0.id == id }) else { return }
         if remember { awaitedTranslation = nil }
@@ -260,7 +274,7 @@ final class ReaderModel {
                                                         abbreviation: entry.id,
                                                         copyright: provider.copyrightNotice,
                                                         license: provider.licenseSummary))
-            if persist { defaults.set(id, forKey: "translation") }
+            if persist { rememberTranslation(entry) }
             load()
             return
         }
@@ -276,7 +290,7 @@ final class ReaderModel {
             }
             packageSource = package
             store = nil
-            if persist { defaults.set(id, forKey: "translation") }
+            if persist { rememberTranslation(entry) }
             if let top = topVerse { scrollTarget = top }
             load()
             return
@@ -287,7 +301,7 @@ final class ReaderModel {
             let store = try stores[id] ?? BibleStore(url: url)
             stores[id] = store
             self.store = store
-            if persist { defaults.set(id, forKey: "translation") }
+            if persist { rememberTranslation(entry) }
             if let top = topVerse { scrollTarget = top }
             load()
         } catch {
