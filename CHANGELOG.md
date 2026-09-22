@@ -2,6 +2,9 @@
 
 ## After 1.0.0
 
+- Scripture Alone for Android is in closed beta on Google Play: phones, tablets and a Wear OS
+  app, built from the same bundled Bibles and study data as the iPhone app. Join the
+  scripture-alone-android-beta Google Group, then opt in on Google Play.
 - Imported ePub and USFM Bibles come out whole. Words of Christ marked `class="WJ"` are red;
   footnote letters no longer stick to the word before them ("saidb"), and a verse number styled
   as a superscript no longer loses its verse; a line break keeps its space ("children. These");
