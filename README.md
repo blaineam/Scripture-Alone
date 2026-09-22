@@ -8,7 +8,9 @@ only through your own iCloud.
 Google Play. To test it, join
 [scripture-alone-android-beta](https://groups.google.com/g/scripture-alone-android-beta), then
 [opt in on Google Play](https://play.google.com/apps/testing/com.blainemiller.scripturealone)
-with the same Google account. Its source is in [`android/`](android/); what it does and doesn't
+with the same Google account. Without Google Play, the
+[APK on GitHub](https://github.com/blaineam/Scripture-Alone/releases/tag/android-v1.0.0-beta.1)
+has everything built in (read its notes first). Its source is in [`android/`](android/); what it does and doesn't
 match on iOS is tracked in [docs/android-parity.md](docs/android-parity.md).
 
 Open source under the [AGPL‑3.0](LICENSE) with an [app‑store exception](LICENSE-EXCEPTIONS.md).
