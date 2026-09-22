@@ -80,6 +80,17 @@ android {
     if (localPacks) sourceSets["debug"].assets.srcDir(layout.buildDirectory.dir("generated/localPackData"))
     assetPacks += listOf(":asv", ":bsb", ":kjv", ":study_commentary", ":study_interlinear")
 
+    // `-PsideloadApk` with `assembleRelease`: a release APK for installing outside Google Play, with
+    // every pack's file in its own assets (about 115 MB), since only Play can deliver an on-demand
+    // pack. Signed with the upload key, not Play's app-signing key, so a Play install can't update it
+    // in place. Never with a bundle, where the packs themselves carry these files.
+    if (providers.gradleProperty("sideloadApk").isPresent) {
+        check(gradle.startParameter.taskNames.none { it.contains("bundle", ignoreCase = true) }) {
+            "-PsideloadApk is for assembleRelease; a bundle's packs already carry these files"
+        }
+        sourceSets["release"].assets.srcDir(layout.buildDirectory.dir("generated/localPackData"))
+    }
+
     androidResources {
         // SQLite files must be stored uncompressed: Android cannot open a compressed asset as a
         // database, and would otherwise have to inflate 100 MB into memory on every launch.
