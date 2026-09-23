@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.blainemiller.scripturealone.data.userdata.Note
 import com.blainemiller.scripturealone.data.userdata.Selection
 import com.blainemiller.scripturealone.ui.notes.NotesPanel
+import com.blainemiller.scripturealone.ui.notes.NotesScope
 import java.util.UUID
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.scrollBy
@@ -195,6 +196,11 @@ fun ReaderScreen(
     var appearance by rememberSaveable { mutableStateOf(false) }
     /** The note the Notes panel opens on — set by Add Note and by a marker's "Open Note". */
     var openNote by rememberSaveable { mutableStateOf<String?>(null) }
+    /** What a search link or shortcut asked the Go To sheet to search for, and the scope a notes link asked for. */
+    var searchSeed by rememberSaveable { mutableStateOf("") }
+    var notesScope by rememberSaveable { mutableStateOf(NotesScope.ALL) }
+    /** Bumped by such a request, so a sheet already up starts over with it rather than keeping its own state. */
+    var sheetGeneration by rememberSaveable { mutableIntStateOf(0) }
     val goTo = sheet != null
     val ownHighlights by model.userData.highlights.collectAsState()
     val ownNotes by model.userData.notes.collectAsState()
@@ -261,6 +267,43 @@ fun ReaderScreen(
             }
         }
     }
+    // Links, shortcuts, App Actions and search results (ReaderViewModel.perform) — including one that
+    // arrived before this screen did, at a cold launch. `ReaderView.perform` on iOS: uncover the text,
+    // then open the sheet asked for.
+    val studyIsOpen by rememberUpdatedState(studyOpen)
+    LaunchedEffect(model.request) {
+        val request = model.request ?: return@LaunchedEffect
+        val kind = request.kind
+        appearance = false
+        legacyState.settingsOpen = false
+        legacyState.importing = false
+        legacyState.export = null
+        if (kind != ReaderRequest.Kind.Reader && studyIsOpen) onStudy()
+        when (kind) {
+            ReaderRequest.Kind.Reader -> {
+                sheet = null
+                openNote = null
+            }
+            is ReaderRequest.Kind.Search -> {
+                searchSeed = kind.words
+                sheetGeneration++
+                sheet = ReaderSheet.GO_TO
+            }
+            is ReaderRequest.Kind.Note -> {
+                notesScope = NotesScope.ALL
+                openNote = kind.id.toString()
+                sheet = ReaderSheet.NOTES
+            }
+            ReaderRequest.Kind.Notes, ReaderRequest.Kind.Favorites -> {
+                notesScope = if (kind == ReaderRequest.Kind.Favorites) NotesScope.FAVORITES else NotesScope.ALL
+                openNote = null
+                sheetGeneration++
+                sheet = ReaderSheet.NOTES
+            }
+        }
+        model.consumeRequest(request)
+    }
+
     // Back — and Esc, which Android turns into Back when nothing takes it — clears a selection first,
     // as Esc does on iPad and Mac (`keyboardShortcut(.escape)` on the selection bar's Clear).
     BackHandler(enabled = model.selection.isNotEmpty() && !modalUp) { model.clearSelection() }
@@ -441,16 +484,25 @@ fun ReaderScreen(
                             sheet = null
                             openNote = null
                         },
-                    ) else NotesPanel(
-                        model, palette, notes, favorites,
-                        openNote = openNote,
-                        onOpenNoteChange = { openNote = it },
-                        onDismiss = {
+                    ) else key(sheetGeneration) {
+                        NotesPanel(
+                            model, palette, notes, favorites,
+                            openNote = openNote,
+                            onOpenNoteChange = { openNote = it },
+                            onDismiss = {
+                                sheet = null
+                                openNote = null
+                                notesScope = NotesScope.ALL
+                            },
+                            initialScope = notesScope,
+                        )
+                    }
+                    else -> key(sheetGeneration) {
+                        GoToSheet(model, palette, initialQuery = searchSeed, onDismiss = {
                             sheet = null
-                            openNote = null
-                        },
-                    )
-                    else -> GoToSheet(model, palette, onDismiss = { sheet = null })
+                            searchSeed = ""
+                        })
+                    }
                 }
             }
             AppearanceSheet(model, palette, visible = appearance, onDismiss = { appearance = false }, onKeepsake = {

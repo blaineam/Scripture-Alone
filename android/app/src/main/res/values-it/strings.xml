@@ -692,6 +692,10 @@
     <string name="appearance_verse_numbers">Numeri dei versetti</string>
     <string name="appearance_section_headings">Titoli di sezione</string>
     <string name="appearance_footnotes">Note</string>
+    <string name="appearance_search">Ricerca</string>
+    <string name="appearance_notes_in_search">Note nella ricerca</string>
+    <string name="appearance_favorites_in_search">Preferiti nella ricerca</string>
+    <string name="appearance_search_footer">Permette alla ricerca e all\'assistente del telefono di trovare le tue note o i versetti preferiti e di aprirli subito. Se disattivato, restano fuori dalla ricerca del dispositivo.</string>
     <string name="appearance_feedback">Feedback e supporto</string>
     <string name="appearance_report_issue">Segnala un problema</string>
     <string name="appearance_suggest_feature">Suggerisci una funzione</string>
@@ -836,4 +840,25 @@
     <string name="data_notes_import_not_life_bible">Non sembra un\'esportazione di Life Bible. Cerca LifeBibleData.zip, da Impostazioni → Avanzate → Esporta i tuoi dati.</string>
     <string name="data_notes_import_nothing_to_import">Quell\'esportazione non contiene note, evidenziazioni o versetti salvati.</string>
     <string name="data_notes_import_nothing_recognised">Non è stato riconosciuto alcun riferimento biblico. Ogni nota deve iniziare con uno — ad esempio “Giovanni 3:16” — per poter essere associata al versetto giusto.</string>
+    <string name="shortcut_votd_short">Versetto del giorno</string>
+    <string name="shortcut_votd_long">Apri il Versetto del giorno</string>
+    <string name="shortcut_continue_short">Continua a leggere</string>
+    <string name="shortcut_continue_long">Riprendi da dove hai interrotto</string>
+    <string name="shortcut_search_short">Ricerca</string>
+    <string name="shortcut_search_long">Cerca nella Bibbia</string>
+    <string name="shortcut_new_note_short">Nuova nota</string>
+    <string name="shortcut_new_note_long">Inizia una nuova nota</string>
+    <string name="shortcut_favorites_short">Preferiti</string>
+    <string name="shortcut_favorites_long">Mostra i tuoi versetti preferiti</string>
+    <string name="shortcut_disabled">Questo comando rapido non è più disponibile.</string>
+    <string name="assistant_votd_1">versetto del giorno</string>
+    <string name="assistant_votd_2">versetto quotidiano</string>
+    <string name="assistant_continue_1">continua a leggere</string>
+    <string name="assistant_continue_2">da dove ho interrotto</string>
+    <string name="assistant_search_1">cerca nella bibbia</string>
+    <string name="assistant_search_2">ricerca nella bibbia</string>
+    <string name="assistant_new_note_1">nuova nota</string>
+    <string name="assistant_new_note_2">crea una nota</string>
+    <string name="assistant_favorites_1">preferiti</string>
+    <string name="assistant_favorites_2">versetti preferiti</string>
 </resources>

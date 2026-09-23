@@ -692,6 +692,10 @@
     <string name="appearance_verse_numbers">经文编号</string>
     <string name="appearance_section_headings">段落标题</string>
     <string name="appearance_footnotes">脚注</string>
+    <string name="appearance_search">搜索</string>
+    <string name="appearance_notes_in_search">笔记可被搜索</string>
+    <string name="appearance_favorites_in_search">收藏可被搜索</string>
+    <string name="appearance_search_footer">让手机的搜索和助理找到你的笔记或收藏的经文，并直接打开。关闭后，它们不会出现在设备搜索中。</string>
     <string name="appearance_feedback">反馈与支持</string>
     <string name="appearance_report_issue">报告问题</string>
     <string name="appearance_suggest_feature">建议功能</string>
@@ -836,4 +840,25 @@
     <string name="data_notes_import_not_life_bible">这看起来不是 Life Bible 导出文件。请查找 LifeBibleData.zip，路径为“设置 → 高级 → 导出数据”。</string>
     <string name="data_notes_import_nothing_to_import">该导出文件中没有笔记、高亮或收藏的经文。</string>
     <string name="data_notes_import_nothing_recognised">其中未发现圣经经文出处。每条笔记都需以出处开头，例如“约翰福音 3:16”，才能关联到对应经文。</string>
+    <string name="shortcut_votd_short">每日经文</string>
+    <string name="shortcut_votd_long">打开每日经文</string>
+    <string name="shortcut_continue_short">继续阅读</string>
+    <string name="shortcut_continue_long">从上次的位置继续</string>
+    <string name="shortcut_search_short">搜索</string>
+    <string name="shortcut_search_long">搜索圣经</string>
+    <string name="shortcut_new_note_short">新建笔记</string>
+    <string name="shortcut_new_note_long">写一条新笔记</string>
+    <string name="shortcut_favorites_short">收藏</string>
+    <string name="shortcut_favorites_long">显示收藏的经文</string>
+    <string name="shortcut_disabled">此快捷方式已不可用。</string>
+    <string name="assistant_votd_1">每日经文</string>
+    <string name="assistant_votd_2">今日经文</string>
+    <string name="assistant_continue_1">继续阅读</string>
+    <string name="assistant_continue_2">上次读到的地方</string>
+    <string name="assistant_search_1">搜索圣经</string>
+    <string name="assistant_search_2">圣经搜索</string>
+    <string name="assistant_new_note_1">新建笔记</string>
+    <string name="assistant_new_note_2">写笔记</string>
+    <string name="assistant_favorites_1">收藏</string>
+    <string name="assistant_favorites_2">收藏的经文</string>
 </resources>

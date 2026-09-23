@@ -22,6 +22,7 @@ import com.blainemiller.scripturealone.ui.reader.SelectionActions
 import com.blainemiller.scripturealone.ui.study.StudyHost
 import com.blainemiller.scripturealone.ui.reader.ReaderTheme
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
+import com.blainemiller.scripturealone.ui.shortcuts.AppShortcuts
 
 class MainActivity : ComponentActivity() {
 
@@ -92,22 +93,27 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
     }
 
+    /** singleTop: a link, shortcut or search result while the reader is already up lands here. */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         openFromIntent(intent)
     }
 
     /**
-     * Opens what the intent names. A link — `scripturealone://open?ref=…`, or a share link
-     * (`scripturealone://…#s=…`, or the web page's `https://wemiller.com/apps/scripture-alone/#s=…`
-     * if one is handed to the app directly) — goes to the passage and selects it, as iOS's
-     * `onOpenURL` does. The https page is deliberately *not* claimed as an App Link (Android can't
-     * match the fragment, and a path match would take over the product page); the web page offers
-     * "Open in Scripture Alone" through the custom scheme instead.
+     * Opens what the intent names — iOS's `onOpenURL` and `AppCommandCenter`. Any `AppCommand` URL:
+     * a passage (`scripturealone://open?ref=John.3.16`, `…/passage/Ps.23`, stored keys, a typed
+     * reference in any of the app's languages), a share link (`…#s=…`), a search, a note, the notes
+     * list or favorites, and the shortcuts' Verse of the Day, Continue Reading and New Note. The web
+     * page's `https://wemiller.com/apps/scripture-alone/` links arrive here as App Links: the
+     * `/passage/<ref>` path everywhere, and `?ref=`, `#ref=` and `#s=` from Android 15, which can
+     * match a query or fragment (the `WebLinks` alias in the manifest) — so the product page itself
+     * is never taken over.
      *
-     * Otherwise, launch extras — `book`, `chapter` (ints), `translation` and `theme` (names) — the
-     * development hook for going straight to a chapter from `adb shell am start`. Anything out of
-     * range is ignored rather than trusted.
+     * Otherwise, launch extras — `book`, `chapter` (ints), `translation` and `theme` (names), and (debug builds
+     * only) the `notesInSearch` / `favoritesInSearch` switches (booleans) — the development hook for going
+     * straight to a chapter from `adb shell am start`. Anything out of range is ignored rather than
+     * trusted.
      */
     private fun openFromIntent(intent: Intent?) {
         // A Keepsake Bible handed to the app (Files, Gmail, Downloads) — `onOpenURL` for a
@@ -118,9 +124,22 @@ class MainActivity : ComponentActivity() {
             return
         }
         intent?.dataString?.let { url ->
-            if (intent.action == Intent.ACTION_VIEW && reader.openLink(url)) return
+            // A web page's link (CATEGORY_BROWSABLE) may open anything but change nothing: a new note
+            // or a favorite from one only shows the passage. Shortcuts and App Actions aren't browsable.
+            val browsable = intent.hasCategory(Intent.CATEGORY_BROWSABLE)
+            if (intent.action == Intent.ACTION_VIEW && reader.openLink(url, browsable)) {
+                AppShortcuts.reportUsed(this, url)
+                return
+            }
         }
         val extras = intent?.extras ?: return
+        // "Notes in search" / "Favorites in search", for checking the system-search index from adb.
+        // Debug builds only: this activity is exported, and a privacy switch must not be flippable
+        // by another app's intent.
+        if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            if (extras.containsKey("notesInSearch")) reader.notesInSearch = extras.getBoolean("notesInSearch")
+            if (extras.containsKey("favoritesInSearch")) reader.favoritesInSearch = extras.getBoolean("favoritesInSearch")
+        }
         extras.getString("theme")?.let { name ->
             ReaderTheme.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }?.let { reader.theme = it }
         }

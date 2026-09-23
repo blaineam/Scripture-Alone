@@ -2,6 +2,10 @@ package com.blainemiller.scripturealone.data.share
 
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.data.canon.BookNames
+import com.blainemiller.scripturealone.data.reference.OSISReference
+import com.blainemiller.scripturealone.data.reference.Passage
+import com.blainemiller.scripturealone.data.reference.ReferenceParser
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -9,9 +13,9 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
 import java.net.URI
-import java.net.URLDecoder
 import java.text.BreakIterator
 import java.util.Base64
+import java.util.UUID
 
 /**
  * One verse ready to share. [red] is in UTF-16 units — Kotlin's string indices — as share links carry
@@ -247,40 +251,196 @@ data class ShareLinkPayload(
     }
 }
 
-/** A URL the app knows how to open, ported from `AppLink` in `ShareLinkPayload.swift`. */
+/**
+ * A URL the app knows how to open, ported from `AppLink` in `ShareLinkPayload.swift`.
+ *
+ * Custom scheme (`scripturealone://`):
+ * - `open?ref=<ref>` and `passage/<ref>` — a passage, where `<ref>` is stored keys
+ *   (`43003016-43003017,45008028`), OSIS (`John.3.16`, `Gen.1.1-Gen.1.3`, `Ps.23`), either with a
+ *   `urn:osis:` / `osis:` prefix, or a plain reference in any language the app reads ("John 3:16",
+ *   "Jean 3:16", "요한복음 3:16");
+ * - `search?q=<words>`, `note/<uuid>`, `notes`, `favorites`;
+ * - a share link's `#s=` fragment on any of them.
+ *
+ * Web (`https://wemiller.com/apps/scripture-alone/…`, opened as an App Link): a share link's `#s=`
+ * fragment, or a passage as `?ref=<ref>`, `#ref=<ref>` or `/apps/scripture-alone/passage/<ref>`.
+ *
+ * The Android-only commands (Verse of the Day, Continue Reading, new notes, favoriting) are
+ * [AppCommand]s, a layer over this, so the two apps' link contract stays the same.
+ */
 sealed class AppLink {
     /** A share link (web or custom scheme with a `#s=` fragment): show the passage and its card. */
     data class Share(val payload: ShareLinkPayload) : AppLink()
 
-    /** `scripturealone://open?ref=43003016-43003017`: go to the passage and select it. */
+    /** Stored KJV keys, `scripturealone://open?ref=43003016-43003017`: go to the passage and select it. */
     data class Open(val ranges: List<VerseRange>) : AppLink()
+
+    /** OSIS references — KJV numbering, like [Open]. A whole chapter (`Ps.23`) has no start verse. */
+    data class Osis(val passages: List<Passage>) : AppLink()
+
+    /** A reference as a person writes it, in the numbering of the translation being read (Swift's `.passage`). */
+    data class Typed(val passages: List<Passage>) : AppLink()
+
+    /** Search the Bible for words. */
+    data class Search(val words: String) : AppLink()
+
+    /** A note, by its id. */
+    data class NoteLink(val id: UUID) : AppLink()
+
+    /** The notes list, or its Favorites scope. */
+    data object Notes : AppLink()
+    data object Favorites : AppLink()
 
     companion object {
         fun parse(url: String): AppLink? {
-            val uri = runCatching { URI(url) }.getOrNull() ?: return null
-            val scheme = uri.scheme?.lowercase()
-            val host = uri.host?.lowercase() ?: ""
-            val isWeb = (scheme == "https" || scheme == "http") &&
-                (host == ShareLinkPayload.WEB_HOST || host == "www.${ShareLinkPayload.WEB_HOST}") &&
-                (uri.rawPath ?: "").startsWith(ShareLinkPayload.WEB_PATH)
-            val isCustom = scheme == ShareLinkPayload.SCHEME
+            val parts = LinkParts.of(url) ?: return null
+            val isWeb = parts.isWeb
+            val isCustom = parts.scheme == ShareLinkPayload.SCHEME
             if (!isWeb && !isCustom) return null
 
             runCatching { ShareLinkPayload.fromUrl(url) }.getOrNull()?.let { payload ->
                 if (payload.ranges.isNotEmpty()) return Share(payload)
             }
-            if (!isCustom) return null
-            val ref = (uri.rawQuery ?: return null).split('&')
-                .firstOrNull { it.substringBefore('=') == "ref" }
-                ?.substringAfter('=', "")
-                // A literal "+" stays "+", as URLComponents reads it; URLDecoder alone would make it a space.
-                ?.let { URLDecoder.decode(it.replace("+", "%2B"), "UTF-8") } ?: return null
-            val ranges = ShareLinkPayload("", ref, "", "").ranges
-            return if (ranges.isEmpty()) null else Open(ranges)
+
+            // "#ref=John.3.16" on the web: a fragment never reaches the server, like the share payload.
+            val fragmentRef = parts.fragment?.let(LinkParts::decode)?.split('&')
+                ?.firstOrNull { it.startsWith("ref=") }?.drop(4)
+            val ref = parts.query("ref") ?: fragmentRef
+            if (ref != null) return reference(ref)
+
+            // Path segments after the host (custom scheme) or after the web page's path.
+            val segments: List<String> = if (isCustom) {
+                (listOf(parts.authority) + parts.path.split('/')).filter { it.isNotEmpty() }
+            } else {
+                parts.path.drop(ShareLinkPayload.WEB_PATH.length).split('/').filter { it.isNotEmpty() }
+            }
+            val head = segments.firstOrNull()?.let(LinkParts::decode)?.lowercase() ?: return null
+            val tail = segments.drop(1).joinToString("/")
+            return when {
+                head in setOf("passage", "open", "verse", "ref") -> reference(tail)
+                !isCustom -> null
+                head == "search" -> {
+                    // A "+" is a space here, as a search form writes it; nobody searches for a plus sign.
+                    val words = (parts.query("q")?.replace('+', ' ') ?: tail).let { LinkParts.decode(it) ?: it }.trim()
+                    if (words.isEmpty()) null else Search(words)
+                }
+                head == "note" -> {
+                    val raw = segments.getOrNull(1)?.let(LinkParts::decode) ?: parts.query("id")?.let(LinkParts::decode)
+                    uuid(raw)?.let(::NoteLink)
+                }
+                head == "notes" -> Notes
+                head == "favorites" -> Favorites
+                else -> null
+            }
+        }
+
+        /**
+         * A passage from any form a link may carry: stored keys, OSIS (optionally `urn:osis:`), or a
+         * plain reference in any of the app's languages. Null when it is none of them.
+         */
+        fun reference(raw: String, language: String? = BookNames.current): AppLink? {
+            val text = OSISReference.stripUrnPrefix(LinkParts.decode(raw) ?: raw)
+            if (text.isEmpty()) return null
+            // Stored keys first: digits and separators only, so a reference is never mistaken for one.
+            if (text.all { it.isDigit() || it in "-, " }) {
+                val ranges = ShareLinkPayload("", text, "", "").ranges
+                return if (ranges.isEmpty()) null else Open(ranges)
+            }
+            OSISReference.parse(text)?.takeIf { it.isNotEmpty() }?.let { return Osis(it) }
+            val passages = ReferenceParser.parseList(text, language)
+            return if (passages.isEmpty()) null else Typed(passages)
         }
 
         /** `scripturealone://open?ref=43003016-43003017` */
         fun openUrl(ranges: List<VerseRange>): String =
             "${ShareLinkPayload.SCHEME}://open?ref=${ranges.joinToString(",") { it.storageString }}"
+
+        /** `scripturealone://note/<uuid>` */
+        fun noteUrl(id: UUID): String = "${ShareLinkPayload.SCHEME}://note/$id"
+
+        private val uuidPattern = Regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+
+        /** A UUID in its canonical 36-character form only, as Swift's `UUID(uuidString:)` reads it. */
+        internal fun uuid(raw: String?): UUID? =
+            raw?.takeIf { uuidPattern.matches(it) }?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+    }
+}
+
+/**
+ * A URL taken apart leniently. `java.net.URI` refuses what links arrive with in practice — a space
+ * or 约翰福音 unencoded in `?ref=` from `adb` or a note — so the pieces are split by hand and each is
+ * percent-decoded only when read.
+ */
+internal class LinkParts(
+    val scheme: String,
+    /** The host (and any port), lowercased — `open`, `note` for the custom scheme. Raw otherwise. */
+    val authority: String,
+    /** Still percent-encoded. */
+    val path: String,
+    val rawQuery: String?,
+    val fragment: String?,
+) {
+    val host: String get() = authority.substringAfterLast('@').substringBefore(':').lowercase()
+
+    val isWeb: Boolean
+        get() = (scheme == "https" || scheme == "http") &&
+            (host == ShareLinkPayload.WEB_HOST || host == "www.${ShareLinkPayload.WEB_HOST}") &&
+            path.startsWith(ShareLinkPayload.WEB_PATH)
+
+    /**
+     * A query parameter, percent-decoded. A literal "+" stays "+", as `URLComponents` reads it —
+     * `+` in a reference is never a space.
+     */
+    fun query(name: String): String? = rawQuery?.split('&')
+        ?.firstOrNull { it.substringBefore('=') == name }
+        ?.substringAfter('=', "")
+        ?.let { decode(it) ?: it }
+
+    companion object {
+        private val schemePattern = Regex("^[A-Za-z][A-Za-z0-9+.-]*$")
+
+        fun of(url: String): LinkParts? {
+            val text = url.trim()
+            val colon = text.indexOf(':')
+            if (colon <= 0) return null
+            val scheme = text.substring(0, colon)
+            if (!schemePattern.matches(scheme)) return null
+            var rest = text.substring(colon + 1)
+            val fragment = rest.indexOf('#').takeIf { it >= 0 }?.let { index ->
+                rest.substring(index + 1).also { rest = rest.substring(0, index) }
+            }
+            val query = rest.indexOf('?').takeIf { it >= 0 }?.let { index ->
+                rest.substring(index + 1).also { rest = rest.substring(0, index) }
+            }
+            var authority = ""
+            if (rest.startsWith("//")) {
+                rest = rest.substring(2)
+                val slash = rest.indexOf('/').let { if (it < 0) rest.length else it }
+                authority = rest.substring(0, slash)
+                rest = rest.substring(slash)
+            }
+            return LinkParts(scheme.lowercase(), authority.lowercase(), rest, query, fragment)
+        }
+
+        /** Percent-decodes UTF-8; null when the escapes are malformed (as `removingPercentEncoding`). */
+        fun decode(text: String): String? {
+            if ('%' !in text) return text
+            val bytes = java.io.ByteArrayOutputStream()
+            var i = 0
+            while (i < text.length) {
+                val c = text[i]
+                if (c == '%') {
+                    if (i + 2 >= text.length) return null
+                    val value = text.substring(i + 1, i + 3).toIntOrNull(16) ?: return null
+                    bytes.write(value)
+                    i += 3
+                } else {
+                    bytes.write(c.toString().toByteArray(Charsets.UTF_8))
+                    i++
+                }
+            }
+            val decoder = Charsets.UTF_8.newDecoder()
+            return runCatching { decoder.decode(java.nio.ByteBuffer.wrap(bytes.toByteArray())).toString() }.getOrNull()
+        }
     }
 }

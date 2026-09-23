@@ -692,6 +692,10 @@
     <string name="appearance_verse_numbers">Versnummern</string>
     <string name="appearance_section_headings">Abschnittsüberschriften</string>
     <string name="appearance_footnotes">Fußnoten</string>
+    <string name="appearance_search">Suche</string>
+    <string name="appearance_notes_in_search">Notizen in der Suche</string>
+    <string name="appearance_favorites_in_search">Favoriten in der Suche</string>
+    <string name="appearance_search_footer">Lässt Suche und Assistent deines Telefons deine Notizen und Lieblingsverse finden und direkt öffnen. Aus bleiben sie aus der Gerätesuche heraus.</string>
     <string name="appearance_feedback">Feedback &amp; Support</string>
     <string name="appearance_report_issue">Problem melden</string>
     <string name="appearance_suggest_feature">Funktion vorschlagen</string>
@@ -836,4 +840,25 @@
     <string name="data_notes_import_not_life_bible">Das sieht nicht nach einem Life Bible-Export aus. Suche nach LifeBibleData.zip, unter Einstellungen → Erweitert → Daten exportieren.</string>
     <string name="data_notes_import_nothing_to_import">Dieser Export enthält keine Notizen, Markierungen oder gespeicherten Verse.</string>
     <string name="data_notes_import_nothing_recognised">Darin war nichts als Bibelstelle erkennbar. Jede Notiz muss mit einer beginnen – etwa „Johannes 3,16“ –, damit sie dem richtigen Vers zugeordnet werden kann.</string>
+    <string name="shortcut_votd_short">Vers des Tages</string>
+    <string name="shortcut_votd_long">Vers des Tages öffnen</string>
+    <string name="shortcut_continue_short">Weiterlesen</string>
+    <string name="shortcut_continue_long">Da weitermachen, wo du aufgehört hast</string>
+    <string name="shortcut_search_short">Suche</string>
+    <string name="shortcut_search_long">Bibel durchsuchen</string>
+    <string name="shortcut_new_note_short">Neue Notiz</string>
+    <string name="shortcut_new_note_long">Neue Notiz beginnen</string>
+    <string name="shortcut_favorites_short">Favoriten</string>
+    <string name="shortcut_favorites_long">Deine Lieblingsverse anzeigen</string>
+    <string name="shortcut_disabled">Dieser Kurzbefehl ist nicht mehr verfügbar.</string>
+    <string name="assistant_votd_1">vers des tages</string>
+    <string name="assistant_votd_2">tagesvers</string>
+    <string name="assistant_continue_1">weiterlesen</string>
+    <string name="assistant_continue_2">wo ich aufgehört habe</string>
+    <string name="assistant_search_1">bibel durchsuchen</string>
+    <string name="assistant_search_2">bibelsuche</string>
+    <string name="assistant_new_note_1">neue notiz</string>
+    <string name="assistant_new_note_2">notiz erstellen</string>
+    <string name="assistant_favorites_1">favoriten</string>
+    <string name="assistant_favorites_2">Lieblingsverse</string>
 </resources>

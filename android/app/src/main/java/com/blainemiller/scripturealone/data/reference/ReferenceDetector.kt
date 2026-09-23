@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.data.reference
 
 import com.blainemiller.scripturealone.data.canon.BookID
+import com.blainemiller.scripturealone.data.canon.BookNames
 
 /**
  * Finds scripture references inside free text — a photographed sermon slide, pasted notes,
@@ -24,7 +25,49 @@ object ReferenceDetector {
 
     private val firstWord = Regex("""^\S+""")
 
+    /**
+     * References written with the big-8 languages' book names ([BookNames]): "Jean 10:11–18",
+     * "Psaumes 23:1–6", "Joh 3,16", "约翰福音 10:11", "ヨハネ傳福音書3章16節", "요한복음 3장 16절". The names
+     * are listed outright, longest first — Chinese and Japanese have no word breaks for a general
+     * pattern to use — and only a whole listed name or abbreviation counts, never a prefix, so ordinary
+     * words in a slide's prose are not taken for books. `localizedPattern` in ReferenceDetector.swift.
+     */
+    private val localizedPattern: Regex by lazy {
+        val alternation = BookNames.spellings.filter { it.isNotEmpty() }
+            .sortedByDescending { it.codePointCount(0, it.length) }
+            .joinToString("|") { escape(it).replace(" ", """\s*""") }
+        val numbers = """(\d{1,3})(?:\s*(?:[:.,：]|[章장])\s*(\d{1,3})\s*[節节절]?)?(?:\s*[-–—〜～~]\s*(\d{1,3})(?:\s*[:.,：]\s*(\d{1,3}))?)?"""
+        Regex("""(?<![\p{L}])(""" + alternation + """)\.?\s*""" + numbers + """(?!\d)""")
+    }
+
+    /** A spelling as a literal inside the alternation: each metacharacter backslashed, spaces left for `\s*`. */
+    private fun escape(text: String): String = buildString {
+        for (c in text) {
+            if (c in """\^$.|?*+()[]{}-""") append('\\')
+            append(c)
+        }
+    }
+
     fun detect(text: String): List<Match> {
+        val english = detectEnglish(text)
+        val matches = english.toMutableList()
+        var location = 0
+        while (location < text.length) {
+            val m = localizedPattern.find(text, location) ?: break
+            location = m.range.last + 1
+            // A short abbreviation ("Is", "Am", "Jn", "约") needs a verse, as in English — "is 5", "am 3"
+            // are ordinary words. An English match on the same characters wins ("Job 3").
+            val name = m.groups[1]?.value ?: continue
+            val hasVerse = m.groups[3] != null
+            if (name.codePointCount(0, name.length) <= 2 && !hasVerse) continue
+            if (english.any { it.range.first <= m.range.last && m.range.first <= it.range.last }) continue
+            val passage = ReferenceParser.parseAnyLanguage(m.value) ?: continue
+            matches += Match(passage, m.range)
+        }
+        return matches.sortedBy { it.range.first }
+    }
+
+    private fun detectEnglish(text: String): List<Match> {
         val matches = mutableListOf<Match>()
         var location = 0
         while (location < text.length) {

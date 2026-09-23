@@ -692,6 +692,10 @@
     <string name="appearance_verse_numbers">Números de versículo</string>
     <string name="appearance_section_headings">Títulos de sección</string>
     <string name="appearance_footnotes">Notas al pie</string>
+    <string name="appearance_search">Búsqueda</string>
+    <string name="appearance_notes_in_search">Notas en la búsqueda</string>
+    <string name="appearance_favorites_in_search">Favoritos en la búsqueda</string>
+    <string name="appearance_search_footer">Permite que la búsqueda y el asistente del teléfono encuentren tus notas o versículos favoritos y los abran directamente. Si lo desactivas, quedan fuera de la búsqueda del dispositivo.</string>
     <string name="appearance_feedback">Comentarios y soporte</string>
     <string name="appearance_report_issue">Informar de un problema</string>
     <string name="appearance_suggest_feature">Sugerir una función</string>
@@ -836,4 +840,25 @@
     <string name="data_notes_import_not_life_bible">Eso no parece una exportación de Life Bible. Busca LifeBibleData.zip, en Ajustes → Avanzado → Exportar tus datos.</string>
     <string name="data_notes_import_nothing_to_import">Esa exportación no contiene notas, subrayados ni versículos guardados.</string>
     <string name="data_notes_import_nothing_recognised">Nada de eso parecía una referencia bíblica. Cada nota debe empezar por una —«Juan 3:16», por ejemplo— para poder asociarla al versículo correcto.</string>
+    <string name="shortcut_votd_short">Versículo del día</string>
+    <string name="shortcut_votd_long">Abrir el Versículo del día</string>
+    <string name="shortcut_continue_short">Seguir leyendo</string>
+    <string name="shortcut_continue_long">Continúa donde lo dejaste</string>
+    <string name="shortcut_search_short">Búsqueda</string>
+    <string name="shortcut_search_long">Buscar en la Biblia</string>
+    <string name="shortcut_new_note_short">Nueva nota</string>
+    <string name="shortcut_new_note_long">Empieza una nota nueva</string>
+    <string name="shortcut_favorites_short">Favoritos</string>
+    <string name="shortcut_favorites_long">Muestra tus versículos favoritos</string>
+    <string name="shortcut_disabled">Este atajo ya no está disponible.</string>
+    <string name="assistant_votd_1">versículo del día</string>
+    <string name="assistant_votd_2">versículo diario</string>
+    <string name="assistant_continue_1">seguir leyendo</string>
+    <string name="assistant_continue_2">donde lo dejé</string>
+    <string name="assistant_search_1">buscar en la biblia</string>
+    <string name="assistant_search_2">búsqueda bíblica</string>
+    <string name="assistant_new_note_1">nueva nota</string>
+    <string name="assistant_new_note_2">crear una nota</string>
+    <string name="assistant_favorites_1">favoritos</string>
+    <string name="assistant_favorites_2">versículos favoritos</string>
 </resources>

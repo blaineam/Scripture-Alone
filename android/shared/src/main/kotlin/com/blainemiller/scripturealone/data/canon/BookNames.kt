@@ -57,6 +57,14 @@ object BookNames {
     fun abbreviation(book: BookID, language: String? = current): String? =
         language?.let { BOOK_NAMES_TABLE[it]?.getOrNull(book.ordinal)?.abbreviation }
 
+    /**
+     * Every name, abbreviation and alias in the table, as written (not normalized): what
+     * `ReferenceDetector` lists outright to find "Jean 10:11" or "约翰福音 10:11" in a slide's text.
+     */
+    val spellings: Set<String> by lazy {
+        BOOK_NAMES_TABLE.values.flatMapTo(HashSet()) { rows -> rows.flatMap { listOf(it.name, it.abbreviation) + it.aliases } }
+    }
+
     /** Every normalized spelling a language accepts for each book: its names and abbreviations. */
     val aliases: Map<String, Map<BookID, Set<String>>> by lazy {
         BOOK_NAMES_TABLE.mapValues { (_, rows) ->

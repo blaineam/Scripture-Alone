@@ -128,6 +128,33 @@ android {
 }
 
 /**
+ * res/xml/shortcuts.xml (app shortcuts and App Actions), from src/main/shortcuts/shortcuts.xml with
+ * `${applicationId}` filled in. A shortcut's intent must name its package literally — a resource
+ * reference is not resolved there — and a debug build with -PappIdSuffix must open itself.
+ */
+abstract class GenerateShortcuts : DefaultTask() {
+    @get:InputFile abstract val template: RegularFileProperty
+    @get:Input abstract val applicationId: Property<String>
+    @get:OutputDirectory abstract val output: DirectoryProperty
+
+    @TaskAction fun generate() {
+        val file = output.file("xml/shortcuts.xml").get().asFile
+        file.parentFile.mkdirs()
+        file.writeText(template.get().asFile.readText().replace("\${applicationId}", applicationId.get()))
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        val task = tasks.register<GenerateShortcuts>("generate${variant.name.replaceFirstChar { it.uppercase() }}Shortcuts") {
+            template.set(layout.projectDirectory.file("src/main/shortcuts/shortcuts.xml"))
+            applicationId.set(variant.applicationId)
+        }
+        variant.sources.res?.addGeneratedSourceDirectory(task, GenerateShortcuts::output)
+    }
+}
+
+/**
  * Copies the bundled Bible, study and context databases from the iOS app's resources.
  *
  * The iOS app is the source of truth for these files. Copying them in at build time rather than
@@ -214,6 +241,12 @@ dependencies {
     // Listen: a media session over the TextToSpeech reader — lock screen, notification and headset
     // controls, and the mediaPlayback foreground service that keeps reading with the screen off.
     implementation("androidx.media3:media3-session:1.5.1")
+    // Notes and favorites in the device's search (data/appsearch/) — Spotlight on iOS. The platform's own
+    // AppSearch store (Android 12+), so nothing extra ships in the APK; results carry deep links.
+    // 1.1.0-beta01, not 1.1.0: the stable release requires AGP 8.9.1 and this build is on 8.7.3.
+    implementation("androidx.appsearch:appsearch:1.1.0-beta01")
+    implementation("androidx.appsearch:appsearch-platform-storage:1.1.0-beta01")
+    implementation("androidx.concurrent:concurrent-futures-ktx:1.1.0")
     // Camera notes (ui/camera/, data/camera/): CameraX for the live scanner, and ML Kit's text recognizer
     // with the Latin model bundled in the APK, so a slide is read on the device, offline, with no Play
     // services download — VisionKit and Vision on iOS. camera-mlkit-vision maps its boxes onto the preview.

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Google Assistant App Actions (res/xml/shortcuts.xml): the phrases that name each feature for
+     OPEN_APP_FEATURE. The words themselves are strings (strings.xml), so Levi translates them. -->
+<resources>
+    <string-array name="assistant_votd">
+        <item>@string/assistant_votd_1</item>
+        <item>@string/assistant_votd_2</item>
+    </string-array>
+    <string-array name="assistant_continue">
+        <item>@string/assistant_continue_1</item>
+        <item>@string/assistant_continue_2</item>
+    </string-array>
+    <string-array name="assistant_search">
+        <item>@string/assistant_search_1</item>
+        <item>@string/assistant_search_2</item>
+    </string-array>
+    <string-array name="assistant_new_note">
+        <item>@string/assistant_new_note_1</item>
+        <item>@string/assistant_new_note_2</item>
+    </string-array>
+    <string-array name="assistant_favorites">
+        <item>@string/assistant_favorites_1</item>
+        <item>@string/assistant_favorites_2</item>
+    </string-array>
+</resources>

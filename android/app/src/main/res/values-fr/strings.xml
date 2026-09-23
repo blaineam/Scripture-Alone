@@ -692,6 +692,10 @@
     <string name="appearance_verse_numbers">Numéros de verset</string>
     <string name="appearance_section_headings">Intertitres</string>
     <string name="appearance_footnotes">Notes de bas de page</string>
+    <string name="appearance_search">Recherche</string>
+    <string name="appearance_notes_in_search">Notes dans la recherche</string>
+    <string name="appearance_favorites_in_search">Favoris dans la recherche</string>
+    <string name="appearance_search_footer">Permet à la recherche et à l\'assistant de votre téléphone de trouver vos notes ou vos versets favoris et de les ouvrir directement. Désactivés, ils restent hors de la recherche de votre appareil.</string>
     <string name="appearance_feedback">Commentaires &amp; assistance</string>
     <string name="appearance_report_issue">Signaler un problème</string>
     <string name="appearance_suggest_feature">Proposer une fonctionnalité</string>
@@ -836,4 +840,25 @@
     <string name="data_notes_import_not_life_bible">Cela ne ressemble pas à un export Life Bible. Cherchez LifeBibleData.zip, depuis Réglages → Avancé → Exporter vos données.</string>
     <string name="data_notes_import_nothing_to_import">Cet export ne contient ni notes, ni surlignages, ni versets enregistrés.</string>
     <string name="data_notes_import_nothing_recognised">Aucune référence biblique détectée. Chaque note doit commencer par une référence — « Jean 3:16 », par exemple — pour être rattachée au bon verset.</string>
+    <string name="shortcut_votd_short">Verset du jour</string>
+    <string name="shortcut_votd_long">Ouvrir le Verset du jour</string>
+    <string name="shortcut_continue_short">Reprendre la lecture</string>
+    <string name="shortcut_continue_long">Reprendre où vous en étiez</string>
+    <string name="shortcut_search_short">Recherche</string>
+    <string name="shortcut_search_long">Rechercher dans la Bible</string>
+    <string name="shortcut_new_note_short">Nouvelle note</string>
+    <string name="shortcut_new_note_long">Commencer une note</string>
+    <string name="shortcut_favorites_short">Favoris</string>
+    <string name="shortcut_favorites_long">Afficher vos versets favoris</string>
+    <string name="shortcut_disabled">Ce raccourci n\'est plus disponible.</string>
+    <string name="assistant_votd_1">verset du jour</string>
+    <string name="assistant_votd_2">verset quotidien</string>
+    <string name="assistant_continue_1">reprendre la lecture</string>
+    <string name="assistant_continue_2">où je me suis arrêté</string>
+    <string name="assistant_search_1">rechercher dans la bible</string>
+    <string name="assistant_search_2">recherche biblique</string>
+    <string name="assistant_new_note_1">nouvelle note</string>
+    <string name="assistant_new_note_2">créer une note</string>
+    <string name="assistant_favorites_1">favoris</string>
+    <string name="assistant_favorites_2">versets favoris</string>
 </resources>

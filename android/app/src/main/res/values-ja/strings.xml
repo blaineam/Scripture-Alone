@@ -692,6 +692,10 @@
     <string name="appearance_verse_numbers">節番号</string>
     <string name="appearance_section_headings">小見出し</string>
     <string name="appearance_footnotes">脚注</string>
+    <string name="appearance_search">検索</string>
+    <string name="appearance_notes_in_search">検索にノートを表示</string>
+    <string name="appearance_favorites_in_search">検索にお気に入りを表示</string>
+    <string name="appearance_search_footer">スマートフォンの検索やアシスタントからノートやお気に入りの聖句を見つけて、直接開けるようになります。オフにすると、端末の検索に表示されません。</string>
     <string name="appearance_feedback">フィードバックとサポート</string>
     <string name="appearance_report_issue">問題を報告</string>
     <string name="appearance_suggest_feature">機能を提案</string>
@@ -836,4 +840,25 @@
     <string name="data_notes_import_not_life_bible">Life Bible のエクスポートではないようです。設定 → 詳細 → データをエクスポート から LifeBibleData.zip を探してください。</string>
     <string name="data_notes_import_nothing_to_import">そのエクスポートにはメモ、ハイライト、保存した聖句がありません。</string>
     <string name="data_notes_import_nothing_recognised">聖書箇所が見つかりませんでした。正しい聖句に結び付けるため、各メモは「ヨハネ 3:16」のような箇所から始める必要があります。</string>
+    <string name="shortcut_votd_short">今日の聖句</string>
+    <string name="shortcut_votd_long">今日の聖句を開く</string>
+    <string name="shortcut_continue_short">続きを読む</string>
+    <string name="shortcut_continue_long">前回の続きから読む</string>
+    <string name="shortcut_search_short">検索</string>
+    <string name="shortcut_search_long">聖書を検索</string>
+    <string name="shortcut_new_note_short">新規ノート</string>
+    <string name="shortcut_new_note_long">ノートを新規作成</string>
+    <string name="shortcut_favorites_short">お気に入り</string>
+    <string name="shortcut_favorites_long">お気に入りの聖句を表示</string>
+    <string name="shortcut_disabled">このショートカットは利用できなくなりました。</string>
+    <string name="assistant_votd_1">今日の聖句</string>
+    <string name="assistant_votd_2">日々の聖句</string>
+    <string name="assistant_continue_1">続きを読む</string>
+    <string name="assistant_continue_2">前回の続き</string>
+    <string name="assistant_search_1">聖書を検索</string>
+    <string name="assistant_search_2">聖書検索</string>
+    <string name="assistant_new_note_1">新規ノート</string>
+    <string name="assistant_new_note_2">ノートを作成</string>
+    <string name="assistant_favorites_1">お気に入り</string>
+    <string name="assistant_favorites_2">お気に入りの聖句</string>
 </resources>

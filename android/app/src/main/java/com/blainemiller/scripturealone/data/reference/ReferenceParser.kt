@@ -196,6 +196,22 @@ object ReferenceParser {
         return normalizeOrdinals(s)
     }
 
+    /**
+     * Parses a reference in whichever of the nine languages its book name belongs to — for text that
+     * isn't in the reader's own language (a slide, a pasted note). The book must be a whole name or
+     * abbreviation of some language; a prefix doesn't count. `ReferenceParser.parseAnyLanguage` in Swift.
+     */
+    fun parseAnyLanguage(text: String): Passage? {
+        for (language in listOf(BookNames.current) + BookNames.languages + listOf(null)) {
+            val passage = parse(text, language) ?: continue
+            val bookText = pattern.find(clean(text))?.groups?.get(1)?.value ?: continue
+            val token = BookID.normalize(normalizeOrdinals(bookText))
+            val exact = spellingTiers(language).any { it[passage.book]?.contains(token) == true }
+            if (exact && passage.startChapter <= passage.book.chapterCount) return passage
+        }
+        return null
+    }
+
     /** Parses a single reference: "jn 3 16", "Rom 8:28-39", "1co13", "Ps 23", "Gen 1:1–2:3", "Jude 3". */
     fun parse(text: String, language: String? = BookNames.current): Passage? {
         val m = pattern.find(clean(text)) ?: return null

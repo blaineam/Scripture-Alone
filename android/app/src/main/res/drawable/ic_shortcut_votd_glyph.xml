@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An app shortcut's glyph (sun.horizon.fill: Verse of the Day, as the widget draws it), 36 dp in the middle of an adaptive icon's 108 dp canvas. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <group android:translateX="36" android:translateY="36" android:scaleX="1.5" android:scaleY="1.5">
+        <path android:fillColor="#FFF4E7C8"
+            android:pathData="M5,16.5a7,7 0,0 1,14 0zM2,18h20v2H2zM11,3.5h2v3.5h-2zM3.64,7.46l1.41,-1.41 2.47,2.47 -1.41,1.41zM16.48,8.52l2.47,-2.47 1.41,1.41 -2.47,2.47z" />
+    </group>
+</vector>

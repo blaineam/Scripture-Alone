@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App shortcuts (long-press the icon) and Google Assistant App Actions — the Android side of the
+     iOS app's App Shortcuts (ScriptureAlone/Intents/). Every one is a scripturealone:// deep link that
+     MainActivity routes through AppCommand (data/share/AppCommand.kt), exactly as a tapped link is.
+
+     The shortcut ids are also the OPEN_APP_FEATURE feature names (AppCommand.FEATURE_*): with inline
+     inventory the Assistant matches what was said against each shortcut's phrases (res/values/
+     arrays_assistant.xml) and passes the shortcut's id as {name}.
+
+     A template: the build copies it into res/xml/ with ${applicationId} replaced by the variant's
+     application id (generateShortcuts in app/build.gradle.kts) — a shortcut intent must name its
+     package literally, and a debug build with -PappIdSuffix must open itself, not the release app.
+     targetClass stays the activity's class name, which the suffix doesn't change. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- "Open Verse of the Day in Scripture Alone", "Open favorites in Scripture Alone". -->
+    <capability android:name="actions.intent.OPEN_APP_FEATURE">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.blainemiller.scripturealone.MainActivity"
+            android:targetPackage="${applicationId}">
+            <url-template android:value="scripturealone://feature{?name}" />
+            <parameter
+                android:name="feature"
+                android:key="name" android:required="true" />
+        </intent>
+    </capability>
+
+    <!-- "Search for grace in Scripture Alone", "Find John 3:16 in Scripture Alone": the Go To sheet,
+         searching — a reference shows as its first result. -->
+    <capability android:name="actions.intent.GET_THING">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.blainemiller.scripturealone.MainActivity"
+            android:targetPackage="${applicationId}">
+            <url-template android:value="scripturealone://search{?q}" />
+            <parameter
+                android:name="thing.name"
+                android:key="q" android:required="true" />
+        </intent>
+    </capability>
+
+    <!-- "Create a note in Scripture Alone": a new note on the chapter being read, titled with what was said. -->
+    <capability android:name="actions.intent.CREATE_THING">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.blainemiller.scripturealone.MainActivity"
+            android:targetPackage="${applicationId}">
+            <url-template android:value="scripturealone://new-note{?title}" />
+            <parameter
+                android:name="thing.name"
+                android:key="title" />
+        </intent>
+    </capability>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_votd"
+        android:shortcutDisabledMessage="@string/shortcut_disabled"
+        android:shortcutId="verse_of_the_day"
+        android:shortcutLongLabel="@string/shortcut_votd_long"
+        android:shortcutShortLabel="@string/shortcut_votd_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="scripturealone://today"
+            android:targetClass="com.blainemiller.scripturealone.MainActivity"
+            android:targetPackage="${applicationId}" />
+        <capability-binding android:key="actions.intent.OPEN_APP_FEATURE">
+            <parameter-binding
+                android:key="feature"
+                android:value="@array/assistant_votd" />
+        </capability-binding>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_continue"
+        android:shortcutDisabledMessage="@string/shortcut_disabled"
+        android:shortcutId="continue_reading"
+        android:shortcutLongLabel="@string/shortcut_continue_long"
+        android:shortcutShortLabel="@string/shortcut_continue_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="scripturealone://continue"
+            android:targetClass="com.blainemiller.scripturealone.MainActivity"
+            android:targetPackage="${applicationId}" />
+        <capability-binding android:key="actions.intent.OPEN_APP_FEATURE">
+            <parameter-binding
+                android:key="feature"
+                android:value="@array/assistant_continue" />
+        </capability-binding>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_search"
+        android:shortcutDisabledMessage="@string/shortcut_disabled"
+        android:shortcutId="search"
+        android:shortcutLongLabel="@string/shortcut_search_long"
+        android:shortcutShortLabel="@string/shortcut_search_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="scripturealone://feature?name=search"
+            android:targetClass="com.blainemiller.scripturealone.MainActivity"
+            android:targetPackage="${applicationId}" />
+        <capability-binding android:key="actions.intent.OPEN_APP_FEATURE">
+            <parameter-binding
+                android:key="feature"
+                android:value="@array/assistant_search" />
+        </capability-binding>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_new_note"
+        android:shortcutDisabledMessage="@string/shortcut_disabled"
+        android:shortcutId="new_note"
+        android:shortcutLongLabel="@string/shortcut_new_note_long"
+        android:shortcutShortLabel="@string/shortcut_new_note_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="scripturealone://new-note"
+            android:targetClass="com.blainemiller.scripturealone.MainActivity"
+            android:targetPackage="${applicationId}" />
+        <capability-binding android:key="actions.intent.OPEN_APP_FEATURE">
+            <parameter-binding
+                android:key="feature"
+                android:value="@array/assistant_new_note" />
+        </capability-binding>
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_favorites"
+        android:shortcutDisabledMessage="@string/shortcut_disabled"
+        android:shortcutId="favorites"
+        android:shortcutLongLabel="@string/shortcut_favorites_long"
+        android:shortcutShortLabel="@string/shortcut_favorites_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="scripturealone://favorites"
+            android:targetClass="com.blainemiller.scripturealone.MainActivity"
+            android:targetPackage="${applicationId}" />
+        <capability-binding android:key="actions.intent.OPEN_APP_FEATURE">
+            <parameter-binding
+                android:key="feature"
+                android:value="@array/assistant_favorites" />
+        </capability-binding>
+    </shortcut>
+</shortcuts>

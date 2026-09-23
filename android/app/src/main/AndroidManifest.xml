@@ -39,14 +39,33 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- scripturealone://open?ref=… and scripturealone://…#s=… share links. The https share
-                 page is not claimed: see docs/android-parity.md. -->
+            <!-- The app's links (data/share/AppLink.kt, AppCommand.kt): scripturealone://open?ref=… (stored
+                 keys, OSIS, urn:osis:, a typed reference in any of the app's languages), passage/<ref>,
+                 search?q=…, note/<uuid>, notes, favorites, share links (…#s=…), and the shortcuts' today,
+                 continue, new-note and feature?name=…. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="scripturealone" />
             </intent-filter>
+            <!-- App Links: a passage on the web page's own path, https://wemiller.com/apps/scripture-alone/
+                 passage/<ref>. A path of its own, so the product page itself is never taken over. The
+                 page's ?ref=, #ref= and #s= links are the WebLinks alias below (Android 15+). Verified
+                 against https://wemiller.com/.well-known/assetlinks.json. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="wemiller.com" />
+                <data android:host="www.wemiller.com" />
+                <data android:pathPrefix="/apps/scripture-alone/passage/" />
+            </intent-filter>
+            <!-- App shortcuts and Google Assistant App Actions. -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
             <!-- Keepsake Bibles (ui/keepsake/): the type the iOS app declares for `.scripturelegacy`
                  files, `application/vnd.scripturealone.legacy+zip` (docs/heir-mode.md)… -->
             <intent-filter>
@@ -73,6 +92,40 @@
                 <data android:pathPattern=".*\\..*\\..*\\.scripturelegacy" />
             </intent-filter>
         </activity>
+
+        <!-- The web page's passage and share links — https://wemiller.com/apps/scripture-alone/?ref=John.3.16,
+             …/#ref=…, …/#s=… — which differ from the product page only in their query or fragment. Only
+             Android 15 can match those (uri-relative-filter-group); an older one would match the bare
+             page and take it over, so the alias is enabled from API 35 only (values-v35/bools.xml).
+             Before that, the page's "Open in Scripture Alone" button uses the custom scheme. -->
+        <activity-alias
+            android:name=".WebLinks"
+            android:enabled="@bool/web_fragment_links"
+            android:exported="true"
+            android:targetActivity=".MainActivity">
+            <intent-filter
+                android:autoVerify="true"
+                tools:targetApi="35">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="wemiller.com" />
+                <data android:host="www.wemiller.com" />
+                <uri-relative-filter-group>
+                    <data android:pathPrefix="/apps/scripture-alone" />
+                    <data android:queryPrefix="ref=" />
+                </uri-relative-filter-group>
+                <uri-relative-filter-group>
+                    <data android:pathPrefix="/apps/scripture-alone" />
+                    <data android:fragmentPrefix="ref=" />
+                </uri-relative-filter-group>
+                <uri-relative-filter-group>
+                    <data android:pathPrefix="/apps/scripture-alone" />
+                    <data android:fragmentPrefix="s=" />
+                </uri-relative-filter-group>
+            </intent-filter>
+        </activity-alias>
 
         <!-- Listen's media session: lock-screen and notification controls, headset buttons. -->
         <service

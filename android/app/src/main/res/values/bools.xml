@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The WebLinks alias (AndroidManifest.xml): off before Android 15, which can't match a URL's query
+         or fragment and would claim the whole product page. -->
+    <bool name="web_fragment_links">false</bool>
+</resources>

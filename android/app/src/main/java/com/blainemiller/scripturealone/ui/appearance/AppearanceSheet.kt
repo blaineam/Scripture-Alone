@@ -282,6 +282,18 @@ private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKee
             SwitchRow(stringResource(R.string.appearance_footnotes), model.footnotes, palette) { model.footnotes = it }
         }
 
+        // Search — iOS's Spotlight section: notes and favorites in the device's search, off by default.
+        // Only where there is a system index to put them in (Android 12+).
+        if (model.systemSearch.isAvailable) {
+            SectionTitle(stringResource(R.string.appearance_search), palette)
+            PanelGroup(palette) {
+                SwitchRow(stringResource(R.string.appearance_notes_in_search), model.notesInSearch, palette) { model.notesInSearch = it }
+                PanelSeparator(palette)
+                SwitchRow(stringResource(R.string.appearance_favorites_in_search), model.favoritesInSearch, palette) { model.favoritesInSearch = it }
+            }
+            SectionFooter(stringResource(R.string.appearance_search_footer), palette)
+        }
+
         // Keepsake & Export — `Section { LegacyAndExportRow() }`.
         PanelGroup(palette, Modifier.padding(top = 18.dp)) {
             LinkRow(stringResource(R.string.keepsake_settings_title), palette, push = true, onClick = onKeepsake)

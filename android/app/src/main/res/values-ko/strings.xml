@@ -692,6 +692,10 @@
     <string name="appearance_verse_numbers">절 번호</string>
     <string name="appearance_section_headings">단락 제목</string>
     <string name="appearance_footnotes">각주</string>
+    <string name="appearance_search">검색</string>
+    <string name="appearance_notes_in_search">검색에 노트 포함</string>
+    <string name="appearance_favorites_in_search">검색에 즐겨찾기 포함</string>
+    <string name="appearance_search_footer">휴대폰의 검색과 어시스턴트에서 노트나 즐겨찾는 구절을 찾아 바로 열 수 있습니다. 끄면 기기 검색에 나타나지 않습니다.</string>
     <string name="appearance_feedback">의견 및 지원</string>
     <string name="appearance_report_issue">문제 신고</string>
     <string name="appearance_suggest_feature">기능 제안</string>
@@ -836,4 +840,25 @@
     <string name="data_notes_import_not_life_bible">Life Bible 내보내기 파일이 아닌 것 같습니다. 설정 → 고급 → 데이터 내보내기에서 만든 LifeBibleData.zip을 찾아보세요.</string>
     <string name="data_notes_import_nothing_to_import">이 내보내기에는 노트, 하이라이트, 저장한 구절이 없습니다.</string>
     <string name="data_notes_import_nothing_recognised">성경 구절 참조를 찾을 수 없습니다. 각 노트는 “요한복음 3:16”처럼 참조로 시작해야 해당 구절에 연결됩니다.</string>
+    <string name="shortcut_votd_short">오늘의 말씀</string>
+    <string name="shortcut_votd_long">오늘의 말씀 열기</string>
+    <string name="shortcut_continue_short">이어서 읽기</string>
+    <string name="shortcut_continue_long">읽던 곳부터 이어서</string>
+    <string name="shortcut_search_short">검색</string>
+    <string name="shortcut_search_long">성경 검색</string>
+    <string name="shortcut_new_note_short">새 노트</string>
+    <string name="shortcut_new_note_long">새 노트 작성</string>
+    <string name="shortcut_favorites_short">즐겨찾기</string>
+    <string name="shortcut_favorites_long">즐겨찾는 구절 보기</string>
+    <string name="shortcut_disabled">이 단축어는 더 이상 사용할 수 없습니다.</string>
+    <string name="assistant_votd_1">오늘의 말씀</string>
+    <string name="assistant_votd_2">매일 말씀</string>
+    <string name="assistant_continue_1">이어서 읽기</string>
+    <string name="assistant_continue_2">읽던 곳</string>
+    <string name="assistant_search_1">성경 검색</string>
+    <string name="assistant_search_2">성경 찾기</string>
+    <string name="assistant_new_note_1">새 노트</string>
+    <string name="assistant_new_note_2">노트 만들기</string>
+    <string name="assistant_favorites_1">즐겨찾기</string>
+    <string name="assistant_favorites_2">즐겨찾는 구절</string>
 </resources>

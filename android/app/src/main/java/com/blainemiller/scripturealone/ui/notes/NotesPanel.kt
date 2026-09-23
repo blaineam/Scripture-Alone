@@ -97,10 +97,12 @@ fun NotesPanel(
     openNote: String?,
     onOpenNoteChange: (String?) -> Unit,
     onDismiss: () -> Unit,
+    /** The scope to open on — Favorites for a favorites link or shortcut. */
+    initialScope: NotesScope = NotesScope.ALL,
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
     var search by rememberSaveable { mutableStateOf("") }
-    var scope by rememberSaveable { mutableStateOf(NotesScope.ALL) }
+    var scope by rememberSaveable { mutableStateOf(initialScope) }
 
     fun dismiss() {
         keyboard?.hide()

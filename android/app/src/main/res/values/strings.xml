@@ -1285,6 +1285,14 @@
     <string name="appearance_section_headings">Section Headings</string>
     <!-- Switch. -->
     <string name="appearance_footnotes">Footnotes</string>
+    <!-- Section title: settings about the phone’s own search (the system search on the home screen), not the app’s Bible search. -->
+    <string name="appearance_search">Search</string>
+    <!-- Switch: let the phone’s search find the reader’s notes. -->
+    <string name="appearance_notes_in_search">Notes in search</string>
+    <!-- Switch: let the phone’s search find the reader’s favorite verses. -->
+    <string name="appearance_favorites_in_search">Favorites in search</string>
+    <!-- Footer under the two switches above. -->
+    <string name="appearance_search_footer">Lets your phone’s search and assistant find your notes or favorite verses, and open right to them. Off, they stay out of your device’s search.</string>
     <!-- Section title. -->
     <string name="appearance_feedback">Feedback &amp; Support</string>
     <string name="appearance_report_issue">Report an Issue</string>
@@ -1553,4 +1561,40 @@
     <string name="data_notes_import_not_life_bible">That doesn\'t look like a Life Bible export. Look for LifeBibleData.zip, from Settings → Advanced → Export your data.</string>
     <string name="data_notes_import_nothing_to_import">That export has no notes, highlights or saved verses in it.</string>
     <string name="data_notes_import_nothing_recognised">Nothing in that looked like a Bible reference. Each note needs to start with one — “John 3:16”, say — so it can be attached to the right verse.</string>
+
+    <!-- ===== App shortcuts (long-press the app icon) and Google Assistant ===== -->
+    <!-- App shortcut, short label (about 10 characters where the language allows): opens today’s Verse of the Day. -->
+    <string name="shortcut_votd_short">Verse of the Day</string>
+    <!-- App shortcut, long label: opens today’s Verse of the Day in the reader. -->
+    <string name="shortcut_votd_long">Open the Verse of the Day</string>
+    <!-- App shortcut, short label: back to where the reader stopped reading. -->
+    <string name="shortcut_continue_short">Continue Reading</string>
+    <!-- App shortcut, long label. -->
+    <string name="shortcut_continue_long">Continue where you left off</string>
+    <!-- App shortcut, short label: opens the search (Go To) sheet. -->
+    <string name="shortcut_search_short">Search</string>
+    <!-- App shortcut, long label. -->
+    <string name="shortcut_search_long">Search the Bible</string>
+    <!-- App shortcut, short label: starts a new note on the chapter being read. -->
+    <string name="shortcut_new_note_short">New Note</string>
+    <!-- App shortcut, long label. -->
+    <string name="shortcut_new_note_long">Start a new note</string>
+    <!-- App shortcut, short label: the reader’s favorite verses. -->
+    <string name="shortcut_favorites_short">Favorites</string>
+    <!-- App shortcut, long label. -->
+    <string name="shortcut_favorites_long">Show your favorite verses</string>
+    <!-- Shown when a pinned shortcut no longer works (it was removed from the app). -->
+    <string name="shortcut_disabled">This shortcut is no longer available.</string>
+    <!-- What someone might say to Google Assistant to open a feature (“Open Verse of the Day in Scripture Alone”).
+         Lowercase, spoken words; one phrase per string. -->
+    <string name="assistant_votd_1">verse of the day</string>
+    <string name="assistant_votd_2">daily verse</string>
+    <string name="assistant_continue_1">continue reading</string>
+    <string name="assistant_continue_2">where I left off</string>
+    <string name="assistant_search_1">search the bible</string>
+    <string name="assistant_search_2">bible search</string>
+    <string name="assistant_new_note_1">new note</string>
+    <string name="assistant_new_note_2">create a note</string>
+    <string name="assistant_favorites_1">favorites</string>
+    <string name="assistant_favorites_2">favorite verses</string>
 </resources>

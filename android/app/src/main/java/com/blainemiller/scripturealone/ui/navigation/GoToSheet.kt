@@ -114,8 +114,14 @@ import kotlinx.coroutines.delay
  * Back and the field.
  */
 @Composable
-fun GoToSheet(model: ReaderViewModel, palette: ReaderPalette, onDismiss: () -> Unit) {
-    var query by rememberSaveable { mutableStateOf("") }
+fun GoToSheet(
+    model: ReaderViewModel,
+    palette: ReaderPalette,
+    /** Words a search link, shortcut or App Action asked for — `AppCommandCenter.searchQuery`. */
+    initialQuery: String = "",
+    onDismiss: () -> Unit,
+) {
+    var query by rememberSaveable { mutableStateOf(initialQuery) }
     /** The book whose chapter grid is open — iOS's `NavigationStack` path, one level deep. */
     var book by rememberSaveable { mutableStateOf<Int?>(null) }
     var results by remember { mutableStateOf<List<SearchHit>>(emptyList()) }

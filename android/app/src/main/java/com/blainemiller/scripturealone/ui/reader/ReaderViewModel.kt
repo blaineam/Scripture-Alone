@@ -16,6 +16,7 @@ import com.blainemiller.scripturealone.data.ChapterVerse
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.listen.AutoScroll
 import com.blainemiller.scripturealone.data.rights.TranslationRights
+import com.blainemiller.scripturealone.data.share.AppCommand
 import com.blainemiller.scripturealone.data.share.AppLink
 import com.blainemiller.scripturealone.data.share.ShareLinkPayload
 import com.blainemiller.scripturealone.data.share.ShareVerse
@@ -47,6 +48,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.first
+import com.blainemiller.scripturealone.data.appsearch.SearchableFavorite
+import com.blainemiller.scripturealone.data.appsearch.SearchableNote
+import com.blainemiller.scripturealone.data.appsearch.SystemSearchIndex
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.properties.ReadWriteProperty
@@ -635,25 +644,163 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         private set
 
     /**
-     * Opens a `scripturealone://open?ref=…` link or a share link (`…#s=…`, on the web page or the
-     * custom scheme) — `ShareSupport.open`. Both go to the passage and select it; a share link also
-     * shows the card it carries. Returns false for a URL that is neither.
+     * Opens a link (`AppLink`) — `ShareSupport.open`. Returns false for a URL that is none; see [perform]
+     * for everything else an outside request can ask. [browsable] is an intent from a web page, which may
+     * open anything but change nothing.
      */
-    fun openLink(url: String): Boolean {
-        val link = AppLink.parse(url) ?: return false
+    fun openLink(url: String, browsable: Boolean = true): Boolean {
+        val command = AppCommand.parse(url) ?: return false
+        val allowed = if (browsable && command.changesData) command.readOnly ?: return true else command
+        perform(allowed)
+        return true
+    }
+
+    /**
+     * What an outside request — a link, a shortcut, an App Action, a search result — needs the reader's
+     * screen to show, one-shot: the screen clears whatever covers the text, then opens the sheet named.
+     * Carries a serial so the same request twice is two requests. `AppCommandCenter` on iOS.
+     */
+    var request by mutableStateOf<ReaderRequest?>(null)
+        private set
+    private var requestSerial = 0
+
+    private fun post(kind: ReaderRequest.Kind) {
+        request = ReaderRequest(++requestSerial, kind)
+    }
+
+    /** The screen has carried out [done]. */
+    fun consumeRequest(done: ReaderRequest) {
+        if (request?.serial == done.serial) request = null
+    }
+
+    /**
+     * Carries out a command from outside the reader, the way `ReaderView.perform` does: nothing modal
+     * may cover where the reader is being taken, and notes and favorites are the reader's own, so a
+     * keepsake being read is closed first.
+     */
+    fun perform(command: AppCommand) {
         // A link that arrives while the designer is open goes to its own passage, as `reveal` does on iOS.
         designer = null
+        val ownNotes = when (command) {
+            is AppCommand.NewNote, is AppCommand.Favorite -> true
+            is AppCommand.Link -> command.link is AppLink.NoteLink || command.link is AppLink.Notes || command.link is AppLink.Favorites
+            else -> false
+        }
+        if (ownNotes && legacy.reading != null) closeKeepsake()
+        when (command) {
+            is AppCommand.Link -> {
+                command.translation?.let { if (it in BundledTranslations.ids) selectTranslation(it) }
+                open(command.link)
+            }
+            AppCommand.VerseOfTheDay -> {
+                sharedPassage = null
+                post(ReaderRequest.Kind.Reader)
+                val today = com.blainemiller.scripturealone.ui.widget.DailyVerseLibrary.catalog(getApplication())
+                    ?.verse(java.time.Instant.now())?.range ?: return
+                reveal(listOf(today))
+            }
+            AppCommand.ContinueReading -> {
+                // One device, one place: the reader already opens where it left off. Uncover it.
+                sharedPassage = null
+                clearSelection()
+                post(ReaderRequest.Kind.Reader)
+            }
+            is AppCommand.NewNote -> viewModelScope.launch {
+                loading?.join()
+                val anchors = command.passage?.let { kjvRanges(it) }.orEmpty().ifEmpty {
+                    val count = loadVerseCount(location).coerceAtLeast(1)
+                    listOf(numbering.kjvRange(VerseRange(VerseRef(location.book, location.chapter, 1), VerseRef(location.book, location.chapter, count))))
+                }
+                command.passage?.let { reveal(anchors) }
+                val note = userData.newNote(anchors).let { note ->
+                    command.title?.let { title -> note.copy(title = title).also(userData::save) } ?: note
+                }
+                post(ReaderRequest.Kind.Note(note.id))
+            }
+            is AppCommand.Favorite -> viewModelScope.launch {
+                loading?.join()
+                val ranges = kjvRanges(command.passage)
+                if (ranges.isEmpty()) return@launch
+                // At a cold launch the favorites are still being read: decide on the real list.
+                userData.loaded.first { it }
+                val favorites = userData.favorites.value
+                val isFavorite = Selection.isFavorite(ranges, favorites)
+                if (isFavorite != command.add) userData.toggleFavorite(ranges)
+                post(ReaderRequest.Kind.Reader)
+                reveal(ranges)
+            }
+        }
+    }
+
+    /** Opens what a link names. Whole chapters are opened without selecting anything; verses are opened and selected. */
+    private fun open(link: AppLink) {
+        if (link !is AppLink.Share) sharedPassage = null
         when (link) {
             is AppLink.Open -> {
-                sharedPassage = null
+                post(ReaderRequest.Kind.Reader)
                 reveal(link.ranges)
             }
             is AppLink.Share -> {
+                post(ReaderRequest.Kind.Reader)
                 reveal(link.payload.ranges)
                 sharedPassage = link.payload
             }
+            is AppLink.Osis, is AppLink.Typed -> {
+                post(ReaderRequest.Kind.Reader)
+                val opening = loading
+                viewModelScope.launch {
+                    // A link that opened the app arrives before the translation's numbering is known.
+                    opening?.join()
+                    val first = (if (link is AppLink.Osis) link.passages else (link as AppLink.Typed).passages).firstOrNull()
+                        ?: return@launch
+                    if (first.isWholeChapter) {
+                        val clamped = first.clamped
+                        // OSIS is KJV-numbered, like everything stored; a typed chapter is the translation's own.
+                        if (link is AppLink.Osis) go(VerseRef(clamped.book.number, clamped.startChapter, 1)) else go(clamped)
+                        clearSelection()
+                    } else {
+                        reveal(kjvRanges(link))
+                    }
+                }
+            }
+            is AppLink.Search -> post(ReaderRequest.Kind.Search(link.words))
+            is AppLink.NoteLink -> post(ReaderRequest.Kind.Note(link.id))
+            AppLink.Notes -> post(ReaderRequest.Kind.Notes)
+            AppLink.Favorites -> post(ReaderRequest.Kind.Favorites)
         }
-        return true
+    }
+
+    /**
+     * A passage link as stored (KJV) ranges, whole chapters and open ends resolved against the verse
+     * counts of the translation being read. Empty for a link that names no passage.
+     */
+    private suspend fun kjvRanges(link: AppLink): List<VerseRange> = when (link) {
+        is AppLink.Open -> link.ranges
+        is AppLink.Share -> link.payload.ranges
+        is AppLink.Typed -> link.passages.map { passage ->
+            // Typed the way the translation being read numbers its verses.
+            val clamped = passage.clamped
+            val counts = HashMap<Int, Int>()
+            for (chapter in clamped.startChapter..clamped.endChapter) {
+                counts[chapter] = loadVerseCount(ChapterRef(clamped.book.number, chapter))
+            }
+            val (first, last) = clamped.range { _, chapter -> counts[chapter]?.takeIf { it > 0 } ?: 1 }
+            numbering.kjvRange(VerseRange.of(VerseRef.fromKey(first), VerseRef.fromKey(last)))
+        }
+        is AppLink.Osis -> link.passages.map { passage ->
+            // KJV-numbered already. An open end takes the chapter's last verse, which in the rare
+            // renumbered chapter may be one off — it only decides how far the selection runs.
+            val clamped = passage.clamped
+            val counts = HashMap<Int, Int>()
+            for (chapter in clamped.startChapter..clamped.endChapter) {
+                val kjv = VerseRef(clamped.book.number, chapter, 1)
+                val native = numbering.native(kjv.key)?.let(VerseRef::fromKey) ?: kjv
+                counts[chapter] = loadVerseCount(ChapterRef(native.book, native.chapter))
+            }
+            val (first, last) = clamped.range { _, chapter -> counts[chapter]?.takeIf { it > 0 } ?: 1 }
+            VerseRange.of(VerseRef.fromKey(first), VerseRef.fromKey(last))
+        }
+        else -> emptyList()
     }
 
     fun dismissSharedPassage() {
@@ -710,8 +857,66 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     /** "My Bible": back to the reader's own marks and translation. */
     fun closeKeepsake() = legacy.close(translationId, ::selectTranslation)
 
+    // Notes and favorites in the device's search (data/appsearch/) — SpotlightSync.swift.
+
+    /** "Notes in search": off until the reader turns it on — a note can be private. */
+    var notesInSearch by persisted(saved.notesInSearch ?: false) { p, v -> p[ReaderKeys.SEARCH_NOTES] = v }
+    /** "Favorites in search": off until the reader turns it on. */
+    var favoritesInSearch by persisted(saved.favoritesInSearch ?: false) { p, v -> p[ReaderKeys.SEARCH_FAVORITES] = v }
+
+    val systemSearch = SystemSearchIndex(application)
+
+    init {
+        // Rebuilt whenever what would be indexed changes — an edit, an import, a switch of translation
+        // (favorites carry its text), a toggle — after two quiet seconds, so typing a note or a burst of
+        // changes is one write. A toggle turned off empties its namespace.
+        if (systemSearch.isAvailable) viewModelScope.launch {
+            userData.loaded.first { it }
+            launch {
+                combine(snapshotFlow { notesInSearch }, userData.notes, snapshotFlow { bookNamesLanguage }) { on, notes, _ ->
+                    if (on) notes else null
+                }.collectLatest { notes ->
+                    delay(SEARCH_SYNC_DELAY_MS)
+                    systemSearch.syncNotes(notes?.map { note ->
+                        SearchableNote(
+                            note.id, note.displayTitle, note.body,
+                            note.anchors.joinToString(" · ") { displayRange(it).display },
+                            note.updatedAt.toEpochMilli(),
+                        )
+                    })
+                }
+            }
+            launch {
+                combine(snapshotFlow { favoritesInSearch }, userData.favorites, snapshotFlow { chapter?.translation?.id }) { on, favorites, _ ->
+                    if (on) favorites else null
+                }.collectLatest { favorites ->
+                    delay(SEARCH_SYNC_DELAY_MS)
+                    systemSearch.syncFavorites(favorites?.let { searchableFavorites(it) })
+                }
+            }
+        }
+    }
+
+    /**
+     * Favorites with their text in the translation being read, where its terms allow quoting — capped
+     * at a dozen verses, so a favorited chapter is one result, not a chapter's worth of index.
+     */
+    private suspend fun searchableFavorites(favorites: List<com.blainemiller.scripturealone.data.userdata.Favorite>): List<SearchableFavorite> {
+        val translation = chapter?.translation?.abbreviation ?: translationId
+        return favorites.distinctBy { it.range.storageString }.map { favorite ->
+            val range = favorite.range
+            val cappedEnd = VerseRef(range.start.book, range.start.chapter, range.start.verse + 12)
+            val capped = VerseRange.of(range.start, if (range.end.key < cappedEnd.key) range.end else cappedEnd)
+            val verses = runCatching { verses(listOf(capped)) }.getOrDefault(emptyList())
+            val text = if (verses.isNotEmpty() && rights.mayQuote(verses.size)) verses.joinToString(" ") { it.text.trim() } else ""
+            SearchableFavorite(range.storageString, displayRange(range).display, text, translation, AppLink.openUrl(listOf(range)))
+        }
+    }
+
     private companion object {
         /** The device's languages, most preferred first, as BCP 47 tags. */
+        const val SEARCH_SYNC_DELAY_MS = 2_000L
+
         fun deviceLanguages(): List<String> {
             val list = android.os.LocaleList.getDefault()
             return (0 until list.size()).map { list[it].toLanguageTag() }
@@ -726,5 +931,19 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
             val pack = AssetPack.forTranslation(id) ?: return true
             return !AssetLibrary.isAttached || AssetLibrary.isOnDevice(pack)
         }
+    }
+}
+
+/** A one-shot request from outside for the reader's screen — see [ReaderViewModel.request]. */
+data class ReaderRequest(val serial: Int, val kind: Kind) {
+    sealed class Kind {
+        /** Just the text: close whatever covers it. */
+        data object Reader : Kind()
+        /** The Go To sheet, searching for [words] (empty: the sheet as it opens). */
+        data class Search(val words: String) : Kind()
+        /** The Notes panel, open on this note. */
+        data class Note(val id: java.util.UUID) : Kind()
+        data object Notes : Kind()
+        data object Favorites : Kind()
     }
 }

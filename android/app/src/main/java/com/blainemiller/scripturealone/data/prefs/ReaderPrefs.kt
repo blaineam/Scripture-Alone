@@ -69,6 +69,11 @@ object ReaderKeys {
     val SHARE_RED_LETTERS = booleanPreferencesKey("share.redLetters")
     val SHARE_VERSE_NUMBERS = booleanPreferencesKey("share.verseNumbers")
     val SHARE_WORDMARK = booleanPreferencesKey("share.wordmark")
+
+    // Notes and favorites in the device's search — `SpotlightSettingsKey` in SpotlightSync.swift. Off
+    // until the reader turns them on.
+    val SEARCH_NOTES = booleanPreferencesKey("spotlight.notes")
+    val SEARCH_FAVORITES = booleanPreferencesKey("spotlight.favorites")
 }
 
 /**
@@ -102,6 +107,8 @@ data class ReaderSettings(
     val shareRedLetters: Boolean? = null,
     val shareVerseNumbers: Boolean? = null,
     val shareWordmark: Boolean? = null,
+    val notesInSearch: Boolean? = null,
+    val favoritesInSearch: Boolean? = null,
 ) {
     companion object {
         fun from(p: Preferences): ReaderSettings = ReaderSettings(
@@ -127,6 +134,8 @@ data class ReaderSettings(
             shareRedLetters = p[ReaderKeys.SHARE_RED_LETTERS],
             shareVerseNumbers = p[ReaderKeys.SHARE_VERSE_NUMBERS],
             shareWordmark = p[ReaderKeys.SHARE_WORDMARK],
+            notesInSearch = p[ReaderKeys.SEARCH_NOTES],
+            favoritesInSearch = p[ReaderKeys.SEARCH_FAVORITES],
         )
 
         /** A verse key naming a real book and chapter. Verse bounds vary by translation and aren't checked. */

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 15 matches the query and fragment (uri-relative-filter-group): the page's ?ref=, #ref= and #s= links. -->
+    <bool name="web_fragment_links">true</bool>
+</resources>

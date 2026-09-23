@@ -1,6 +1,8 @@
 package com.blainemiller.scripturealone.data.reference
 
+import com.blainemiller.scripturealone.data.canon.BookID
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** Ported from `ReferenceDetectorTests` in `ReferenceParserTests.swift`. */
@@ -29,5 +31,23 @@ class ReferenceDetectorTest {
         val text = "Read Romans 8:28 today"
         val match = ReferenceDetector.detect(text).single()
         assertEquals("Romans 8:28", text.substring(match.range))
+    }
+
+    /** `slidesInEveryLanguageYieldTheirPassages` in LocalizedReferenceTests.swift. */
+    @Test fun slidesInEveryLanguageYieldTheirPassages() {
+        val cases = listOf(
+            "Le bon berger\nJean 10:11–18  ·  Psaumes 23:1–6" to listOf(BookID.JOHN, BookID.PSALMS),
+            "Der gute Hirte\nJohannes 10,11–18  ·  Psalm 23,1–6" to listOf(BookID.JOHN, BookID.PSALMS),
+            "El buen pastor\nJuan 10:11–18  ·  Salmos 23:1–6" to listOf(BookID.JOHN, BookID.PSALMS),
+            "好牧人\n约翰福音 10:11–18  ·  诗篇 23:1–6" to listOf(BookID.JOHN, BookID.PSALMS),
+            "善き牧者\nヨハネ傳福音書 10:11–18  ·  詩篇 23:1–6" to listOf(BookID.JOHN, BookID.PSALMS),
+            "선한 목자\n요한복음 10:11–18  ·  시편 23:1–6" to listOf(BookID.JOHN, BookID.PSALMS),
+            "The Good Shepherd\nJohn 10:11–18  ·  Psalm 23:1–6" to listOf(BookID.JOHN, BookID.PSALMS),
+        )
+        for ((text, books) in cases) {
+            assertEquals(text, books, ReferenceDetector.detect(text).map { it.passage.book })
+        }
+        // Ordinary words are not books: "Il connaît les siens par leur nom" names none.
+        assertTrue(ReferenceDetector.detect("Il connaît les siens par leur nom").isEmpty())
     }
 }
