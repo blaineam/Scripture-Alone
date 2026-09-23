@@ -96,6 +96,11 @@ TRANSLATIONS = [
         "license": "Public domain",
         "source": "https://ebible.org/find/details.php?id=cmn-cu89s",
         "john_3_16": "「 神爱世人，",
+        # eBible's simplified edition was converted from the traditional one and lost every character
+        # the converter had no mapping for, leaving a space: 希伯 for 希伯仑 (Hebron), 以弗 for 以弗仑,
+        # 茵 for 茵陈 — 130 verses. The traditional edition has them; `repair_from` restores each,
+        # simplified where a simplified form is in use.
+        "repair_from": ("cmn-cu89t_usfm.zip", {"崙": "仑", "蔯": "陈", "繸": "繸", "讟": "讟"}),
     },
     {
         # The 文語訳 rather than the 口語訳: the 口語訳's CrossWire module is missing whole chapters
@@ -838,8 +843,108 @@ def kjv_map(book, kjv_book):
     return result, aligned
 
 
+def repair_missing_characters(books, source_books, table):
+    """Restores characters a source lost as spaces, from a parallel edition of the same text.
+
+    Only a run of whitespace in `books` that lines up, character for character, with characters of
+    `table` in `source_books` is touched — one character for one — so red-letter offsets and every
+    other character stay exactly as they were. Patches the verse text and the layout both."""
+    import difflib
+    repaired = 0
+    for code, book in books.items():
+        source = source_books.get(code)
+        if not source:
+            continue
+        for key, entry in book.verses.items():
+            other = source.verses.get(key)
+            if not other:
+                continue
+            text, reference = entry["t"], other["t"]
+            fixes = {}
+            matcher = difflib.SequenceMatcher(None, text, reference, autojunk=False)
+            for op, i1, i2, j1, j2 in matcher.get_opcodes():
+                if op != "replace":
+                    continue
+                # The lost characters are the leading whitespace of the differing span; the editions
+                # can differ just after them too ("希伯 、幔利" beside "希伯崙幔利"), so only that
+                # whitespace is compared, and only against characters the table names.
+                gap = len(text[i1:i2]) - len(text[i1:i2].lstrip())
+                lost = reference[j1:j1 + gap]
+                if gap and len(lost) == gap and all(c in table for c in lost):
+                    for offset, c in enumerate(lost):
+                        fixes[i1 + offset] = table[c]
+                    continue
+                # ...or its trailing whitespace, when the characters before it differ between the
+                # editions' scripts ("米矶 " beside "米磯崙").
+                gap = len(text[i1:i2]) - len(text[i1:i2].rstrip())
+                lost = reference[j2 - gap:j2]
+                if gap and len(lost) == gap and all(c in table for c in lost):
+                    for offset, c in enumerate(lost):
+                        fixes[i2 - gap + offset] = table[c]
+            if not fixes:
+                continue
+            entry["t"] = "".join(fixes.get(i, c) for i, c in enumerate(text))
+            repaired += 1
+            # The same characters in the layout: walk the verse's fragments in order alongside the
+            # original verse text, matching character by character (fragments may differ from the
+            # verse text only in the whitespace that joins them).
+            position = 0
+            for block in book.chapters.get(key[0], []):
+                for fragment in block.get("f", []):
+                    if fragment.get("v") != key[1]:
+                        continue
+                    chars = list(fragment["t"])
+                    for index, c in enumerate(chars):
+                        while position < len(text) and text[position] != c and text[position].isspace() and not c.isspace():
+                            position += 1
+                        if position < len(text) and text[position] == c:
+                            if position in fixes:
+                                chars[index] = fixes[position]
+                            position += 1
+                    fragment["t"] = "".join(chars)
+    return repaired
+
+
+STRAY_SPACE = re.compile(r"(?<=[\u4e00-\u9fff])\s+(?=[、，。；：！？」』）])")
+
+
+def strip_stray_spaces(books):
+    """Removes whitespace between a Chinese character and the punctuation after it — left where the
+    source stripped a footnote ("邱坛的祭司 。"). Verse text and layout both; the layout's styled
+    spans shift to match."""
+    removed = 0
+    for book in books.values():
+        for entry in book.verses.values():
+            cleaned = STRAY_SPACE.sub("", entry["t"])
+            if cleaned != entry["t"]:
+                assert not entry["s"], "red-letter offsets would move"
+                removed += 1
+                entry["t"] = cleaned
+        for blocks in book.chapters.values():
+            for block in blocks:
+                for fragment in block.get("f", []):
+                    gone = [m.start() + k for m in STRAY_SPACE.finditer(fragment["t"]) for k in range(m.end() - m.start())]
+                    if not gone:
+                        continue
+                    for index in sorted(gone, reverse=True):
+                        for span in fragment.get("s", []):
+                            if span[0] > index:
+                                span[0] -= 1
+                            elif span[0] <= index < span[0] + span[1]:
+                                span[1] -= 1
+                    fragment["t"] = STRAY_SPACE.sub("", fragment["t"])
+                    if "s" in fragment:
+                        fragment["s"] = [span for span in fragment["s"] if span[1] > 0]
+    return removed
+
+
 def build(translation):
     books = books_for(translation["id"])
+    if translation.get("repair_from"):
+        source_zip, table = translation["repair_from"]
+        count = repair_missing_characters(books, load_books(os.path.join(SOURCE_DIR, source_zip), report_corrections=False), table)
+        print(f"{translation['id']}: restored lost characters in {count} verses from {source_zip}")
+        print(f"{translation['id']}: removed footnote-residue spaces in {strip_stray_spaces(books)} verses")
     if translation.get("red_from"):
         source = books_for(translation["red_from"])
         counts = [borrow_red_letters(book, source[code]) for code, book in books.items()]
@@ -994,6 +1099,14 @@ def check(paths):
         leaks = db.execute("SELECT count(*) FROM verses WHERE text LIKE '%\\%' ESCAPE '|' OR text LIKE '%|%' "
                            "OR text LIKE '%<%'").fetchone()[0]
         assert leaks == 0, f"{leaks} {t['id']} verses leak markup"
+        if t["id"] == "CUVS":
+            lost = db.execute("SELECT count(*) FROM verses WHERE text LIKE '%以弗 %' OR text LIKE '%希伯 、%' "
+                              "OR text LIKE '%米矶 %'").fetchone()[0]
+            assert lost == 0, f"CUVS still has {lost} verses with lost characters"
+            text, _ = verse(db, "GEN", 23, 2)
+            assert "希伯仑" in text, text
+            layout = db.execute("SELECT layout FROM chapters WHERE book = 1 AND chapter = 23").fetchone()[0]
+            assert "以弗仑" in layout and "以弗 " not in layout
         if t["locale"] in ("zh-Hans", "ja", "ko"):
             word = {"zh-Hans": "神爱世人", "ja": "獨子を賜ふ", "ko": "독생자를"}[t["locale"]]
             hits = db.execute("SELECT count(*) FROM verses_fts WHERE verses_fts MATCH ?", (f'"{word}"',)).fetchone()[0]
