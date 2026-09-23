@@ -128,10 +128,21 @@ enum AssetPack: String, CaseIterable, Sendable {
     /// `interlinear`: those two were archived while the databases were briefly bundled, and App
     /// Store Connect allows no change to an archived pack — not a new version, not unarchiving —
     /// so the old identifiers can never carry content again.
+    ///
+    /// **The locale Bibles ride in two regional packs for now** — `bibles-east-asia` (和合本, 文語訳,
+    /// 개역한글) and `bibles-europe` (Luther, Segond, Reina-Valera, Bíblia Livre, Riveduta). Apple
+    /// allows ten packs per review submission, and before an app's first approval every pack must
+    /// ride with that version: 1.0.0's four plus eight single Bibles would be twelve. Each Bible is
+    /// still its own file inside the pack, and only the reader's is copied out (`install`), so the
+    /// cost is a larger download (~26 MB), not more storage. The single-Bible packs (`lsg`, `cuvs`…,
+    /// already uploaded) take over in a later update by returning `rawValue` here; installs of this
+    /// version keep fetching the regional packs, which must therefore never be archived.
     var id: String {
         switch self {
         case .commentary: "study-commentary"
         case .interlinear: "study-interlinear"
+        case .cuvs, .bungo, .krv: "bibles-east-asia"
+        case .lut1912, .lsg, .rvr1909, .blivre, .riv1927: "bibles-europe"
         default: rawValue
         }
     }
@@ -272,8 +283,12 @@ final class AssetLibrary {
             let assetPack = try await AssetPackManager.shared.assetPack(withID: pack.id)
             try await AssetPackManager.shared.ensureLocalAvailability(of: assetPack)
             try install(pack)
-            // The file is ours now; keeping the pack as well would store it twice.
-            try? await AssetPackManager.shared.remove(assetPackWithID: pack.id)
+            // The file is ours now; keeping the pack as well would store it twice — unless another
+            // Bible from the same regional pack is still being copied out of it.
+            let sharing = AssetPack.allCases.contains { other in
+                other != pack && other.id == pack.id && { if case .downloading = state(of: other) { true } else { false } }()
+            }
+            if !sharing { try? await AssetPackManager.shared.remove(assetPackWithID: pack.id) }
             states[pack] = .ready
             return true
         } catch {

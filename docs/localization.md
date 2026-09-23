@@ -113,6 +113,14 @@ Ship when iOS is done, with Android at **full feature parity** in the same wave.
 is in App Review; this goes out as the next version once it is approved — App Store Connect
 allows one version in review at a time.
 
+**Apple (App Store)** — *changed 2026-09-23: the locales ship in **1.0.0** after all.* The eight
+Bibles ride in two regional packs, `bibles-east-asia` (CUVS, BUNGO, KRV) and `bibles-europe`
+(LUT1912, LSG, RVR1909, BLIVRE, RIV1927), so 1.0.0's submission carries six packs (bsb, kjv,
+study-commentary, study-interlinear + the two regions; asv v2 stays out — App Store builds bundle
+the ASV). A later update splits them: `AssetPack.id` returns the single-Bible ids (`lsg`, `cuvs`…,
+already uploaded as v1/v2). **Never archive the regional packs** — 1.0.0 installs fetch from them.
+The checklist below is the original plan.
+
 **Apple (App Store)**
 - [ ] **1.1.0** with the localized app, watch and widgets — submitted the moment 1.0.0 is approved.
       Not a 1.0.0 resubmission: Apple allows at most **10 asset packs per review submission**

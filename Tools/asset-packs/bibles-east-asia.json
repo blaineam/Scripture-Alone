@@ -1,0 +1,23 @@
+{
+  "assetPackID": "bibles-east-asia",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/CUVS.sqlite",
+      "fileDestination": "CUVS.sqlite"
+    },
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/BUNGO.sqlite",
+      "fileDestination": "BUNGO.sqlite"
+    },
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/KRV.sqlite",
+      "fileDestination": "KRV.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "assetPackID": "bibles-europe",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/LUT1912.sqlite",
+      "fileDestination": "LUT1912.sqlite"
+    },
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/LSG.sqlite",
+      "fileDestination": "LSG.sqlite"
+    },
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/RVR1909.sqlite",
+      "fileDestination": "RVR1909.sqlite"
+    },
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/BLIVRE.sqlite",
+      "fileDestination": "BLIVRE.sqlite"
+    },
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/RIV1927.sqlite",
+      "fileDestination": "RIV1927.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

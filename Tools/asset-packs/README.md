@@ -96,3 +96,11 @@ It reports the same errors and creates no build record.
 Builds run from Xcode get no asset packs, so the app would open with no Bible. In Debug only, a build
 phase copies the pack sources into the bundle and `AssetLibrary` installs from there. Release never
 carries them, so a broken pack path can't hide behind a bundled copy.
+
+## Regional Bible packs (1.0.0)
+
+`bibles-east-asia.json` and `bibles-europe.json` carry the eight locale Bibles for 1.0.0 — Apple
+allows ten packs per review submission, and a first version must carry all of its packs. The app
+copies only the reader's Bible out of its region (`AssetLibrary.install`). The single-Bible
+manifests (`lsg.json`, `cuvs.json`…) are for the update that splits them. Never archive a regional
+pack: installs of 1.0.0 keep fetching from it.
