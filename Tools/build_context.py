@@ -550,7 +550,30 @@ def build_charts(counts, places_by_obid):
 
 # MARK: - Output
 
-def write_database(path, places, links, eras, events, chapter_rows, charts, labels):
+def load_translations():
+    """Data/context/translations/<lang>.json (Tools/translate_context.py) as table rows.
+
+    One table for every language: (lang, kind, source, text), where kind is `place` (source = the
+    OpenBible id), `person`, `modern` or `string` (source = the English text it translates). The app
+    looks up its language and falls back to the English in the main tables, so a language that is
+    missing a string shows English rather than nothing."""
+    rows = []
+    folder = os.path.join(DATA_DIR, "translations")
+    if not os.path.isdir(folder):
+        return rows
+    for name in sorted(os.listdir(folder)):
+        if not name.endswith(".json"):
+            continue
+        lang = name[:-5]
+        data = json.load(open(os.path.join(folder, name), encoding="utf-8"))
+        for kind, field in (("place", "places"), ("person", "people"), ("modern", "modern"), ("string", "strings")):
+            for source, text in sorted(data.get(field, {}).items()):
+                if text:
+                    rows.append((lang, kind, source, text))
+    return rows
+
+
+def write_database(path, places, links, eras, events, chapter_rows, charts, labels, translations=()):
     if os.path.exists(path):
         os.remove(path)
     db = sqlite3.connect(path)
@@ -577,6 +600,8 @@ def write_database(path, places, links, eras, events, chapter_rows, charts, labe
             subtitle TEXT NOT NULL, sources TEXT NOT NULL, scope TEXT NOT NULL, body TEXT NOT NULL);
         CREATE TABLE labels (text TEXT NOT NULL, sub TEXT, lon REAL NOT NULL, lat REAL NOT NULL,
             min_scale REAL NOT NULL, kind TEXT NOT NULL, angle REAL NOT NULL);
+        CREATE TABLE translations (lang TEXT NOT NULL, kind TEXT NOT NULL, source TEXT NOT NULL,
+            text TEXT NOT NULL, PRIMARY KEY (lang, kind, source)) WITHOUT ROWID;
     """)
     meta = {
         "version": "1",
@@ -602,6 +627,7 @@ def write_database(path, places, links, eras, events, chapter_rows, charts, labe
         (c["id"], c["ord"], c["kind"], c["title"], c["subtitle"], c["sources"], c["scope"], c["body"]) for c in charts])
     db.executemany("INSERT INTO labels VALUES (?,?,?,?,?,?,?)", [
         (l["text"], l.get("sub"), l["lon"], l["lat"], l["min"], l["kind"], l.get("angle", 0)) for l in labels])
+    db.executemany("INSERT INTO translations VALUES (?,?,?,?)", translations)
     db.commit()
     db.execute("VACUUM")
     db.close()
@@ -618,7 +644,7 @@ def build():
     db_path = os.path.join(OUTPUT_DIR, "Context.sqlite")
     with tempfile.TemporaryDirectory() as tmp:
         tmp_db = os.path.join(tmp, "Context.sqlite")
-        write_database(tmp_db, places, links, eras, events, chapter_rows, charts, labels)
+        write_database(tmp_db, places, links, eras, events, chapter_rows, charts, labels, load_translations())
         os.replace(tmp_db, db_path)
     basemap_path = os.path.join(OUTPUT_DIR, "Basemap.bin")
     with open(basemap_path, "wb") as handle:

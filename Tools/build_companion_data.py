@@ -42,6 +42,12 @@ JSON_OUT = os.path.join(ROOT, "ScriptureAlone", "Shared", "DailyVerses.json")
 DOC_OUT = os.path.join(ROOT, "docs", "daily-verses.md")
 WATCH_DIR = os.path.join(ROOT, "ScriptureAloneWatch", "Resources")
 TRANSLATIONS = ["ASV", "BSB", "KJV"]
+# The big-8 locales' Bibles (docs/localization.md): the day's verse in the reader's own Bible, and
+# the theme in their language (Data/context/translations/<lang>.json, "themes"). They number verses
+# their own way, so a passage is read through each database's kjv_map.
+LOCALE_TRANSLATIONS = {"CUVS": "zh-Hans", "BUNGO": "ja", "LUT1912": "de", "LSG": "fr",
+                       "RVR1909": "es", "KRV": "ko", "BLIVRE": "pt-BR", "RIV1927": "it"}
+THEMES_DIR = os.path.join(ROOT, "Data", "context", "translations")
 # Verse counts differ by versification: the KJV keeps verses the others fold or omit.
 WATCH_VERSE_COUNTS = {"ASV": 31086, "BSB": 31086, "KJV": 31102}
 
@@ -107,8 +113,33 @@ def passage(db, entry, tid):
     return text, red
 
 
+def native_passage(db, entry, tid):
+    """A KJV-keyed passage in a Bible that numbers its own way: the native verses holding it."""
+    start, end = entry["start"], entry["end"]
+    ids = set()
+    mapped = db.execute("SELECT id, kjv, kjv_last FROM kjv_map").fetchall()
+    moved = {native for native, _, _ in mapped}
+    for native, first, last in mapped:
+        if first <= end and last >= start:
+            ids.add(native)
+    for key in range(start, end + 1):
+        if key not in moved and not any(first <= key <= last for _, first, last in mapped):
+            ids.add(key)
+    rows = [db.execute("SELECT text FROM verses WHERE id = ?", (i,)).fetchone() for i in sorted(ids)]
+    text = " ".join(r[0] for r in rows if r)
+    if not text:
+        sys.exit(f"{entry['label']} is missing from {tid}")
+    return text
+
+
 def build_json(entries):
     dbs = {tid: sqlite3.connect(os.path.join(BIBLES, f"{tid}.sqlite")) for tid in TRANSLATIONS}
+    locale_dbs = {tid: sqlite3.connect(os.path.join(BIBLES, f"{tid}.sqlite")) for tid in LOCALE_TRANSLATIONS}
+    locale_themes = {}
+    for lang in LOCALE_TRANSLATIONS.values():
+        path = os.path.join(THEMES_DIR, f"{lang}.json")
+        if os.path.exists(path):
+            locale_themes[lang] = json.load(open(path))
     verses = []
     for entry in entries:
         item = {"ref": f"{entry['start']}-{entry['end']}", "theme": entry["theme"], "text": {}}
@@ -120,8 +151,14 @@ def build_json(entries):
                 reds[tid] = red
         if reds:
             item["red"] = reds
+        for tid in LOCALE_TRANSLATIONS:
+            item["text"][tid] = native_passage(locale_dbs[tid], entry, tid)
+        themes = {lang: t["themes"][entry["theme"]] for lang, t in locale_themes.items()
+                  if entry["theme"] in t.get("themes", {})}
+        if themes:
+            item["themes"] = themes
         verses.append(item)
-    catalog = {"version": 1, "translations": TRANSLATIONS, "verses": verses}
+    catalog = {"version": 1, "translations": TRANSLATIONS + list(LOCALE_TRANSLATIONS), "verses": verses}
     os.makedirs(os.path.dirname(JSON_OUT), exist_ok=True)
     with open(JSON_OUT, "w", encoding="utf-8") as f:
         json.dump(catalog, f, ensure_ascii=False, separators=(",", ":"))
