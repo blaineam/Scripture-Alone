@@ -164,3 +164,19 @@ Next: interface strings (Levi) · Context.sqlite labels · commentary/lexicon ga
 Day per locale · watch + widgets (editions carry `kjv_map`; `BookNames` from the snapshot) ·
 Android parity for all of the above · store listings + localized screenshots · packs uploaded and
 in the submission · website per-locale Bible info.
+
+## Added scope (owner, 2026-09-23) — ships in the same release
+
+- **Spotlight**: "Notes in Spotlight" / "Favorites in Spotlight" toggles (off by default — notes
+  can be personal); indexed as App Entities; a Siri/Spotlight result opens right to the note or
+  favorited verse.
+- **App Intents / Shortcuts** for the popular features: verse image, verse in a chosen translation,
+  create/find/open notes, favorite/unfavorite/is-favorite, Verse of the Day, open passage, search,
+  continue reading, listen. Phrases localized (AppShortcuts.xcstrings).
+- **Deep links**: any verse from a standard reference — OSIS (`John.3.16`, `urn:osis:John.3.16`) or a
+  plain reference in any of the nine languages — via `scripturealone://open?ref=…` and
+  `scripturealone://passage/<OSIS>`. (iOS cannot claim the `urn:` scheme itself.)
+- **Verse of the Day tap** opens the full app at that verse — the widget already does
+  (verified 2026-09-23); the Verse of the Day shortcut must too.
+- **Android parity** for all of the above: App Shortcuts, AppSearch-based indexing with the same
+  toggles, the same deep-link forms.
