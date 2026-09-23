@@ -6,7 +6,7 @@ It only talks to App Store Connect and Google Play.
 
 | Tag | Google Play | Apple |
 |---|---|---|
-| `vX.Y.Z-rc.N` | phone AAB → `internal` + closed `alpha` ("Alpha" in the Console); Wear OS AAB → `wear:qa` (Wear internal) + `wear:Wear OS closed testing` | TestFlight only. Xcode Cloud already built the push; `apple-store.yml` waits for that build to be VALID. No App Store version, no review. |
+| `vX.Y.Z-rc.N` | phone AAB → `internal` + closed `alpha` ("Alpha" in the Console); Wear OS AAB → `wear:internal` + `wear:Wear OS closed testing` | TestFlight only. Xcode Cloud already built the push; `apple-store.yml` waits for that build to be VALID. No App Store version, no review. |
 | `vX.Y.Z` | phone AAB → `production`; Wear OS AAB → `wear:production` | `apple-store.yml` submits the Xcode Cloud build of that exact commit for review, with every pending asset pack on the same submission. Then it moves `main` to the next patch version. |
 
 - `-rc.N` is the only pre-release suffix. **The rc guard beats everything**: an rc goes to testers
@@ -114,10 +114,13 @@ reviewSubmission as the version. It's added as a `backgroundAssetVersion` item. 
   `wear:` prefix ([Play Developer API: tracks](https://developers.google.com/android-publisher/tracks)):
   - `wear:production` for production.
   - `wear:beta` for open testing.
-  - `wear:qa` for internal testing.
+  - `wear:internal` for internal testing. The API docs call it `qa`, but this app's track list answers `internal` / `wear:internal`.
   - For a custom closed track, `wear:<name as shown in the Console>`.
 
-  The plan step fails in seconds, listing every track Play knows, if a custom track id is wrong.
+  The plan step fails in seconds, listing every track Play knows, if any track id is wrong.
+  Play's track list on 2026-09-23 (from a `plan_only` run): `production`, `beta`, `alpha`
+  (phone 2), `internal`, `wear:production`, `wear:beta`, `wear:internal`, and
+  `wear:Wear OS closed testing` (Wear 1,000,004). The next codes are phone 3 and Wear 1,000,005.
 - Every 64-bit `.so` in both bundles must be 16 KB page aligned (`scripts/check-16kb-pages.py`).
   32-bit libraries are reported, not failed. ML Kit's armeabi-v7a/x86 OCR library is 4 KB aligned
   today; 16 KB devices are 64-bit only.
@@ -193,7 +196,7 @@ All of these are optional (`gh variable set NAME -R blaineam/Scripture-Alone --b
 
 | Variable | Default | Effect |
 |---|---|---|
-| `PLAY_WEAR_RC_TRACKS` | `wear:qa,wear:Wear OS closed testing` | Wear tracks for an rc (internal first, closed second). If the plan step says the closed track id is wrong, set this to the `wear:` name it lists. |
+| `PLAY_WEAR_RC_TRACKS` | `wear:internal,wear:Wear OS closed testing` | Wear tracks for an rc (internal first, closed second). If the plan step says the closed track id is wrong, set this to the `wear:` name it lists. |
 | `PLAY_WEAR_PROD_TRACK` | `wear:production` | Wear track for a plain tag. |
 | `PLAY_WEAR` | (on) | `false` publishes the phone bundle only. |
 | `PLAY_TRACK` | (tag decides) | Pins every **plain** tag's phone track. rc tags ignore it. |

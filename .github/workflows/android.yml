@@ -25,7 +25,7 @@ name: android
 #   PLAY_USER_FRACTION      staged-rollout fraction for production (blank/1.0 = full)
 #   PLAY_RELEASE_STATUS     override the release status (e.g. "draft" while the app is a draft)
 #   PLAY_WEAR               "false" → phone only
-#   PLAY_WEAR_RC_TRACKS     default "wear:qa,wear:Wear OS closed testing"
+#   PLAY_WEAR_RC_TRACKS     default "wear:internal,wear:Wear OS closed testing"
 #   PLAY_WEAR_PROD_TRACK    default "wear:production"
 #
 # Never builds Apple anything — Xcode Cloud does that; apple-store.yml talks to App Store Connect.
@@ -73,7 +73,7 @@ jobs:
       - name: Plan (Play, read-only)
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          WEAR_RC: ${{ vars.PLAY_WEAR_RC_TRACKS || 'wear:qa,wear:Wear OS closed testing' }}
+          WEAR_RC: ${{ vars.PLAY_WEAR_RC_TRACKS || 'wear:internal,wear:Wear OS closed testing' }}
           WEAR_PROD: ${{ vars.PLAY_WEAR_PROD_TRACK || 'wear:production' }}
         run: |
           if [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
@@ -147,7 +147,7 @@ jobs:
           else
             VN="$MV"; IS_RC=0; CORE="$MV"
           fi
-          WEAR_RC="${VAR_WEAR_RC:-wear:qa,wear:Wear OS closed testing}"
+          WEAR_RC="${VAR_WEAR_RC:-wear:internal,wear:Wear OS closed testing}"
           WEAR_PROD="${VAR_WEAR_PROD:-wear:production}"
           if [ "$IS_RC" = 1 ]; then
             if [ -n "${IN_TRACK:-}" ] && [ "$IN_TRACK" != auto ] || [ -n "${VAR_TRACK:-}" ]; then

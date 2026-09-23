@@ -10,7 +10,7 @@
  *
  *   node scripts/play-publish.mjs publish --version-name 1.1.0 \
  *       --phone-aab app-release.aab --phone-code 3 --phone-tracks internal,alpha \
- *       [--wear-aab wear-release.aab --wear-code 1000005 --wear-tracks "wear:qa,wear:Wear OS closed testing"] \
+ *       [--wear-aab wear-release.aab --wear-code 1000005 --wear-tracks "wear:internal,wear:Wear OS closed testing"] \
  *       [--status completed|inProgress|draft] [--user-fraction 0.2] [--notes-dir DIR] [--dry-run]
  *       ONE edit: upload both bundles, assign each to its tracks (the same versionCode may sit on
  *       several tracks — nothing is uploaded twice), attach release notes, validate, commit.
@@ -26,8 +26,9 @@
  *
  * Track ids (https://developers.google.com/android-publisher/tracks): phone tracks are
  * production / beta (open) / alpha (closed, "Alpha" in the Console) / internal. Form-factor tracks
- * are prefixed: Wear OS → wear:production, wear:beta, wear:qa (internal), and a custom closed track
- * named N in the Console is `wear:N`.
+ * are prefixed: Wear OS → wear:production, wear:beta, wear:internal, and a custom closed track
+ * named N in the Console is `wear:N`. (The API docs call internal "qa"; this app's tracks.list
+ * answers "internal" and "wear:internal" — verified 2026-09-23 — so the listing is the authority.)
  */
 import { readFileSync, existsSync, readdirSync, statSync, appendFileSync } from 'node:fs';
 import { createSign } from 'node:crypto';
@@ -36,7 +37,6 @@ import { join } from 'node:path';
 const API = 'https://androidpublisher.googleapis.com/androidpublisher/v3/applications';
 const UPLOAD = 'https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications';
 const WEAR_FLOOR = 1_000_000;
-const DEFAULT_TRACKS = new Set(['production', 'beta', 'alpha', 'internal', 'qa']);
 
 const die = (m) => { console.error(`✗ ${m}`); summary(`- ❌ Play: ${m}`); process.exit(1); };
 // Inside an open edit, fail by THROWING so `finally` deletes the edit (process.exit would skip it).
@@ -142,15 +142,13 @@ function describeTracks(tracks) {
 	}
 }
 
-// A custom track (anything that is not a default name, with or without a form-factor prefix) must
-// exist — its id is whatever the Console calls it, so a typo is the likely failure. Default tracks
-// are not always listed until something ships there, so they only warn.
+// Every target track must be one Play lists. tracks.list returns the default tracks even when
+// empty (verified 2026-09-23: production, beta, alpha, internal, wear:production, wear:beta,
+// wear:internal, plus the custom "wear:Wear OS closed testing"), so an unlisted name is a typo.
 function checkTracks(tracks, wanted) {
 	const have = new Set(tracks.map((t) => t.track));
 	for (const w of wanted) {
 		if (have.has(w)) continue;
-		const bare = w.includes(':') ? w.slice(w.indexOf(':') + 1) : w;
-		if (DEFAULT_TRACKS.has(bare)) { log(`⚠ track "${w}" is not listed yet (a default track Play creates on first use) — proceeding`); continue; }
 		fail(`Play has no track "${w}". Tracks Play lists: ${[...have].map((t) => `"${t}"`).join(', ') || '(none)'} — fix the PLAY_* track variable (docs/RELEASING.md)`);
 	}
 }
