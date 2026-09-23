@@ -174,14 +174,28 @@ capture_watch() {
         "03-favorites|favorites"
         "04-notes|notes"
     )
+    # A locale reader's watch reads the edition their phone sent it. The rig puts that edition
+    # exactly where a phone transfer lands (Documents/Translations/<ID>-Watch.sqlite) and chooses
+    # it, so a French set shows Louis Segond rather than the bundled English.
+    local editions="${TMPDIR:-/tmp}/sa-watch-editions" received bible
+    received="$(xcrun simctl get_app_container "$udid" "$WATCH_BUNDLE" data)/Documents/Translations"
     local entry file route tmp locale dir
     for locale in "${LOCALES[@]}"; do
         dir="$(locale_dir "$out" "$locale")"
         mkdir -p "$dir"
         rm -f "$dir"/*.png   # never rm -rf the base: the locale sets live inside it
         echo "  [$locale]"
+        bible="$(locale_bible "$locale")"
+        mkdir -p "$received" "$editions"
+        rm -f "$received"/*-Watch.sqlite
+        if [ "$bible" != "ASV" ]; then
+            [ -f "$editions/$bible-Watch.sqlite" ] ||
+                python3 "$PROJECT_ROOT/Tools/build_companion_data.py" --watch-edition "$bible" "$editions/$bible-Watch.sqlite" >/dev/null ||
+                { echo "  could not build the $bible watch edition" >&2; return 1; }
+            cp "$editions/$bible-Watch.sqlite" "$received/"
+        fi
         # shellcheck disable=SC2206
-        local lang=($(cap_locale_args "$locale"))
+        local lang=($(cap_locale_args "$locale") -watch.translation.choice "$bible" -watch.translation.choiceAt 4102444800)
         for entry in "${shots[@]}"; do
             IFS='|' read -r file route <<<"$entry"
             xcrun simctl terminate "$udid" "$WATCH_BUNDLE" >/dev/null 2>&1 || true

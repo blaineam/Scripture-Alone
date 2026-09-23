@@ -239,8 +239,13 @@ def build_watch_dbs():
         build_watch_db(tid)
 
 
-def build_watch_db(tid):
-    WATCH_DB = watch_db(tid)
+def build_watch_db(tid, WATCH_DB=None):
+    """The watch edition of one Bible — the same shape WatchEdition.swift writes on the phone.
+
+    The bundled English editions land in the watch target; a locale Bible's edition (--watch-edition)
+    goes where the caller says, since the phone builds and sends those itself and only the
+    screenshot rig needs one ahead of time."""
+    WATCH_DB = WATCH_DB or watch_db(tid)
     source = sqlite3.connect(os.path.join(BIBLES, f"{tid}.sqlite"))
     os.makedirs(os.path.dirname(WATCH_DB), exist_ok=True)
     fd, tmp = tempfile.mkstemp(suffix=".sqlite", dir=os.path.dirname(WATCH_DB))
@@ -254,6 +259,7 @@ def build_watch_db(tid):
         CREATE TABLE chapters (book INTEGER NOT NULL, chapter INTEGER NOT NULL, verses INTEGER NOT NULL,
                                PRIMARY KEY (book, chapter)) WITHOUT ROWID;
         CREATE TABLE verses (id INTEGER PRIMARY KEY, text TEXT NOT NULL, red TEXT);
+        CREATE TABLE kjv_map (id INTEGER PRIMARY KEY, kjv INTEGER NOT NULL, kjv_last INTEGER NOT NULL);
         """
     )
     db.executemany("INSERT INTO meta VALUES (?, ?)", source.execute("SELECT key, value FROM meta"))
@@ -261,6 +267,9 @@ def build_watch_db(tid):
     db.executemany("INSERT INTO books VALUES (?, ?, ?, ?)", source.execute("SELECT book, code, name, chapters FROM books"))
     db.executemany("INSERT INTO chapters VALUES (?, ?, ?)", source.execute("SELECT book, chapter, verses FROM chapters"))
     db.executemany("INSERT INTO verses VALUES (?, ?, ?)", source.execute("SELECT id, text, red FROM verses"))
+    # A Bible numbered unlike the KJV carries its map, so the watch draws its own verse numbers.
+    if source.execute("SELECT 1 FROM sqlite_master WHERE name = 'kjv_map'").fetchone():
+        db.executemany("INSERT INTO kjv_map VALUES (?, ?, ?)", source.execute("SELECT id, kjv, kjv_last FROM kjv_map"))
     db.commit()
     db.execute("VACUUM")
     db.close()
@@ -301,6 +310,11 @@ def check(catalog):
 
 
 def main():
+    # python3 Tools/build_companion_data.py --watch-edition LSG out/LSG-Watch.sqlite
+    if "--watch-edition" in sys.argv:
+        i = sys.argv.index("--watch-edition")
+        build_watch_db(sys.argv[i + 1], os.path.abspath(sys.argv[i + 2]))
+        return
     names = sqlite3.connect(os.path.join(BIBLES, "BSB.sqlite")).execute("SELECT code, name FROM books")
     NAMES.update(dict(names))
     entries = parse_list()
