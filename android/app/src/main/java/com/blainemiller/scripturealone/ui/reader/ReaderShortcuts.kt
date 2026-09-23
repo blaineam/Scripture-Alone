@@ -1,20 +1,27 @@
 package com.blainemiller.scripturealone.ui.reader
 
+import androidx.annotation.StringRes
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
 import android.view.KeyEvent
 
 /** What a hardware-keyboard shortcut asks the reader to do. */
-enum class ReaderCommand(val title: String) {
-    GO_TO("Go to Passage"),
-    SEARCH("Search"),
-    PREVIOUS_CHAPTER("Previous Chapter"),
-    NEXT_CHAPTER("Next Chapter"),
-    NOTES("Notes"),
-    STUDY("Study"),
-    STUDY_BACK("Back in Study"),
-    MAPS("Maps & Timeline"),
-    FAVORITE("Add to or Remove from Favorites"),
-    LARGER_TEXT("Larger Text"),
-    SMALLER_TEXT("Smaller Text"),
+enum class ReaderCommand(@StringRes private val titleRes: Int) {
+    GO_TO(R.string.reader_shortcut_go_to),
+    SEARCH(R.string.common_search),
+    PREVIOUS_CHAPTER(R.string.reader_previous_chapter),
+    NEXT_CHAPTER(R.string.reader_next_chapter),
+    NOTES(R.string.reader_notes),
+    STUDY(R.string.reader_study),
+    STUDY_BACK(R.string.reader_shortcut_study_back),
+    MAPS(R.string.reader_shortcut_maps),
+    FAVORITE(R.string.reader_shortcut_favorite),
+    LARGER_TEXT(R.string.reader_shortcut_larger_text),
+    SMALLER_TEXT(R.string.reader_shortcut_smaller_text),
+    ;
+
+    /** The label the keyboard shortcuts helper lists, in the app's language. */
+    val title: String get() = AppText.get(titleRes)
 }
 
 /**

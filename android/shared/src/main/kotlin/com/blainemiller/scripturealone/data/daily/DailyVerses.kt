@@ -12,6 +12,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.util.Locale
 
 /**
  * One Verse of the Day passage with its text in every bundled translation, as
@@ -25,8 +26,31 @@ data class DailyVerse(
     val text: Map<String, String>,
     /** Words of Christ per translation: [start, length] in Unicode scalars into [text]. */
     val red: Map<String, List<List<Int>>> = emptyMap(),
+    /**
+     * The theme in the big-8 languages, keyed "zh-Hans", "ja", "de", "fr", "es", "ko", "pt-BR", "it"
+     * (`Tools/build_companion_data.py`). Empty in an older catalog.
+     */
+    val themes: Map<String, String> = emptyMap(),
 ) {
     val range: VerseRange? get() = VerseRange.parse(ref)
+
+    /**
+     * The theme for a BCP 47 language [tag] — `DailyVerse.theme(in:)`: an exact match ("pt-BR"), then
+     * the language ("pt" for "pt-PT", "zh-Hans" for "zh-Hans-CN" or "zh-CN"), then English.
+     * Traditional Chinese gets English, not the simplified theme.
+     */
+    fun theme(tag: String): String {
+        if (themes.isEmpty()) return theme
+        themes[tag]?.let { return it }
+        val locale = Locale.forLanguageTag(tag)
+        val code = locale.language
+        if (code.isEmpty()) return theme
+        if (code == "zh") {
+            val traditional = locale.script == "Hant" || (locale.script.isEmpty() && locale.country in setOf("TW", "HK", "MO"))
+            return if (traditional) theme else themes["zh-Hans"] ?: theme
+        }
+        return themes.entries.firstOrNull { it.key.substringBefore('-') == code }?.value ?: theme
+    }
 
     /** The passage in [translation], falling back to the ASV, then any translation present. */
     fun text(translation: String): String =
@@ -74,6 +98,7 @@ data class DailyVerseCatalog(val version: Int, val translations: List<String>, v
                         red = (o["red"] as? JsonObject)?.mapValues { (_, pairs) ->
                             (pairs as JsonArray).map { pair -> pair.jsonArray.map { it.jsonPrimitive.int } }
                         } ?: emptyMap(),
+                        themes = (o["themes"] as? JsonObject)?.mapValues { it.value.jsonPrimitive.content } ?: emptyMap(),
                     )
                 },
             )

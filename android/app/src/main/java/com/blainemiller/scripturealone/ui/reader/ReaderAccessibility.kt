@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
@@ -17,7 +18,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.IntOffset
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.userdata.HighlightColor
+import com.blainemiller.scripturealone.text.AppText
 import kotlin.math.roundToInt
 
 /**
@@ -89,13 +92,13 @@ object ReaderAccessibility {
     }
 
     /** "Verse 16. For God so loved the world…"; a continued verse reads as its words alone. */
-    fun label(run: VerseRun): String = if (run.numbered) "Verse ${run.verse}. ${run.text}" else run.text
+    fun label(run: VerseRun): String = if (run.numbered) AppText.get(R.string.reader_verse_label, run.verse, run.text) else run.text
 
     /** Selected is TalkBack's own state; the rest is said after the words. */
     fun state(key: Int, marks: VerseMarks, hasNote: Boolean): String? = buildList {
-        HighlightColor.fromRaw(marks.highlights[key])?.let { add("Highlighted ${it.title.lowercase()}") }
-        if (hasNote) add("Has a note")
-        if (marks.speaking == key) add("Being read aloud")
+        HighlightColor.fromRaw(marks.highlights[key])?.let { add(AppText.get(highlightedState(it))) }
+        if (hasNote) add(AppText.get(R.string.reader_state_has_note))
+        if (marks.speaking == key) add(AppText.get(R.string.reader_state_being_read))
     }.takeIf { it.isNotEmpty() }?.joinToString(", ")
 
     /** Where the run is drawn, in the text's own coordinates: its lines, full width when it wraps. */
@@ -133,6 +136,11 @@ internal fun VerseNodes(
 ) {
     val text = layout ?: return
     val density = LocalDensity.current
+    val selectVerse = stringResource(R.string.reader_action_select_verse)
+    val deselectVerse = stringResource(R.string.reader_action_deselect_verse)
+    val extendSelection = stringResource(R.string.reader_action_extend_selection)
+    val showNote = stringResource(R.string.reader_action_show_note)
+    val showNotes = stringResource(R.string.reader_action_show_notes)
     for (run in ReaderAccessibility.runs(paragraph)) {
         val box = ReaderAccessibility.bounds(run, text) ?: continue
         val selected = run.key in marks.selection
@@ -147,14 +155,14 @@ internal fun VerseNodes(
                     state?.let { stateDescription = it }
                     if (selectable) {
                         this.selected = selected
-                        onClick(if (selected) "Deselect verse" else "Select verse") { onTap(run.key); true }
-                        onLongClick("Extend selection to this verse") { onLongPress(run.key); true }
+                        onClick(if (selected) deselectVerse else selectVerse) { onTap(run.key); true }
+                        onLongClick(extendSelection) { onLongPress(run.key); true }
                     }
                     val actions = run.footnotes.map { note ->
-                        CustomAccessibilityAction("Footnote ${note.letter}") { onFootnote(note); true }
+                        CustomAccessibilityAction(AppText.get(R.string.reader_action_footnote, note.letter)) { onFootnote(note); true }
                     } + listOfNotNull(
                         run.noteOffset?.takeIf { run.noteIds.isNotEmpty() }?.let { at ->
-                            CustomAccessibilityAction(if (run.noteIds.size == 1) "Show note" else "Show notes") {
+                            CustomAccessibilityAction(if (run.noteIds.size == 1) showNote else showNotes) {
                                 onNotes(run.noteIds, at); true
                             }
                         },

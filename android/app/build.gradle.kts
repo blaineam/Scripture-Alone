@@ -98,6 +98,10 @@ android {
         // SQLite files must be stored uncompressed: Android cannot open a compressed asset as a
         // database, and would otherwise have to inflate 100 MB into memory on every launch.
         noCompress += listOf("sqlite", "sabible")
+        // The reader can pick the app's language apart from the phone's (Settings › Apps › Scripture
+        // Alone › Language), as iOS offers per-app language: the list is generated from the values-*
+        // folders Levi fills, with src/main/res/resources.properties naming English as the default.
+        generateLocaleConfig = true
     }
 
     packaging {

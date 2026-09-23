@@ -49,6 +49,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
 import java.util.Locale
 
 /**
@@ -95,6 +97,12 @@ class ListenController private constructor(private val app: Context) {
     /** The translation being read. */
     var translationId by mutableStateOf("")
         private set
+    /**
+     * The language the text being read is in — the Bible's own (`meta.language`), or null for one that
+     * doesn't say (the ASV, BSB, KJV, imports), which reads as English. The voice follows it.
+     */
+    var textLanguage by mutableStateOf<String?>(null)
+        private set
 
     /**
      * Bumped each time reading moves on into the next chapter, with that chapter: the reader follows,
@@ -131,7 +139,7 @@ class ListenController private constructor(private val app: Context) {
 
     /** The voice's name for the bar's status line. */
     val voiceName: String
-        get() = voices.firstOrNull { it.id == voiceId }?.name ?: "System Voice"
+        get() = voices.firstOrNull { it.id == voiceId }?.name ?: AppText.get(R.string.listen_system_voice)
 
     // The pass.
     private var scope: ListenQueue.Scope = ListenQueue.Scope.Selection
@@ -153,6 +161,8 @@ class ListenController private constructor(private val app: Context) {
     /** Utterances carry their pass's generation, so a late callback from a stopped queue is ignored. */
     private var generation = 0
     private var loading: Job? = null
+    /** Whether the engine has started any utterance of the current queue — see [utteranceFailed]. */
+    private var spokeThisPass = false
 
     // Session plumbing.
     private val listeners = mutableListOf<() -> Unit>()
@@ -167,13 +177,13 @@ class ListenController private constructor(private val app: Context) {
      * does on iOS — to its end, then on into the next chapter.
      */
     fun playChapter(chapter: Chapter, fromVerse: Int) {
-        start(chapter.translation.id, chapter.translation.rights, ListenQueue.Scope.Chapter(chapter.ref),
-            ListenQueue.chapterItems(chapter.ref, chapter.verses, fromVerse))
+        start(chapter.translation.id, chapter.translation.rights, chapter.translation.language,
+            ListenQueue.Scope.Chapter(chapter.ref), ListenQueue.chapterItems(chapter.ref, chapter.verses, fromVerse))
     }
 
-    /** Plays the selected verses, then stops. */
-    fun playSelection(translation: String, rights: TranslationRights, verses: List<ChapterVerse>) {
-        start(translation, rights, ListenQueue.Scope.Selection, ListenQueue.selectionItems(verses))
+    /** Plays the selected verses, then stops. [language] is the translation's (`TranslationInfo.language`). */
+    fun playSelection(translation: String, rights: TranslationRights, language: String?, verses: List<ChapterVerse>) {
+        start(translation, rights, language, ListenQueue.Scope.Selection, ListenQueue.selectionItems(verses))
     }
 
     /** The toolbar button: start if nothing is up, otherwise play/pause. */
@@ -181,10 +191,11 @@ class ListenController private constructor(private val app: Context) {
         if (phase != Phase.Idle && isPresented) togglePlayPause() else playChapter(chapter, fromVerse)
     }
 
-    private fun start(translation: String, rights: TranslationRights, scope: ListenQueue.Scope, items: List<Item>) {
+    private fun start(translation: String, rights: TranslationRights, language: String?, scope: ListenQueue.Scope, items: List<Item>) {
         stopOutput()
         if (items.isEmpty()) return
         translationId = translation
+        textLanguage = language
         this.rights = rights
         this.scope = scope
         this.items = items
@@ -341,7 +352,7 @@ class ListenController private constructor(private val app: Context) {
         sleepDeadline = null
         pause()
         sleepTimer = SleepTimer.OFF
-        notice = "Sleep timer ended."
+        notice = AppText.get(R.string.listen_sleep_timer_ended)
         publish()
     }
 
@@ -362,7 +373,7 @@ class ListenController private constructor(private val app: Context) {
         val translation = translationId
         stopOutput()
         // Still "playing" to the system while the next chapter loads, so the session stays foreground.
-        phase = Phase.Preparing("Opening ${Canon.display(next)}…")
+        phase = Phase.Preparing(AppText.get(R.string.listen_opening_chapter, Canon.display(next)))
         publish()
         acquireWake()
         loading = work.launch {
@@ -402,7 +413,7 @@ class ListenController private constructor(private val app: Context) {
             return
         }
         pendingStart = action
-        phase = Phase.Preparing("Loading voice…")
+        phase = Phase.Preparing(AppText.get(R.string.listen_loading_voice))
         publish()
         startEngine()
     }
@@ -425,7 +436,7 @@ class ListenController private constructor(private val app: Context) {
             tts = null
             if (action != null) {
                 phase = Phase.Paused
-                notice = "There’s no text-to-speech engine on this device. Install Speech Services by Google to listen."
+                notice = AppText.get(R.string.listen_no_engine)
                 publish()
             }
             return
@@ -447,7 +458,7 @@ class ListenController private constructor(private val app: Context) {
             )
         }
         allVoices = all
-        voices = VoiceCatalog.options(all, TEXT_LANGUAGE, Locale.getDefault().country, allowNetwork)
+        voices = VoiceCatalog.options(all, voiceLanguage, homeRegion, allowNetwork)
         voicesVersion++
     }
 
@@ -457,12 +468,17 @@ class ListenController private constructor(private val app: Context) {
     }
 
     private var allVoices: List<VoiceInfo> = emptyList()
+    /** The voices' language for the text being read: "fr" for Louis Segond, "zh" for the 和合本, else "en". */
+    private val voiceLanguage: String get() = VoiceCatalog.voiceLanguage(textLanguage)
+    /** Whose voices come first: the text's region (pt-BR), mainland Mandarin, else the device's. */
+    private val homeRegion: String? get() = VoiceCatalog.preferredRegion(textLanguage, Locale.getDefault().country)
     private val allowNetwork: Boolean
         get() = VoiceCatalog.allowsNetworkVoices(rights.permits(TranslationRights.Permission.EXTERNAL_HANDOFF))
 
     private fun applyVoice(engine: TextToSpeech) {
         refreshVoices()
-        when (val resolved = VoiceCatalog.resolve(voiceId, allVoices, TEXT_LANGUAGE, Locale.getDefault().country, allowNetwork)) {
+        // A saved voice in another language is passed over for this text, not forgotten: [voiceId] stays.
+        when (val resolved = VoiceCatalog.resolve(voiceId, allVoices, voiceLanguage, homeRegion, allowNetwork)) {
             is VoiceCatalog.Resolution.Use -> useVoice(engine, resolved.voice)
             is VoiceCatalog.Resolution.Refused -> {
                 notice = VoiceCatalog.NETWORK_VOICE_REFUSED
@@ -478,8 +494,8 @@ class ListenController private constructor(private val app: Context) {
         if (match != null) {
             engine.voice = match
         } else {
-            val region = Locale.getDefault().country.takeIf { Locale.getDefault().language == TEXT_LANGUAGE }
-            engine.language = if (region.isNullOrEmpty()) Locale.US else Locale.forLanguageTag("$TEXT_LANGUAGE-$region")
+            val device = Locale.getDefault()
+            engine.language = VoiceCatalog.fallbackLocale(textLanguage, device.language, device.country)
         }
     }
 
@@ -488,6 +504,7 @@ class ListenController private constructor(private val app: Context) {
         generation++
         val gen = generation
         engine.stop()
+        spokeThisPass = false
         applyVoice(engine)
         for (i in index until items.size) {
             engine.speak(items[i].text, TextToSpeech.QUEUE_ADD, null, "$gen:$i")
@@ -508,7 +525,7 @@ class ListenController private constructor(private val app: Context) {
         override fun onDone(utteranceId: String?) = post(utteranceId) { index -> utteranceFinished(index) }
         @Deprecated("Superseded by onError(String, Int); still abstract, so still implemented.")
         override fun onError(utteranceId: String?) = post(utteranceId) { index -> utteranceFinished(index) }
-        override fun onError(utteranceId: String?, errorCode: Int) = post(utteranceId) { index -> utteranceFinished(index) }
+        override fun onError(utteranceId: String?, errorCode: Int) = post(utteranceId) { index -> utteranceFailed(index) }
 
         /** Callbacks arrive on a binder thread; the queue lives on the main one. */
         private fun post(id: String?, block: (Int) -> Unit) {
@@ -521,6 +538,7 @@ class ListenController private constructor(private val app: Context) {
 
     private fun utteranceStarted(index: Int) {
         if (index !in items.indices) return
+        spokeThisPass = true
         current = index
         if (!items[index].isAnnouncement) speakingVerse = items[index].key
         acquireWake()
@@ -530,6 +548,20 @@ class ListenController private constructor(private val app: Context) {
 
     private fun utteranceFinished(index: Int) {
         if (index == items.lastIndex && phase == Phase.Playing) passFinished()
+    }
+
+    /**
+     * An utterance the engine couldn't speak. After one that did, it is skipped like a finished one;
+     * but when nothing in the pass has been spoken, the voice can't read this text at all (a language
+     * whose voice data isn't on the device, offline) — so reading stops and says so, rather than
+     * racing through the Bible chapter after silent chapter.
+     */
+    private fun utteranceFailed(index: Int) {
+        if (!spokeThisPass && phase == Phase.Playing) {
+            endPass(AppText.get(R.string.listen_voice_unavailable))
+            return
+        }
+        utteranceFinished(index)
     }
 
     // MARK: Audio focus, noisy output, wake
@@ -682,12 +714,6 @@ class ListenController private constructor(private val app: Context) {
     }
 
     companion object {
-        /**
-         * Every bundled translation is English, and imported ones carry no language tag, so the voices
-         * offered are the English ones — `SpeechVoices.textLanguage`.
-         */
-        const val TEXT_LANGUAGE = "en"
-
         @SuppressLint("StaticFieldLeak") // the application context, which lives as long as the process
         @Volatile private var instance: ListenController? = null
 

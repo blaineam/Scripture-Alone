@@ -31,7 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
+import com.blainemiller.scripturealone.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +47,7 @@ import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.study.InterlinearAttribution
 import com.blainemiller.scripturealone.data.study.InterlinearWord
+import com.blainemiller.scripturealone.text.AppLanguage
 import com.blainemiller.scripturealone.data.study.LexiconEntry
 import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
@@ -77,42 +80,45 @@ fun InterlinearTab(verse: VerseRef, reader: ReaderViewModel, palette: ReaderPale
     // An on-demand asset pack. Already downloaded: opened without asking. Not downloaded: the reader
     // is shown the size and taps to fetch, because 11 MB on a mobile connection is their decision.
     if (!packReady(AssetPack.INTERLINEAR)) {
-        PackDownload(AssetPack.INTERLINEAR, "Couldn’t Download Original Languages", palette)
+        PackDownload(AssetPack.INTERLINEAR, stringResource(R.string.study_original_download_failed), palette)
         return
     }
     val state = loaded(verse.key to translation) { context ->
-        val store = StudyLibrary.interlinear(context) ?: return@loaded Interlinear.Failure("The original-language data isn't available.")
+        val store = StudyLibrary.interlinear(context) ?: return@loaded Interlinear.Failure(context.getString(R.string.study_original_unavailable))
         // The BSB's own text for the verse — the exact string the word ranges index into.
         val bsb = BundledTranslations.source(context, "BSB").chapter(ChapterRef(verse.book, verse.chapter))
             .verses.firstOrNull { it.ref.verse == verse.verse }?.text
         val shown = TranslationLibrary.verses(context, translation, VerseRange(verse, verse)).firstOrNull()?.text ?: bsb.orEmpty()
-        if (bsb == null) return@loaded Interlinear.Failure("This verse has no original-language data.")
-        val words = runCatching { store.words(verse.key, bsb) }.getOrElse { return@loaded Interlinear.Failure(it.message ?: "The data didn't load.") }
-        if (words.isEmpty()) Interlinear.Failure("This verse has no original-language data.")
+        if (bsb == null) return@loaded Interlinear.Failure(context.getString(R.string.study_original_no_verse_data))
+        val words = runCatching { store.words(verse.key, bsb) }.getOrElse { return@loaded Interlinear.Failure(context.getString(R.string.study_original_load_failed)) }
+        if (words.isEmpty()) Interlinear.Failure(context.getString(R.string.study_original_no_verse_data))
         else Interlinear.Words(words, shown, shown != bsb && translation != "BSB", store.attribution)
     }
     when (state) {
         null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(26.dp))
         }
-        is Interlinear.Failure -> ContentUnavailable(Icons.Rounded.Translate, "No Original-Language Data", state.message, palette, Modifier.padding(top = 24.dp))
+        is Interlinear.Failure -> ContentUnavailable(Icons.Rounded.Translate, stringResource(R.string.study_original_empty_title), state.message, palette, Modifier.padding(top = 24.dp))
         is Interlinear.Words -> WordList(state, palette, reader.fontSize)
     }
 }
 
 @Composable
 private fun WordList(state: Interlinear.Words, palette: ReaderPalette, readerSize: Float) {
+    // Outside English the lexicon's English (glosses, parsing spelled out, definitions) is hidden: the
+    // word, its transliteration, parsing code and Strong's number show (docs/localization.md).
+    val english = AppLanguage.isEnglish
     var expanded by rememberSaveable(state.words) { mutableStateOf<String?>(null) }
     val entry = loaded(expanded) { context -> expanded?.let { StudyLibrary.interlinear(context)?.entry(it) } }
     LazyColumn(Modifier.fillMaxSize().background(StudyStyle.groupedBackground(palette))) {
         item("verse") {
             Column(Modifier.padding(horizontal = 32.dp).padding(top = 16.dp, bottom = 2.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(state.verseText, style = serifStyle(minOf(readerSize, 17f) * 0.9f, palette.ink))
-                if (state.glossedFromBSB) {
+                if (state.glossedFromBSB && english) {
                     // Said plainly rather than left to be noticed: the English beside each word is the
                     // Berean Standard Bible's, which the word-by-word data is keyed to.
                     Text(
-                        "English shown word-by-word is the Berean Standard Bible's, which this data is keyed to.",
+                        stringResource(R.string.study_original_bsb_note),
                         color = palette.secondary, fontSize = StudyStyle.caption2,
                     )
                 }
@@ -122,7 +128,9 @@ private fun WordList(state: Interlinear.Words, palette: ReaderPalette, readerSiz
             GroupedSection(palette, modifier = Modifier.padding(top = 4.dp)) {
                 state.words.forEachIndexed { index, word ->
                     if (index > 0) CellDivider(palette)
-                    WordRow(word, palette, expanded == word.strongs && word.strongs != null, entry.takeIf { expanded == word.strongs }) {
+                    WordRow(word, palette, english, expanded == word.strongs && word.strongs != null, entry.takeIf { expanded == word.strongs }) {
+                        // The lexicon's glosses and definitions are English-only.
+                        if (!english) return@WordRow
                         val strongs = word.strongs ?: return@WordRow
                         expanded = if (expanded == strongs) null else strongs
                     }
@@ -130,7 +138,7 @@ private fun WordList(state: Interlinear.Words, palette: ReaderPalette, readerSiz
             }
         }
         item("sources") {
-            GroupedSection(palette, header = "Sources") {
+            GroupedSection(palette, header = stringResource(R.string.study_original_sources)) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     for (line in state.attribution.requiredLines) {
                         Text(line, color = palette.secondary, fontSize = StudyStyle.caption2)
@@ -143,9 +151,16 @@ private fun WordList(state: Interlinear.Words, palette: ReaderPalette, readerSiz
 }
 
 @Composable
-private fun WordRow(word: InterlinearWord, palette: ReaderPalette, isExpanded: Boolean, entry: LexiconEntry?, onTap: () -> Unit) {
+private fun WordRow(
+    word: InterlinearWord,
+    palette: ReaderPalette,
+    english: Boolean,
+    isExpanded: Boolean,
+    entry: LexiconEntry?,
+    onTap: () -> Unit,
+) {
     Column(
-        Modifier.fillMaxWidth().clickable(enabled = word.strongs != null, role = Role.Button, onClick = onTap)
+        Modifier.fillMaxWidth().clickable(enabled = english && word.strongs != null, role = Role.Button, onClick = onTap)
             .semantics(mergeDescendants = true) {}
             .padding(horizontal = 16.dp, vertical = 9.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -164,18 +179,25 @@ private fun WordRow(word: InterlinearWord, palette: ReaderPalette, isExpanded: B
             Text(word.transliteration, color = palette.secondary, fontSize = StudyStyle.callout, fontStyle = FontStyle.Italic)
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (word.english.isNotEmpty()) {
+            // The word-by-word English is the BSB's; outside English it would be English in the middle
+            // of the reader's own language, so only the Hebrew or Greek shows.
+            if (english && word.english.isNotEmpty()) {
                 Text(word.english, color = palette.ink, fontSize = StudyStyle.callout, fontWeight = FontWeight.Medium)
             }
             if (word.isSuperscription) {
                 Spacer(Modifier.width(6.dp))
-                Text("superscription", color = palette.secondary, fontSize = StudyStyle.caption2)
+                Text(stringResource(R.string.study_original_superscription), color = palette.secondary, fontSize = StudyStyle.caption2)
             }
         }
-        if (word.parsingDescription.isNotEmpty()) {
+        // The spelled-out parsing ("Verb – Qal – Perfect…") is English; the code is the standard
+        // notation, readable in any language.
+        val code = word.parsing?.code.orEmpty()
+        if (english && word.parsingDescription.isNotEmpty()) {
             Text(word.parsingDescription, color = palette.secondary, fontSize = StudyStyle.caption)
+        } else if (!english && code.isNotEmpty()) {
+            Text(code, color = palette.secondary, fontSize = StudyStyle.caption, fontFamily = FontFamily.Monospace)
         }
-        if (isExpanded && entry != null) {
+        if (english && isExpanded && entry != null) {
             Column(
                 Modifier.padding(top = 4.dp).fillMaxWidth().clip(RoundedCornerShape(8.dp)).background(palette.accent.copy(alpha = 0.08f))
                     .padding(10.dp),

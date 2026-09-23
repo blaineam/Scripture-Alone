@@ -46,13 +46,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.camera.SlideImage
 import com.blainemiller.scripturealone.data.userdata.Note
+import com.blainemiller.scripturealone.text.AppText
 import com.blainemiller.scripturealone.ui.notes.PanelColors
 import com.blainemiller.scripturealone.ui.notes.PanelHeaderIcon
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
@@ -94,7 +97,7 @@ class SlideCapture {
     }
 
     /** Decodes a picked or pasted image off the main thread — `accept(data:)`. */
-    suspend fun accept(context: Context, uri: Uri, failureMessage: String = "That file doesn’t look like an image.") {
+    suspend fun accept(context: Context, uri: Uri, failureMessage: String = AppText.get(R.string.camera_not_an_image)) {
         decoding = true
         val image = withContext(Dispatchers.IO) { SlideImage.decode(context.contentResolver, uri) }
         decoding = false
@@ -123,7 +126,7 @@ fun SlideCaptureMenu(capture: SlideCapture, palette: ReaderPalette, addingToNote
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var open by remember { mutableStateOf(false) }
-    val title = if (addingToNote) "Add from Camera" else "Scan Slide"
+    val title = stringResource(if (addingToNote) R.string.camera_add_from_camera else R.string.camera_scan_slide)
     Box {
         PanelHeaderIcon(Icons.Outlined.DocumentScanner, title, palette) { open = true }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
@@ -137,10 +140,10 @@ fun SlideCaptureMenu(capture: SlideCapture, palette: ReaderPalette, addingToNote
                     action()
                 },
             )
-            if (SlideCapture.canTakePhoto(context)) item("Take Photo of Slide", Icons.Outlined.CameraAlt) { capture.start(SlideSource.CAMERA) }
-            item("Choose from Photos", Icons.Outlined.PhotoLibrary) { capture.start(SlideSource.PHOTOS) }
-            item("Choose Image File…", Icons.Outlined.Description) { capture.start(SlideSource.FILE) }
-            item("Paste Image", Icons.Outlined.ContentPaste, enabled = SlideCapture.clipboardHasImage(context)) {
+            if (SlideCapture.canTakePhoto(context)) item(stringResource(R.string.camera_take_photo), Icons.Outlined.CameraAlt) { capture.start(SlideSource.CAMERA) }
+            item(stringResource(R.string.camera_choose_from_photos), Icons.Outlined.PhotoLibrary) { capture.start(SlideSource.PHOTOS) }
+            item(stringResource(R.string.camera_choose_file), Icons.Outlined.Description) { capture.start(SlideSource.FILE) }
+            item(stringResource(R.string.camera_paste_image), Icons.Outlined.ContentPaste, enabled = SlideCapture.clipboardHasImage(context)) {
                 scope.launch { pasteImage(context, capture) }
             }
         }
@@ -151,10 +154,10 @@ private suspend fun pasteImage(context: Context, capture: SlideCapture) {
     val clip = context.getSystemService(ClipboardManager::class.java)?.primaryClip
     val uri = clip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.uri
     if (uri == null) {
-        capture.failure = "There’s no image on the clipboard."
+        capture.failure = context.getString(R.string.camera_no_clipboard_image)
         return
     }
-    capture.accept(context, uri, "That image couldn’t be read.")
+    capture.accept(context, uri, context.getString(R.string.camera_image_unreadable))
 }
 
 /**
@@ -174,10 +177,10 @@ fun SlideCaptureHost(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val photos = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) scope.launch { capture.accept(context, uri, "That photo couldn’t be opened.") }
+        if (uri != null) scope.launch { capture.accept(context, uri, context.getString(R.string.camera_photo_unopenable)) }
     }
     val files = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) scope.launch { capture.accept(context, uri, "That file couldn’t be opened.") }
+        if (uri != null) scope.launch { capture.accept(context, uri, context.getString(R.string.camera_file_unopenable)) }
     }
     LaunchedEffect(capture.request) {
         when (capture.request) {
@@ -215,7 +218,7 @@ fun SlideCaptureHost(
     }
 
     capture.failure?.let { message ->
-        FailureAlert("Couldn’t Use That Image", message, palette) { capture.failure = null }
+        FailureAlert(stringResource(R.string.camera_failure_title), message, palette) { capture.failure = null }
     }
 }
 
@@ -236,7 +239,7 @@ internal fun FailureAlert(title: String, message: String, palette: ReaderPalette
                     Modifier.weight(1f).height(46.dp).glass(palette, CircleShape, PanelColors.card(palette)).clickable(role = Role.Button, onClick = onDismiss),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("OK", color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.common_ok), color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
             Spacer(Modifier.width(1.dp))

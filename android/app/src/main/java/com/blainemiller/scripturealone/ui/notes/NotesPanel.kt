@@ -60,12 +60,20 @@ import com.blainemiller.scripturealone.ui.favorites.FavoritesSection
 import com.blainemiller.scripturealone.ui.reader.ReaderIcons
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
+import androidx.annotation.StringRes
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
+import com.blainemiller.scripturealone.text.countedString
+import android.text.format.DateFormat
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /** The panel's scopes — `NotesPanel.Scope`, in the same order and wording. */
-enum class NotesScope(val title: String) { ALL("All Notes"), CHAPTER("This Chapter"), FAVORITES("Favorites") }
+enum class NotesScope(@StringRes val titleRes: Int) {
+    ALL(R.string.notes_scope_all), CHAPTER(R.string.notes_scope_chapter), FAVORITES(R.string.notes_scope_favorites),
+}
 
 /**
  * Every note, searchable, filterable to the chapter on screen, with the reader's favorites as a third
@@ -118,8 +126,8 @@ fun NotesPanel(
                 if (editing != null) {
                     NoteEditor(model, palette, editing, capture, onBack = { onOpenNoteChange(null) }, onClose = ::dismiss)
                 } else {
-                    PanelHeader("Note", palette, back = true, onLeading = { onOpenNoteChange(null) })
-                    EmptyState(ReaderIcons.NoteText, "Note Deleted", "", palette)
+                    PanelHeader(stringResource(R.string.notes_section_note), palette, back = true, onLeading = { onOpenNoteChange(null) })
+                    EmptyState(ReaderIcons.NoteText, stringResource(R.string.notes_deleted), "", palette)
                 }
                 return@Column
             }
@@ -133,19 +141,20 @@ fun NotesPanel(
                 (scope == NotesScope.ALL || note.anchors.any { model.displayRange(it).overlaps(location) }) &&
                     NoteSearch.matches(note, search, verseCount, model.numbering)
             }
-            PanelHeader("Notes", palette, back = false, onLeading = ::dismiss) {
-                PanelHeaderIcon(ReaderIcons.SquareAndPencil, "New Note", palette) {
+            PanelHeader(stringResource(R.string.notes_title), palette, back = false, onLeading = ::dismiss) {
+                PanelHeaderIcon(ReaderIcons.SquareAndPencil, stringResource(R.string.notes_new_note), palette) {
                     onOpenNoteChange(model.newNote().id.toString())
                 }
                 SlideCaptureMenu(capture, palette)
                 ExportMenu(model, palette, notes, if (scope == NotesScope.FAVORITES) notes else filtered)
             }
             PanelSearchField(
-                search, if (scope == NotesScope.FAVORITES) "Search favorites or a passage" else "Search notes or a passage",
+                search, if (scope == NotesScope.FAVORITES) stringResource(R.string.notes_search_favorites) else stringResource(R.string.notes_search_notes),
                 palette, onChange = { search = it },
             )
             Spacer(Modifier.height(12.dp))
-            Segmented(NotesScope.entries, scope, { it.title }, palette) { scope = it }
+            val scopeTitles = NotesScope.entries.associateWith { stringResource(it.titleRes) }
+            Segmented(NotesScope.entries, scope, { scopeTitles.getValue(it) }, palette) { scope = it }
             Spacer(Modifier.height(12.dp))
 
             val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -157,9 +166,9 @@ fun NotesPanel(
             if (filtered.isEmpty()) {
                 EmptyState(
                     ReaderIcons.NoteText,
-                    if (search.isBlank()) "No Notes Yet" else "No Matches",
-                    if (search.isBlank()) "Tap verses in the text, then the pencil, to start a note on a passage — or scan this Sunday’s sermon slide."
-                    else "Try a word or a passage like Rom 8.",
+                    if (search.isBlank()) stringResource(R.string.notes_empty_title) else stringResource(R.string.notes_no_matches_title),
+                    if (search.isBlank()) stringResource(R.string.notes_empty_message)
+                    else stringResource(R.string.notes_no_matches_message),
                     palette,
                 )
                 return@Column
@@ -199,26 +208,26 @@ private fun ExportMenu(model: ReaderViewModel, palette: ReaderPalette, notes: Li
     fun export(list: List<Note>) {
         open = false
         val sorted = ExportSupport.canonicallySorted(list.map { it.toKeepsake() })
-        model.legacy.export = ExportRequest(sorted, if (sorted.size == 1) sorted[0].displayTitle else "Notes")
+        model.legacy.export = ExportRequest(sorted, if (sorted.size == 1) sorted[0].displayTitle else AppText.get(R.string.notes_title))
     }
     Box {
-        PanelHeaderIcon(Icons.Outlined.IosShare, "Export", palette) { open = true }
+        PanelHeaderIcon(Icons.Outlined.IosShare, stringResource(R.string.common_export), palette) { open = true }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             DropdownMenuItem(
-                text = { Text("Export All Notes…", color = if (notes.isEmpty()) palette.secondary else palette.ink, fontSize = 15.sp) },
+                text = { Text(stringResource(R.string.notes_export_all), color = if (notes.isEmpty()) palette.secondary else palette.ink, fontSize = 15.sp) },
                 enabled = notes.isNotEmpty(),
                 onClick = { export(notes) },
             )
             if (shown.size != notes.size) {
                 DropdownMenuItem(
-                    text = { Text("Export ${shown.size} Shown…", color = if (shown.isEmpty()) palette.secondary else palette.ink, fontSize = 15.sp) },
+                    text = { Text(countedString(R.string.notes_export_shown_one, R.string.notes_export_shown_other, shown.size, shown.size), color = if (shown.isEmpty()) palette.secondary else palette.ink, fontSize = 15.sp) },
                     enabled = shown.isNotEmpty(),
                     onClick = { export(shown) },
                 )
             }
             HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
             DropdownMenuItem(
-                text = { Text("Keepsake & Export…", color = palette.ink, fontSize = 15.sp) },
+                text = { Text(stringResource(R.string.notes_keepsake_export), color = palette.ink, fontSize = 15.sp) },
                 onClick = {
                     open = false
                     model.legacy.settingsOpen = true
@@ -236,7 +245,7 @@ private fun NoteRow(note: Note, palette: ReaderPalette, onOpen: () -> Unit, onDe
     var menu by remember { mutableStateOf(false) }
     Box {
         Column(
-            Modifier.fillMaxWidth().combinedClickable(role = Role.Button, onLongClickLabel = "Show options", onLongClick = { menu = true }, onClick = onOpen)
+            Modifier.fillMaxWidth().combinedClickable(role = Role.Button, onLongClickLabel = stringResource(R.string.notes_show_options), onLongClick = { menu = true }, onClick = onOpen)
                 .padding(horizontal = 18.dp, vertical = 12.dp),
         ) {
             Row(verticalAlignment = Alignment.Bottom) {
@@ -261,7 +270,7 @@ private fun NoteRow(note: Note, palette: ReaderPalette, onOpen: () -> Unit, onDe
         }
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
             DropdownMenuItem(
-                text = { Text("Delete", color = palette.red, fontSize = 15.sp) },
+                text = { Text(stringResource(R.string.common_delete), color = palette.red, fontSize = 15.sp) },
                 onClick = {
                     menu = false
                     onDelete()
@@ -273,4 +282,5 @@ private fun NoteRow(note: Note, palette: ReaderPalette, onOpen: () -> Unit, onDe
 
 /** "Sep 21" — `.dateTime.month(.abbreviated).day()`. */
 private fun shortDate(note: Note): String =
-    DateTimeFormatter.ofPattern("MMM d", Locale.getDefault()).format(note.updatedAt.atZone(ZoneId.systemDefault()))
+    DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(Locale.getDefault(), "MMMd"), Locale.getDefault())
+        .format(note.updatedAt.atZone(ZoneId.systemDefault()))

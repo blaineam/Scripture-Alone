@@ -24,11 +24,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.keepsake.Keepsake
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeArchive
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeException
@@ -119,7 +121,10 @@ fun KeepsakeImportSheet(model: ReaderViewModel, uri: Uri, palette: ReaderPalette
     }
 
     val finished = phase is Phase.Added || phase is Phase.Failed
-    FormSheet("Keepsake Bible", palette, leading = if (finished) "Done" else "Cancel", onLeading = onDone) {
+    FormSheet(
+        stringResource(R.string.keepsake_import_title), palette,
+        leading = stringResource(if (finished) R.string.common_done else R.string.common_cancel), onLeading = onDone,
+    ) {
         when (val current = phase) {
             Phase.Loading -> Column(Modifier.fillMaxWidth().padding(top = 120.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(28.dp))
@@ -129,9 +134,9 @@ fun KeepsakeImportSheet(model: ReaderViewModel, uri: Uri, palette: ReaderPalette
                 PanelGroup(palette) {
                     Column(Modifier.padding(horizontal = 18.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Rounded.Lock, null, tint = palette.secondary, modifier = Modifier.size(26.dp))
-                        Text("This keepsake is protected", color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.keepsake_import_protected_title), color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
                         Text(
-                            "Whoever made it chose a passphrase so only family could open it. It may be written down with the file, or with their papers.",
+                            stringResource(R.string.keepsake_import_protected_body),
                             color = palette.secondary, fontSize = 15.sp, lineHeight = 20.sp,
                         )
                     }
@@ -139,21 +144,21 @@ fun KeepsakeImportSheet(model: ReaderViewModel, uri: Uri, palette: ReaderPalette
                 FormHeader("", palette)
                 PanelGroup(palette) {
                     FormField(
-                        passphrase, "Passphrase", palette, shown = false, words = false, enabled = !unlocking,
+                        passphrase, stringResource(R.string.keepsake_passphrase), palette, shown = false, words = false, enabled = !unlocking,
                         imeAction = ImeAction.Go, onDone = { unlock(current.data) },
                     ) { passphrase = it }
                     current.manifest.passphraseHint?.let {
                         PanelSeparator(palette)
-                        FormValue("Hint", it, palette, dim = true)
+                        FormValue(stringResource(R.string.keepsake_import_hint), it, palette, dim = true)
                     }
                 }
                 passphraseError?.let { FormFooter(it, palette, color = palette.red) }
                 FormHeader("", palette)
                 PanelGroup(palette) {
-                    FormButton("Open", palette, enabled = passphrase.isNotEmpty() && !unlocking) { unlock(current.data) }
+                    FormButton(stringResource(R.string.common_open), palette, enabled = passphrase.isNotEmpty() && !unlocking) { unlock(current.data) }
                     if (unlocking) {
                         PanelSeparator(palette)
-                        FormProgress(progress, "Opening with the passphrase…", palette)
+                        FormProgress(progress, stringResource(R.string.keepsake_import_opening), palette)
                     }
                 }
             }
@@ -161,23 +166,26 @@ fun KeepsakeImportSheet(model: ReaderViewModel, uri: Uri, palette: ReaderPalette
                 FormHeader("", palette)
                 PanelGroup(palette) { KeepsakeSummary(current.keepsake, palette) }
                 FormHeader("", palette)
-                PanelGroup(palette) { FormButton("Add to My Library", palette, bold = true) { add(current.keepsake) } }
-                FormFooter("Kept on this device, separate from your own highlights and notes. It’s read-only; nothing in it can be changed.", palette)
+                PanelGroup(palette) { FormButton(stringResource(R.string.keepsake_import_add), palette, bold = true) { add(current.keepsake) } }
+                FormFooter(stringResource(R.string.keepsake_import_ready_footer), palette)
             }
             is Phase.Added -> {
                 FormHeader("", palette)
                 PanelGroup(palette) { KeepsakeSummary(current.keepsake, palette) }
                 FormHeader("", palette)
                 PanelGroup(palette) {
-                    FormButton("Open ${current.keepsake.manifest.displayTitle}", palette, bold = true) {
+                    FormButton(stringResource(R.string.keepsake_import_open_named, current.keepsake.manifest.displayTitle), palette, bold = true) {
                         model.openKeepsake(current.keepsake)
                         onDone()
                     }
                 }
                 FormFooter(
                     current.replaced?.let {
-                        "This replaced the copy from ${DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(it.atZone(ZoneId.systemDefault()))}."
-                    } ?: "You’ll find it again under Appearance → Keepsake & Export.",
+                        stringResource(
+                            R.string.keepsake_import_replaced,
+                            DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).format(it.atZone(ZoneId.systemDefault())),
+                        )
+                    } ?: stringResource(R.string.keepsake_import_find_again),
                     palette,
                 )
             }
@@ -186,7 +194,7 @@ fun KeepsakeImportSheet(model: ReaderViewModel, uri: Uri, palette: ReaderPalette
                 horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Icon(Icons.AutoMirrored.Outlined.MenuBook, null, tint = palette.secondary, modifier = Modifier.size(48.dp))
-                Text("Can’t Open This Keepsake", color = palette.ink, fontSize = 22.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                Text(stringResource(R.string.keepsake_import_failed_title), color = palette.ink, fontSize = 22.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                 Text(current.message, color = palette.secondary, fontSize = 15.sp, lineHeight = 20.sp, textAlign = TextAlign.Center)
             }
         }

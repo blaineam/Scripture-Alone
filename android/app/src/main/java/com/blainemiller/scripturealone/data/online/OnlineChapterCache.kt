@@ -1,9 +1,11 @@
 package com.blainemiller.scripturealone.data.online
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookID
 import com.blainemiller.scripturealone.data.layout.ChapterLayout
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.text.AppText
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -51,10 +53,10 @@ data class OnlineTranslation(
 /** Swift's `OnlineCacheError`; [message] is its `errorDescription`. */
 sealed class OnlineCacheException(message: String, cause: Throwable? = null) : Exception(message, cause) {
     class Open(val detail: String, cause: Throwable? = null) :
-        OnlineCacheException("Couldn’t open the offline copy: $detail", cause)
+        OnlineCacheException(AppText.get(R.string.data_online_cache_open_failed, detail), cause)
 
     class Write(val detail: String, cause: Throwable? = null) :
-        OnlineCacheException("Couldn’t save that chapter: $detail", cause)
+        OnlineCacheException(AppText.get(R.string.data_online_cache_write_failed, detail), cause)
 }
 
 /** What one [OnlineChapterCache.store] call did. */

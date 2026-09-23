@@ -19,6 +19,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.blainemiller.scripturealone.data.assets.AssetLibrary
@@ -57,17 +59,18 @@ fun PackDownload(pack: AssetPack, failedTitle: String, palette: ReaderPalette, m
                 modifier = Modifier.widthIn(max = 220.dp).fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
             )
             Text(
-                if (state is AssetState.NeedsConfirmation) "Waiting for Wi-Fi to download ${pack.title}" else "Downloading ${pack.title}…",
+                if (state is AssetState.NeedsConfirmation) stringResource(R.string.study_pack_waiting_wifi, pack.title)
+                else stringResource(R.string.study_pack_downloading, pack.title),
                 color = palette.ink, fontSize = StudyStyle.callout,
             )
             Text(pack.explanation, color = palette.secondary, fontSize = StudyStyle.caption, textAlign = TextAlign.Center)
-            if (state is AssetState.NeedsConfirmation) BorderedButton("Download Now", palette) { AssetLibrary.confirm() }
+            if (state is AssetState.NeedsConfirmation) BorderedButton(stringResource(R.string.study_pack_download_now), palette) { AssetLibrary.confirm() }
         }
         is AssetState.Failed -> ContentUnavailable(Icons.Rounded.Warning, failedTitle, state.message, palette, modifier.padding(top = 16.dp)) {
-            BorderedButton("Try Again", palette, onClick = download)
+            BorderedButton(stringResource(R.string.common_try_again), palette, onClick = download)
         }
         else -> ContentUnavailable(Icons.Rounded.ArrowCircleDown, pack.title, pack.explanation, palette, modifier.padding(top = 16.dp)) {
-            BorderedButton("Download", palette, onClick = download)
+            BorderedButton(stringResource(R.string.common_download), palette, onClick = download)
         }
     }
 }

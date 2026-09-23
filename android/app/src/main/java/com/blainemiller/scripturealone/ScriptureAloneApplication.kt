@@ -4,6 +4,7 @@ import android.app.Application
 import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.canon.BookNames
 import com.blainemiller.scripturealone.data.translations.TranslationLibrary
+import com.blainemiller.scripturealone.text.AppText
 
 /**
  * Loads the reader's added translations — imported files, and the online ones their keys unlock —
@@ -13,6 +14,8 @@ import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 class ScriptureAloneApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        // The app's words outside Compose, in the reader's language (text/AppText.kt).
+        AppText.install(this)
         // Which asset packs are on the device — before the reader decides what it can open.
         AssetLibrary.attach(this)
         TranslationLibrary.attach(this)

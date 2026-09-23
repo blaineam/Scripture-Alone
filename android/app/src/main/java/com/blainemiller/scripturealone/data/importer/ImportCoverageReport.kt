@@ -1,6 +1,8 @@
 package com.blainemiller.scripturealone.data.importer
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.canon.BookID
+import com.blainemiller.scripturealone.text.AppText
 
 /**
  * What the import actually got, book by book. Ported from `Import/ImportCoverageReport.swift`.
@@ -65,8 +67,11 @@ class ImportCoverageReport(bible: ExtractedBible) {
             val books = booksFound.size
             // Swift's `rounded()` rounds half away from zero; `Math.round` agrees for these non-negative values.
             val percent = Math.round(completeness * 100).toInt()
-            if (isWholeBible) return "All 66 books, $totalChapters chapters, $totalVerses verses."
-            return "$books book${if (books == 1) "" else "s"}, $totalChapters chapters, $totalVerses verses — $percent% of the canon."
+            if (isWholeBible) return AppText.get(R.string.data_import_summary_whole_bible, totalChapters, totalVerses)
+            return AppText.plural(
+                R.string.data_import_summary_one, R.string.data_import_summary_other, books,
+                books, totalChapters, totalVerses, percent,
+            )
         }
 
     /** Short lines describing everything incomplete, worst first. */
@@ -76,27 +81,39 @@ class ImportCoverageReport(bible: ExtractedBible) {
             if (booksMissing.isNotEmpty()) {
                 val shown = booksMissing.map { it.displayName }.take(6).joinToString(", ")
                 lines.add(
-                    if (booksMissing.size > 6) "${booksMissing.size} books are missing, including $shown."
-                    else "Missing: $shown.",
+                    if (booksMissing.size > 6) AppText.get(R.string.data_import_books_missing_many, booksMissing.size, shown)
+                    else AppText.get(R.string.data_import_books_missing, shown),
                 )
             }
             for (book in books) {
                 if (book.isComplete) continue
                 val name = book.book.displayName
                 if (book.missingChapters.isNotEmpty()) {
-                    lines.add("$name: ${book.chaptersFound} of ${book.chaptersExpected} chapters (missing ${condense(book.missingChapters)}).")
+                    lines.add(
+                        AppText.get(
+                            R.string.data_import_missing_chapters, name, book.chaptersFound, book.chaptersExpected,
+                            condense(book.missingChapters),
+                        ),
+                    )
                 }
                 if (book.unexpectedChapters.isNotEmpty()) {
-                    lines.add("$name: unexpected chapter${if (book.unexpectedChapters.size == 1) "" else "s"} " + condense(book.unexpectedChapters) + ".")
+                    lines.add(
+                        AppText.plural(
+                            R.string.data_import_unexpected_chapters_one, R.string.data_import_unexpected_chapters_other,
+                            book.unexpectedChapters.size, name, condense(book.unexpectedChapters),
+                        ),
+                    )
                 }
                 for (chapter in book.chaptersWithGaps) {
                     if (chapter.missingVerses.isNotEmpty()) {
                         lines.add(
-                            "$name ${chapter.chapter}: missing verse${if (chapter.missingVerses.size == 1) "" else "s"} " +
-                                condense(chapter.missingVerses) + ".",
+                            AppText.plural(
+                                R.string.data_import_missing_verses_one, R.string.data_import_missing_verses_other,
+                                chapter.missingVerses.size, "$name ${chapter.chapter}", condense(chapter.missingVerses),
+                            ),
                         )
                     }
-                    if (chapter.outOfOrder) lines.add("$name ${chapter.chapter}: verse numbers ran out of order.")
+                    if (chapter.outOfOrder) lines.add(AppText.get(R.string.data_import_out_of_order, "$name ${chapter.chapter}"))
                 }
             }
             // A note that repeats a line already given ("Genesis 3: verse numbers ran out of order.")

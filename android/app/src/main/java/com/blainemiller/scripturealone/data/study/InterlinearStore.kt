@@ -1,6 +1,8 @@
 package com.blainemiller.scripturealone.data.study
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.sql.SqlSource
+import com.blainemiller.scripturealone.text.AppText
 
 /** The language one interlinear word is written in. */
 enum class InterlinearLanguage(val code: String, val displayName: String) {
@@ -96,7 +98,7 @@ data class InterlinearStatistics(
 
 /** The verse's records don't fit the text passed in — it isn't the BSB's text for that verse. */
 class InterlinearTextMismatch(verseKey: Int) :
-    IllegalArgumentException("Original-language data for $verseKey doesn't match this text; it is aligned to the BSB.")
+    IllegalArgumentException(AppText.get(R.string.data_study_interlinear_mismatch, verseKey))
 
 /**
  * Word-level Hebrew, Aramaic and Greek for the whole Bible, aligned to the bundled BSB, plus

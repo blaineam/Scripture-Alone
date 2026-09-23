@@ -37,6 +37,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -75,11 +77,12 @@ fun PanelHeader(
     val surface = PanelColors.background(palette)
     Box(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 16.dp)) {
         if (back) {
+            val backLabel = stringResource(R.string.common_back)
             Box(
                 Modifier.align(Alignment.CenterStart).size(44.dp)
                     .glass(palette, CircleShape, surface, lifted = true)
                     .clickable(role = Role.Button, onClick = onLeading)
-                    .semantics { contentDescription = "Back" },
+                    .semantics { contentDescription = backLabel },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Rounded.ChevronLeft, null, tint = palette.ink, modifier = Modifier.size(28.dp))
@@ -92,7 +95,7 @@ fun PanelHeader(
                     .padding(horizontal = 18.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("Close", color = palette.ink, fontSize = 17.sp)
+                Text(stringResource(R.string.common_close), color = palette.ink, fontSize = 17.sp)
             }
         }
         FitTitle(
@@ -146,8 +149,9 @@ fun PanelSearchField(query: String, prompt: String, palette: ReaderPalette, onCh
             },
         )
         if (query.isNotEmpty()) {
+            val clearLabel = stringResource(R.string.common_clear)
             Box(
-                Modifier.size(32.dp).clip(CircleShape).clickable(role = Role.Button) { onChange("") }.semantics { contentDescription = "Clear" },
+                Modifier.size(32.dp).clip(CircleShape).clickable(role = Role.Button) { onChange("") }.semantics { contentDescription = clearLabel },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Rounded.Cancel, null, tint = palette.secondary, modifier = Modifier.size(18.dp))

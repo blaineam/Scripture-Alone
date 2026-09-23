@@ -18,9 +18,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeArchive
 import com.blainemiller.scripturealone.ui.appearance.SwitchRow
@@ -114,58 +116,57 @@ fun KeepsakeCreateSheet(model: ReaderViewModel, palette: ReaderPalette, onBack: 
         }
     }
 
-    FormSheet("Create a Keepsake", palette, back = true, onLeading = onBack) {
+    FormSheet(stringResource(R.string.keepsake_create_a_keepsake), palette, back = true, onLeading = onBack) {
         Text(
-            "A Keepsake Bible is a copy of your highlights and notes that your family can open in Scripture Alone and read as you marked it — the way a well-worn Bible gets passed down. It’s a single file you keep and give however you like: Quick Share, Messages, a USB drive, or with your papers.",
+            stringResource(R.string.keepsake_create_intro),
             color = palette.secondary, fontSize = 15.sp, lineHeight = 20.sp,
             modifier = Modifier.padding(start = 32.dp, end = 32.dp, top = 10.dp),
         )
 
-        FormHeader("From You", palette)
+        FormHeader(stringResource(R.string.keepsake_create_section_from_you), palette)
         PanelGroup(palette) {
-            FormField(ownerName, "Your name, as family knows you", palette) { value ->
+            FormField(ownerName, stringResource(R.string.keepsake_create_name_placeholder), palette) { value ->
                 changed { ownerName = value }
                 legacy.remember(LegacySession.KEY_OWNER, value)
             }
             PanelSeparator(palette)
-            Text("Dedication", color = palette.secondary, fontSize = 12.sp, modifier = Modifier.padding(start = 18.dp, top = 10.dp))
-            FormField(dedication, "", palette, singleLine = false, minHeight = 90, label = "Dedication") { value ->
+            Text(stringResource(R.string.keepsake_create_dedication), color = palette.secondary, fontSize = 12.sp, modifier = Modifier.padding(start = 18.dp, top = 10.dp))
+            FormField(dedication, "", palette, singleLine = false, minHeight = 90, label = stringResource(R.string.keepsake_create_dedication)) { value ->
                 changed { dedication = value }
                 legacy.remember(LegacySession.KEY_DEDICATION, value)
             }
             PanelSeparator(palette)
-            FormPicker("Translation", translations, translations.firstOrNull { it.id == translation }, { "${it.id} — ${it.name}" }, palette) {
+            FormPicker(stringResource(R.string.keepsake_create_translation), translations, translations.firstOrNull { it.id == translation }, { "${it.id} — ${it.name}" }, palette) {
                 changed { translation = it.id }
                 legacy.remember(LegacySession.KEY_TRANSLATION, it.id)
             }
         }
-        FormFooter("The dedication opens their copy — a few words to whoever reads it next. The translation is the one it opens in.", palette)
+        FormFooter(stringResource(R.string.keepsake_create_dedication_footer), palette)
 
-        FormHeader("What’s Included", palette)
+        FormHeader(stringResource(R.string.keepsake_create_section_included), palette)
         PanelGroup(palette) {
-            FormValue("Highlights", "$uniqueHighlights", palette)
+            FormValue(stringResource(R.string.keepsake_create_highlights), "$uniqueHighlights", palette)
             PanelSeparator(palette)
-            FormValue("Notes", "${notes.size}", palette)
+            FormValue(stringResource(R.string.keepsake_create_notes), "${notes.size}", palette)
             KeepsakeBuilder.dateSpan(highlights, notes)?.let {
                 PanelSeparator(palette)
-                FormValue("From", it, palette)
+                FormValue(stringResource(R.string.keepsake_create_from), it, palette)
             }
         }
 
-        FormHeader("Privacy", palette)
+        FormHeader(stringResource(R.string.keepsake_create_section_privacy), palette)
         PanelGroup(palette) {
-            SwitchRow("Protect with a Passphrase", protect, palette) { changed { protect = it } }
+            SwitchRow(stringResource(R.string.keepsake_create_protect), protect, palette) { changed { protect = it } }
             if (protect) {
                 PanelSeparator(palette)
                 // Shown, not hidden: it has to be written down exactly.
-                FormField(passphrase, "Passphrase", palette, monospace = true, words = false) { changed { passphrase = it } }
+                FormField(passphrase, stringResource(R.string.keepsake_passphrase), palette, monospace = true, words = false) { changed { passphrase = it } }
                 PanelSeparator(palette)
-                FormField(hint, "Hint (optional, shown to anyone)", palette, imeAction = ImeAction.Done) { changed { hint = it } }
+                FormField(hint, stringResource(R.string.keepsake_create_hint_placeholder), palette, imeAction = ImeAction.Done) { changed { hint = it } }
             }
         }
         FormFooter(
-            if (protect) "Write the passphrase down exactly as shown and keep it with the file — for example, with your will. Without it, no one can open this keepsake: not your family, and not us. There is no reset."
-            else "Without a passphrase, anyone who has the file can read it, like a Bible on a shelf. That’s usually what you want for family. Add one if the file might travel somewhere less private.",
+            stringResource(if (protect) R.string.keepsake_create_protect_footer_on else R.string.keepsake_create_protect_footer_off),
             palette,
         )
 
@@ -173,20 +174,20 @@ fun KeepsakeCreateSheet(model: ReaderViewModel, palette: ReaderPalette, onBack: 
         PanelGroup(palette) {
             val file = made
             if (file != null) {
-                FormButton("Share…", palette, icon = Icons.Outlined.Share) {
+                FormButton(stringResource(R.string.keepsake_create_share), palette, icon = Icons.Outlined.Share) {
                     try {
                         context.startActivity(ExportFiles.shareIntent(file.uris, ExportFiles.KEEPSAKE, file.name))
                     } catch (_: ActivityNotFoundException) {
-                        failure = "Nothing on this device can receive it."
+                        failure = context.getString(R.string.keepsake_create_no_receiver)
                     }
                 }
                 PanelSeparator(palette)
-                FormButton("Save to Files…", palette, icon = Icons.Outlined.Folder) { save.launch(ExportFiles.KEEPSAKE to file.name) }
+                FormButton(stringResource(R.string.keepsake_create_save_to_files), palette, icon = Icons.Outlined.Folder) { save.launch(ExportFiles.KEEPSAKE to file.name) }
             } else {
-                FormButton("Create Keepsake", palette, enabled = canCreate, bold = true, busy = working && !protect, onClick = ::create)
+                FormButton(stringResource(R.string.keepsake_create_button), palette, enabled = canCreate, bold = true, busy = working && !protect, onClick = ::create)
                 if (working && protect) {
                     PanelSeparator(palette)
-                    FormProgress(progress, "Protecting with your passphrase…", palette)
+                    FormProgress(progress, stringResource(R.string.keepsake_create_protecting), palette)
                 }
             }
         }

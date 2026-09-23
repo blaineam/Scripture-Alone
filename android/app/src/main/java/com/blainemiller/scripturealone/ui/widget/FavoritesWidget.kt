@@ -1,11 +1,11 @@
 package com.blainemiller.scripturealone.ui.widget
 
 import android.content.Context
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.glance.currentState
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -30,6 +30,7 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
+import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
@@ -50,17 +51,20 @@ import androidx.glance.text.TextStyle
 import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.companion.VerseSnapshot
 import com.blainemiller.scripturealone.companion.VerseSnapshot.Kind
+import com.blainemiller.scripturealone.text.AppText
+import java.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import java.time.Instant
 
 /** What a Favorites & Notes widget rotates through — `VerseSource` on iOS, chosen per widget. */
-enum class VerseSource(val raw: String, val title: String, val kinds: Set<Kind>) {
-    EVERYTHING("everything", "Favorites, Highlights & Notes", Kind.entries.toSet()),
-    FAVORITES("favorites", "Favorites", setOf(Kind.FAVORITE)),
-    HIGHLIGHTS("highlights", "Highlights", setOf(Kind.HIGHLIGHT)),
-    NOTES("notes", "Notes", setOf(Kind.NOTE));
+enum class VerseSource(val raw: String, @StringRes private val titleRes: Int, val kinds: Set<Kind>) {
+    EVERYTHING("everything", R.string.widget_source_everything, Kind.entries.toSet()),
+    FAVORITES("favorites", R.string.widget_source_favorites, setOf(Kind.FAVORITE)),
+    HIGHLIGHTS("highlights", R.string.widget_source_highlights, setOf(Kind.HIGHLIGHT)),
+    NOTES("notes", R.string.widget_source_notes, setOf(Kind.NOTE));
+
+    val title: String get() = AppText.get(titleRes)
 
     companion object {
         val KEY = stringPreferencesKey("source")
@@ -185,15 +189,15 @@ fun FavoritesContent(entry: FavoritesEntry) {
 private fun Badge(item: VerseSnapshot.Item) {
     when (item.kind) {
         Kind.HIGHLIGHT -> Image(
-            ImageProvider(R.drawable.widget_dot), contentDescription = "Highlight",
+            ImageProvider(R.drawable.widget_dot), contentDescription = LocalContext.current.getString(R.string.widget_badge_highlight),
             modifier = GlanceModifier.size(10.dp), colorFilter = ColorFilter.tint(WidgetColors.highlight(item.color)),
         )
         Kind.FAVORITE -> Image(
-            ImageProvider(R.drawable.ic_widget_heart), contentDescription = "Favorite",
+            ImageProvider(R.drawable.ic_widget_heart), contentDescription = LocalContext.current.getString(R.string.widget_badge_favorite),
             modifier = GlanceModifier.size(13.dp), colorFilter = ColorFilter.tint(WidgetColors.heart),
         )
         Kind.NOTE -> Image(
-            ImageProvider(R.drawable.ic_widget_note), contentDescription = "Note",
+            ImageProvider(R.drawable.ic_widget_note), contentDescription = LocalContext.current.getString(R.string.widget_badge_note),
             modifier = GlanceModifier.size(13.dp), colorFilter = ColorFilter.tint(WidgetColors.accent),
         )
     }
@@ -202,6 +206,7 @@ private fun Badge(item: VerseSnapshot.Item) {
 /** "Next →" in a tinted capsule, as the iOS widget's bordered capsule button. */
 @Composable
 private fun NextButton() {
+    val context = LocalContext.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = GlanceModifier
@@ -209,9 +214,9 @@ private fun NextButton() {
             .cornerRadius(14.dp)
             .padding(horizontal = 12.dp, vertical = 5.dp)
             .clickable(actionRunCallback<ShowNextVerseAction>())
-            .semantics { contentDescription = "Show next verse" },
+            .semantics { contentDescription = context.getString(R.string.widget_show_next_verse) },
     ) {
-        Text("Next", style = TextStyle(color = WidgetColors.accent, fontSize = 12.sp, fontWeight = FontWeight.Medium))
+        Text(context.getString(R.string.common_next), style = TextStyle(color = WidgetColors.accent, fontSize = 12.sp, fontWeight = FontWeight.Medium))
         Spacer(GlanceModifier.width(4.dp))
         Image(
             ImageProvider(R.drawable.ic_widget_arrow_forward), contentDescription = null,
@@ -227,10 +232,13 @@ private fun Empty(source: VerseSource) {
         modifier = GlanceModifier.size(22.dp), colorFilter = ColorFilter.tint(WidgetColors.accent),
     )
     Spacer(GlanceModifier.height(6.dp))
-    val message = when (source) {
-        VerseSource.HIGHLIGHTS -> "Highlight a verse in Scripture Alone and it will appear here."
-        VerseSource.NOTES -> "Write a note on a passage in Scripture Alone and it will appear here."
-        else -> "Favorite a verse in Scripture Alone — tap verses, then the heart — and it will appear here."
-    }
-    AndroidRemoteViews(WidgetText.verse(LocalContext.current, WidgetFamily.SMALL, message))
+    val context = LocalContext.current
+    val message = context.getString(
+        when (source) {
+            VerseSource.HIGHLIGHTS -> R.string.widget_empty_highlights
+            VerseSource.NOTES -> R.string.widget_empty_notes
+            else -> R.string.widget_empty_favorites
+        },
+    )
+    AndroidRemoteViews(WidgetText.verse(context, WidgetFamily.SMALL, message))
 }

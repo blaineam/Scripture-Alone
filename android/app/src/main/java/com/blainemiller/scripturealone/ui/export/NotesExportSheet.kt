@@ -20,6 +20,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
+import com.blainemiller.scripturealone.text.countedString
 import androidx.compose.ui.unit.dp
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.TranslationInfo
@@ -103,8 +107,12 @@ fun NotesExportSheet(
         }
     }
 
-    FormSheet("Export Notes", palette, leading = "Done", onLeading = onDone) {
-        FormHeader(if (notes.size == 1) "Export “$title”" else "Export ${notes.size} Notes", palette)
+    FormSheet(stringResource(R.string.export_title), palette, leading = stringResource(R.string.common_done), onLeading = onDone) {
+        FormHeader(
+            if (notes.size == 1) stringResource(R.string.export_header_one_note, title)
+            else countedString(R.string.export_header_count_one, R.string.export_header_count_other, notes.size, notes.size),
+            palette,
+        )
         PanelGroup(palette) {
             formats.forEachIndexed { index, option ->
                 if (index > 0) PanelSeparator(palette)
@@ -114,37 +122,37 @@ fun NotesExportSheet(
 
         FormHeader("", palette)
         PanelGroup(palette) {
-            SwitchRow("Include Verse Text", includeVerses && allowed, palette, enabled = allowed) { includeVerses = it }
+            SwitchRow(stringResource(R.string.export_include_verses), includeVerses && allowed, palette, enabled = allowed) { includeVerses = it }
             if (includeVerses && allowed) {
                 PanelSeparator(palette)
-                FormPicker("Translation", translations, info, { "${it.id} — ${it.name}" }, palette) { translation = it.id }
+                FormPicker(stringResource(R.string.export_translation), translations, info, { "${it.id} — ${it.name}" }, palette) { translation = it.id }
             }
         }
         if (allowed) {
-            FormFooter("Each note’s passages are quoted above what was written. Very long passages are shortened to their opening verses.", palette)
+            FormFooter(stringResource(R.string.export_verses_footer), palette)
         } else {
             FormFooter(
-                "${info?.abbreviation ?: translation} doesn’t allow its text to be exported. Choose another translation to export your notes with the verses they’re about.",
+                stringResource(R.string.export_not_allowed_footer, info?.abbreviation ?: translation),
                 palette,
             )
             PanelGroup(palette, Modifier.padding(top = 14.dp)) {
-                FormPicker("Translation", translations, info, { "${it.id} — ${it.name}" }, palette) { translation = it.id }
+                FormPicker(stringResource(R.string.export_translation), translations, info, { "${it.id} — ${it.name}" }, palette) { translation = it.id }
             }
         }
 
         val staged = exported
         if (staged != null) {
-            FormHeader("Ready", palette)
+            FormHeader(stringResource(R.string.export_ready), palette)
             PanelGroup(palette) {
-                FormButton("Share…", palette, icon = Icons.Outlined.Share) {
+                FormButton(stringResource(R.string.export_share), palette, icon = Icons.Outlined.Share) {
                     try {
                         context.startActivity(ExportFiles.shareIntent(staged.uris, staged.file.mimeType, staged.file.name))
                     } catch (_: ActivityNotFoundException) {
-                        failure = "Nothing on this device can receive it."
+                        failure = AppText.get(R.string.export_no_receiver)
                     }
                 }
                 PanelSeparator(palette)
-                FormButton("Save to Files…", palette, icon = Icons.Outlined.Folder) {
+                FormButton(stringResource(R.string.export_save_to_files), palette, icon = Icons.Outlined.Folder) {
                     if (staged.file.isFolder) saveFolder.launch(null) else saveFile.launch(staged.file.mimeType to staged.file.name)
                 }
             }
@@ -152,7 +160,7 @@ fun NotesExportSheet(
         } else {
             FormHeader("", palette)
             PanelGroup(palette) {
-                FormButton("Prepare Export", palette, enabled = notes.isNotEmpty(), bold = true, busy = working, onClick = ::prepare)
+                FormButton(stringResource(R.string.export_prepare), palette, enabled = notes.isNotEmpty(), bold = true, busy = working, onClick = ::prepare)
             }
         }
 

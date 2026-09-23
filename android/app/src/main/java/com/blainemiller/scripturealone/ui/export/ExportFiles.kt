@@ -6,6 +6,8 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.DocumentsContract
 import androidx.core.content.FileProvider
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -67,7 +69,7 @@ object ExportFiles {
         val root = File(context.cacheDir, DIRECTORY)
         root.deleteRecursively()
         val folder = File(root, UUID.randomUUID().toString())
-        if (!folder.mkdirs()) throw IOException("Can’t prepare the export.")
+        if (!folder.mkdirs()) throw IOException(AppText.get(R.string.export_error_prepare))
         val written = when (val contents = file.contents) {
             is ExportedFile.Contents.File -> listOf(File(folder, file.name).apply { writeBytes(contents.data) })
             is ExportedFile.Contents.Folder -> {
@@ -96,20 +98,20 @@ object ExportFiles {
     /** Writes a single file to the document the reader created with `CreateDocument`. */
     suspend fun write(context: Context, target: Uri, data: ByteArray): Unit = withContext(Dispatchers.IO) {
         context.contentResolver.openOutputStream(target, "wt")?.use { it.write(data) }
-            ?: throw IOException("Scripture Alone can’t write there.")
+            ?: throw IOException(AppText.get(R.string.export_error_write))
     }
 
     /** Creates the folder inside the tree the reader picked with `OpenDocumentTree`, and its files. */
     suspend fun writeFolder(context: Context, tree: Uri, file: ExportedFile): Unit = withContext(Dispatchers.IO) {
-        val contents = file.contents as? ExportedFile.Contents.Folder ?: throw IOException("Not a folder.")
+        val contents = file.contents as? ExportedFile.Contents.Folder ?: throw IOException(AppText.get(R.string.export_error_not_folder))
         val resolver = context.contentResolver
         val parent = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
         val folder = DocumentsContract.createDocument(resolver, parent, DocumentsContract.Document.MIME_TYPE_DIR, file.name)
-            ?: throw IOException("Scripture Alone can’t make a folder there.")
+            ?: throw IOException(AppText.get(R.string.export_error_make_folder))
         for ((name, data) in contents.files) {
             val doc = DocumentsContract.createDocument(resolver, folder, file.mimeType, name)
-                ?: throw IOException("Scripture Alone can’t write $name there.")
-            resolver.openOutputStream(doc, "wt")?.use { it.write(data) } ?: throw IOException("Scripture Alone can’t write $name there.")
+                ?: throw IOException(AppText.get(R.string.export_error_write_named, name))
+            resolver.openOutputStream(doc, "wt")?.use { it.write(data) } ?: throw IOException(AppText.get(R.string.export_error_write_named, name))
         }
     }
 }

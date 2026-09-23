@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- The notification channel Listen's media controls post to. -->
-    <string name="listen_channel_name">Listening</string>
-</resources>

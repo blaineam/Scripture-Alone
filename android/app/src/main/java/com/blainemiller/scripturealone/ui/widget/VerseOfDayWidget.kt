@@ -40,6 +40,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppLanguage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -88,7 +89,7 @@ fun VerseOfDayContent(entry: VerseOfDayEntry, redLetters: Boolean) {
         .background(ImageProvider(R.drawable.widget_page))
         .cornerRadius(android.R.dimen.system_app_widget_background_radius)
         .padding(16.dp)
-        .semantics { contentDescription = "Verse of the Day, ${entry.reference}. ${entry.text}" }
+        .semantics { contentDescription = context.getString(R.string.widget_votd_accessibility, entry.reference, entry.text) }
     if (open != null) root = root.clickable(open)
 
     Column(modifier = root) {
@@ -105,9 +106,14 @@ fun VerseOfDayContent(entry: VerseOfDayEntry, redLetters: Boolean) {
                     modifier = GlanceModifier.size(13.dp), colorFilter = ColorFilter.tint(WidgetColors.secondaryInk),
                 )
                 Spacer(GlanceModifier.width(5.dp))
-                val theme = if (family == WidgetFamily.LARGE) " · ${entry.verse.theme}" else ""
+                // The theme in the app's language (`DailyVerse.localizedTheme`), English where it has none.
+                val label = if (family == WidgetFamily.LARGE) {
+                    context.getString(R.string.widget_votd_with_theme, entry.verse.theme(AppLanguage.current))
+                } else {
+                    context.getString(R.string.widget_votd_name)
+                }
                 Text(
-                    "Verse of the Day$theme".uppercase(),
+                    label.uppercase(),
                     maxLines = 1,
                     style = TextStyle(color = WidgetColors.secondaryInk, fontSize = 12.sp, fontWeight = FontWeight.Medium),
                 )

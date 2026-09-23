@@ -1,8 +1,11 @@
 package com.blainemiller.scripturealone.ui.share
 
+import androidx.annotation.StringRes
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.share.SharePassageText
 import com.blainemiller.scripturealone.data.share.ShareVerse
+import com.blainemiller.scripturealone.text.AppText
 import com.blainemiller.scripturealone.ui.reader.ReaderFontFamily
 import kotlin.math.floor
 import kotlin.math.max
@@ -16,7 +19,7 @@ import kotlin.math.sqrt
  */
 enum class ShareTemplate(
     val raw: String,
-    val title: String,
+    @StringRes private val titleRes: Int,
     /** Background, top to bottom. One colour = flat. */
     val background: List<Long>,
     val ink: Long,
@@ -25,14 +28,17 @@ enum class ShareTemplate(
     /** Words of Christ. */
     val red: Long,
 ) {
-    PARCHMENT("parchment", "Parchment", listOf(0xF6EDD9, 0xEBDDBF), 0x3B2F20, 0x8A5A2B, 0xA12A1C),
-    INK("ink", "Ink", listOf(0x14161A), 0xEDE8DF, 0xC9A45C, 0xFF7A6B),
-    DAWN("dawn", "Dawn", listOf(0xF7D9C4, 0xEFB4A8, 0xA893CC), 0x2E2236, 0x6B4A6E, 0x9E1B32),
-    NIGHT("night", "Night", listOf(0x0B1026, 0x1D2A57), 0xE9EDF8, 0xA9B8F0, 0xFF8A80),
-    LINEN("linen", "Linen", listOf(0xF8F5EF), 0x2E2A25, 0x9C7A4E, 0xB0261B),
-    STONE("stone", "Stone", listOf(0xDEDCD7, 0xC3C0B9), 0x26262A, 0x5A5A62, 0x9B2226),
-    OLIVE("olive", "Olive", listOf(0x46512F, 0x2D3520), 0xF2EFDD, 0xD6C58C, 0xFFA48A),
-    MINIMAL("minimal", "Minimal", listOf(0xFFFFFF), 0x111111, 0x6E6E6E, 0xC0392B);
+    PARCHMENT("parchment", R.string.share_template_parchment, listOf(0xF6EDD9, 0xEBDDBF), 0x3B2F20, 0x8A5A2B, 0xA12A1C),
+    INK("ink", R.string.share_template_ink, listOf(0x14161A), 0xEDE8DF, 0xC9A45C, 0xFF7A6B),
+    DAWN("dawn", R.string.share_template_dawn, listOf(0xF7D9C4, 0xEFB4A8, 0xA893CC), 0x2E2236, 0x6B4A6E, 0x9E1B32),
+    NIGHT("night", R.string.share_template_night, listOf(0x0B1026, 0x1D2A57), 0xE9EDF8, 0xA9B8F0, 0xFF8A80),
+    LINEN("linen", R.string.share_template_linen, listOf(0xF8F5EF), 0x2E2A25, 0x9C7A4E, 0xB0261B),
+    STONE("stone", R.string.share_template_stone, listOf(0xDEDCD7, 0xC3C0B9), 0x26262A, 0x5A5A62, 0x9B2226),
+    OLIVE("olive", R.string.share_template_olive, listOf(0x46512F, 0x2D3520), 0xF2EFDD, 0xD6C58C, 0xFFA48A),
+    MINIMAL("minimal", R.string.share_template_minimal, listOf(0xFFFFFF), 0x111111, 0x6E6E6E, 0xC0392B);
+
+    /** The template's name, as the designer shows it. */
+    val title: String get() = AppText.get(titleRes)
 
     /** A hairline frame inset from the edge (the paper-like templates). */
     val hasFrame: Boolean get() = this == PARCHMENT || this == LINEN
@@ -46,10 +52,12 @@ enum class ShareTemplate(
 }
 
 /** `ShareAspect`: layout size in points; the export renders at 2× (2160 px on the long side). */
-enum class ShareAspect(val raw: String, val title: String, val width: Float, val height: Float) {
-    SQUARE("square", "Square", 1080f, 1080f),
-    STORY("story", "Story", 608f, 1080f),
-    WIDE("wide", "Wide", 1080f, 608f);
+enum class ShareAspect(val raw: String, @StringRes private val titleRes: Int, val width: Float, val height: Float) {
+    SQUARE("square", R.string.share_aspect_square, 1080f, 1080f),
+    STORY("story", R.string.share_aspect_story, 608f, 1080f),
+    WIDE("wide", R.string.share_aspect_wide, 1080f, 608f);
+
+    val title: String get() = AppText.get(titleRes)
 
     companion object {
         fun fromRaw(raw: String?): ShareAspect? = entries.firstOrNull { it.raw == raw }
@@ -57,8 +65,10 @@ enum class ShareAspect(val raw: String, val title: String, val width: Float, val
 }
 
 /** `ShareAlignment`. */
-enum class ShareAlignment(val raw: String, val title: String) {
-    LEADING("leading", "Left"), CENTER("center", "Centered");
+enum class ShareAlignment(val raw: String, @StringRes private val titleRes: Int) {
+    LEADING("leading", R.string.share_alignment_leading), CENTER("center", R.string.share_alignment_center);
+
+    val title: String get() = AppText.get(titleRes)
 
     companion object {
         fun fromRaw(raw: String?): ShareAlignment? = entries.firstOrNull { it.raw == raw }
@@ -181,8 +191,7 @@ object ShareCardFitter {
 
     /** Where a passage too long for one card is trimmed, said plainly — the designer's note. */
     fun trimNote(result: Result): String? = if (!result.trimmed) null else
-        "A card holds ${result.shownVerses} of these ${result.totalVerses} verses, so it shows " +
-            "${result.content.reference}. Select fewer verses, or share the text for the whole passage."
+        AppText.get(R.string.share_trim_note, result.shownVerses, result.totalVerses, result.content.reference)
 }
 
 /**

@@ -60,4 +60,54 @@ class VoiceCatalogTest {
         assertEquals("Standard Voice (Enhanced) · United States", VoiceInfo("en-us-language", "en-US", 400, false).title(Locale.US))
         assertNull(usLow.badge)
     }
+
+    // ---- Each Bible in its own language's voice (docs/localization.md) ----
+
+    private val frNet = VoiceInfo("fr-fr-x-frd-network", "fr-FR", 500, requiresNetwork = true)
+    private val ca = VoiceInfo("fr-ca-x-caa-local", "fr-CA", 400, requiresNetwork = false)
+    private val cn = VoiceInfo("cmn-cn-x-ccc-local", "zh-CN", 400, requiresNetwork = false)
+    private val tw = VoiceInfo("cmn-tw-x-ctc-local", "zh-TW", 500, requiresNetwork = false)
+    private val br = VoiceInfo("pt-br-x-afs-local", "pt-BR", 400, requiresNetwork = false)
+    private val pt = VoiceInfo("pt-pt-x-jfb-local", "pt-PT", 500, requiresNetwork = false)
+
+    @Test
+    fun theVoiceLanguageIsTheTextsEnglishWhenItDoesntSay() {
+        assertEquals("fr", VoiceCatalog.voiceLanguage("fr"))
+        assertEquals("zh", VoiceCatalog.voiceLanguage("zh-Hans"))
+        assertEquals("pt", VoiceCatalog.voiceLanguage("pt-BR"))
+        assertEquals("en", VoiceCatalog.voiceLanguage(null))
+        assertEquals("en", VoiceCatalog.voiceLanguage(""))
+    }
+
+    @Test
+    fun theTextsRegionFirstThenMainlandMandarinThenTheDevices() {
+        assertEquals("BR", VoiceCatalog.preferredRegion("pt-BR", "US"))
+        assertEquals("CN", VoiceCatalog.preferredRegion("zh-Hans", "TW"))
+        assertEquals("CA", VoiceCatalog.preferredRegion("fr", "CA"))
+        assertEquals("US", VoiceCatalog.preferredRegion(null, "US"))
+        val voices = listOf(pt, br, tw, cn, ca, fr, us)
+        assertEquals(listOf(br, pt), VoiceCatalog.options(voices, "pt", VoiceCatalog.preferredRegion("pt-BR", "US"), true))
+        assertEquals(listOf(cn, tw), VoiceCatalog.options(voices, "zh", VoiceCatalog.preferredRegion("zh-Hans", "US"), true))
+        assertEquals("zh", cn.language) // an engine's "cmn" reads as Chinese
+    }
+
+    @Test
+    fun aSavedVoiceInAnotherLanguageIsPassedOverNotRefused() {
+        // An English voice picked while reading the KJV, now reading Louis Segond: a French voice reads.
+        assertEquals(Resolution.Use(fr), VoiceCatalog.resolve(us.id, listOf(us, fr, ca), "fr", "US", allowNetwork = true))
+        // A network English voice isn't "refused" for a French text either — it simply isn't this text's.
+        assertEquals(Resolution.Use(fr), VoiceCatalog.resolve(usNet.id, listOf(usNet, fr), "fr", "US", allowNetwork = false))
+        // The same language, over the network, for a licensed text: refused, with the device's voice.
+        assertEquals(Resolution.Refused(fr), VoiceCatalog.resolve(frNet.id, listOf(frNet, fr), "fr", "FR", allowNetwork = false))
+    }
+
+    @Test
+    fun theEnginesFallbackLocaleFollowsTheText() {
+        assertEquals(Locale.forLanguageTag("fr"), VoiceCatalog.fallbackLocale("fr", "en", "US"))
+        assertEquals(Locale.forLanguageTag("fr-CA"), VoiceCatalog.fallbackLocale("fr", "fr", "CA"))
+        assertEquals(Locale.forLanguageTag("zh-CN"), VoiceCatalog.fallbackLocale("zh-Hans", "en", "US"))
+        assertEquals(Locale.forLanguageTag("pt-BR"), VoiceCatalog.fallbackLocale("pt-BR", "en", "US"))
+        assertEquals(Locale.US, VoiceCatalog.fallbackLocale(null, "fr", "FR"))
+        assertEquals(Locale.forLanguageTag("en-GB"), VoiceCatalog.fallbackLocale(null, "en", "GB"))
+    }
 }

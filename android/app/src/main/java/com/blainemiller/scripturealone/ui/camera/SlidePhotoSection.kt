@@ -25,8 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.camera.SlideImage
 import com.blainemiller.scripturealone.data.userdata.Note
 import com.blainemiller.scripturealone.ui.notes.PanelGroup
@@ -48,12 +50,12 @@ fun SlidePhotoSection(model: ReaderViewModel, palette: ReaderPalette, note: Note
         val data = model.userData.slidePhoto(note.id) ?: return@LaunchedEffect
         image = withContext(Dispatchers.Default) { SlideImage.decode(data, maxPixelSize = 1600) }
     }
-    PanelSectionTitle("Slide Photo", palette)
+    PanelSectionTitle(stringResource(R.string.camera_slide_photo), palette)
     PanelGroup(palette) {
         val bitmap = image
         if (bitmap != null) {
             Image(
-                bitmap.asImageBitmap(), "Photo of the sermon slide", contentScale = ContentScale.Fit,
+                bitmap.asImageBitmap(), stringResource(R.string.camera_slide_photo_description), contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxWidth().heightIn(max = 260.dp).padding(horizontal = 18.dp, vertical = 12.dp).clip(RoundedCornerShape(10.dp)),
             )
         } else {
@@ -63,7 +65,7 @@ fun SlidePhotoSection(model: ReaderViewModel, palette: ReaderPalette, note: Note
         }
         PanelSeparator(palette)
         Text(
-            "Remove Photo", color = palette.red, fontSize = 17.sp,
+            stringResource(R.string.camera_remove_photo), color = palette.red, fontSize = 17.sp,
             modifier = Modifier.fillMaxWidth().clickable(role = Role.Button) { model.userData.removeSlidePhoto(note) }.padding(horizontal = 18.dp, vertical = 13.dp),
         )
     }

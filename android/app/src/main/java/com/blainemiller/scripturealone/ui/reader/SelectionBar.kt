@@ -57,10 +57,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.annotation.StringRes
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.rights.TranslationRights
 import com.blainemiller.scripturealone.data.userdata.HighlightColor
+import com.blainemiller.scripturealone.text.AppText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -123,11 +127,12 @@ fun SelectionBar(
             ) {
                 Icon(Icons.Rounded.Headphones, null, tint = palette.accent, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(5.dp))
-                Text("Listen", color = palette.accent, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.reader_selection_listen), color = palette.accent, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
             }
+            val clearLabel = stringResource(R.string.reader_clear_selection)
             Box(
                 Modifier.size(32.dp).clip(CircleShape).clickable(role = Role.Button) { model.clearSelection() }
-                    .clearAndSetSemantics { contentDescription = "Clear Selection" },
+                    .clearAndSetSemantics { contentDescription = clearLabel },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Rounded.Close, null, tint = palette.secondary, modifier = Modifier.size(19.dp))
@@ -135,24 +140,24 @@ fun SelectionBar(
         }
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             for (color in HighlightColor.entries) {
-                BarCell("Highlight ${color.title}", onClick = { model.highlightSelection(color) }) {
+                BarCell(stringResource(highlightAction(color)), onClick = { model.highlightSelection(color) }) {
                     Box(
                         Modifier.size(26.dp).clip(CircleShape).background(swatch(color))
                             .border(1.dp, palette.ink.copy(alpha = 0.12f), CircleShape),
                     )
                 }
             }
-            BarIcon(ReaderIcons.Eraser, "Remove Highlight", palette) { model.removeSelectedHighlights() }
+            BarIcon(ReaderIcons.Eraser, stringResource(R.string.reader_remove_highlight), palette) { model.removeSelectedHighlights() }
             Box(Modifier.padding(horizontal = 2.dp).width(1.dp).height(24.dp).background(SheetColors.separator(palette)))
-            BarCell(if (isFavorite) "Remove from Favorites" else "Add to Favorites", onClick = { model.toggleFavoriteSelection() }) {
+            BarCell(stringResource(if (isFavorite) R.string.reader_remove_favorite else R.string.reader_add_favorite), onClick = { model.toggleFavoriteSelection() }) {
                 Icon(
                     if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, null,
                     tint = if (isFavorite) Color(0xFFFF3B30) else palette.ink, modifier = Modifier.size(24.dp),
                 )
             }
-            BarIcon(ReaderIcons.SquareAndPencil, "Add Note", palette, onClick = onNote)
+            BarIcon(ReaderIcons.SquareAndPencil, stringResource(R.string.reader_add_note), palette, onClick = onNote)
             BarIcon(
-                if (copied) Icons.Rounded.Check else Icons.Outlined.ContentCopy, "Copy", palette,
+                if (copied) Icons.Rounded.Check else Icons.Outlined.ContentCopy, stringResource(R.string.common_copy), palette,
                 enabled = mayQuote && rights.permits(TranslationRights.Permission.COPY),
             ) {
                 scope.launch {
@@ -167,7 +172,7 @@ fun SelectionBar(
             }
             val single = model.selection.singleOrNull()
             if (single != null) {
-                BarIcon(Icons.Outlined.Translate, "Original Language", palette) {
+                BarIcon(Icons.Outlined.Translate, stringResource(R.string.reader_original_language), palette) {
                     // As a KJV key: the word-by-word data is keyed that way.
                     actions.onOriginalLanguage(VerseRef.fromKey(model.numbering.kjv(single)))
                 }
@@ -186,9 +191,31 @@ fun SelectionBar(
 /** Says whose limit it is and what it is, because "this doesn't work" is not an explanation. */
 internal fun quotationLimitNotice(rights: TranslationRights, abbreviation: String): String {
     val limit = rights.maxQuotationVerses
-    val name = abbreviation.ifEmpty { "This translation" }
-    if (limit <= 0) return "$name can’t be quoted outside the app."
-    return "$name allows up to $limit verses in one quotation. Select fewer to copy or share."
+    val name = abbreviation.ifEmpty { AppText.get(R.string.reader_quote_this_translation) }
+    if (limit <= 0) return AppText.get(R.string.reader_quote_not_allowed, name)
+    return AppText.plural(
+        R.string.reader_quote_limit_one, R.string.reader_quote_limit_other, limit.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), name, limit,
+    )
+}
+
+/** The Highlight button's label for [color] — "Highlight Yellow". */
+@StringRes
+internal fun highlightAction(color: HighlightColor): Int = when (color) {
+    HighlightColor.YELLOW -> R.string.reader_highlight_yellow
+    HighlightColor.GREEN -> R.string.reader_highlight_green
+    HighlightColor.BLUE -> R.string.reader_highlight_blue
+    HighlightColor.PINK -> R.string.reader_highlight_pink
+    HighlightColor.PURPLE -> R.string.reader_highlight_purple
+}
+
+/** What TalkBack says of a verse highlighted in [color] — "Highlighted yellow". */
+@StringRes
+internal fun highlightedState(color: HighlightColor): Int = when (color) {
+    HighlightColor.YELLOW -> R.string.reader_highlighted_yellow
+    HighlightColor.GREEN -> R.string.reader_highlighted_green
+    HighlightColor.BLUE -> R.string.reader_highlighted_blue
+    HighlightColor.PINK -> R.string.reader_highlighted_pink
+    HighlightColor.PURPLE -> R.string.reader_highlighted_purple
 }
 
 /** A highlight colour's swatch, at full strength — `HighlightColor.swatch`. */
@@ -252,7 +279,7 @@ private fun RowScope.ShareMenu(model: ReaderViewModel, palette: ReaderPalette, r
     }
 
     Box(Modifier.weight(1f)) {
-        Cell(Modifier, "Share", enabled, onClick = { open = true }) {
+        Cell(Modifier, stringResource(R.string.common_share), enabled, onClick = { open = true }) {
             Icon(
                 if (copied) Icons.Rounded.Check else Icons.Outlined.IosShare, null,
                 tint = if (enabled) palette.ink else palette.secondary.copy(alpha = 0.45f), modifier = Modifier.size(24.dp),
@@ -260,16 +287,16 @@ private fun RowScope.ShareMenu(model: ReaderViewModel, palette: ReaderPalette, r
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             val imagesAllowed = model.rights.permits(TranslationRights.Permission.VERSE_IMAGES) && model.mayQuote()
-            MenuItem("Share Image…", palette, enabled = imagesAllowed) {
+            MenuItem(stringResource(R.string.reader_share_image), palette, enabled = imagesAllowed) {
                 open = false
                 model.openDesigner(ranges)
             }
-            MenuItem("Share Text", palette, enabled = shareAllowed) {
+            MenuItem(stringResource(R.string.reader_share_text), palette, enabled = shareAllowed) {
                 open = false
                 scope.launch { model.quotation(ranges).takeIf { it.isNotEmpty() }?.let(::send) }
             }
             val url = link
-            MenuItem("Copy Link", palette, enabled = url != null) {
+            MenuItem(stringResource(R.string.reader_copy_link), palette, enabled = url != null) {
                 open = false
                 url ?: return@MenuItem
                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -280,13 +307,13 @@ private fun RowScope.ShareMenu(model: ReaderViewModel, palette: ReaderPalette, r
                     copied = false
                 }
             }
-            MenuItem("Share Link…", palette, enabled = url != null) {
+            MenuItem(stringResource(R.string.reader_share_link), palette, enabled = url != null) {
                 open = false
                 url?.let(::send)
             }
             if (url == null) {
                 Text(
-                    if (!shareAllowed) "Links aren’t available for this translation" else "Too long for a link — share the image",
+                    stringResource(if (!shareAllowed) R.string.reader_link_not_allowed else R.string.reader_link_too_long),
                     color = palette.secondary, fontSize = 12.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp).widthIn(max = 240.dp),
                 )

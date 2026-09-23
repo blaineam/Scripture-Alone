@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.wear
 
 import android.net.Uri
+import android.text.format.DateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,8 +25,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -76,7 +79,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 /** The watch's screens, as `WatchRoute` on the Apple Watch. */
 object Routes {
@@ -202,24 +204,25 @@ private fun HomeScreen(bible: WatchBible, state: WatchBible.State, go: (String) 
     val favorites = state.snapshot?.items(setOf(Kind.FAVORITE)).orEmpty().size
     val notes = state.snapshot?.items(setOf(Kind.NOTE)).orEmpty().size
     Screen {
-        item { Title("Scripture Alone") }
+        item { Title(stringResource(R.string.app_name)) }
         today?.range?.let { range ->
             item {
-                Card(onClick = { go(Routes.verse(range)) }, modifier = Modifier.semantics { contentDescription = "Verse of the Day, ${today.reference}. ${today.text}" }) {
+                val description = stringResource(R.string.wear_home_votd_accessibility, today.reference, today.text)
+                Card(onClick = { go(Routes.verse(range)) }, modifier = Modifier.semantics { contentDescription = description }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(painterResource(R.drawable.ic_sun_horizon), null, tint = Secondary, modifier = Modifier.size(12.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("VERSE OF THE DAY", style = MaterialTheme.typography.caption3, color = Secondary)
+                        Text(stringResource(R.string.verse_of_the_day).uppercase(), style = MaterialTheme.typography.caption3, color = Secondary)
                     }
                     Text(today.reference, style = MaterialTheme.typography.title3, color = Accent)
                     Text(today.text, style = MaterialTheme.typography.body1, color = Color.White, maxLines = 4, overflow = TextOverflow.Ellipsis)
                 }
             }
         }
-        item { RowChip("Favorites", R.drawable.ic_heart, HeartRed, trailing = favorites.takeIf { it > 0 }?.toString()) { go(Routes.FAVORITES) } }
-        item { RowChip("Notes", R.drawable.ic_note, NoteOrange, trailing = notes.takeIf { it > 0 }?.toString()) { go(Routes.NOTES) } }
-        item { RowChip("Read", R.drawable.ic_book) { go(Routes.BOOKS) } }
-        item { RowChip("Translation", R.drawable.ic_translate, trailing = state.translation) { go(Routes.TRANSLATIONS) } }
+        item { RowChip(stringResource(R.string.wear_favorites), R.drawable.ic_heart, HeartRed, trailing = favorites.takeIf { it > 0 }?.toString()) { go(Routes.FAVORITES) } }
+        item { RowChip(stringResource(R.string.wear_notes), R.drawable.ic_note, NoteOrange, trailing = notes.takeIf { it > 0 }?.toString()) { go(Routes.NOTES) } }
+        item { RowChip(stringResource(R.string.wear_read), R.drawable.ic_book) { go(Routes.BOOKS) } }
+        item { RowChip(stringResource(R.string.wear_translation), R.drawable.ic_translate, trailing = state.translation) { go(Routes.TRANSLATIONS) } }
     }
 }
 
@@ -242,7 +245,7 @@ private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: Verse
         item { Title(range.display, Accent) }
         val loaded = verses
         if (loaded != null && loaded.isEmpty()) {
-            item { Text("This passage isn’t in the watch’s ${state.translation}.", color = Secondary, textAlign = TextAlign.Center) }
+            item { Text(stringResource(R.string.wear_verse_not_in_edition, state.translation), color = Secondary, textAlign = TextAlign.Center) }
         }
         items(loaded.orEmpty()) { verse -> VerseText(verse, numbered = loaded.orEmpty().size > 1) }
         if (!loaded.isNullOrEmpty()) {
@@ -253,17 +256,17 @@ private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: Verse
                     modifier = Modifier.fillMaxWidth(),
                     colors = ChipDefaults.secondaryChipColors(),
                     icon = { Icon(painterResource(if (speaking) R.drawable.ic_stop else R.drawable.ic_speaker), null, modifier = Modifier.size(ChipDefaults.IconSize)) },
-                    label = { Text(if (speaking) "Stop" else "Speak") },
+                    label = { Text(stringResource(if (speaking) R.string.wear_stop else R.string.wear_speak)) },
                 )
             }
         }
         if (notes.isNotEmpty()) {
-            item { ListHeader { Text("Notes") } }
+            item { ListHeader { Text(stringResource(R.string.wear_notes)) } }
             items(notes) { note ->
                 RowChip(note.noteTitle ?: note.reference, R.drawable.ic_note, NoteOrange, secondary = note.noteBody) { go(Routes.note(note.id)) }
             }
         }
-        item { RowChip("Read $chapterName", R.drawable.ic_book) { go(Routes.chapter(start.book, start.chapter, start.verse)) } }
+        item { RowChip(stringResource(R.string.wear_read_chapter, chapterName), R.drawable.ic_book) { go(Routes.chapter(start.book, start.chapter, start.verse)) } }
         item {
             Text(
                 bible.editions.firstOrNull { it.id == state.translation }?.name ?: state.translation,
@@ -279,9 +282,10 @@ private fun VerseText(verse: WatchVerse, numbered: Boolean, highlight: Color? = 
     var modifier = Modifier.fillMaxWidth()
     if (highlight != null) modifier = modifier.background(highlight.copy(alpha = 0.28f), RoundedCornerShape(4.dp)).padding(horizontal = 4.dp)
     if (onClick != null) modifier = modifier.clickable(onClick = onClick)
+    val description = if (numbered) stringResource(R.string.wear_verse_accessibility, verse.ref.verse, verse.text) else verse.text
     Text(
         verseAnnotated(verse, numbered),
-        modifier = modifier.semantics { contentDescription = if (numbered) "Verse ${verse.ref.verse}. ${verse.text}" else verse.text },
+        modifier = modifier.semantics { contentDescription = description },
         style = MaterialTheme.typography.body1,
         color = Color.White,
     )
@@ -313,11 +317,11 @@ fun verseAnnotated(verse: WatchVerse, numbered: Boolean): AnnotatedString = buil
 @Composable
 private fun BooksScreen(go: (String) -> Unit) {
     Screen {
-        item { Title("Books") }
+        item { Title(stringResource(R.string.wear_books)) }
         for (group in BookGroup.entries) {
             val books = BookID.entries.filter { it.group == group }
             if (books.isEmpty()) continue
-            item { ListHeader { Text(group.title, color = Secondary) } }
+            item { ListHeader { Text(stringResource(group.titleRes), color = Secondary) } }
             items(books) { book ->
                 RowChip(book.displayName, null) {
                     go(if (book.isSingleChapter) Routes.chapter(book.number, 1) else Routes.book(book))
@@ -334,10 +338,11 @@ private fun ChaptersScreen(book: BookID, go: (String) -> Unit) {
         items((1..book.chapterCount).chunked(4)) { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally), modifier = Modifier.fillMaxWidth()) {
                 for (chapter in row) {
+                    val description = stringResource(R.string.wear_chapter_accessibility, chapter)
                     Button(
                         onClick = { go(Routes.chapter(book.number, chapter)) },
                         colors = ButtonDefaults.secondaryButtonColors(),
-                        modifier = Modifier.size(ButtonDefaults.SmallButtonSize).semantics { contentDescription = "Chapter $chapter" },
+                        modifier = Modifier.size(ButtonDefaults.SmallButtonSize).semantics { contentDescription = description },
                     ) { Text("$chapter", fontWeight = FontWeight.SemiBold) }
                 }
             }
@@ -364,7 +369,7 @@ private fun ChapterScreen(bible: WatchBible, state: WatchBible.State, book: Int,
         else -> null
     }
     Screen(listState) {
-        item { Title(if (info.isSingleChapter) info.abbreviation else "${info.abbreviation} $chapter") }
+        item { Title(if (info.isSingleChapter) info.abbreviation else stringResource(R.string.wear_book_chapter, info.abbreviation, chapter)) }
         items(loaded) { verse ->
             VerseText(verse, numbered = true, highlight = colors[verse.ref.key]?.let { Color(VersePalette.highlight(it)) }) {
                 go(Routes.verse(VerseRange(verse.ref, verse.ref)))
@@ -376,10 +381,25 @@ private fun ChapterScreen(bible: WatchBible, state: WatchBible.State, book: Int,
     }
 }
 
+@Composable
 private fun chapterDisplay(book: Int, chapter: Int): String {
     val info = BookID.of(book) ?: return ""
-    return if (info.isSingleChapter) info.displayName else "${info.displayName} $chapter"
+    return if (info.isSingleChapter) info.displayName else stringResource(R.string.wear_book_chapter, info.displayName, chapter)
 }
+
+/** A book group's header — `BookGroup.title` is English in the pure-JVM shared module. */
+private val BookGroup.titleRes: Int
+    get() = when (this) {
+        BookGroup.LAW -> R.string.wear_book_group_law
+        BookGroup.HISTORY -> R.string.wear_book_group_history
+        BookGroup.WISDOM -> R.string.wear_book_group_wisdom
+        BookGroup.MAJOR_PROPHETS -> R.string.wear_book_group_major_prophets
+        BookGroup.MINOR_PROPHETS -> R.string.wear_book_group_minor_prophets
+        BookGroup.GOSPELS -> R.string.wear_book_group_gospels
+        BookGroup.PAUL -> R.string.wear_book_group_paul
+        BookGroup.GENERAL -> R.string.wear_book_group_general
+        BookGroup.PROPHECY -> R.string.wear_book_group_prophecy
+    }
 
 // MARK: Favorites and notes — `WatchLibraryViews`
 
@@ -394,9 +414,9 @@ private fun FavoritesScreen(bible: WatchBible, state: WatchBible.State, go: (Str
         }
     }
     Screen {
-        item { Title("Favorites") }
+        item { Title(stringResource(R.string.wear_favorites)) }
         if (favorites.isEmpty()) {
-            item { Empty(R.drawable.ic_heart, "No Favorites", "Favorite a verse on your phone and it appears here.") }
+            item { Empty(R.drawable.ic_heart, stringResource(R.string.wear_favorites_empty_title), stringResource(R.string.wear_favorites_empty_message)) }
         }
         items(favorites) { item ->
             Card(onClick = { item.verseRange?.let { go(Routes.verse(it)) } }) {
@@ -407,15 +427,16 @@ private fun FavoritesScreen(bible: WatchBible, state: WatchBible.State, go: (Str
     }
 }
 
-private val noteDate = DateTimeFormatter.ofPattern("MMM d", Locale.US)
-
 @Composable
 private fun NotesScreen(state: WatchBible.State, go: (String) -> Unit) {
     val notes = state.snapshot?.items(setOf(Kind.NOTE)).orEmpty()
+    // "Sep 21" in the reader's language and order ("21 sept.", "9月21日").
+    val locale = LocalConfiguration.current.locales[0]
+    val noteDate = remember(locale) { DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "MMMd"), locale) }
     Screen {
-        item { Title("Notes") }
+        item { Title(stringResource(R.string.wear_notes)) }
         if (notes.isEmpty()) {
-            item { Empty(R.drawable.ic_note, "No Notes", "Notes you write on your phone appear here.") }
+            item { Empty(R.drawable.ic_note, stringResource(R.string.wear_notes_empty_title), stringResource(R.string.wear_notes_empty_message)) }
         }
         items(notes) { note ->
             Card(onClick = { go(Routes.note(note.id)) }) {
@@ -432,14 +453,14 @@ private fun NoteScreen(state: WatchBible.State, id: String, go: (String) -> Unit
     val note = state.snapshot?.items?.firstOrNull { it.id == id }
     Screen {
         if (note == null) {
-            item { Empty(R.drawable.ic_note, "Note Deleted", null) }
+            item { Empty(R.drawable.ic_note, stringResource(R.string.wear_note_deleted), null) }
             return@Screen
         }
         item { Title(note.noteTitle ?: note.reference) }
         item { RowChip(note.reference, R.drawable.ic_book) { note.verseRange?.let { go(Routes.verse(it)) } } }
         note.noteBody?.let { body -> item { Text(body, style = MaterialTheme.typography.body1, modifier = Modifier.fillMaxWidth()) } }
         item {
-            Text("Edit notes on your phone.", style = MaterialTheme.typography.caption3, color = Secondary, textAlign = TextAlign.Center)
+            Text(stringResource(R.string.wear_note_edit_on_phone), style = MaterialTheme.typography.caption3, color = Secondary, textAlign = TextAlign.Center)
         }
     }
 }
@@ -458,7 +479,7 @@ private fun Empty(icon: Int, title: String, message: String?) {
 @Composable
 private fun TranslationsScreen(bible: WatchBible, state: WatchBible.State) {
     Screen {
-        item { Title("Translation") }
+        item { Title(stringResource(R.string.wear_translation)) }
         items(bible.editions) { edition ->
             val selected = edition.id == state.translation
             ToggleChip(
@@ -473,9 +494,9 @@ private fun TranslationsScreen(bible: WatchBible, state: WatchBible.State) {
         item {
             val phone = state.phoneTranslation
             val footer = if (phone != null && bible.editions.none { it.id == phone }) {
-                "$phone on your phone can’t be read here. Online translations can’t be stored on the watch."
+                stringResource(R.string.wear_translation_phone_unavailable, phone)
             } else {
-                "Follows your phone."
+                stringResource(R.string.wear_translation_follows_phone)
             }
             Text(footer, style = MaterialTheme.typography.caption3, color = Secondary, textAlign = TextAlign.Center)
         }

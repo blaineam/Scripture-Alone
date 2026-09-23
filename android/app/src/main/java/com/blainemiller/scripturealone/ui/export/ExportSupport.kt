@@ -1,19 +1,25 @@
 package com.blainemiller.scripturealone.ui.export
 
+import androidx.annotation.StringRes
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.ChapterVerse
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeNote
 import com.blainemiller.scripturealone.data.rights.TranslationRights
+import com.blainemiller.scripturealone.text.AppText
 
 // The pieces of `ScriptureAlone/Export/ExportSupport.swift` that aren't Android: the order notes are
 // exported in, the verse text an export quotes, and safe file names. Pure, so the JVM tests run them.
 
 /** The four formats of `NotesExportSheet.Format`, with iOS's titles and descriptions. */
-enum class ExportFormat(val title: String, val detail: String) {
-    PDF("PDF", "Typeset for reading and printing."),
-    MARKDOWN("Markdown", "One file, for note apps and editors."),
-    MARKDOWN_FOLDER("Markdown Folder", "A file for each note."),
-    PLAIN_TEXT("Plain Text", "Simple text that opens anywhere.");
+enum class ExportFormat(@StringRes private val titleRes: Int, @StringRes private val detailRes: Int) {
+    PDF(R.string.export_format_pdf, R.string.export_format_pdf_detail),
+    MARKDOWN(R.string.export_format_markdown, R.string.export_format_markdown_detail),
+    MARKDOWN_FOLDER(R.string.export_format_markdown_folder, R.string.export_format_markdown_folder_detail),
+    PLAIN_TEXT(R.string.export_format_plain_text, R.string.export_format_plain_text_detail);
+
+    val title: String get() = AppText.get(titleRes)
+    val detail: String get() = AppText.get(detailRes)
 
     companion object {
         /** A folder of one file is just a file: a single note offers the other three, as on iOS. */
@@ -78,7 +84,7 @@ object ExportSupport {
     /** "Dad’s Notes", "James’ Notes", or "Notes" — `LegacyNotesPanel.notesTitle`. */
     fun notesTitle(ownerName: String?): String {
         val name = ownerName?.trim()
-        if (name.isNullOrEmpty()) return "Notes"
-        return if (name.endsWith("s")) "$name’ Notes" else "$name’s Notes"
+        if (name.isNullOrEmpty()) return AppText.get(R.string.export_notes_title)
+        return if (name.endsWith("s")) AppText.get(R.string.export_notes_title_owner_s, name) else AppText.get(R.string.export_notes_title_owner, name)
     }
 }

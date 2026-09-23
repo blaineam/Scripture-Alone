@@ -5,7 +5,9 @@ import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import android.content.pm.ApplicationInfo
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.BundledDatabase
+import com.blainemiller.scripturealone.text.AppText
 import com.google.android.gms.tasks.Task
 import com.google.android.play.core.assetpacks.AssetPackException
 import com.google.android.play.core.assetpacks.AssetPackManager
@@ -259,12 +261,11 @@ object AssetPackProgress {
 
     /** What a failed download says. iOS's sentences where iOS has one. */
     fun message(errorCode: Int, status: Int, pack: AssetPack): String = when {
-        status == AssetPackStatus.CANCELED -> "The download of the ${pack.title} was cancelled."
-        errorCode == AssetPackErrorCode.NETWORK_ERROR -> "${pack.title} needs a connection to download."
-        errorCode == AssetPackErrorCode.INSUFFICIENT_STORAGE ->
-            "There isn’t enough free space on this device for the ${pack.title}."
+        status == AssetPackStatus.CANCELED -> AppText.get(R.string.data_pack_download_cancelled, pack.title)
+        errorCode == AssetPackErrorCode.NETWORK_ERROR -> AppText.get(R.string.data_pack_needs_connection, pack.title)
+        errorCode == AssetPackErrorCode.INSUFFICIENT_STORAGE -> AppText.get(R.string.data_pack_insufficient_storage, pack.title)
         errorCode in UNAVAILABLE -> notInThisCopy(pack)
-        else -> "${pack.title} couldn’t be downloaded. (Google Play error $errorCode)"
+        else -> AppText.get(R.string.data_pack_download_failed, pack.title, errorCode)
     }
 
     /**
@@ -273,7 +274,7 @@ object AssetPackProgress {
      * plainly rather than offering a retry that cannot succeed.
      */
     fun notInThisCopy(pack: AssetPack): String =
-        "The ${pack.title} is delivered by Google Play, and this copy of the app wasn’t installed from Google Play."
+        AppText.get(R.string.data_pack_not_from_play, pack.title)
 
     private val UNAVAILABLE = setOf(
         AssetPackErrorCode.APP_UNAVAILABLE,

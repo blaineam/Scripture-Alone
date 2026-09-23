@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.ui.export
 
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.ui.reader.FitTitle
 import com.blainemiller.scripturealone.ui.reader.CappedFontScale
 import com.blainemiller.scripturealone.ui.reader.takesTaps
@@ -74,7 +76,7 @@ import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 fun FormSheet(
     title: String,
     palette: ReaderPalette,
-    leading: String = "Done",
+    leading: String = stringResource(R.string.common_done),
     back: Boolean = false,
     onLeading: () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
@@ -200,7 +202,7 @@ fun FormChoice(title: String, detail: String?, chosen: Boolean, palette: ReaderP
             Text(title, color = palette.ink, fontSize = 17.sp)
             if (detail != null) Text(detail, color = palette.secondary, fontSize = 13.sp)
         }
-        if (chosen) Icon(Icons.Rounded.Check, "Selected", tint = palette.accent, modifier = Modifier.size(22.dp))
+        if (chosen) Icon(Icons.Rounded.Check, stringResource(R.string.export_selected), tint = palette.accent, modifier = Modifier.size(22.dp))
     }
 }
 
@@ -208,11 +210,12 @@ fun FormChoice(title: String, detail: String?, chosen: Boolean, palette: ReaderP
 @Composable
 fun <T> FormPicker(label: String, options: List<T>, selected: T?, title: (T) -> String, palette: ReaderPalette, onSelect: (T) -> Unit) {
     var open by remember { mutableStateOf(false) }
+    val description = stringResource(R.string.export_picker_description, label, selected?.let(title).orEmpty())
     Box {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 52.dp).clickable(role = Role.Button) { open = true }
                 .padding(horizontal = 18.dp, vertical = 8.dp)
-                .semantics { contentDescription = "$label, ${selected?.let(title).orEmpty()}" },
+                .semantics { contentDescription = description },
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(label, color = palette.ink, fontSize = 17.sp)

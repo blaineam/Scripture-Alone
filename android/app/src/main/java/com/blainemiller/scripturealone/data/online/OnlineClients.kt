@@ -1,11 +1,13 @@
 package com.blainemiller.scripturealone.data.online
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.canon.BookID
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.reference.ReferenceParser
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.search.SearchHit
+import com.blainemiller.scripturealone.text.AppText
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -77,11 +79,8 @@ enum class OnlineProvider(val raw: String, val title: String, val signupUrl: Str
 
     val explanation: String
         get() = when (this) {
-            CROSSWAY -> "Crossway's free tier allows 5,000 requests a day for non-commercial use. The key is " +
-                "yours, and the ESV is read over the network — up to 500 verses are kept on the " +
-                "device, which is Crossway's limit."
-            API_BIBLE -> "The American Bible Society's free Starter plan is for non-commercial use and lets you " +
-                "pick three copyrighted translations. The key is yours."
+            CROSSWAY -> AppText.get(R.string.data_online_crossway_explanation)
+            API_BIBLE -> AppText.get(R.string.data_online_api_bible_explanation)
         }
 
     companion object {
@@ -93,40 +92,40 @@ enum class OnlineProvider(val raw: String, val title: String, val signupUrl: Str
 sealed class OnlineFailure(message: String) : Exception(message) {
     class NeedsKey(val provider: OnlineProvider) : OnlineFailure(
         when (provider) {
-            OnlineProvider.CROSSWAY -> "Add your free Crossway key in Manage Translations to read the ESV."
-            OnlineProvider.API_BIBLE -> "Add your free API.Bible key in Manage Translations to read this translation."
+            OnlineProvider.CROSSWAY -> AppText.get(R.string.data_online_crossway_needs_key)
+            OnlineProvider.API_BIBLE -> AppText.get(R.string.data_online_api_bible_needs_key)
         },
     )
     class Unauthorized(provider: OnlineProvider) : OnlineFailure(
         when (provider) {
-            OnlineProvider.CROSSWAY -> "Crossway didn't accept that API key. Check it at api.esv.org."
-            OnlineProvider.API_BIBLE -> "API.Bible didn't accept that key. Check it on api.bible."
+            OnlineProvider.CROSSWAY -> AppText.get(R.string.data_online_crossway_unauthorized)
+            OnlineProvider.API_BIBLE -> AppText.get(R.string.data_online_api_bible_unauthorized)
         },
     )
     class RateLimited(provider: OnlineProvider) : OnlineFailure(
         when (provider) {
-            OnlineProvider.CROSSWAY -> "You've reached Crossway's daily limit for your key. It resets tomorrow."
-            OnlineProvider.API_BIBLE -> "You've used your API.Bible requests for this month."
+            OnlineProvider.CROSSWAY -> AppText.get(R.string.data_online_crossway_rate_limited)
+            OnlineProvider.API_BIBLE -> AppText.get(R.string.data_online_api_bible_rate_limited)
         },
     )
     class NotAvailable(name: String) :
-        OnlineFailure("$name isn't one of the translations your key can read. Choose it on api.bible first.")
+        OnlineFailure(AppText.get(R.string.data_online_api_bible_not_available, name))
     class Http(provider: OnlineProvider, val code: Int) : OnlineFailure(
         when (provider) {
-            OnlineProvider.CROSSWAY -> "Crossway's API returned HTTP $code."
-            OnlineProvider.API_BIBLE -> "API.Bible returned HTTP $code."
+            OnlineProvider.CROSSWAY -> AppText.get(R.string.data_online_crossway_http, code)
+            OnlineProvider.API_BIBLE -> AppText.get(R.string.data_online_api_bible_http, code)
         },
     )
     class Empty(provider: OnlineProvider, reference: String) : OnlineFailure(
         when (provider) {
-            OnlineProvider.CROSSWAY -> "Crossway returned nothing for $reference."
-            OnlineProvider.API_BIBLE -> "API.Bible returned nothing for $reference."
+            OnlineProvider.CROSSWAY -> AppText.get(R.string.data_online_crossway_empty, reference)
+            OnlineProvider.API_BIBLE -> AppText.get(R.string.data_online_api_bible_empty, reference)
         },
     )
     class Malformed(provider: OnlineProvider) : OnlineFailure(
         when (provider) {
-            OnlineProvider.CROSSWAY -> "Crossway's reply couldn't be read."
-            OnlineProvider.API_BIBLE -> "API.Bible's reply couldn't be read."
+            OnlineProvider.CROSSWAY -> AppText.get(R.string.data_online_crossway_malformed)
+            OnlineProvider.API_BIBLE -> AppText.get(R.string.data_online_api_bible_malformed)
         },
     )
 }
@@ -225,7 +224,7 @@ class APIBibleClient(
 ) {
     /** Every translation this key may read, so the reader picks from what they actually have. */
     fun availableTranslations(): List<APIBibleTranslation> {
-        val root = get("$BASE/bibles", "the Bible list")
+        val root = get("$BASE/bibles", AppText.get(R.string.data_online_api_bible_list))
         val data = ((root as? JsonObject)?.get("data") as? JsonArray) ?: throw OnlineFailure.Malformed(OnlineProvider.API_BIBLE)
         return data.mapNotNull { element ->
             val entry = element as? JsonObject ?: return@mapNotNull null

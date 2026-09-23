@@ -17,20 +17,39 @@ import com.blainemiller.scripturealone.data.context.Basemap
 import com.blainemiller.scripturealone.data.context.ChartInfo
 import com.blainemiller.scripturealone.data.context.ContextStore
 import com.blainemiller.scripturealone.data.context.Era
+import androidx.annotation.StringRes
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.context.MapLabel
 import com.blainemiller.scripturealone.data.context.Place
 import com.blainemiller.scripturealone.data.context.TimelineEvent
 import com.blainemiller.scripturealone.data.sql.BundledSqlSource
 import com.blainemiller.scripturealone.data.study.InterlinearStore
 import com.blainemiller.scripturealone.data.study.StudyStore
+import com.blainemiller.scripturealone.text.AppLanguage
+import com.blainemiller.scripturealone.text.AppText
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
 
 /** The Study panel's tabs. iOS has three and opens the original languages in a sheet of its own; here it is a fourth tab. */
-enum class StudyTab(val title: String, val shortTitle: String) {
-    CROSS_REFERENCES("Cross References", "References"),
-    COMMENTARY("Commentary", "Commentary"),
-    ORIGINAL("Original Languages", "Original"),
-    CONTEXT("Context", "Context"),
+enum class StudyTab(@StringRes private val titleRes: Int, @StringRes private val shortTitleRes: Int) {
+    CROSS_REFERENCES(R.string.study_tab_cross_references, R.string.study_tab_cross_references_short),
+    COMMENTARY(R.string.study_tab_commentary, R.string.study_tab_commentary_short),
+    ORIGINAL(R.string.study_tab_original, R.string.study_tab_original_short),
+    CONTEXT(R.string.study_tab_context, R.string.study_tab_context_short),
+    ;
+
+    val title: String get() = AppText.get(titleRes)
+    val shortTitle: String get() = AppText.get(shortTitleRes)
+
+    companion object {
+        /**
+         * The tabs this reader gets — `StudyTab.available`: the commentary (Calvin, Gill, JFB) is
+         * English-only, so it is offered only in English (docs/localization.md, owner's decision).
+         */
+        val available: List<StudyTab> get() = if (AppLanguage.isEnglish) entries else entries.filter { it != COMMENTARY }
+
+        /** [tab] if this reader gets it, else the first tab. */
+        fun offered(tab: StudyTab): StudyTab = if (tab in available) tab else CROSS_REFERENCES
+    }
 }
 
 /** Where the panel has navigated within itself — iOS's `NavigationStack` destinations. */
@@ -42,7 +61,11 @@ sealed interface StudyRoute {
     data object Credits : StudyRoute
 
     /** `ContextViewerRequest.Tab`. */
-    enum class ViewerTab(val title: String) { MAP("Map"), TIMELINE("Timeline"), CHARTS("Charts") }
+    enum class ViewerTab(@StringRes private val titleRes: Int) {
+        MAP(R.string.study_viewer_map), TIMELINE(R.string.study_viewer_timeline), CHARTS(R.string.study_viewer_charts);
+
+        val title: String get() = AppText.get(titleRes)
+    }
 }
 
 /**
@@ -55,7 +78,9 @@ class StudyModel(context: Context) {
 
     var isOpen by mutableStateOf(false)
         private set
-    var tab by mutableStateOf(StudyTab.entries.firstOrNull { it.name == prefs.getString("tab", null) } ?: StudyTab.CROSS_REFERENCES)
+    var tab by mutableStateOf(
+        StudyTab.offered(StudyTab.entries.firstOrNull { it.name == prefs.getString("tab", null) } ?: StudyTab.CROSS_REFERENCES),
+    )
         private set
 
     /** The verse the panel is showing. */
@@ -74,6 +99,8 @@ class StudyModel(context: Context) {
         private set
 
     fun select(tab: StudyTab) {
+        // Not a tab this reader has (the commentary outside English): stays where it is.
+        if (tab !in StudyTab.available) return
         this.tab = tab
         routes.clear()
         prefs.edit().putString("tab", tab.name).apply()
@@ -166,10 +193,17 @@ object StudyLibrary {
         InterlinearStore(source(context, "Interlinear.sqlite"))
     }.getOrNull().also { interlinear = it }
 
+    /**
+     * The context in the app's language; opened again (and the data re-read) when the reader changes
+     * the app's language, which leaves this process running.
+     */
     @Synchronized
-    fun context(context: Context): ContextStore? = contextStore ?: runCatching {
-        ContextStore(source(context, "Context.sqlite"))
-    }.getOrNull().also { contextStore = it }
+    fun context(context: Context): ContextStore? {
+        val language = AppLanguage.studyLanguage
+        contextStore?.takeIf { it.requestedLanguage == language }?.let { return it }
+        contextData = null
+        return runCatching { ContextStore(source(context, "Context.sqlite"), language) }.getOrNull().also { contextStore = it }
+    }
 
     @Synchronized
     fun basemap(context: Context): Basemap? = basemapValue ?: runCatching {
@@ -190,7 +224,8 @@ object StudyLibrary {
     fun contextDataOrNull(): ContextData? = contextData
 
     @Synchronized
-    fun contextData(context: Context): ContextData? = contextData ?: context(context)?.let { store ->
+    fun contextData(context: Context): ContextData? = contextData?.takeIf { contextStore?.requestedLanguage == AppLanguage.studyLanguage }
+        ?: context(context)?.let { store ->
         runCatching {
             ContextData(store.labels(), store.eras(), store.events(), store.charts(), store.prominentPlaces(limit = 500))
         }.getOrNull()

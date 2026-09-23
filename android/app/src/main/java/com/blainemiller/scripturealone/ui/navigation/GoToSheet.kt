@@ -84,6 +84,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.annotation.StringRes
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookGroup
@@ -93,6 +96,7 @@ import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.search.SearchEmphasis
 import com.blainemiller.scripturealone.data.search.SearchHit
 import com.blainemiller.scripturealone.data.search.VerseSearch
+import com.blainemiller.scripturealone.text.countedString
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
 import com.blainemiller.scripturealone.ui.reader.SheetColors
@@ -177,7 +181,7 @@ fun GoToSheet(model: ReaderViewModel, palette: ReaderPalette, onDismiss: () -> U
     ) {
         val open = book?.let { BookID.of(it) }
         Header(
-            title = open?.displayName ?: "Go To",
+            title = open?.displayName ?: stringResource(R.string.nav_title),
             palette = palette,
             surface = surface,
             back = open != null,
@@ -204,11 +208,11 @@ fun GoToSheet(model: ReaderViewModel, palette: ReaderPalette, onDismiss: () -> U
                         dismiss()
                     }
                     recentSearchesSection(model, palette) { query = it }
-                    booksSection("Old Testament", BookID.entries.filter { !it.isNewTestament }, palette) {
+                    booksSection(R.string.nav_old_testament, BookID.entries.filter { !it.isNewTestament }, palette) {
                         keyboard?.hide()
                         book = it.number
                     }
-                    booksSection("New Testament", BookID.entries.filter { it.isNewTestament }, palette) {
+                    booksSection(R.string.nav_new_testament, BookID.entries.filter { it.isNewTestament }, palette) {
                         keyboard?.hide()
                         book = it.number
                     }
@@ -243,13 +247,14 @@ fun GoToSheet(model: ReaderViewModel, palette: ReaderPalette, onDismiss: () -> U
 
 @Composable
 private fun Header(title: String, palette: ReaderPalette, surface: Color, back: Boolean, onLeading: () -> Unit) {
+    val backLabel = stringResource(R.string.common_back)
     Box(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 16.dp)) {
         if (back) {
             Box(
                 Modifier.align(Alignment.CenterStart).size(44.dp)
                     .glass(palette, CircleShape, surface, lifted = true)
                     .clickable(role = Role.Button, onClick = onLeading)
-                    .semantics { contentDescription = "Back" },
+                    .semantics { contentDescription = backLabel },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Rounded.ChevronLeft, null, tint = palette.ink, modifier = Modifier.size(28.dp))
@@ -262,7 +267,7 @@ private fun Header(title: String, palette: ReaderPalette, surface: Color, back: 
                     .padding(horizontal = 18.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("Close", color = palette.ink, fontSize = 17.sp)
+                Text(stringResource(R.string.common_close), color = palette.ink, fontSize = 17.sp)
             }
         }
         Text(
@@ -276,6 +281,8 @@ private fun Header(title: String, palette: ReaderPalette, surface: Color, back: 
 @Composable
 private fun SearchField(query: String, palette: ReaderPalette, surface: Color, onChange: (String) -> Unit, onSubmit: () -> Unit) = CappedFontScale {
     val focus = remember { FocusRequester() }
+    val fieldLabel = stringResource(R.string.nav_field_label)
+    val clearLabel = stringResource(R.string.common_clear)
     // iOS focuses the field as the sheet appears, so typing starts at once.
     LaunchedEffect(Unit) { focus.requestFocus() }
     Row(
@@ -301,12 +308,12 @@ private fun SearchField(query: String, palette: ReaderPalette, surface: Color, o
                 imeAction = ImeAction.Go,
             ),
             keyboardActions = KeyboardActions(onGo = { onSubmit() }),
-            modifier = Modifier.weight(1f).focusRequester(focus).semantics { contentDescription = "Go to or search" },
+            modifier = Modifier.weight(1f).focusRequester(focus).semantics { contentDescription = fieldLabel },
             decorationBox = { field ->
                 Box(contentAlignment = Alignment.CenterStart) {
                     if (query.isEmpty()) {
                         Text(
-                            "John 3:16, Rom 8, or search words", color = palette.secondary.copy(alpha = 0.8f),
+                            stringResource(R.string.nav_field_placeholder), color = palette.secondary.copy(alpha = 0.8f),
                             fontSize = 17.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
                         )
                     }
@@ -316,7 +323,7 @@ private fun SearchField(query: String, palette: ReaderPalette, surface: Color, o
         )
         if (query.isNotEmpty()) {
             Box(
-                Modifier.size(36.dp).clip(CircleShape).clickable(role = Role.Button) { onChange("") }.semantics { contentDescription = "Clear" },
+                Modifier.size(36.dp).clip(CircleShape).clickable(role = Role.Button) { onChange("") }.semantics { contentDescription = clearLabel },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Rounded.Cancel, null, tint = palette.secondary, modifier = Modifier.size(20.dp))
@@ -330,18 +337,18 @@ private fun SearchField(query: String, palette: ReaderPalette, surface: Color, o
 private fun LazyGridScope.full(key: String, content: @Composable () -> Unit) =
     item(key = key, span = { GridItemSpan(maxLineSpan) }) { content() }
 
-private fun LazyGridScope.sectionTitle(key: String, title: String, palette: ReaderPalette, trailing: (@Composable () -> Unit)? = null) =
+private fun LazyGridScope.sectionTitle(key: String, @StringRes title: Int, palette: ReaderPalette, trailing: (@Composable () -> Unit)? = null) =
     full(key) {
         // 22 between sections and 10 under the title, as the iOS VStack spacings — less the grid's 8.
         Row(Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(title, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Text(stringResource(title), color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
             trailing?.invoke()
         }
     }
 
 private fun LazyGridScope.recentSection(model: ReaderViewModel, palette: ReaderPalette, onPick: (ChapterRef) -> Unit) {
     if (model.recent.isEmpty()) return
-    sectionTitle("recent-title", "Recent", palette)
+    sectionTitle("recent-title", R.string.nav_recent, palette)
     full("recent") {
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             for (chapter in model.recent) {
@@ -360,9 +367,9 @@ private fun LazyGridScope.recentSection(model: ReaderViewModel, palette: ReaderP
 @OptIn(ExperimentalFoundationApi::class)
 private fun LazyGridScope.recentSearchesSection(model: ReaderViewModel, palette: ReaderPalette, onPick: (String) -> Unit) {
     if (model.recentSearches.isEmpty()) return
-    sectionTitle("searches-title", "Recent Searches", palette) {
+    sectionTitle("searches-title", R.string.nav_recent_searches, palette) {
         Text(
-            "Clear", color = palette.accent, fontSize = 15.sp,
+            stringResource(R.string.common_clear), color = palette.accent, fontSize = 15.sp,
             modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button) { model.clearRecentSearches() }.padding(4.dp),
         )
     }
@@ -371,12 +378,13 @@ private fun LazyGridScope.recentSearchesSection(model: ReaderViewModel, palette:
             for (term in model.recentSearches) key(term) {
                 // Long press offers Remove — the iOS context menu.
                 var menu by remember { mutableStateOf(false) }
+                val searchAgain = stringResource(R.string.nav_search_again, term)
                 Box {
                     Row(
                         Modifier.fillMaxWidth()
-                            .combinedClickable(role = Role.Button, onLongClickLabel = "Show options", onLongClick = { menu = true }) { onPick(term) }
+                            .combinedClickable(role = Role.Button, onLongClickLabel = stringResource(R.string.nav_show_options), onLongClick = { menu = true }) { onPick(term) }
                             .padding(vertical = 9.dp)
-                            .semantics { contentDescription = "Search again for $term" },
+                            .semantics { contentDescription = searchAgain },
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(Icons.Rounded.History, null, tint = palette.secondary, modifier = Modifier.size(20.dp))
@@ -385,7 +393,7 @@ private fun LazyGridScope.recentSearchesSection(model: ReaderViewModel, palette:
                     }
                     DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                         DropdownMenuItem(
-                            text = { Text("Remove", color = palette.red, fontSize = 15.sp) },
+                            text = { Text(stringResource(R.string.common_remove), color = palette.red, fontSize = 15.sp) },
                             onClick = {
                                 menu = false
                                 model.forgetSearch(term)
@@ -399,7 +407,7 @@ private fun LazyGridScope.recentSearchesSection(model: ReaderViewModel, palette:
     }
 }
 
-private fun LazyGridScope.booksSection(title: String, books: List<BookID>, palette: ReaderPalette, onPick: (BookID) -> Unit) {
+private fun LazyGridScope.booksSection(@StringRes title: Int, books: List<BookID>, palette: ReaderPalette, onPick: (BookID) -> Unit) {
     sectionTitle("title-$title", title, palette)
     items(books, key = { "book-${it.number}" }) { book -> BookTile(book, palette) { onPick(book) } }
 }
@@ -408,7 +416,8 @@ private fun LazyGridScope.resultsSection(results: List<SearchHit>, query: String
     val count = results.size
     full("results-title") {
         Text(
-            if (count >= VerseSearch.DEFAULT_LIMIT) "${VerseSearch.DEFAULT_LIMIT}+ verses" else "$count verse${if (count == 1) "" else "s"}",
+            if (count >= VerseSearch.DEFAULT_LIMIT) stringResource(R.string.nav_results_capped, VerseSearch.DEFAULT_LIMIT)
+            else countedString(R.string.nav_results_one, R.string.nav_results_other, count, count),
             color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(top = 6.dp),
         )
@@ -453,11 +462,11 @@ private fun GoToCard(display: String, palette: ReaderPalette, onClick: () -> Uni
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
-            Text("Go to", color = palette.secondary, fontSize = 12.sp)
+            Text(stringResource(R.string.nav_go_to_card), color = palette.secondary, fontSize = 12.sp)
             Spacer(Modifier.height(2.dp))
             Text(display, color = palette.ink, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
         }
-        Icon(Icons.AutoMirrored.Rounded.KeyboardReturn, "Go", tint = palette.secondary, modifier = Modifier.size(22.dp))
+        Icon(Icons.AutoMirrored.Rounded.KeyboardReturn, stringResource(R.string.nav_go), tint = palette.secondary, modifier = Modifier.size(22.dp))
     }
 }
 
@@ -472,10 +481,10 @@ private fun UnsearchableNotice(translation: String, palette: ReaderPalette, onSw
     Column(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(palette.accent.copy(alpha = 0.10f)).padding(16.dp),
     ) {
-        Text("$translation can’t be searched", color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.nav_unsearchable_title, translation), color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(6.dp))
         Text(
-            "This translation was packaged without a search index. The BSB and KJV can be searched.",
+            stringResource(R.string.nav_unsearchable_message),
             color = palette.secondary, fontSize = 15.sp, lineHeight = 20.sp,
         )
         Spacer(Modifier.height(12.dp))
@@ -486,7 +495,7 @@ private fun UnsearchableNotice(translation: String, palette: ReaderPalette, onSw
                         .clickable(role = Role.Button) { onSwitch(id) }.padding(horizontal = 14.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("Switch to $id", color = palette.accent, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.nav_switch_to, id), color = palette.accent, fontSize = 15.sp, fontWeight = FontWeight.Medium)
                 }
             }
         }
@@ -499,9 +508,9 @@ private fun NoResults(query: String, palette: ReaderPalette) {
     Column(Modifier.fillMaxWidth().padding(top = 72.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(Icons.Rounded.Search, null, tint = palette.secondary, modifier = Modifier.size(52.dp))
         Spacer(Modifier.height(14.dp))
-        Text("No Results for “$query”", color = palette.ink, fontSize = 22.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+        Text(stringResource(R.string.nav_no_results_title, query), color = palette.ink, fontSize = 22.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
         Spacer(Modifier.height(6.dp))
-        Text("Check the spelling or try a new search.", color = palette.secondary, fontSize = 15.sp, textAlign = TextAlign.Center)
+        Text(stringResource(R.string.nav_no_results_message), color = palette.secondary, fontSize = 15.sp, textAlign = TextAlign.Center)
     }
 }
 
@@ -586,12 +595,13 @@ private fun ChapterGrid(book: BookID, current: ChapterRef, palette: ReaderPalett
         items((1..book.chapterCount).toList(), key = { it }) { chapter ->
             val ref = ChapterRef(book.number, chapter)
             val here = ref == current
+            val label = stringResource(R.string.nav_chapter_label, book.displayName, chapter)
             Box(
                 Modifier.fillMaxWidth().heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(if (here) palette.accent.copy(alpha = 0.25f) else SheetColors.tertiaryFill(palette))
                     .clickable(role = Role.Button) { onPick(ref) }
-                    .semantics { contentDescription = "${book.displayName} chapter $chapter" },
+                    .semantics { contentDescription = label },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(

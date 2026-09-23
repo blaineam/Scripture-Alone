@@ -61,6 +61,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -71,6 +72,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.countedString
 import com.blainemiller.scripturealone.ui.notes.PanelColors
 import com.blainemiller.scripturealone.ui.notes.PanelGroup
 import com.blainemiller.scripturealone.ui.notes.PanelHeader
@@ -212,7 +215,7 @@ private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKee
         }
 
         // Accent.
-        SectionTitle("Accent", palette)
+        SectionTitle(stringResource(R.string.appearance_accent), palette)
         PanelGroup(palette) {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
@@ -221,26 +224,28 @@ private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKee
                 for (option in ReaderAccent.entries) AccentSwatch(option, option == model.accent, palette) { model.accent = option }
             }
         }
-        SectionFooter("Colours verse numbers, links and the app’s controls.", palette)
+        SectionFooter(stringResource(R.string.appearance_accent_footer), palette)
 
         // Text.
-        SectionTitle("Text", palette)
+        SectionTitle(stringResource(R.string.appearance_text), palette)
         PanelGroup(palette) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 val range = ReaderStyle.SIZE_RANGE
-                GlyphButton("A", 15.sp, "Smaller", palette) { model.fontSize = (model.fontSize - 1f).coerceIn(range) }
+                GlyphButton("A", 15.sp, stringResource(R.string.appearance_smaller), palette) { model.fontSize = (model.fontSize - 1f).coerceIn(range) }
+                val points = model.fontSize.roundToInt()
                 SheetSlider(
-                    model.fontSize, range, palette, label = "Text Size", valueText = "${model.fontSize.roundToInt()} points",
+                    model.fontSize, range, palette, label = stringResource(R.string.appearance_text_size),
+                    valueText = countedString(R.string.appearance_points_one, R.string.appearance_points_other, points, points),
                     modifier = Modifier.weight(1f).padding(horizontal = 8.dp), step = 1f,
                 ) { model.fontSize = it }
-                GlyphButton("A", 24.sp, "Larger", palette) { model.fontSize = (model.fontSize + 1f).coerceIn(range) }
+                GlyphButton("A", 24.sp, stringResource(R.string.appearance_larger), palette) { model.fontSize = (model.fontSize + 1f).coerceIn(range) }
             }
             PanelSeparator(palette)
             Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 LinesGlyph(tight = true, palette)
                 SheetSlider(
-                    model.lineSpacing, ReaderStyle.LINE_SPACING_RANGE, palette, label = "Line Spacing",
-                    valueText = String.format(Locale.US, "%.2f", model.lineSpacing),
+                    model.lineSpacing, ReaderStyle.LINE_SPACING_RANGE, palette, label = stringResource(R.string.appearance_line_spacing),
+                    valueText = String.format(Locale.getDefault(), "%.2f", model.lineSpacing),
                     modifier = Modifier.weight(1f).padding(horizontal = 10.dp),
                 ) { model.lineSpacing = Math.round(it * 100f) / 100f }
                 LinesGlyph(tight = false, palette)
@@ -251,51 +256,55 @@ private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKee
             }
         }
         if (fontScale != 1f) {
-            SectionFooter(
-                "${model.fontSize.roundToInt()} pt, then scaled by the system font size (×${String.format(Locale.US, "%.2f", fontScale).trimEnd('0').trimEnd('.')}), as Dynamic Type scales it on iPhone.",
-                palette,
-            )
+            val scale = java.text.NumberFormat.getNumberInstance(Locale.getDefault()).apply { maximumFractionDigits = 2 }.format(fontScale)
+            SectionFooter(stringResource(R.string.appearance_font_scale_footer, model.fontSize.roundToInt(), scale), palette)
         }
 
         // Font.
-        SectionTitle("Font", palette)
+        SectionTitle(stringResource(R.string.appearance_font), palette)
         PanelGroup(palette) {
             ReaderFontFamily.entries.forEachIndexed { index, option ->
                 if (index > 0) PanelSeparator(palette)
                 FontRow(option, option == model.fontFamily, palette) { model.fontFamily = option }
             }
         }
-        SectionFooter("Open-licensed faces standing in for the iPhone’s, which Apple licenses for its own devices only.", palette)
+        SectionFooter(stringResource(R.string.appearance_font_footer), palette)
 
         // Show.
-        SectionTitle("Show", palette)
+        SectionTitle(stringResource(R.string.appearance_show), palette)
         PanelGroup(palette) {
-            SwitchRow("Words of Christ in Red", model.redLetters, palette) { model.redLetters = it }
+            SwitchRow(stringResource(R.string.appearance_red_letters), model.redLetters, palette) { model.redLetters = it }
             PanelSeparator(palette)
-            SwitchRow("Verse Numbers", model.verseNumbers, palette) { model.verseNumbers = it }
+            SwitchRow(stringResource(R.string.appearance_verse_numbers), model.verseNumbers, palette) { model.verseNumbers = it }
             PanelSeparator(palette)
-            SwitchRow("Section Headings", model.headings, palette) { model.headings = it }
+            SwitchRow(stringResource(R.string.appearance_section_headings), model.headings, palette) { model.headings = it }
             PanelSeparator(palette)
-            SwitchRow("Footnotes", model.footnotes, palette) { model.footnotes = it }
+            SwitchRow(stringResource(R.string.appearance_footnotes), model.footnotes, palette) { model.footnotes = it }
         }
 
         // Keepsake & Export — `Section { LegacyAndExportRow() }`.
         PanelGroup(palette, Modifier.padding(top = 18.dp)) {
-            LinkRow("Keepsake & Export", palette, push = true, onClick = onKeepsake)
+            LinkRow(stringResource(R.string.keepsake_settings_title), palette, push = true, onClick = onKeepsake)
         }
 
         // Feedback & Support — MillerKit's SupportSection.
-        SectionTitle("Feedback & Support", palette)
+        SectionTitle(stringResource(R.string.appearance_feedback), palette)
         PanelGroup(palette) {
             val translation = model.translationId
-            LinkRow("Report an Issue", palette, mail = true) { Support.email(context, "Bug Report", translation) }
+            LinkRow(stringResource(R.string.appearance_report_issue), palette, mail = true) {
+                Support.email(context, context.getString(R.string.appearance_email_bug), translation)
+            }
             PanelSeparator(palette)
-            LinkRow("Suggest a Feature", palette, mail = true) { Support.email(context, "Feature Request", translation) }
+            LinkRow(stringResource(R.string.appearance_suggest_feature), palette, mail = true) {
+                Support.email(context, context.getString(R.string.appearance_email_feature), translation)
+            }
             PanelSeparator(palette)
-            LinkRow("Ask a Question", palette, mail = true) { Support.email(context, "Question", translation) }
+            LinkRow(stringResource(R.string.appearance_ask_question), palette, mail = true) {
+                Support.email(context, context.getString(R.string.appearance_email_question), translation)
+            }
         }
         SectionFooter(
-            "I can’t fix what I don’t know about. If something is broken, confusing, or missing, email me — one person reads every message, and a fix for you is a fix for everyone.",
+            stringResource(R.string.appearance_feedback_footer),
             palette,
         )
         // MillerKit's LoveThisAppSection: Rate opens the store's review page, as iOS's row opens the App
@@ -305,41 +314,41 @@ private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKee
         val fromPlay = remember { RatingPrompt.installedFromPlay(context) }
         PanelGroup(palette, Modifier.padding(top = 18.dp)) {
             if (fromPlay) {
-                LinkRow("Rate Scripture Alone", palette) { Support.rate(context) }
+                LinkRow(stringResource(R.string.appearance_rate), palette) { Support.rate(context) }
                 PanelSeparator(palette)
             }
-            LinkRow("My Other Apps", palette, subtitle = "Built by one person, same care") { Support.open(context, Support.PORTFOLIO) }
+            LinkRow(stringResource(R.string.appearance_other_apps), palette, subtitle = stringResource(R.string.appearance_other_apps_subtitle)) { Support.open(context, Support.PORTFOLIO) }
         }
         if (fromPlay) {
             SectionFooter(
-                "Scripture Alone is made by one person, with no ads, no tracking, and no venture money behind it. A rating takes ten seconds and genuinely decides whether anyone else ever sees it.",
+                stringResource(R.string.appearance_rate_footer),
                 palette,
             )
         }
 
         // About — MillerKit's AboutSection, with the font licences.
-        SectionTitle("About", palette)
+        SectionTitle(stringResource(R.string.appearance_about), palette)
         PanelGroup(palette) {
             Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("Version", color = palette.ink, fontSize = 17.sp, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.appearance_version), color = palette.ink, fontSize = 17.sp, modifier = Modifier.weight(1f))
                 Text(Support.version(context), color = palette.secondary, fontSize = 17.sp)
             }
             PanelSeparator(palette)
-            LinkRow("Privacy Policy", palette) { Support.open(context, Support.PRIVACY) }
+            LinkRow(stringResource(R.string.appearance_privacy_policy), palette) { Support.open(context, Support.PRIVACY) }
             PanelSeparator(palette)
-            LinkRow("App Website", palette) { Support.open(context, Support.PAGE) }
+            LinkRow(stringResource(R.string.appearance_app_website), palette) { Support.open(context, Support.PAGE) }
             PanelSeparator(palette)
-            LinkRow("Font Licences", palette, push = true, onClick = onLicences)
+            LinkRow(stringResource(R.string.appearance_font_licences), palette, push = true, onClick = onLicences)
         }
-        SectionFooter("No accounts, no tracking, no ads — nothing you do in Scripture Alone is sent anywhere unless you send it yourself.", palette)
+        SectionFooter(stringResource(R.string.appearance_about_footer), palette)
 
         // About This Translation.
         model.chapter?.translation?.let { info ->
-            SectionTitle("About This Translation", palette)
+            SectionTitle(stringResource(R.string.appearance_about_translation), palette)
             PanelGroup(palette) {
                 Column(Modifier.padding(horizontal = 18.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(info.name, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
-                    Text(info.copyright.ifBlank { "Public domain." }, color = palette.secondary, fontSize = 13.sp, lineHeight = 18.sp)
+                    Text(info.copyright.ifBlank { stringResource(R.string.appearance_public_domain) }, color = palette.secondary, fontSize = 13.sp, lineHeight = 18.sp)
                 }
             }
         }
@@ -367,10 +376,11 @@ internal fun SectionFooter(text: String, palette: ReaderPalette) {
 private fun ThemeSwatch(
     option: ReaderTheme, chosen: Boolean, swatch: ReaderPalette, palette: ReaderPalette, modifier: Modifier, onClick: () -> Unit,
 ) = CappedFontScale {
+    val description = stringResource(R.string.appearance_theme_description, option.title)
     Column(
         modifier.clip(RoundedCornerShape(12.dp)).clickable(role = Role.Button, onClick = onClick)
             .semantics {
-                contentDescription = "${option.title} theme"
+                contentDescription = description
                 selected = chosen
             },
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -394,10 +404,11 @@ private fun ThemeSwatch(
 /** A 30-dp swatch at its light value, a check on the chosen one — `accentSwatch`. */
 @Composable
 private fun AccentSwatch(option: ReaderAccent, chosen: Boolean, palette: ReaderPalette, onClick: () -> Unit) {
+    val description = stringResource(R.string.appearance_accent_description, option.title)
     Box(
         Modifier.size(38.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onClick)
             .semantics {
-                contentDescription = "${option.title} accent"
+                contentDescription = description
                 selected = chosen
             },
         contentAlignment = Alignment.Center,
@@ -423,9 +434,9 @@ private fun FontRow(option: ReaderFontFamily, chosen: Boolean, palette: ReaderPa
     ) {
         Column(Modifier.weight(1f)) {
             Text(option.title, color = palette.ink, fontSize = 18.sp, fontFamily = option.fontFamily(18f))
-            Text("For ${option.iosTitle}", color = palette.secondary, fontSize = 12.sp)
+            Text(stringResource(R.string.share_font_for, option.iosTitle), color = palette.secondary, fontSize = 12.sp)
         }
-        if (chosen) Icon(Icons.Rounded.Check, "Selected", tint = palette.accent, modifier = Modifier.size(22.dp))
+        if (chosen) Icon(Icons.Rounded.Check, stringResource(R.string.share_selected), tint = palette.accent, modifier = Modifier.size(22.dp))
     }
 }
 
@@ -509,18 +520,18 @@ internal object Support {
     fun email(context: Context, kind: String, translation: String) {
         val body = buildString {
             append("\n\n")
-            append("Translation: $translation\n\n")
+            append("${context.getString(R.string.appearance_email_translation)}: $translation\n\n")
             append("——————————————\n")
-            append("These details help me diagnose it — please leave them in:\n")
-            append("App: ${version(context)}\n")
-            append("System: Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})\n")
-            append("Device: ${Build.MANUFACTURER} ${Build.MODEL}\n")
-            append("Language: ${Locale.getDefault().toLanguageTag()}\n")
-            append("That’s everything attached — no identifiers, no location, no logs. Delete any line you’d rather not send.")
+            append(context.getString(R.string.appearance_email_details)).append("\n")
+            append("${context.getString(R.string.appearance_email_app)}: ${version(context)}\n")
+            append("${context.getString(R.string.appearance_email_system)}: Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})\n")
+            append("${context.getString(R.string.appearance_email_device)}: ${Build.MANUFACTURER} ${Build.MODEL}\n")
+            append("${context.getString(R.string.appearance_email_language)}: ${Locale.getDefault().toLanguageTag()}\n")
+            append(context.getString(R.string.appearance_email_footer))
         }
         val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")).apply {
             putExtra(Intent.EXTRA_EMAIL, arrayOf(EMAIL))
-            putExtra(Intent.EXTRA_SUBJECT, "Scripture Alone — $kind")
+            putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.appearance_email_subject, kind))
             putExtra(Intent.EXTRA_TEXT, body)
         }
         try {

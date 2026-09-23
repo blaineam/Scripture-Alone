@@ -1,6 +1,8 @@
 package com.blainemiller.scripturealone.data.keepsake
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRange
+import com.blainemiller.scripturealone.text.AppText
 import java.time.Instant
 import java.util.UUID
 
@@ -67,8 +69,9 @@ data class KeepsakeManifest(
     val displayTitle: String
         get() {
             val name = ownerName?.trim()
-            if (name.isNullOrEmpty()) return "A Keepsake Bible"
-            return if (name.endsWith("s") || name.endsWith("S")) "$name’ Bible" else "$name’s Bible"
+            if (name.isNullOrEmpty()) return AppText.get(R.string.data_keepsake_title_unnamed)
+            return if (name.endsWith("s") || name.endsWith("S")) AppText.get(R.string.data_keepsake_title_owner_s, name)
+            else AppText.get(R.string.data_keepsake_title_owner, name)
         }
 
     companion object {
@@ -111,7 +114,7 @@ data class KeepsakeNote(
         get() = passages.mapNotNull { it.range }.sortedWith(compareBy({ it.start.key }, { it.end.key }))
 
     val displayTitle: String
-        get() = title.trim().ifEmpty { anchors.firstOrNull()?.display ?: "Untitled Note" }
+        get() = title.trim().ifEmpty { anchors.firstOrNull()?.display ?: AppText.get(R.string.data_keepsake_untitled_note) }
 
     val anchorSummary: String get() = anchors.joinToString(" · ") { it.display }
 
@@ -129,12 +132,12 @@ data class KeepsakeNote(
 
 /** Why a keepsake could not be opened; the messages are the ones the iOS app shows. */
 sealed class KeepsakeException(message: String) : Exception(message) {
-    class NotAKeepsake : KeepsakeException("This file isn’t a Keepsake Bible keepsake.")
+    class NotAKeepsake : KeepsakeException(AppText.get(R.string.data_keepsake_not_a_keepsake))
     class Damaged(val detail: String) :
-        KeepsakeException("This keepsake appears to be damaged ($detail). If you have another copy, try that one.")
+        KeepsakeException(AppText.get(R.string.data_keepsake_damaged, detail))
     class NewerVersion(val version: Int) :
-        KeepsakeException("This keepsake was made by a newer version of Scripture Alone. Update the app to open it.")
-    class PassphraseRequired : KeepsakeException("This keepsake is protected with a passphrase.")
+        KeepsakeException(AppText.get(R.string.data_keepsake_newer_version))
+    class PassphraseRequired : KeepsakeException(AppText.get(R.string.data_keepsake_passphrase_required))
     class WrongPassphrase :
-        KeepsakeException("That passphrase doesn’t open this keepsake. Check for capital letters and spaces, and try again.")
+        KeepsakeException(AppText.get(R.string.data_keepsake_wrong_passphrase))
 }

@@ -53,6 +53,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -61,9 +62,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.listen.AutoScroll
 import com.blainemiller.scripturealone.data.listen.ListenSpeed
 import com.blainemiller.scripturealone.data.listen.SleepTimer
+import com.blainemiller.scripturealone.text.AppText
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.SheetColors
 import com.blainemiller.scripturealone.ui.reader.glass
@@ -101,24 +104,25 @@ fun NowPlayingBar(listen: ListenController, palette: ReaderPalette, modifier: Mo
             Transport(listen, palette)
             SpeedMenu(listen, palette)
             OptionsMenu(listen, palette)
-            BarButton(Icons.Rounded.Close, "Stop Listening", palette.secondary, width = 28.dp, iconSize = 20.dp) { listen.stop() }
+            BarButton(Icons.Rounded.Close, stringResource(R.string.listen_stop), palette.secondary, width = 28.dp, iconSize = 20.dp) { listen.stop() }
         }
     }
 }
 
 private fun status(listen: ListenController): String = when (val phase = listen.phase) {
     is ListenController.Phase.Preparing -> phase.message
-    ListenController.Phase.Paused -> "Paused"
-    else -> "${listen.voiceName} · ${ListenSpeed.label(listen.speed)}"
+    ListenController.Phase.Paused -> AppText.get(R.string.listen_paused)
+    else -> AppText.get(R.string.listen_status_voice_speed, listen.voiceName, ListenSpeed.label(listen.speed))
 }
 
 @Composable
 private fun NoticeRow(notice: String, palette: ReaderPalette, onDismiss: () -> Unit) {
+    val dismiss = stringResource(R.string.listen_dismiss_notice)
     Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Icon(Icons.Outlined.Info, null, tint = palette.secondary, modifier = Modifier.padding(top = 1.dp).size(15.dp))
         Text(notice, color = palette.ink, fontSize = 12.sp, lineHeight = 16.sp, modifier = Modifier.weight(1f))
         Box(
-            Modifier.size(22.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onDismiss).semantics { contentDescription = "Dismiss" },
+            Modifier.size(22.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onDismiss).semantics { contentDescription = dismiss },
             contentAlignment = Alignment.Center,
         ) {
             Icon(Icons.Rounded.Cancel, null, tint = palette.secondary.copy(alpha = 0.55f), modifier = Modifier.size(17.dp))
@@ -129,38 +133,40 @@ private fun NoticeRow(notice: String, palette: ReaderPalette, onDismiss: () -> U
 @Composable
 private fun Transport(listen: ListenController, palette: ReaderPalette) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        BarButton(Icons.Rounded.FastRewind, "Previous Verse", palette.ink, width = 30.dp) { listen.previousVerse() }
+        BarButton(Icons.Rounded.FastRewind, stringResource(R.string.listen_previous_verse), palette.ink, width = 30.dp) { listen.previousVerse() }
         if (listen.phase is ListenController.Phase.Preparing) {
+            val preparing = stringResource(R.string.listen_preparing)
             Box(Modifier.size(34.dp), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
                     color = palette.secondary, strokeWidth = 2.dp,
-                    modifier = Modifier.size(18.dp).semantics { contentDescription = "Preparing" },
+                    modifier = Modifier.size(18.dp).semantics { contentDescription = preparing },
                 )
             }
         } else {
             val playing = listen.isPlaying
             BarButton(
-                if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, if (playing) "Pause" else "Play",
+                if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, stringResource(if (playing) R.string.listen_pause else R.string.listen_play),
                 palette.ink, width = 34.dp, iconSize = 30.dp,
             ) { listen.togglePlayPause() }
         }
-        BarButton(Icons.Rounded.FastForward, "Next Verse", palette.ink, width = 30.dp) { listen.nextVerse() }
+        BarButton(Icons.Rounded.FastForward, stringResource(R.string.listen_next_verse), palette.ink, width = 30.dp) { listen.nextVerse() }
     }
 }
 
 @Composable
 private fun SpeedMenu(listen: ListenController, palette: ReaderPalette) {
     var open by remember { mutableStateOf(false) }
+    val speedDescription = stringResource(R.string.listen_speed_description, ListenSpeed.label(listen.speed))
     Box {
         Box(
             Modifier.heightIn(min = 34.dp).widthIn(min = 38.dp).clip(RoundedCornerShape(10.dp)).clickable(role = Role.Button) { open = true }
-                .semantics { contentDescription = "Speed, ${ListenSpeed.label(listen.speed)}" },
+                .semantics { contentDescription = speedDescription },
             contentAlignment = Alignment.Center,
         ) {
             Text(ListenSpeed.label(listen.speed), color = palette.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            MenuHeader("Speed", palette)
+            MenuHeader(stringResource(R.string.listen_speed), palette)
             for (step in ListenSpeed.steps) {
                 Choice(ListenSpeed.label(step), step == listen.speed, palette) {
                     open = false
@@ -177,14 +183,14 @@ private fun OptionsMenu(listen: ListenController, palette: ReaderPalette) {
     val timed = listen.sleepTimer != SleepTimer.OFF
     Box {
         BarButton(
-            if (timed) Icons.Rounded.Bedtime else Icons.Outlined.Pending, "Voice and Options", palette.ink, width = 34.dp, iconSize = 24.dp,
+            if (timed) Icons.Rounded.Bedtime else Icons.Outlined.Pending, stringResource(R.string.listen_voice_and_options), palette.ink, width = 34.dp, iconSize = 24.dp,
         ) {
             listen.prepareVoices()
             open = true
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }, modifier = Modifier.heightIn(max = 480.dp)) {
-            MenuHeader("Voice", palette)
-            Choice("Automatic", listen.voiceId == null, palette) {
+            MenuHeader(stringResource(R.string.listen_voice), palette)
+            Choice(stringResource(R.string.listen_voice_automatic), listen.voiceId == null, palette) {
                 open = false
                 listen.updateVoice(null)
             }
@@ -198,16 +204,16 @@ private fun OptionsMenu(listen: ListenController, palette: ReaderPalette) {
             }
             if (listen.voices.isEmpty()) {
                 Text(
-                    "Voices appear once the speech engine answers.", color = palette.secondary, fontSize = 12.sp,
+                    stringResource(R.string.listen_voices_pending), color = palette.secondary, fontSize = 12.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp).widthIn(max = 240.dp),
                 )
             }
             HorizontalDivider(color = SheetColors.separator(palette))
-            Choice("Continue to Next Chapter", listen.continueChapters, palette) {
+            Choice(stringResource(R.string.listen_continue_chapters), listen.continueChapters, palette) {
                 listen.updateContinueChapters(!listen.continueChapters)
             }
             HorizontalDivider(color = SheetColors.separator(palette))
-            MenuHeader("Sleep Timer", palette)
+            MenuHeader(stringResource(R.string.listen_sleep_timer), palette)
             for (timer in SleepTimer.entries) {
                 Choice(timer.title, timer == listen.sleepTimer, palette) {
                     open = false
@@ -248,7 +254,7 @@ internal fun MenuHeader(title: String, palette: ReaderPalette) {
 internal fun Choice(title: String, selected: Boolean, palette: ReaderPalette, onClick: () -> Unit) {
     DropdownMenuItem(
         text = { Text(title, color = palette.ink, fontSize = 15.sp) },
-        trailingIcon = { if (selected) Icon(Icons.Rounded.Check, "Selected", tint = palette.accent) },
+        trailingIcon = { if (selected) Icon(Icons.Rounded.Check, stringResource(R.string.listen_selected), tint = palette.accent) },
         onClick = onClick,
     )
 }
@@ -270,12 +276,15 @@ fun ListenAndScrollControls(
     onListen: () -> Unit,
 ) {
     var menu by remember { mutableStateOf(false) }
+    val chooseSpeed = stringResource(R.string.listen_choose_scroll_speed)
+    val scrollDescription = stringResource(if (autoScrolling) R.string.listen_pause_scrolling else R.string.listen_auto_scroll)
+    val listenDescription = stringResource(if (listening) R.string.listen_pause_listening else R.string.listen_listen)
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box {
             Box(
                 Modifier.size(width = 48.dp, height = 44.dp).clip(RoundedCornerShape(22.dp))
-                    .combinedClickable(role = Role.Button, onLongClickLabel = "Choose speed", onClick = onToggleAutoScroll, onLongClick = { menu = true })
-                    .semantics { contentDescription = if (autoScrolling) "Pause Scrolling" else "Auto-Scroll" },
+                    .combinedClickable(role = Role.Button, onLongClickLabel = chooseSpeed, onClick = onToggleAutoScroll, onLongClick = { menu = true })
+                    .semantics { contentDescription = scrollDescription },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -284,7 +293,7 @@ fun ListenAndScrollControls(
                 )
             }
             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                MenuHeader("Speed", palette)
+                MenuHeader(stringResource(R.string.listen_speed), palette)
                 for (speed in AutoScroll.Speed.entries) {
                     Choice(speed.title, speed.pointsPerSecond == autoScrollSpeed, palette) {
                         menu = false
@@ -295,7 +304,7 @@ fun ListenAndScrollControls(
         }
         Box(
             Modifier.size(width = 48.dp, height = 44.dp).clip(RoundedCornerShape(22.dp)).clickable(role = Role.Button, onClick = onListen)
-                .semantics { contentDescription = if (listening) "Pause Listening" else "Listen" },
+                .semantics { contentDescription = listenDescription },
             contentAlignment = Alignment.Center,
         ) {
             if (listening) {

@@ -1,7 +1,10 @@
 package com.blainemiller.scripturealone.data.notesimport
 
+import androidx.annotation.StringRes
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.text.AppText
 
 /**
  * What any note import produces, whatever it was read from. Ported from
@@ -54,17 +57,15 @@ data class ImportedNotes(
  * Why an import could not be read. Shared, because a reader's mistake is the same mistake whichever
  * file they picked.
  */
-enum class NoteImportError(val description: String) {
-    NOT_AN_ARCHIVE("That file isn't a zip archive."),
-    NOT_A_LIFE_BIBLE_EXPORT(
-        "That doesn't look like a Life Bible export. Look for LifeBibleData.zip, from " +
-            "Settings → Advanced → Export your data.",
-    ),
-    NOTHING_TO_IMPORT("That export has no notes, highlights or saved verses in it."),
-    NOTHING_RECOGNISED(
-        "Nothing in that looked like a Bible reference. Each note needs to start with one — " +
-            "“John 3:16”, say — so it can be attached to the right verse.",
-    ),
+enum class NoteImportError(@StringRes private val descriptionRes: Int) {
+    NOT_AN_ARCHIVE(R.string.data_notes_import_not_an_archive),
+    NOT_A_LIFE_BIBLE_EXPORT(R.string.data_notes_import_not_life_bible),
+    NOTHING_TO_IMPORT(R.string.data_notes_import_nothing_to_import),
+    NOTHING_RECOGNISED(R.string.data_notes_import_nothing_recognised),
+    ;
+
+    /** What the reader is told, in their language. */
+    val description: String get() = AppText.get(descriptionRes)
 }
 
 /** Thrown by the importers; [error] says which of the reader-facing failures it was. */

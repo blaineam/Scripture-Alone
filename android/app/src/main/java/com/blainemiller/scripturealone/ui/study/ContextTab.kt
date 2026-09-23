@@ -60,6 +60,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -73,6 +74,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.countedString
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -160,27 +164,27 @@ fun ContextTab(chapter: ChapterRef, verse: Int?, study: StudyModel, reader: Read
         verticalArrangement = Arrangement.spacedBy(28.dp),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            SymbolHeading(Icons.Rounded.Timeline, "When", palette)
+            SymbolHeading(Icons.Rounded.Timeline, stringResource(R.string.context_when), palette)
             WhenSection(chapter, loaded.data.eras, loaded.time, loaded.events, palette, reader) {
                 study.push(StudyRoute.Viewer(StudyRoute.ViewerTab.TIMELINE))
             }
         }
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            SymbolHeading(Icons.Rounded.Map, "Where", palette)
+            SymbolHeading(Icons.Rounded.Map, stringResource(R.string.context_where), palette)
             WhereSection(chapter, verse, loaded.places, library, palette,
                 openMap = { study.push(StudyRoute.Viewer(StudyRoute.ViewerTab.MAP)) },
                 openPlace = { study.push(StudyRoute.PlaceDetail(it)) })
         }
         val suggested = loaded.data.charts.filter { chapter.book in it.scope }
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            SymbolHeading(Icons.Rounded.TableChart, "Charts", palette)
+            SymbolHeading(Icons.Rounded.TableChart, stringResource(R.string.study_viewer_charts), palette)
             Spacer(Modifier.height(4.dp))
             for (chart in suggested) ChartCard(chart, palette, framed = true) { study.push(StudyRoute.Chart(chart.id)) }
-            AccentButton(if (suggested.isEmpty()) "Browse Charts" else "All Charts", palette, icon = Icons.Rounded.GridView) {
+            AccentButton(stringResource(if (suggested.isEmpty()) R.string.context_browse_charts else R.string.context_all_charts), palette, icon = Icons.Rounded.GridView) {
                 study.push(StudyRoute.Viewer(StudyRoute.ViewerTab.CHARTS))
             }
         }
-        AccentButton("Sources & Credits", palette, icon = Icons.Outlined.Info, fontSize = StudyStyle.footnote) {
+        AccentButton(stringResource(R.string.study_sources_credits), palette, icon = Icons.Outlined.Info, fontSize = StudyStyle.footnote) {
             study.push(StudyRoute.Credits)
         }
         Spacer(Modifier.height(24.dp))
@@ -238,11 +242,13 @@ private fun WhenSection(
     reader: ReaderViewModel,
     openTimeline: () -> Unit,
 ) {
+    val timelineLabel = time?.let { stringResource(R.string.context_timeline_a11y, it.era.name, it.era.dates) }
+        ?: stringResource(R.string.study_viewer_timeline)
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button, onClick = openTimeline)
                 .semantics(mergeDescendants = true) {
-                    contentDescription = time?.let { "Timeline. ${it.era.name}, ${it.era.dates}." } ?: "Timeline"
+                    contentDescription = timelineLabel
                 },
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -258,13 +264,14 @@ private fun WhenSection(
                             tint = palette.accent, modifier = Modifier.size(17.dp))
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            if (time.basis == ChapterTime.Basis.EVENTS) "${Canon.display(chapter)}: $year" else "Written $year",
+                            if (time.basis == ChapterTime.Basis.EVENTS) stringResource(R.string.context_chapter_year, Canon.display(chapter), year)
+                            else stringResource(R.string.context_written, year),
                             color = palette.ink, fontSize = StudyStyle.subheadline,
                         )
                     }
                 }
                 if (time.eras.size > 1) {
-                    Text("Also spans: " + time.eras.drop(1).joinToString(", ") { it.name }, color = palette.secondary, fontSize = StudyStyle.footnote)
+                    Text(stringResource(R.string.context_also_spans, time.eras.drop(1).joinToString(", ") { it.name }), color = palette.secondary, fontSize = StudyStyle.footnote)
                 }
                 time.note?.let { Text(it, color = palette.secondary, fontSize = StudyStyle.footnote) }
             }
@@ -298,7 +305,7 @@ private fun EventRow(event: TimelineEvent, compact: Boolean, palette: ReaderPale
                 Text(event.name, color = palette.ink, fontSize = if (compact) StudyStyle.subheadline else StudyStyle.body)
                 if (event.debated) {
                     Spacer(Modifier.width(4.dp))
-                    Icon(Icons.AutoMirrored.Rounded.HelpOutline, "Date debated", tint = palette.secondary, modifier = Modifier.size(14.dp))
+                    Icon(Icons.AutoMirrored.Rounded.HelpOutline, stringResource(R.string.context_date_debated), tint = palette.secondary, modifier = Modifier.size(14.dp))
                 }
             }
             if (range != null) Text(range.display, color = palette.accent, fontSize = StudyStyle.caption)
@@ -319,8 +326,8 @@ private fun WhereSection(
     openPlace: (Place) -> Unit,
 ) {
     if (mentions.isEmpty()) {
-        Text("No places are named in ${Canon.display(chapter)}.", color = palette.secondary, fontSize = StudyStyle.subheadline)
-        AccentButton("Open the Map", palette, icon = Icons.Rounded.Map, onClick = openMap)
+        Text(stringResource(R.string.context_no_places, Canon.display(chapter)), color = palette.secondary, fontSize = StudyStyle.subheadline)
+        AccentButton(stringResource(R.string.context_open_map), palette, icon = Icons.Rounded.Map, onClick = openMap)
         return
     }
     // The reader's verse's places first, so they win label space.
@@ -328,6 +335,7 @@ private fun WhereSection(
     val pins = sorted.map { MapPin.of(it.place) }
     var selected by remember(chapter) { mutableStateOf<Int?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        val openLargeMap = stringResource(R.string.context_open_large_map)
         Box(Modifier.fillMaxWidth().height(260.dp).clip(RoundedCornerShape(14.dp))) {
             if (library != null) {
                 BibleMap(
@@ -340,7 +348,7 @@ private fun WhereSection(
             }
             Box(
                 Modifier.align(Alignment.TopEnd).padding(10.dp).size(34.dp).glass(palette, CircleShape, palette.page, lifted = true)
-                    .clickable(role = Role.Button, onClick = openMap).semantics { contentDescription = "Open Large Map" },
+                    .clickable(role = Role.Button, onClick = openMap).semantics { contentDescription = openLargeMap },
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Rounded.OpenInFull, null, tint = palette.ink, modifier = Modifier.size(17.dp))
@@ -382,7 +390,7 @@ private fun PlaceRow(place: Place, verses: List<Int>, highlight: Int?, palette: 
             }
             val numbers = verses.map { it % 1000 }
             Text(
-                (if (numbers.size == 1) "Verse " else "Verses ") + numbers.joinToString(", "),
+                countedString(R.string.context_place_verses_one, R.string.context_place_verses_other, numbers.size, numbers.joinToString(", ")),
                 color = if (highlight != null && highlight in numbers) palette.accent else palette.secondary, fontSize = StudyStyle.caption,
             )
             if (place.confidenceLevel != Place.Confidence.IDENTIFIED) ConfidenceBadge(place, palette)
@@ -394,7 +402,7 @@ private fun PlaceRow(place: Place, verses: List<Int>, highlight: Int?, palette: 
 @Composable
 private fun ConfidenceBadge(place: Place, palette: ReaderPalette) {
     val uncertain = place.confidenceLevel == Place.Confidence.UNCERTAIN
-    val parts = listOf(place.confidenceLevel.title) + if (place.isArea && place.kind != PlaceKind.REGION) listOf("approximate area") else emptyList()
+    val parts = listOf(place.confidenceLevel.title) + if (place.isArea && place.kind != PlaceKind.REGION) listOf(stringResource(R.string.context_approximate_area)) else emptyList()
     val color = if (uncertain) Color(0xFFE08A1E) else palette.secondary
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(if (uncertain) Icons.AutoMirrored.Rounded.HelpOutline else Icons.Rounded.GpsFixed, null, tint = color, modifier = Modifier.size(13.dp))
@@ -474,12 +482,13 @@ private fun MapExplorer(chapter: ChapterRef, study: StudyModel, palette: ReaderP
             ) {
                 Icon(Icons.Rounded.Search, null, tint = palette.secondary, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
+                val findPlace = stringResource(R.string.context_find_place)
                 BasicTextField(
                     query, { query = it }, singleLine = true,
                     textStyle = TextStyle(color = palette.ink, fontSize = 16.sp), cursorBrush = SolidColor(palette.accent),
-                    modifier = Modifier.weight(1f).semantics { contentDescription = "Find a place" },
+                    modifier = Modifier.weight(1f).semantics { contentDescription = findPlace },
                     decorationBox = { field ->
-                        if (query.isEmpty()) Text("Find a place", color = palette.secondary, fontSize = 16.sp)
+                        if (query.isEmpty()) Text(findPlace, color = palette.secondary, fontSize = 16.sp)
                         field()
                     },
                 )
@@ -493,7 +502,14 @@ private fun MapExplorer(chapter: ChapterRef, study: StudyModel, palette: ReaderP
                         Column(Modifier.fillMaxWidth().clickable(role = Role.Button) { focus = place; query = "" }.padding(horizontal = 16.dp, vertical = 8.dp)) {
                             Text(place.name, color = palette.ink, fontSize = StudyStyle.callout)
                             Text(
-                                if (place.modernName.isEmpty()) "${place.mentions} verses" else "${place.modernName} · ${place.mentions} verses",
+                                if (place.modernName.isEmpty()) {
+                                    countedString(R.string.context_place_mentions_one, R.string.context_place_mentions_other, place.mentions, place.mentions)
+                                } else {
+                                    countedString(
+                                        R.string.context_place_mentions_modern_one, R.string.context_place_mentions_modern_other,
+                                        place.mentions, place.modernName, place.mentions,
+                                    )
+                                },
                                 color = palette.secondary, fontSize = StudyStyle.caption,
                             )
                         }
@@ -520,7 +536,7 @@ private fun FullTimeline(chapter: ChapterRef, reader: ReaderViewModel, palette: 
                 EraCard(era, loaded.time, chapter, loaded.data.events.filter { it.eraId == era.id }, loaded.chapterEvents, palette) { reader.go(it) }
             }
             Text(
-                "Dates before the divided kingdom are approximate; ? marks dates that scholars dispute. Sources are listed under Sources & Credits.",
+                stringResource(R.string.context_timeline_footnote),
                 color = palette.secondary, fontSize = StudyStyle.footnote,
             )
             Spacer(Modifier.height(32.dp))
@@ -551,7 +567,8 @@ private fun EraCard(era: Era, time: ChapterTime?, chapter: ChapterRef, events: L
                 Icon(Icons.Rounded.Bookmark, null, tint = color, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    time.yearLabel?.let { "${Canon.display(chapter)} — $it" } ?: "${Canon.display(chapter)} is set here",
+                    time.yearLabel?.let { stringResource(R.string.context_era_chapter_year, Canon.display(chapter), it) }
+                        ?: stringResource(R.string.context_era_chapter_set_here, Canon.display(chapter)),
                     color = color, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.SemiBold,
                 )
             }
@@ -562,7 +579,7 @@ private fun EraCard(era: Era, time: ChapterTime?, chapter: ChapterRef, events: L
         }
         if (era.debate.isNotEmpty()) {
             Row(Modifier.clickable(role = Role.Button) { debate = !debate }.padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("About these dates", color = palette.accent, fontSize = StudyStyle.footnote, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.context_about_dates), color = palette.accent, fontSize = StudyStyle.footnote, fontWeight = FontWeight.SemiBold)
             }
             if (debate) Text(era.debate, color = palette.secondary, fontSize = StudyStyle.footnote)
         }
@@ -577,14 +594,14 @@ private fun ChartsList(chapter: ChapterRef, study: StudyModel, palette: ReaderPa
     val others = charts.filter { chapter.book !in it.scope }
     Column(Modifier.fillMaxSize().background(StudyStyle.groupedBackground(palette)).verticalScroll(rememberScrollState())) {
         if (suggested.isNotEmpty()) {
-            GroupedSection(palette, header = "For ${BookID.of(chapter.book)?.displayName}") {
+            GroupedSection(palette, header = stringResource(R.string.context_charts_for_book, BookID.of(chapter.book)?.displayName.orEmpty())) {
                 suggested.forEachIndexed { i, chart ->
                     if (i > 0) CellDivider(palette, inset = 64.dp)
                     Box(Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) { ChartCard(chart, palette, framed = false) { study.push(StudyRoute.Chart(chart.id)) } }
                 }
             }
         }
-        GroupedSection(palette, header = if (suggested.isEmpty()) "Charts" else "More Charts") {
+        GroupedSection(palette, header = stringResource(if (suggested.isEmpty()) R.string.study_viewer_charts else R.string.context_more_charts)) {
             others.forEachIndexed { i, chart ->
                 if (i > 0) CellDivider(palette, inset = 64.dp)
                 Box(Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) { ChartCard(chart, palette, framed = false) { study.push(StudyRoute.Chart(chart.id)) } }
@@ -601,13 +618,18 @@ fun ChartScreen(id: String, chapter: ChapterRef, reader: ReaderViewModel, palett
     val chart = loaded(id) { context -> StudyLibrary.contextData(context)?.charts?.firstOrNull { it.id == id } } ?: return
     val library = mapLibrary()
     val open: (VerseRange) -> Unit = { reader.go(it.start) }
+    // A feast's New Testament passage from the reader's own Bible (outside English the chart's English
+    // quotation is dropped — `ContextStore.localizedBody`).
+    val quotation: suspend (VerseRange) -> String? = { range ->
+        runCatching { reader.verses(listOf(range)) }.getOrNull()?.takeIf { it.isNotEmpty() }?.joinToString(" ") { it.text }
+    }
     Column(Modifier.fillMaxSize()) {
         Box(Modifier.weight(1f)) {
             when (chart.kind) {
                 ChartKind.KINGS -> runCatching { chart.kings() }.getOrNull()?.let { KingsChartView(it, chapter, palette, open) }
                 ChartKind.JOURNEYS -> runCatching { chart.journeys() }.getOrNull()?.let { JourneysChartView(it, chapter, library, palette, open) }
                 ChartKind.TRIBES -> runCatching { chart.tribes() }.getOrNull()?.let { TribesChartView(it, library, palette, open) }
-                ChartKind.FEASTS -> runCatching { chart.feasts() }.getOrNull()?.let { FeastsChartView(it, palette, open) }
+                ChartKind.FEASTS -> runCatching { chart.feasts() }.getOrNull()?.let { FeastsChartView(it, palette, open, quotation) }
             }
         }
         Text(
@@ -620,18 +642,22 @@ fun ChartScreen(id: String, chapter: ChapterRef, reader: ReaderViewModel, palett
 /** A tappable reference that opens the passage in the reader. */
 @Composable
 private fun ReferenceButton(range: VerseRange, palette: ReaderPalette, label: String? = null, open: (VerseRange) -> Unit) {
+    val readLabel = stringResource(R.string.context_read_passage, range.display)
     Text(
         label ?: range.display, color = palette.accent, fontSize = StudyStyle.caption, fontWeight = FontWeight.Medium,
         modifier = Modifier.clip(RoundedCornerShape(4.dp)).clickable(role = Role.Button) { open(range) }.padding(vertical = 3.dp)
-            .semantics { contentDescription = "Read ${range.display}" },
+            .semantics { contentDescription = readLabel },
     )
 }
 
-private fun KingsChart.Verdict.title() = when (this) {
-    KingsChart.Verdict.GOOD -> "Did right"
-    KingsChart.Verdict.EVIL -> "Did evil"
-    KingsChart.Verdict.MIXED -> "Mixed"
-}
+@Composable
+private fun KingsChart.Verdict.title() = stringResource(
+    when (this) {
+        KingsChart.Verdict.GOOD -> R.string.chart_verdict_good
+        KingsChart.Verdict.EVIL -> R.string.chart_verdict_evil
+        KingsChart.Verdict.MIXED -> R.string.chart_verdict_mixed
+    },
+)
 
 private fun KingsChart.Verdict.icon() = when (this) {
     KingsChart.Verdict.GOOD -> Icons.Rounded.CheckCircle
@@ -671,16 +697,20 @@ private fun KingsChartView(chart: KingsChart, chapter: ChapterRef, palette: Read
                     }
                 }
             }
-            KingsColumn("United Kingdom", "Israel", chart.united, current(chart.united), palette, open)
+            val israel = stringResource(R.string.chart_kings_israel)
+            val judahName = stringResource(R.string.chart_kings_judah)
+            val israelNorth = stringResource(R.string.chart_kings_israel_north)
+            val judahSouth = stringResource(R.string.chart_kings_judah_south)
+            KingsColumn(stringResource(R.string.chart_kings_united), israel, chart.united, current(chart.united), palette, open)
             if (wide) {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Box(Modifier.weight(1f)) { KingsColumn("Israel (north)", "Israel", chart.israel, current(chart.israel), palette, open) }
-                    Box(Modifier.weight(1f)) { KingsColumn("Judah (south)", "Judah", chart.judah, current(chart.judah), palette, open) }
+                    Box(Modifier.weight(1f)) { KingsColumn(israelNorth, israel, chart.israel, current(chart.israel), palette, open) }
+                    Box(Modifier.weight(1f)) { KingsColumn(judahSouth, judahName, chart.judah, current(chart.judah), palette, open) }
                 }
             } else {
-                SegmentedPicker(listOf("Israel", "Judah"), if (judah) 1 else 0, palette) { judah = it == 1 }
-                if (judah) KingsColumn("Judah (south)", "Judah", chart.judah, current(chart.judah), palette, open)
-                else KingsColumn("Israel (north)", "Israel", chart.israel, current(chart.israel), palette, open)
+                SegmentedPicker(listOf(israel, judahName), if (judah) 1 else 0, palette) { judah = it == 1 }
+                if (judah) KingsColumn(judahSouth, judahName, chart.judah, current(chart.judah), palette, open)
+                else KingsColumn(israelNorth, israel, chart.israel, current(chart.israel), palette, open)
             }
             Spacer(Modifier.height(24.dp))
         }
@@ -694,15 +724,16 @@ private fun KingsColumn(title: String, kingdom: String, kings: List<KingsChart.K
         for (king in kings) {
             val isCurrent = king.id == here?.id
             val shape = RoundedCornerShape(10.dp)
-            val years = if (king.years.toIntOrNull() != null) "${king.years} years" else king.years
+            val years = king.years.toIntOrNull()?.let { countedString(R.string.chart_king_years_one, R.string.chart_king_years_other, it, it) } ?: king.years
+            val kingLabel = stringResource(R.string.chart_king_a11y, king.name, kingdom, king.reign, years, king.verdict.title()) +
+                (if (isCurrent) " " + stringResource(R.string.chart_king_current) else "")
             Row(
                 Modifier.fillMaxWidth().clip(shape)
                     .background(if (isCurrent) palette.accent.copy(alpha = 0.14f) else SheetColors.tertiaryFill(palette).copy(alpha = 0.10f))
                     .let { if (isCurrent) it.border(1.5.dp, palette.accent, shape) else it }
                     .clickable(role = Role.Button) { open(king.ref) }
                     .semantics(mergeDescendants = true) {
-                        contentDescription = "${king.name}, $kingdom, ${king.reign}, $years. ${king.verdict.title()}." +
-                            (if (isCurrent) " The chapter you are reading." else "")
+                        contentDescription = kingLabel
                     }
                     .padding(10.dp),
                 verticalAlignment = Alignment.Top,
@@ -746,7 +777,13 @@ private fun JourneysChartView(chart: JourneysChart, chapter: ChapterRef, library
         fitRect = MapProjection.fit(points),
     )
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        SegmentedPicker(chart.journeys.map { when (it.id) { "first" -> "1st"; "second" -> "2nd"; "third" -> "3rd"; else -> "Rome" } },
+        val journeyNames = mapOf(
+            "first" to stringResource(R.string.chart_journey_first),
+            "second" to stringResource(R.string.chart_journey_second),
+            "third" to stringResource(R.string.chart_journey_third),
+        )
+        val rome = stringResource(R.string.chart_journey_rome)
+        SegmentedPicker(chart.journeys.map { journeyNames[it.id] ?: rome },
             chart.journeys.indexOf(journey), palette) { selected = chart.journeys[it].id }
         if (library != null) {
             BibleMap(content, library, palette, Modifier.fillMaxWidth().height(340.dp).clip(RoundedCornerShape(14.dp)), fitToken = selected)
@@ -791,7 +828,7 @@ private fun TribesChartView(chart: TribesChart, library: MapLibrary?, palette: R
     val content = MapContent(tags = tags, showsBackgroundPlaces = false, fitRect = MapProjection.rect(34.6, 31.0, 36.2, 33.3))
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         if (library != null) BibleMap(content, library, palette, Modifier.fillMaxWidth().height(420.dp).clip(RoundedCornerShape(14.dp)), fitToken = 0)
-        Text("Label positions mark the approximate center of each allotment (Joshua 13–19).", color = palette.secondary, fontSize = StudyStyle.caption)
+        Text(stringResource(R.string.chart_tribes_note), color = palette.secondary, fontSize = StudyStyle.caption)
         for (tribe in chart.tribes) {
             Column(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(SheetColors.tertiaryFill(palette).copy(alpha = 0.12f)).padding(12.dp),
@@ -799,14 +836,14 @@ private fun TribesChartView(chart: TribesChart, library: MapLibrary?, palette: R
             ) {
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(tribe.name, color = palette.ink, fontSize = StudyStyle.headline, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-                    Text("Son ${tribe.order} · ${tribe.mother}", color = palette.secondary, fontSize = StudyStyle.caption)
+                    Text(stringResource(R.string.chart_tribe_son, tribe.order, tribe.mother), color = palette.secondary, fontSize = StudyStyle.caption)
                 }
                 tribe.note?.let { Text(it, color = palette.secondary, fontSize = StudyStyle.caption) }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    ReferenceButton(tribe.birth, palette, "Birth", open)
-                    ReferenceButton(tribe.jacob, palette, "Jacob’s blessing", open)
-                    tribe.moses?.let { ReferenceButton(it, palette, "Moses’ blessing", open) }
-                    ReferenceButton(tribe.allotment, palette, if (tribe.name == "Levi") "Cities" else "Land", open)
+                    ReferenceButton(tribe.birth, palette, stringResource(R.string.chart_tribe_birth), open)
+                    ReferenceButton(tribe.jacob, palette, stringResource(R.string.chart_tribe_jacob_blessing), open)
+                    tribe.moses?.let { ReferenceButton(it, palette, stringResource(R.string.chart_tribe_moses_blessing), open) }
+                    ReferenceButton(tribe.allotment, palette, stringResource(if (tribe.isLevi) R.string.chart_tribe_cities else R.string.chart_tribe_land), open)
                 }
             }
         }
@@ -814,15 +851,30 @@ private fun TribesChartView(chart: TribesChart, library: MapLibrary?, palette: R
     }
 }
 
+/**
+ * Levi, whose allotment is cities (Joshua 21) rather than land — told by the passage, not the name,
+ * which is in the reader's language.
+ */
+private val TribesChart.Tribe.isLevi: Boolean get() = allotment.start.book == 6 && allotment.start.chapter == 21
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun FeastsChartView(chart: FeastsChart, palette: ReaderPalette, open: (VerseRange) -> Unit) {
+private fun FeastsChartView(
+    chart: FeastsChart,
+    palette: ReaderPalette,
+    open: (VerseRange) -> Unit,
+    quotation: suspend (VerseRange) -> String?,
+) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         // The seven appointed times of Leviticus 23 laid out across the year.
-        val spring = chart.feasts.filter { it.later != true && (it.season.startsWith("March") || it.season.startsWith("May")) }
-        val autumn = chart.feasts.filter { it.later != true && it.season.startsWith("September") }
+        // By `seasonGroup`, which the store sets before the season text is translated.
+        val spring = chart.feasts.filter { it.later != true && it.seasonGroup == "spring" }
+        val autumn = chart.feasts.filter { it.later != true && it.seasonGroup == "autumn" }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            for ((title, feasts, color) in listOf(Triple("Spring", spring, contextColor("#3F8F6B")), Triple("Autumn", autumn, contextColor("#C9862B")))) {
+            for ((title, feasts, color) in listOf(
+                Triple(stringResource(R.string.chart_feast_spring), spring, contextColor("#3F8F6B")),
+                Triple(stringResource(R.string.chart_feast_autumn), autumn, contextColor("#C9862B")),
+            )) {
                 Column(
                     Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).background(color.copy(alpha = 0.1f)).padding(10.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -856,8 +908,8 @@ private fun FeastsChartView(chart: FeastsChart, palette: ReaderPalette, open: (V
                 }
                 if (feast.pilgrim == true || feast.later == true) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        if (feast.pilgrim == true) Tag("Pilgrim feast", palette)
-                        if (feast.later == true) Tag("Later feast", palette)
+                        if (feast.pilgrim == true) Tag(stringResource(R.string.chart_feast_pilgrim), palette)
+                        if (feast.later == true) Tag(stringResource(R.string.chart_feast_later), palette)
                     }
                 }
                 Text(feast.meaning, color = palette.ink, fontSize = StudyStyle.subheadline)
@@ -871,10 +923,12 @@ private fun FeastsChartView(chart: FeastsChart, palette: ReaderPalette, open: (V
                         verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         Text(
-                            (if (feast.interpretive == true) "Often connected with" else "In the New Testament").uppercase(),
+                            stringResource(if (feast.interpretive == true) R.string.chart_feast_often_connected else R.string.chart_feast_in_nt).uppercase(),
                             color = palette.secondary, fontSize = StudyStyle.caption2, fontWeight = FontWeight.Bold,
                         )
-                        feast.ntText?.let { Text(it, color = palette.ink, fontSize = StudyStyle.caption) }
+                        // The chart's own English quotation in English; otherwise the verse from the reader's Bible.
+                        val text = feast.ntText ?: produceState<String?>(null, nt) { value = quotation(nt) }.value
+                        text?.let { Text(it, color = palette.ink, fontSize = StudyStyle.caption) }
                         ReferenceButton(nt, palette, open = open)
                     }
                 }
@@ -917,32 +971,32 @@ fun PlaceDetailScreen(place: Place, reader: ReaderViewModel, palette: ReaderPale
                 )
             }
             if (place.modernName.isNotEmpty()) {
-                LabeledCell(palette, "Identified with", place.modernName)
+                LabeledCell(palette, stringResource(R.string.context_place_identified_with), place.modernName)
                 CellDivider(palette)
             }
-            LabeledCell(palette, "Type", place.type.replaceFirstChar { it.uppercase() })
+            LabeledCell(palette, stringResource(R.string.context_place_type), place.type.replaceFirstChar { it.uppercase() })
             CellDivider(palette)
             Cell(palette) {
-                Text("Confidence", color = palette.ink, fontSize = StudyStyle.body, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.context_place_confidence), color = palette.ink, fontSize = StudyStyle.body, modifier = Modifier.weight(1f))
                 ConfidenceBadge(place, palette)
             }
             if (place.alternatives > 0) {
                 CellDivider(palette)
                 Cell(palette) {
                     Text(
-                        if (place.alternatives == 1) "One other location has been proposed." else "${place.alternatives} other locations have been proposed.",
+                        countedString(R.string.context_place_alternatives_one, R.string.context_place_alternatives_other, place.alternatives, place.alternatives),
                         color = palette.secondary, fontSize = StudyStyle.footnote,
                     )
                 }
             }
             CellDivider(palette)
             Cell(palette, onClick = { uri.openUri(place.sourceUrl) }) {
-                Text("Evidence at OpenBible.info", color = palette.accent, fontSize = StudyStyle.footnote)
+                Text(stringResource(R.string.context_place_evidence), color = palette.accent, fontSize = StudyStyle.footnote)
             }
         }
         val groups = verses.orEmpty().groupBy { it.first / 1_000_000 }
         for ((book, keys) in groups) {
-            GroupedSection(palette, header = "${BookID.of(book)?.displayName} (${keys.size})") {
+            GroupedSection(palette, header = stringResource(R.string.context_place_book_count, BookID.of(book)?.displayName.orEmpty(), keys.size)) {
                 keys.forEachIndexed { i, (key, text) ->
                     if (i > 0) CellDivider(palette)
                     val ref = VerseRef.fromKey(key)
@@ -977,28 +1031,28 @@ fun ContextCredits(palette: ReaderPalette) {
         GroupedSection(palette) {
             Cell(palette) {
                 Text(
-                    "Study context works entirely offline. Nothing about what you read is sent anywhere; the one exception is a link you choose to open.",
+                    stringResource(R.string.context_credits_intro),
                     color = palette.ink, fontSize = StudyStyle.subheadline,
                 )
             }
         }
-        GroupedSection(palette, header = "Places") {
+        GroupedSection(palette, header = stringResource(R.string.context_credits_places)) {
             credit("OpenBible.info Bible Geocoding Data",
-                "Places named in the Bible, their most likely locations, confidence scores and the verses that mention them. By Stephen Smith, OpenBible.info. Licensed CC BY 4.0. Used unmodified except for choosing each place’s most confident identification.",
+                stringResource(R.string.context_credits_openbible_detail),
                 listOf("openbible.info/geo" to "https://www.openbible.info/geo/", "CC BY 4.0" to "https://creativecommons.org/licenses/by/4.0/"))
             CellDivider(palette)
             credit("OpenStreetMap",
-                "A few site coordinates in the OpenBible data come from OpenStreetMap. © OpenStreetMap contributors, available under the Open Database License.",
+                stringResource(R.string.context_credits_osm_detail),
                 listOf("openstreetmap.org/copyright" to "https://www.openstreetmap.org/copyright"))
         }
-        GroupedSection(palette, header = "Base map") {
+        GroupedSection(palette, header = stringResource(R.string.context_credits_base_map)) {
             credit("Natural Earth",
-                "Coastlines, land, lakes and rivers at 1:10 million, clipped to the lands of the Bible and simplified. Public domain. Modern reservoirs and canals are left out.",
+                stringResource(R.string.context_credits_natural_earth_detail),
                 listOf("naturalearthdata.com" to "https://www.naturalearthdata.com"))
         }
-        GroupedSection(palette, header = "Timeline and charts") {
-            credit("Written for Scripture Alone",
-                "Eras, events, and the kings, journeys, tribes and feasts charts were compiled for this app from the biblical text and standard chronologies. Many dates are approximate and some are disputed; the app notes where.",
+        GroupedSection(palette, header = stringResource(R.string.context_credits_timeline)) {
+            credit(stringResource(R.string.context_credits_written_for),
+                stringResource(R.string.context_credits_written_detail),
                 emptyList())
             CellDivider(palette)
             Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -1008,7 +1062,7 @@ fun ContextCredits(palette: ReaderPalette) {
         GroupedSection(palette) {
             Cell(palette) {
                 Text(
-                    "Scripture Alone is free software under the GNU AGPL. The full list of sources, versions and checksums is in docs/context-sources.md in the source code.",
+                    stringResource(R.string.context_credits_agpl),
                     color = palette.secondary, fontSize = StudyStyle.footnote,
                 )
             }

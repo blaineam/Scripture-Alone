@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
     override fun onProvideKeyboardShortcuts(data: MutableList<KeyboardShortcutGroup>, menu: Menu?, deviceId: Int) {
         super.onProvideKeyboardShortcuts(data, menu, deviceId)
         val shortcuts = ReaderShortcuts.all.map { KeyboardShortcutInfo(it.command.title, it.keyCode, it.modifiers) } +
-            KeyboardShortcutInfo("Clear Selection", KeyEvent.KEYCODE_ESCAPE, 0)
+            KeyboardShortcutInfo(getString(R.string.reader_clear_selection), KeyEvent.KEYCODE_ESCAPE, 0)
         data += KeyboardShortcutGroup("Scripture Alone", shortcuts)
     }
 

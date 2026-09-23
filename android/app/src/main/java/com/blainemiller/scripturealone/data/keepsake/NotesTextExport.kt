@@ -1,6 +1,8 @@
 package com.blainemiller.scripturealone.data.keepsake
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRange
+import com.blainemiller.scripturealone.text.AppText
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -15,7 +17,7 @@ object NotesTextExport {
 
     data class Options(
         /** Heading for a multi-note document ("Notes", "Dad’s Notes"). */
-        val title: String = "Notes",
+        val title: String = AppText.get(R.string.data_export_notes_title),
         /** Translation abbreviation shown after quoted passages ("ASV"), or null to omit verse text. */
         val translation: String? = null,
         /**
@@ -137,13 +139,13 @@ object NotesTextExport {
     fun dateLine(note: KeepsakeNote, options: Options = Options()): String {
         val created = longDate(note.createdAt, options)
         val edited = longDate(note.updatedAt, options)
-        return if (created == edited) "Written $created" else "Written $created · Edited $edited"
+        return if (created == edited) AppText.get(R.string.data_export_written, created)
+        else AppText.get(R.string.data_export_written_edited, created, edited)
     }
 
     internal fun exportedLine(count: Int, options: Options, now: Instant = Instant.now()): String {
-        val noun = if (count == 1) "note" else "notes"
-        var line = "$count $noun, exported ${longDate(now, options)}"
-        if (options.translation != null) line += " · Scripture quoted from the ${options.translation}"
+        var line = AppText.plural(R.string.data_export_exported_one, R.string.data_export_exported_other, count, count, longDate(now, options))
+        if (options.translation != null) line += " · " + AppText.get(R.string.data_export_scripture_quoted_from, options.translation)
         return line
     }
 

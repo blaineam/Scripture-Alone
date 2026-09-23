@@ -40,6 +40,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.userdata.Favorite
 import com.blainemiller.scripturealone.data.userdata.NoteSearch
@@ -80,9 +82,9 @@ fun FavoritesSection(
     if (rows.isEmpty()) {
         EmptyState(
             Icons.Rounded.FavoriteBorder,
-            if (search.isBlank()) "No Favorites Yet" else "No Matches",
-            if (search.isBlank()) "Tap verses in the text, then the heart, to keep a passage close."
-            else "Try a word or a passage like Rom 8.",
+            if (search.isBlank()) stringResource(R.string.favorites_empty_title) else stringResource(R.string.notes_no_matches_title),
+            if (search.isBlank()) stringResource(R.string.favorites_empty_message)
+            else stringResource(R.string.notes_no_matches_message),
             palette,
         )
         return
@@ -100,7 +102,7 @@ fun FavoritesSection(
                 Box {
                     Column(
                         Modifier.fillMaxWidth()
-                            .combinedClickable(role = Role.Button, onLongClickLabel = "Show options", onLongClick = { menu = true }) {
+                            .combinedClickable(role = Role.Button, onLongClickLabel = stringResource(R.string.notes_show_options), onLongClick = { menu = true }) {
                                 model.go(favorite.range.start)
                                 onOpened()
                             }
@@ -121,7 +123,7 @@ fun FavoritesSection(
                     }
                     DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                         DropdownMenuItem(
-                            text = { Text("Delete", color = palette.red, fontSize = 15.sp) },
+                            text = { Text(stringResource(R.string.common_delete), color = palette.red, fontSize = 15.sp) },
                             onClick = {
                                 menu = false
                                 model.userData.deleteFavorite(favorite.id)

@@ -1,8 +1,10 @@
 package com.blainemiller.scripturealone.ui.export
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeNote
 import com.blainemiller.scripturealone.data.keepsake.NotesTextExport
+import com.blainemiller.scripturealone.text.AppText
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -67,8 +69,8 @@ object NotesPdfDocument {
         out += Paragraph(options.title, Face.SERIF_BOLD, 26f, Ink.INK, spacingAfter = 4f)
         options.subtitle?.let { out += Paragraph(it, Face.SERIF_ITALIC, 11f, Ink.SECONDARY, spacingAfter = 6f) }
         val date = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(options.locale).format(options.now.atZone(options.zone))
-        var summary = "${notes.size} ${if (notes.size == 1) "note" else "notes"} · $date"
-        options.translation?.let { summary += " · Scripture from the $it" }
+        var summary = AppText.plural(R.string.export_pdf_summary_one, R.string.export_pdf_summary_other, notes.size, notes.size, date)
+        options.translation?.let { summary = AppText.get(R.string.export_pdf_summary_translation, summary, it) }
         out += Paragraph(summary, Face.SANS, 9.5f, Ink.SECONDARY, spacingAfter = 26f)
 
         val dateOptions = NotesTextExport.Options(locale = options.locale, zone = options.zone)

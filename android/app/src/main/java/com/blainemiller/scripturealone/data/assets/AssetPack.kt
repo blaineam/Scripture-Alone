@@ -1,5 +1,8 @@
 package com.blainemiller.scripturealone.data.assets
 
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
+
 /**
  * Content delivered as Google Play asset packs rather than inside the app's base module —
  * `AssetPack` in `ScriptureAlone/App/AssetLibrary.swift`, where the same files are Background Assets
@@ -26,7 +29,8 @@ enum class AssetPack(
     /** The one file in the pack, at its root, and the name it keeps once copied out. */
     val file: String,
     val delivery: Delivery,
-    val title: String,
+    /** The Bible's own name; the study packs' titles come from the reader's language ([title]). */
+    private val fixedTitle: String,
     /** Roughly what the reader downloads, for the explanation shown before and during it. */
     val megabytes: Int,
     /** The language this Bible is for, as a BCP 47 tag — which device languages it is chosen for. */
@@ -57,12 +61,20 @@ enum class AssetPack(
         ON_DEMAND("on-demand"),
     }
 
+    /** What the pack is called on screen: a Bible's own name, or the study pack's name in the reader's language. */
+    val title: String
+        get() = when (this) {
+            COMMENTARY -> AppText.get(R.string.data_pack_commentary_title)
+            INTERLINEAR -> AppText.get(R.string.data_pack_interlinear_title)
+            else -> fixedTitle
+        }
+
     /** What the reader is waiting for, in their terms — iOS's `explanation`, word for word. */
     val explanation: String
         get() = when (this) {
-            COMMENTARY -> "Calvin, Gill and Jamieson-Fausset-Brown — about $megabytes MB, downloaded once and kept."
-            INTERLINEAR -> "The Hebrew and Greek behind every word, with a lexicon — about $megabytes MB, downloaded once and kept."
-            else -> "About $megabytes MB, downloaded once and kept for reading offline."
+            COMMENTARY -> AppText.get(R.string.data_pack_commentary_explanation, megabytes)
+            INTERLINEAR -> AppText.get(R.string.data_pack_interlinear_explanation, megabytes)
+            else -> AppText.get(R.string.data_pack_bible_explanation, megabytes)
         }
 
     val isTranslation: Boolean get() = this != COMMENTARY && this != INTERLINEAR

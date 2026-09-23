@@ -38,7 +38,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.onClick
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.countedString
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -85,7 +88,7 @@ fun CrossReferencesTab(verse: VerseRef, study: StudyModel, reader: ReaderViewMod
             CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(26.dp))
         }
         rows.isEmpty() -> ContentUnavailable(
-            Icons.Rounded.AccountTree, "No Cross References", "Nothing is linked to ${verse.display} yet.", palette,
+            Icons.Rounded.AccountTree, stringResource(R.string.study_xref_empty_title), stringResource(R.string.study_xref_empty_body, verse.display), palette,
             Modifier.padding(top = 24.dp),
         )
         else -> {
@@ -100,8 +103,12 @@ fun CrossReferencesTab(verse: VerseRef, study: StudyModel, reader: ReaderViewMod
             LazyColumn(Modifier.fillMaxSize().background(StudyStyle.groupedBackground(palette))) {
                 item("strongest") {
                     GroupedSection(
-                        palette, header = "Strongest",
-                        footer = if (rows.size > STRONGEST) "${rows.size} references, ranked by how many readers found each one helpful." else null,
+                        palette, header = stringResource(R.string.study_xref_strongest),
+                        footer = if (rows.size > STRONGEST) {
+                            countedString(R.string.study_xref_ranked_one, R.string.study_xref_ranked_other, rows.size, rows.size)
+                        } else {
+                            null
+                        },
                     ) {
                         top.forEachIndexed { i, row ->
                             if (i > 0) CellDivider(palette)
@@ -110,7 +117,7 @@ fun CrossReferencesTab(verse: VerseRef, study: StudyModel, reader: ReaderViewMod
                     }
                 }
                 if (old.isNotEmpty()) item("old") {
-                    GroupedSection(palette, header = "Old Testament") {
+                    GroupedSection(palette, header = stringResource(R.string.study_xref_old_testament)) {
                         old.forEachIndexed { i, row ->
                             if (i > 0) CellDivider(palette)
                             ReferenceRow(row, maxVotes, palette, rights, abbreviation) { study.jump(row.range, reader) }
@@ -118,7 +125,7 @@ fun CrossReferencesTab(verse: VerseRef, study: StudyModel, reader: ReaderViewMod
                     }
                 }
                 if (new.isNotEmpty()) item("new") {
-                    GroupedSection(palette, header = "New Testament") {
+                    GroupedSection(palette, header = stringResource(R.string.study_xref_new_testament)) {
                         new.forEachIndexed { i, row ->
                             if (i > 0) CellDivider(palette)
                             ReferenceRow(row, maxVotes, palette, rights, abbreviation) { study.jump(row.range, reader) }
@@ -128,7 +135,7 @@ fun CrossReferencesTab(verse: VerseRef, study: StudyModel, reader: ReaderViewMod
                 if (!showAll && rows.size > INITIAL_LIMIT) item("all") {
                     GroupedSection(palette) {
                         Cell(palette, onClick = { showAll = true }) {
-                            Text("Show All ${rows.size} References", color = palette.accent, fontSize = StudyStyle.body)
+                            Text(countedString(R.string.study_xref_show_all_one, R.string.study_xref_show_all_other, rows.size, rows.size), color = palette.accent, fontSize = StudyStyle.body)
                         }
                     }
                 }
@@ -160,11 +167,13 @@ private fun ReferenceRow(
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
     val display = row.range.display
+    val showOptions = stringResource(R.string.study_xref_show_options)
+    val openHint = stringResource(R.string.study_xref_open_hint, display)
     Box {
         Column(
             Modifier.fillMaxWidth()
-                .combinedClickable(role = Role.Button, onLongClickLabel = "Show options", onClick = onOpen, onLongClick = { menu = true })
-                .semantics(mergeDescendants = true) { onClick("Opens $display in the reader") { onOpen(); true } }
+                .combinedClickable(role = Role.Button, onLongClickLabel = showOptions, onClick = onOpen, onLongClick = { menu = true })
+                .semantics(mergeDescendants = true) { onClick(openHint) { onOpen(); true } }
                 .padding(horizontal = 16.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
@@ -181,12 +190,12 @@ private fun ReferenceRow(
         }
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
             DropdownMenuItem(
-                text = { Text("Go to $display", color = palette.ink) },
+                text = { Text(stringResource(R.string.study_xref_go_to, display), color = palette.ink) },
                 leadingIcon = { Icon(Icons.AutoMirrored.Rounded.ArrowForward, null, tint = palette.ink) },
                 onClick = { menu = false; onOpen() },
             )
             DropdownMenuItem(
-                text = { Text("Copy", color = palette.ink) },
+                text = { Text(stringResource(R.string.common_copy), color = palette.ink) },
                 leadingIcon = { Icon(Icons.Rounded.ContentCopy, null, tint = palette.ink) },
                 onClick = {
                     menu = false
@@ -195,7 +204,7 @@ private fun ReferenceRow(
                     if (row.text.isNotEmpty() && rights.permits(TranslationRights.Permission.COPY) && rights.mayQuote(row.verseCount)) {
                         clipboard.setText(AnnotatedString("${row.text}\n— $display ($abbreviation)"))
                     } else {
-                        Toast.makeText(context, "This translation's terms don't allow copying that passage.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.study_xref_copy_refused), Toast.LENGTH_SHORT).show()
                     }
                 },
             )

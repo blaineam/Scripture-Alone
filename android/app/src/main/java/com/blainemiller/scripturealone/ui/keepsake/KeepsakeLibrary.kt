@@ -1,8 +1,10 @@
 package com.blainemiller.scripturealone.ui.keepsake
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.keepsake.Keepsake
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeArchive
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeManifest
+import com.blainemiller.scripturealone.text.AppText
 import java.io.File
 import java.time.Instant
 import java.util.UUID
@@ -48,7 +50,7 @@ class KeepsakeLibrary(private val directory: File) {
         temp.writeBytes(data)
         if (!temp.renameTo(target)) {
             target.delete()
-            if (!temp.renameTo(target)) throw java.io.IOException("Can’t keep this keepsake on the device.")
+            if (!temp.renameTo(target)) throw java.io.IOException(AppText.get(R.string.keepsake_library_cant_keep))
         }
         reload()
         return AddResult(previous)

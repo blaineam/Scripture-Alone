@@ -1,4 +1,1556 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Every word the phone app shows, in English. Levi (../_shared/levi) fills the values-* folders for
+     the big 8 from this file — only this file: it reads <string> entries, not <plurals>, so counted
+     phrases are `…_one` / `…_other` pairs chosen by text/AppText.kt. Use typographic quotes (’ “ ”) and
+     positional placeholders (%1$s, %1$d); a comment above an entry is for translators. -->
 <resources>
-    <string name="app_name">Scripture Alone</string>
+    <!-- The app's name: a proper name, never translated. -->
+    <string name="app_name" translatable="false">Scripture Alone</string>
+
+    <!-- ===== Common buttons ===== -->
+    <string name="common_cancel">Cancel</string>
+    <string name="common_done">Done</string>
+    <string name="common_close">Close</string>
+    <string name="common_ok">OK</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_remove">Remove</string>
+    <string name="common_copy">Copy</string>
+    <string name="common_share">Share</string>
+    <string name="common_open">Open</string>
+    <!-- "Next" as a button: go on to the next one. -->
+    <string name="common_next">Next</string>
+    <string name="common_back">Back</string>
+    <string name="common_clear">Clear</string>
+    <string name="common_export">Export</string>
+    <string name="common_search">Search</string>
+    <string name="common_more">More</string>
+    <string name="common_download">Download</string>
+    <!-- Retrying something that failed (a download, a load). -->
+    <string name="common_try_again">Try Again</string>
+
+    <!-- ===== Listen ===== -->
+    <!-- The notification channel Listen's media controls post to (shown in the system's notification settings). -->
+    <string name="listen_channel_name">Listening</string>
+    <!-- Spoken aloud before a chapter is read. %1$s is a book name; %2$d is the chapter number. -->
+    <string name="listen_chapter_announcement">%1$s, chapter %2$d.</string>
+    <!-- Status while the next chapter loads. %1$s is a book and chapter, e.g. "John 4". -->
+    <string name="listen_opening_chapter">Opening %1$s…</string>
+    <string name="listen_loading_voice">Loading voice…</string>
+    <!-- "Speech Services by Google" is the name of Google's text-to-speech app on Google Play. -->
+    <string name="listen_no_engine">There’s no text-to-speech engine on this device. Install Speech Services by Google to listen.</string>
+    <string name="listen_sleep_timer_ended">Sleep timer ended.</string>
+    <!-- Listen stopped because the device's speech engine couldn't read the text (typically the voice for that language isn't downloaded and the device is offline). "Settings › Text-to-speech output" should match the system Settings screen's name. -->
+    <string name="listen_voice_unavailable">The voice for this Bible’s language isn’t available on this device right now. Connect to the internet, or install the voice in Settings › Text-to-speech output.</string>
+    <!-- The voice when the reader hasn't picked one: the device's default. -->
+    <string name="listen_system_voice">System Voice</string>
+    <string name="listen_network_voice_refused">That voice reads over the internet, which this translation’s licence doesn’t allow. A voice on this device reads it instead.</string>
+    <!-- Voice quality badge (the engine's highest grade). -->
+    <string name="listen_voice_premium">Premium</string>
+    <!-- Voice quality badge (the engine's second-highest grade). -->
+    <string name="listen_voice_enhanced">Enhanced</string>
+    <!-- Voice badge: the voice speaks by sending the text to a server. -->
+    <string name="listen_voice_online">Online</string>
+    <!-- A voice name with its badges. %1$s is the voice name, %2$s a comma-separated list of badges, e.g. "Voice IOB (Enhanced, Online)". -->
+    <string name="listen_voice_with_tags">%1$s (%2$s)</string>
+    <!-- A voice in the picker. %1$s is the voice with its badges, %2$s its country, e.g. "Voice IOB (Enhanced) · United States". -->
+    <string name="listen_voice_title">%1$s · %2$s</string>
+    <!-- Android voices have codes, not names. %1$s is the engine's code for the voice, e.g. "IOB". -->
+    <string name="listen_voice_code_name">Voice %1$s</string>
+    <!-- The engine's plain voice for a language, which has no code of its own. -->
+    <string name="listen_voice_standard">Standard Voice</string>
+    <!-- Sleep timer option: no timer. -->
+    <string name="listen_sleep_off">Off</string>
+    <string name="listen_sleep_15_minutes">15 Minutes</string>
+    <string name="listen_sleep_30_minutes">30 Minutes</string>
+    <string name="listen_sleep_1_hour">1 Hour</string>
+    <!-- Sleep timer option: stop when the chapter being read ends. -->
+    <string name="listen_sleep_end_of_chapter">End of Chapter</string>
+    <!-- Auto-scroll speed. -->
+    <string name="listen_scroll_slow">Slow</string>
+    <!-- Auto-scroll speed. -->
+    <string name="listen_scroll_relaxed">Relaxed</string>
+    <!-- Auto-scroll speed. -->
+    <string name="listen_scroll_steady">Steady</string>
+    <!-- Auto-scroll speed. -->
+    <string name="listen_scroll_brisk">Brisk</string>
+    <!-- Now-playing bar button (accessibility label). -->
+    <string name="listen_stop">Stop Listening</string>
+    <!-- Now-playing status line while paused. -->
+    <string name="listen_paused">Paused</string>
+    <!-- Now-playing status line. %1$s is the voice's name, %2$s the speed, e.g. "System Voice · 1.25×". -->
+    <string name="listen_status_voice_speed">%1$s · %2$s</string>
+    <!-- Accessibility label for the button that dismisses a Listen notice. -->
+    <string name="listen_dismiss_notice">Dismiss</string>
+    <string name="listen_previous_verse">Previous Verse</string>
+    <string name="listen_next_verse">Next Verse</string>
+    <!-- Accessibility label for the spinner while the voice or chapter loads. -->
+    <string name="listen_preparing">Preparing</string>
+    <!-- Button (accessibility label). -->
+    <string name="listen_pause">Pause</string>
+    <!-- Button (accessibility label). -->
+    <string name="listen_play">Play</string>
+    <!-- Menu title: reading speed. -->
+    <string name="listen_speed">Speed</string>
+    <!-- Accessibility label of the speed button. %1$s is the speed, e.g. "1.25×". -->
+    <string name="listen_speed_description">Speed, %1$s</string>
+    <string name="listen_voice_and_options">Voice and Options</string>
+    <!-- Menu section title: the reading voice. -->
+    <string name="listen_voice">Voice</string>
+    <!-- Voice choice: let the app pick the best voice for the text. -->
+    <string name="listen_voice_automatic">Automatic</string>
+    <string name="listen_voices_pending">Voices appear once the speech engine answers.</string>
+    <string name="listen_continue_chapters">Continue to Next Chapter</string>
+    <string name="listen_sleep_timer">Sleep Timer</string>
+    <!-- Accessibility label of the checkmark on the chosen menu item. -->
+    <string name="listen_selected">Selected</string>
+    <!-- Accessibility action on the auto-scroll button (long press). -->
+    <string name="listen_choose_scroll_speed">Choose speed</string>
+    <string name="listen_pause_scrolling">Pause Scrolling</string>
+    <!-- Button: scroll the chapter by itself, hands-free. -->
+    <string name="listen_auto_scroll">Auto-Scroll</string>
+    <string name="listen_pause_listening">Pause Listening</string>
+    <!-- Button: read the chapter aloud. -->
+    <string name="listen_listen">Listen</string>
+
+    <!-- ===== Widgets (as the iOS widget extension has them) ===== -->
+    <string name="widget_votd_name">Verse of the Day</string>
+    <string name="widget_votd_description">A beloved passage each day, in the translation you read.</string>
+    <string name="widget_favorites_name">Favorites &amp; Notes</string>
+    <string name="widget_favorites_description">Your favorited, highlighted and noted verses, one at a time.</string>
+    <!-- Widget configuration: the label above the choice of what the widget shows. -->
+    <string name="widget_favorites_configure">Show</string>
+    <!-- Widget accessibility label. %1$s is the reference (e.g. "John 3:16"), %2$s the verse's text. -->
+    <string name="widget_votd_accessibility">Verse of the Day, %1$s. %2$s</string>
+    <!-- The large widget's header (shown in capitals). %1$s is the day's theme, e.g. "The LORD is my shepherd". -->
+    <string name="widget_votd_with_theme">Verse of the Day · %1$s</string>
+    <string name="widget_favorites_configure_detail">Rotates through the verses you’ve favorited, highlighted or written notes on.</string>
+    <!-- What the Favorites widget shows: all three kinds of marked verses. -->
+    <string name="widget_source_everything">Favorites, Highlights &amp; Notes</string>
+    <string name="widget_source_favorites">Favorites</string>
+    <string name="widget_source_highlights">Highlights</string>
+    <string name="widget_source_notes">Notes</string>
+    <!-- Accessibility label of the badge on a highlighted verse (noun). -->
+    <string name="widget_badge_highlight">Highlight</string>
+    <!-- Accessibility label of the badge on a favorited verse (noun). -->
+    <string name="widget_badge_favorite">Favorite</string>
+    <!-- Accessibility label of the badge on a verse with a note (noun). -->
+    <string name="widget_badge_note">Note</string>
+    <string name="widget_show_next_verse">Show next verse</string>
+    <string name="widget_empty_highlights">Highlight a verse in Scripture Alone and it will appear here.</string>
+    <string name="widget_empty_notes">Write a note on a passage in Scripture Alone and it will appear here.</string>
+    <string name="widget_empty_favorites">Favorite a verse in Scripture Alone — tap verses, then the heart — and it will appear here.</string>
+
+    <!-- ===== Demo mode (sample notes shown in store screenshots) ===== -->
+    <!-- Sample note shown in store screenshots (demo mode): a sermon on Romans 8. -->
+    <string name="demo_note_romans_title">Sunday sermon: No condemnation</string>
+    <!-- Sample note shown in store screenshots (demo mode). -->
+    <string name="demo_note_romans_body">Life in the Spirit. Verse 1 is the hinge — everything after it flows from “no condemnation.”</string>
+    <!-- Sample note shown in store screenshots (demo mode): a sermon on John 3. -->
+    <string name="demo_note_nicodemus_title">Evening sermon: Born of the Spirit</string>
+    <!-- Sample note shown in store screenshots (demo mode). Keep the line breaks (\n) and bullets. -->
+    <string name="demo_note_nicodemus_body">• Nicodemus comes by night (v. 2)\n• “You must be born anew” — the Spirit’s work, not ours\n• The serpent in the wilderness points to the cross (Numbers 21:8–9)</string>
+
+    <!-- ===== Reader and passage picker ===== -->
+    <!-- Reader: chapter text and chrome -->
+
+    <!-- Shown in place of the chapter when it can't be loaded. %1$s is the technical reason. -->
+    <string name="reader_load_error">Can’t open this chapter.\n%1$s</string>
+    <!-- Accessibility label of the small note marker drawn after a verse that has a note. -->
+    <string name="reader_note_marker">Note</string>
+    <!-- Button in a note marker's popover: opens the note in the Notes panel. -->
+    <string name="reader_open_note">Open Note</string>
+    <!-- Toolbar button (and keyboard shortcut): opens the Notes panel. -->
+    <string name="reader_notes">Notes</string>
+    <!-- Toolbar button (and keyboard shortcut): turns the Study panel on or off. -->
+    <string name="reader_study">Study</string>
+    <!-- Accessibility state of a toggle button: switched on. -->
+    <string name="reader_state_on">On</string>
+    <!-- Accessibility state of a toggle button: switched off. -->
+    <string name="reader_state_off">Off</string>
+    <!-- TalkBack reads this as “Double-tap to …”: what the Study button does. -->
+    <string name="reader_study_action">show cross references and commentary for the verse you tap</string>
+    <!-- Accessibility label of the passage title button. %1$s is the book and chapter, e.g. John 3. -->
+    <string name="reader_go_to_label">Go to passage, currently %1$s</string>
+    <!-- Toolbar button (and keyboard shortcut). -->
+    <string name="reader_previous_chapter">Previous Chapter</string>
+    <!-- Toolbar button (and keyboard shortcut). -->
+    <string name="reader_next_chapter">Next Chapter</string>
+    <!-- Accessibility label of the link to the next chapter at the end of a chapter. %1$s is the book and chapter, e.g. John 4. -->
+    <string name="reader_next_chapter_label">Next chapter, %1$s</string>
+    <!-- Accessibility label of the translation menu button. %1$s is the translation abbreviation, e.g. KJV. -->
+    <string name="reader_translation_label">Translation, %1$s</string>
+    <!-- Translation menu item. -->
+    <string name="reader_compare_translations">Compare Translations…</string>
+    <!-- Translation menu item. -->
+    <string name="reader_manage_translations">Manage Translations…</string>
+    <!-- Accessibility label of the AA button that opens the Appearance sheet. -->
+    <string name="reader_appearance">Appearance</string>
+    <!-- Accessibility label of the check mark beside the chosen menu item. -->
+    <string name="reader_selected">Selected</string>
+
+    <!-- Reader: TalkBack verse reading -->
+
+    <!-- What TalkBack reads for a verse. %1$d is the verse number, %2$s is the verse text. -->
+    <string name="reader_verse_label">Verse %1$d. %2$s</string>
+    <!-- Accessibility state: the verse is marked with a note. -->
+    <string name="reader_state_has_note">Has a note</string>
+    <!-- Accessibility state: the verse is being spoken by Listen right now. -->
+    <string name="reader_state_being_read">Being read aloud</string>
+    <!-- Accessibility state of a verse highlighted in yellow. -->
+    <string name="reader_highlighted_yellow">Highlighted yellow</string>
+    <!-- Accessibility state of a verse highlighted in green. -->
+    <string name="reader_highlighted_green">Highlighted green</string>
+    <!-- Accessibility state of a verse highlighted in blue. -->
+    <string name="reader_highlighted_blue">Highlighted blue</string>
+    <!-- Accessibility state of a verse highlighted in pink. -->
+    <string name="reader_highlighted_pink">Highlighted pink</string>
+    <!-- Accessibility state of a verse highlighted in purple. -->
+    <string name="reader_highlighted_purple">Highlighted purple</string>
+    <!-- TalkBack action on a verse (verb). -->
+    <string name="reader_action_select_verse">Select verse</string>
+    <!-- TalkBack action on a selected verse (verb). -->
+    <string name="reader_action_deselect_verse">Deselect verse</string>
+    <!-- TalkBack long-press action on a verse (verb). -->
+    <string name="reader_action_extend_selection">Extend selection to this verse</string>
+    <!-- TalkBack action: open a footnote. %1$s is the footnote's letter, e.g. a. -->
+    <string name="reader_action_footnote">Footnote %1$s</string>
+    <!-- TalkBack action: open the verse's one note. -->
+    <string name="reader_action_show_note">Show note</string>
+    <!-- TalkBack action: open the verse's notes (more than one). -->
+    <string name="reader_action_show_notes">Show notes</string>
+
+    <!-- Reader: selection bar -->
+
+    <!-- Button: read the selected verses aloud (verb). -->
+    <string name="reader_selection_listen">Listen</string>
+    <!-- Button (and keyboard shortcut): deselect every verse. -->
+    <string name="reader_clear_selection">Clear Selection</string>
+    <!-- Button: highlight the selection in yellow (verb). -->
+    <string name="reader_highlight_yellow">Highlight Yellow</string>
+    <!-- Button: highlight the selection in green (verb). -->
+    <string name="reader_highlight_green">Highlight Green</string>
+    <!-- Button: highlight the selection in blue (verb). -->
+    <string name="reader_highlight_blue">Highlight Blue</string>
+    <!-- Button: highlight the selection in pink (verb). -->
+    <string name="reader_highlight_pink">Highlight Pink</string>
+    <!-- Button: highlight the selection in purple (verb). -->
+    <string name="reader_highlight_purple">Highlight Purple</string>
+    <!-- Button: take the highlight off the selected verses. -->
+    <string name="reader_remove_highlight">Remove Highlight</string>
+    <!-- Button: add the selected verses to Favorites. -->
+    <string name="reader_add_favorite">Add to Favorites</string>
+    <!-- Button: take the selected verses out of Favorites. -->
+    <string name="reader_remove_favorite">Remove from Favorites</string>
+    <!-- Button: write a note on the selected verses. -->
+    <string name="reader_add_note">Add Note</string>
+    <!-- Button: show the selected verse word by word in Hebrew or Greek. -->
+    <string name="reader_original_language">Original Language</string>
+    <!-- Share menu item: opens the verse-image designer. -->
+    <string name="reader_share_image">Share Image…</string>
+    <!-- Share menu item: share the verses as plain text. -->
+    <string name="reader_share_text">Share Text</string>
+    <!-- Share menu item: copy a link to the passage. -->
+    <string name="reader_copy_link">Copy Link</string>
+    <!-- Share menu item: share a link to the passage. -->
+    <string name="reader_share_link">Share Link…</string>
+    <!-- Note in the Share menu when the translation's terms don't allow links. -->
+    <string name="reader_link_not_allowed">Links aren’t available for this translation</string>
+    <!-- Note in the Share menu when the selection is too long to fit in a link. -->
+    <string name="reader_link_too_long">Too long for a link — share the image</string>
+    <!-- Stands in for a translation's abbreviation at the start of the quotation notices below, when it has none. -->
+    <string name="reader_quote_this_translation">This translation</string>
+    <!-- Notice under the selection bar. %1$s is a translation abbreviation, e.g. ESV, or “This translation”. -->
+    <string name="reader_quote_not_allowed">%1$s can’t be quoted outside the app.</string>
+    <!-- Notice under the selection bar. %1$s is a translation abbreviation, e.g. ESV; %2$d is the verse limit. -->
+    <string name="reader_quote_limit_one">%1$s allows up to %2$d verse in one quotation. Select fewer to copy or share.</string>
+    <!-- Notice under the selection bar. %1$s is a translation abbreviation, e.g. ESV; %2$d is the verse limit. -->
+    <string name="reader_quote_limit_other">%1$s allows up to %2$d verses in one quotation. Select fewer to copy or share.</string>
+
+    <!-- Reader: shared passage card -->
+
+    <!-- Button under a passage opened from a shared link: design a verse image from it. -->
+    <string name="reader_make_image">Make Image…</string>
+
+    <!-- Reader: translation download banner -->
+
+    <!-- %1$s is the name of a download, e.g. a Bible translation such as King James Version. -->
+    <string name="reader_downloading">Downloading the %1$s…</string>
+    <!-- %1$s is the name of a download, e.g. a Bible translation such as King James Version. -->
+    <string name="reader_download_failed">Couldn’t download the %1$s</string>
+    <!-- %1$s is a sentence explaining what the download is. -->
+    <string name="reader_download_waiting_for_wifi">Waiting for Wi-Fi. %1$s</string>
+    <!-- Button: download now over mobile data instead of waiting for Wi-Fi. -->
+    <string name="reader_download_now">Download Now</string>
+    <!-- Accessibility value of the download progress bar. %1$d is a whole number from 0 to 100. -->
+    <string name="reader_download_percent">%1$d percent</string>
+
+    <!-- Reader: appearance names -->
+
+    <!-- Reader colour theme name: follows the system's light or dark appearance. -->
+    <string name="reader_theme_auto">Auto</string>
+    <!-- Reader colour theme name -->
+    <string name="reader_theme_light">Light</string>
+    <!-- Reader colour theme name: a warm, paper-brown page -->
+    <string name="reader_theme_sepia">Sepia</string>
+    <!-- Reader colour theme name -->
+    <string name="reader_theme_dark">Dark</string>
+    <!-- Reader colour theme name: pure black page -->
+    <string name="reader_theme_black">Black</string>
+    <!-- Accent colour name (a golden colour) -->
+    <string name="reader_accent_sunrise">Sunrise</string>
+    <!-- Accent colour name (a red-orange colour) -->
+    <string name="reader_accent_ember">Ember</string>
+    <!-- Accent colour name (an olive green) -->
+    <string name="reader_accent_olive">Olive</string>
+    <!-- Accent colour name (a sea green-blue) -->
+    <string name="reader_accent_sea">Sea</string>
+    <!-- Accent colour name (a deep blue) -->
+    <string name="reader_accent_lapis">Lapis</string>
+    <!-- Accent colour name (a purple) -->
+    <string name="reader_accent_plum">Plum</string>
+    <!-- Accent colour name (a dark grey) -->
+    <string name="reader_accent_ink">Ink</string>
+    <!-- Reading layout: text set in paragraphs -->
+    <string name="reader_layout_paragraphs">Paragraphs</string>
+    <!-- Reading layout: each verse on its own line -->
+    <string name="reader_layout_verses">Verse by Verse</string>
+
+    <!-- Reader: keyboard shortcuts (listed in the system's keyboard shortcuts helper) -->
+
+    <string name="reader_shortcut_go_to">Go to Passage</string>
+    <!-- Go back one step in the Study panel's trail. -->
+    <string name="reader_shortcut_study_back">Back in Study</string>
+    <!-- Opens the maps and timeline in Study. -->
+    <string name="reader_shortcut_maps">Maps &amp; Timeline</string>
+    <string name="reader_shortcut_favorite">Add to or Remove from Favorites</string>
+    <string name="reader_shortcut_larger_text">Larger Text</string>
+    <string name="reader_shortcut_smaller_text">Smaller Text</string>
+
+    <!-- Go To sheet (passage picker and search) -->
+
+    <!-- Title of the sheet for going to a passage or searching. -->
+    <string name="nav_title">Go To</string>
+    <!-- Accessibility label of the Go To sheet's text field. -->
+    <string name="nav_field_label">Go to or search</string>
+    <!-- Placeholder in the Go To field: sample references, then words. Keep the references in a form the reader's language would type. -->
+    <string name="nav_field_placeholder">John 3:16, Rom 8, or search words</string>
+    <!-- Section title: recently read chapters. -->
+    <string name="nav_recent">Recent</string>
+    <!-- Section title: recently searched words. -->
+    <string name="nav_recent_searches">Recent Searches</string>
+    <!-- Accessibility label of a recent search. %1$s is the words searched for. -->
+    <string name="nav_search_again">Search again for %1$s</string>
+    <!-- TalkBack's long-press action on a recent search: shows a menu with Remove. -->
+    <string name="nav_show_options">Show options</string>
+    <!-- Section title: the books of the Old Testament. -->
+    <string name="nav_old_testament">Old Testament</string>
+    <!-- Section title: the books of the New Testament. -->
+    <string name="nav_new_testament">New Testament</string>
+    <!-- Count of search results when the search stopped at its limit. %1$d is the limit, e.g. 500. -->
+    <string name="nav_results_capped">%1$d+ verses</string>
+    <!-- Count of search results. %1$d is the number of verses found. -->
+    <string name="nav_results_one">%1$d verse</string>
+    <!-- Count of search results. %1$d is the number of verses found. -->
+    <string name="nav_results_other">%1$d verses</string>
+    <!-- Small caption above a typed reference, on the card that opens it: “Go to / John 3:16”. -->
+    <string name="nav_go_to_card">Go to</string>
+    <!-- Accessibility label of the return-key icon on that card (verb). -->
+    <string name="nav_go">Go</string>
+    <!-- %1$s is a translation abbreviation, e.g. ESV. -->
+    <string name="nav_unsearchable_title">%1$s can’t be searched</string>
+    <string name="nav_unsearchable_message">This translation was packaged without a search index. The BSB and KJV can be searched.</string>
+    <!-- Button: switch to another translation. %1$s is its abbreviation, e.g. KJV. -->
+    <string name="nav_switch_to">Switch to %1$s</string>
+    <!-- %1$s is the words the reader searched for. -->
+    <string name="nav_no_results_title">No Results for “%1$s”</string>
+    <string name="nav_no_results_message">Check the spelling or try a new search.</string>
+    <!-- Accessibility label of a chapter number in a book's chapter grid. %1$s is the book, %2$d the chapter number. -->
+    <string name="nav_chapter_label">%1$s chapter %2$d</string>
+
+    <!-- ===== Translations, notes, favorites, export and import ===== -->
+    <!-- Compare sheet -->
+    <!-- Shown when the other translation’s chapter can’t be read. -->
+    <string name="translations_compare_unavailable">That translation isn\'t available.</string>
+    <string name="translations_compare_empty_title">Nothing to Compare With</string>
+    <string name="translations_compare_empty_message">Add another translation first.</string>
+    <string name="translations_compare_failed_title">Couldn\'t Load That Translation</string>
+    <!-- Accessibility: a verse the other translation doesn’t print. -->
+    <string name="translations_compare_verse_missing">Not in this translation</string>
+    <!-- Accessibility for the translation picker. %1$s and %2$s are translation abbreviations, e.g. BSB, KJV. -->
+    <string name="translations_compare_picker_description">Compare %1$s with %2$s</string>
+    <!-- Accessibility for the translation picker when no second translation is available. %1$s is a translation abbreviation. -->
+    <string name="translations_compare_picker_description_none">Compare %1$s with nothing</string>
+    <!-- Button: pick the second translation to compare with. -->
+    <string name="translations_compare_choose">Choose</string>
+    <!-- Accessibility: the checkmark beside the chosen item in a list. -->
+    <string name="translations_selected">Selected</string>
+
+    <!-- Translations sheet -->
+    <!-- Sheet title. -->
+    <string name="translations_title">Translations</string>
+    <!-- Stands in for a picked file’s name when the system gives none; used in “Reading %1$s…”. -->
+    <string name="translations_import_unnamed_file">that file</string>
+    <!-- %1$s is the system’s error message. -->
+    <string name="translations_import_read_failed">Couldn’t read that file: %1$s</string>
+    <string name="translations_download_failed">The download failed.</string>
+    <string name="translations_add_failed_title">That translation couldn’t be added</string>
+    <string name="translations_remove_title">Remove this translation?</string>
+    <string name="translations_remove_message">Your highlights and notes stay; they’re kept by verse, not by translation.</string>
+    <!-- Accessibility for the delete button beside an added translation. %1$s is the translation’s name. -->
+    <string name="translations_remove_named">Remove %1$s</string>
+    <!-- Section header: the translations that ship with the app. -->
+    <string name="translations_section_included">Included</string>
+    <!-- Section header: translations read over the network. -->
+    <string name="translations_section_online">Online</string>
+    <string name="translations_section_online_footer">These need a connection. What you read is cached up to the publisher\'s limit, and they can\'t be searched offline.</string>
+    <string name="translations_online_note">Read over the network</string>
+    <!-- Section header: translations the reader imported or downloaded. -->
+    <string name="translations_section_added">Added by You</string>
+    <string name="translations_section_add">Add a Translation</string>
+    <string name="translations_section_add_footer">Free translations come from eBible.org, and nothing is downloaded until you choose one. A file can be a USFM zip or an ePub you own — anything copy-protected is refused. The ESV, CSB, NASB and NKJV can\'t be given away by anyone, so they\'re read over the network with your own free key.</string>
+    <string name="translations_browse_free">Browse Free Translations…</string>
+    <string name="translations_import_file">Import a File…</string>
+    <!-- Row that opens the page for the reader’s own API keys. -->
+    <string name="translations_online_keys">Online Translations…</string>
+    <!-- Accessibility: the checkmark beside the translation being read. -->
+    <string name="translations_reading">Reading</string>
+    <string name="translations_about_title">About This Translation</string>
+    <string name="translations_about_expired">This translation\'s licence has expired: its text can be read, but not copied or shared.</string>
+    <string name="translations_about_free">Free to copy and share.</string>
+    <!-- %1$d is the most verses the translation’s licence lets you quote at once. -->
+    <string name="translations_about_limit_one">Copy and share up to %1$d verse at a time, with its notice.</string>
+    <string name="translations_about_limit_other">Copy and share up to %1$d verses at a time, with its notice.</string>
+    <!-- %1$s is the sentence above (“Copy and share up to 500 verses at a time, with its notice.”). -->
+    <string name="translations_about_limit_no_handoff">%1$s Its text isn\'t handed to other apps.</string>
+
+    <!-- Translations: eBible.org catalogue -->
+    <string name="translations_catalog_unreadable">The catalogue couldn\'t be read.</string>
+    <string name="translations_catalog_title">Free Translations</string>
+    <string name="translations_catalog_loading">Asking eBible.org…</string>
+    <string name="translations_catalog_failed_title">Couldn\'t reach eBible.org</string>
+    <!-- Section header over the curated list. -->
+    <string name="translations_catalog_offered">Offered by Scripture Alone</string>
+    <!-- Section header over search results. -->
+    <string name="translations_catalog_results">Results</string>
+    <string name="translations_catalog_footer">Complete Bibles translated from the Hebrew and Greek. Reading in another language? Download a Bible from eBible.org and use Import a File.</string>
+    <!-- %1$s is a language name, %2$s the translation’s scope as eBible.org gives it. -->
+    <string name="translations_catalog_language_scope">%1$s · %2$s</string>
+    <!-- Search field placeholder. -->
+    <string name="translations_catalog_search_placeholder">Language or name</string>
+
+    <!-- Translations: online keys -->
+    <string name="translations_keys_api_bible_unreachable">API.Bible couldn\'t be reached.</string>
+    <string name="translations_keys_title">Online Translations</string>
+    <!-- Accessibility for the key field. %1$s is the provider, e.g. ESV API or API.Bible. -->
+    <string name="translations_keys_field_description">%1$s API key</string>
+    <string name="translations_keys_get_free">Get a free key…</string>
+    <string name="translations_keys_remove">Remove Key</string>
+    <string name="translations_keys_checking">Asking API.Bible what your key can read…</string>
+    <string name="translations_keys_check">Check My Translations</string>
+    <!-- Accessibility: the checkmark beside a translation chosen to add. -->
+    <string name="translations_keys_chosen">Chosen</string>
+    <string name="translations_keys_failed_title">That didn\'t work</string>
+    <!-- Placeholder in the key field. -->
+    <string name="translations_keys_placeholder">API key</string>
+
+    <!-- Translations: import summary -->
+    <!-- Title after a translation is imported. -->
+    <string name="translations_summary_title">Added</string>
+    <!-- Row label. -->
+    <string name="translations_summary_translation">Translation</string>
+    <!-- Row label: the number of books imported. -->
+    <string name="translations_summary_books">Books</string>
+    <!-- Row label: the number of verses imported. -->
+    <string name="translations_summary_verses">Verses</string>
+    <string name="translations_summary_clean">Every book read cleanly.</string>
+    <!-- Section header: books missing chapters or verses. -->
+    <string name="translations_summary_gaps">Gaps</string>
+    <string name="translations_summary_gaps_footer">Some translations genuinely omit verses, and some files are simply incomplete. You can read what imported either way.</string>
+    <!-- %1$s is a list of books or verse references, e.g. “17:36, 23:17”. -->
+    <string name="translations_summary_missing">Not in this file: %1$s</string>
+    <!-- %1$s is a list of the first four verse references; %2$d how many more are missing. -->
+    <string name="translations_summary_missing_more">Not in this file: %1$s and %2$d more</string>
+    <!-- %1$d chapters found of %2$d expected. The plural follows %2$d. -->
+    <string name="translations_gap_chapters_one">%1$d of %2$d chapter</string>
+    <string name="translations_gap_chapters_other">%1$d of %2$d chapters</string>
+    <string name="translations_gap_verses_one">%1$d verse</string>
+    <string name="translations_gap_verses_other">%1$d verses</string>
+    <!-- %1$s is the translation’s name. -->
+    <string name="translations_progress_downloading">Downloading %1$s…</string>
+    <!-- %1$s is the translation’s or file’s name. -->
+    <string name="translations_progress_reading">Reading %1$s…</string>
+    <string name="translations_progress_note">This takes a few seconds for a whole Bible.</string>
+
+    <!-- Notes panel -->
+    <!-- Panel title; also the export title for several notes. -->
+    <string name="notes_title">Notes</string>
+    <!-- Scope tab: every note. -->
+    <string name="notes_scope_all">All Notes</string>
+    <!-- Scope tab: notes on the chapter on screen. -->
+    <string name="notes_scope_chapter">This Chapter</string>
+    <!-- Scope tab: the reader’s favorite passages. -->
+    <string name="notes_scope_favorites">Favorites</string>
+    <!-- Shown when the open note was deleted elsewhere. -->
+    <string name="notes_deleted">Note Deleted</string>
+    <!-- Accessibility: the button that starts a new note. -->
+    <string name="notes_new_note">New Note</string>
+    <!-- Search field placeholder on the Favorites scope. -->
+    <string name="notes_search_favorites">Search favorites or a passage</string>
+    <!-- Search field placeholder. -->
+    <string name="notes_search_notes">Search notes or a passage</string>
+    <string name="notes_empty_title">No Notes Yet</string>
+    <string name="notes_empty_message">Tap verses in the text, then the pencil, to start a note on a passage — or scan this Sunday’s sermon slide.</string>
+    <!-- Empty search results, for notes and favorites. -->
+    <string name="notes_no_matches_title">No Matches</string>
+    <!-- “Rom 8” is an example passage; use your language’s abbreviation for Romans. -->
+    <string name="notes_no_matches_message">Try a word or a passage like Rom 8.</string>
+    <string name="notes_export_all">Export All Notes…</string>
+    <!-- Menu item. %1$d is how many notes the search or scope shows. -->
+    <string name="notes_export_shown_one">Export %1$d Shown…</string>
+    <string name="notes_export_shown_other">Export %1$d Shown…</string>
+    <string name="notes_keepsake_export">Keepsake &amp; Export…</string>
+    <!-- Accessibility: what a long press on a row does. -->
+    <string name="notes_show_options">Show options</string>
+
+    <!-- Note editor -->
+    <string name="notes_share_note">Share Note</string>
+    <!-- Menu item: opens the export sheet for this note. -->
+    <string name="notes_export_menu">Export…</string>
+    <string name="notes_delete_note">Delete Note</string>
+    <!-- Placeholder of the note’s title field. -->
+    <string name="notes_field_title">Title</string>
+    <!-- Section title: the passages a note is attached to. -->
+    <string name="notes_section_passages">Passages</string>
+    <!-- “Rom 8:1-17” is an example; use your language’s abbreviation for Romans. -->
+    <string name="notes_add_passage_placeholder">Add a passage, e.g. Rom 8:1-17</string>
+    <!-- Button: attach the verses selected in the text to this note. -->
+    <string name="notes_add_selection">Add Selection</string>
+    <!-- Section title over the note’s text (noun). -->
+    <string name="notes_section_note">Note</string>
+    <!-- Label beside the date a note was created. -->
+    <string name="notes_created">Created</string>
+    <!-- Label beside the date a note was last edited. -->
+    <string name="notes_edited">Edited</string>
+    <!-- Accessibility: removes a passage from the note. %1$s is the passage, e.g. Romans 8:1–17. -->
+    <string name="notes_remove_passage">Remove %1$s</string>
+    <string name="notes_delete_title">Delete this note?</string>
+    <string name="notes_delete_message">It will be removed from this device.</string>
+
+    <!-- Favorites -->
+    <string name="favorites_empty_title">No Favorites Yet</string>
+    <string name="favorites_empty_message">Tap verses in the text, then the heart, to keep a passage close.</string>
+
+    <!-- Notes export -->
+    <string name="export_title">Export Notes</string>
+    <!-- Header when exporting one note. %1$s is the note’s title. -->
+    <string name="export_header_one_note">Export “%1$s”</string>
+    <!-- Header when exporting several notes. %1$d is how many. -->
+    <string name="export_header_count_one">Export %1$d Note</string>
+    <string name="export_header_count_other">Export %1$d Notes</string>
+    <!-- Export format name. -->
+    <string name="export_format_pdf">PDF</string>
+    <string name="export_format_pdf_detail">Typeset for reading and printing.</string>
+    <!-- Export format name. -->
+    <string name="export_format_markdown">Markdown</string>
+    <string name="export_format_markdown_detail">One file, for note apps and editors.</string>
+    <!-- Export format name: a folder of Markdown files. -->
+    <string name="export_format_markdown_folder">Markdown Folder</string>
+    <string name="export_format_markdown_folder_detail">A file for each note.</string>
+    <!-- Export format name. -->
+    <string name="export_format_plain_text">Plain Text</string>
+    <string name="export_format_plain_text_detail">Simple text that opens anywhere.</string>
+    <!-- Switch label. -->
+    <string name="export_include_verses">Include Verse Text</string>
+    <!-- Picker label: the translation quoted in the export. -->
+    <string name="export_translation">Translation</string>
+    <string name="export_verses_footer">Each note’s passages are quoted above what was written. Very long passages are shortened to their opening verses.</string>
+    <!-- %1$s is a translation abbreviation, e.g. ESV. -->
+    <string name="export_not_allowed_footer">%1$s doesn’t allow its text to be exported. Choose another translation to export your notes with the verses they’re about.</string>
+    <!-- Section header once the export file is prepared. -->
+    <string name="export_ready">Ready</string>
+    <string name="export_share">Share…</string>
+    <string name="export_no_receiver">Nothing on this device can receive it.</string>
+    <string name="export_save_to_files">Save to Files…</string>
+    <string name="export_prepare">Prepare Export</string>
+    <!-- Accessibility: the checkmark beside the chosen format. -->
+    <string name="export_selected">Selected</string>
+    <!-- Accessibility for a picker row. %1$s is its label, %2$s the current choice. -->
+    <string name="export_picker_description">%1$s, %2$s</string>
+    <!-- Heading of an export of someone’s notes when no owner is known. -->
+    <string name="export_notes_title">Notes</string>
+    <!-- Heading of someone’s notes, for a name ending in “s”. %1$s is the owner’s name. -->
+    <string name="export_notes_title_owner_s">%1$s’ Notes</string>
+    <!-- Heading of someone’s notes. %1$s is the owner’s name. -->
+    <string name="export_notes_title_owner">%1$s’s Notes</string>
+    <string name="export_error_prepare">Can’t prepare the export.</string>
+    <string name="export_error_write">Scripture Alone can’t write there.</string>
+    <string name="export_error_not_folder">Not a folder.</string>
+    <string name="export_error_make_folder">Scripture Alone can’t make a folder there.</string>
+    <!-- %1$s is a file name. -->
+    <string name="export_error_write_named">Scripture Alone can’t write %1$s there.</string>
+    <!-- Subtitle of an exported PDF. %1$d is the number of notes, %2$s today’s date. -->
+    <string name="export_pdf_summary_one">%1$d note · %2$s</string>
+    <string name="export_pdf_summary_other">%1$d notes · %2$s</string>
+    <!-- Subtitle of an exported PDF with quoted verses. %1$s is the line above (“2 notes · September 18, 2026”); %2$s is a translation abbreviation, e.g. “KJV”. -->
+    <string name="export_pdf_summary_translation">%1$s · Scripture from the %2$s</string>
+
+    <!-- Notes import -->
+    <string name="import_paste_title">Paste Notes</string>
+    <!-- Example text in the paste field. Keep the “reference — note” shape; the references may use your language’s book names. -->
+    <string name="import_paste_placeholder">John 3:16 — the whole gospel in one verse\n\nRomans 8:28 — not that all things are good</string>
+    <!-- Button: read the pasted text (verb). -->
+    <string name="import_read">Read</string>
+    <string name="import_title">Bring Your Notes</string>
+    <string name="import_failed_title">That didn\'t work</string>
+    <string name="import_from_life_bible">From Life Bible</string>
+    <string name="import_choose_file">Choose a File…</string>
+    <string name="import_life_bible_footer">Life Bible — the app that used to be called Tecarta Bible — can export everything you\'ve written. Your notes, highlights and saved verses come across; nothing is sent anywhere, and the file never leaves your device.</string>
+    <string name="import_from_anywhere">From Anywhere Else</string>
+    <string name="import_paste_from_any_app">Paste Notes From Any App…</string>
+    <string name="import_paste_footer">Paste notes, or a CSV you exported. Each entry needs to start with a reference — “John 3:16” — so it can be attached to the right verse. Anything that doesn\'t name a verse is listed for you rather than guessed at.</string>
+    <string name="import_how_to_title">How to get the file</string>
+    <string name="import_how_to_step_1">Open Life Bible, or sign in at lifebible.com.</string>
+    <!-- Life Bible’s own menu names; translate as Life Bible shows them in your language. -->
+    <string name="import_how_to_step_2">Tap the menu, then Settings.</string>
+    <string name="import_how_to_step_3">Scroll to Advanced and tap “Export your data”.</string>
+    <!-- LifeBibleData.zip is a file name; keep it. -->
+    <string name="import_how_to_step_4">Save LifeBibleData.zip, then choose it above.</string>
+    <string name="import_how_to_warning">Don\'t tap “Delete your account” — it sits just below Export.</string>
+    <string name="import_found_title">Found in this file</string>
+    <string name="import_count_verse_notes">Notes on verses</string>
+    <string name="import_count_journals">Journal entries</string>
+    <string name="import_count_highlights">Highlights</string>
+    <string name="import_count_saved">Saved verses</string>
+    <string name="import_count_already_here">Already here</string>
+    <string name="import_preview_footer">Nothing has been added yet. Importing twice is safe — anything already here is left alone rather than duplicated.</string>
+    <!-- Header. %1$d is how many lines named no verse the app could find. -->
+    <string name="import_unresolved_one">%1$d couldn\'t be placed</string>
+    <string name="import_unresolved_other">%1$d couldn\'t be placed</string>
+    <!-- After the first eight unplaced lines. %1$d is how many more. -->
+    <string name="import_unresolved_more_one">…and %1$d more</string>
+    <string name="import_unresolved_more_other">…and %1$d more</string>
+    <string name="import_unresolved_footer">These name something this app can\'t find a verse for. They\'ll be skipped rather than guessed at, so you can copy them over yourself.</string>
+    <!-- Button. %1$d is how many notes, highlights and saved verses will be added. -->
+    <string name="import_add_items_one">Add %1$d Item</string>
+    <string name="import_add_items_other">Add %1$d Items</string>
+    <string name="import_choose_different">Choose a Different File</string>
+    <string name="import_finished_title">Brought across</string>
+    <string name="import_finished_nothing_title">Nothing new to add</string>
+    <string name="import_finished_footer">They\'re in your notes and highlights now, kept on this device.</string>
+    <string name="import_finished_nothing_footer">Everything in that file was already here.</string>
+
+    <!-- ===== Study ===== -->
+    <!-- Study panel: tabs and viewer tabs -->
+
+    <!-- Study panel tab: other passages linked to the verse. -->
+    <string name="study_tab_cross_references">Cross References</string>
+    <!-- Study panel tab, short form for the segmented control on narrow screens. Keep it short. -->
+    <string name="study_tab_cross_references_short">References</string>
+    <!-- Study panel tab: what old commentators wrote on the verse. -->
+    <string name="study_tab_commentary">Commentary</string>
+    <!-- Study panel tab, short form for the segmented control on narrow screens. Keep it short. -->
+    <string name="study_tab_commentary_short">Commentary</string>
+    <!-- Study panel tab: the verse word by word in Hebrew, Aramaic or Greek. -->
+    <string name="study_tab_original">Original Languages</string>
+    <!-- Study panel tab, short form for the segmented control on narrow screens. Keep it short. -->
+    <string name="study_tab_original_short">Original</string>
+    <!-- Study panel tab: when and where the chapter happened (timeline, map, charts). -->
+    <string name="study_tab_context">Context</string>
+    <!-- Study panel tab, short form for the segmented control on narrow screens. Keep it short. -->
+    <string name="study_tab_context_short">Context</string>
+    <!-- Tab of the Bible context viewer. Keep it short. -->
+    <string name="study_viewer_map">Map</string>
+    <!-- Tab of the Bible context viewer. Keep it short. -->
+    <string name="study_viewer_timeline">Timeline</string>
+    <!-- Tab of the Bible context viewer, and the heading of the charts section. Keep it short. -->
+    <string name="study_viewer_charts">Charts</string>
+
+    <!-- Study panel: header and chrome -->
+
+    <!-- Title of the Study panel. -->
+    <string name="study_title">Study</string>
+    <!-- Accessibility label of the button that closes the Study sheet (phone). -->
+    <string name="study_close">Close Study</string>
+    <!-- Accessibility label of the button that hides the Study side panel (tablet). -->
+    <string name="study_hide">Hide Study</string>
+    <!-- Accessibility label of the info button: opens the list of the sources Study uses. -->
+    <string name="study_about_resources">About Study Resources</string>
+    <!-- Title of the screen listing the sources Study uses. -->
+    <string name="study_resources_title">Study Resources</string>
+    <!-- Title of the credits screen for maps, places, timeline and charts; also the button that opens it. -->
+    <string name="study_sources_credits">Sources &amp; Credits</string>
+    <!-- Title of a chart screen while the chart’s own name hasn’t loaded. -->
+    <string name="study_chart_fallback">Chart</string>
+    <!-- Accessibility label of the back-trail button. %1$s is a verse, e.g. John 3:16. -->
+    <string name="study_back_to">Back to %1$s</string>
+    <!-- Title shown when no verse has been chosen yet. -->
+    <string name="study_tap_verse_title">Tap a Verse</string>
+    <string name="study_tap_verse_body">Tap any verse to see where else Scripture speaks to it, and what the old commentators said about it.</string>
+    <string name="study_resources_intro">Study mode uses only public-domain and openly licensed works. Everything is bundled with the app and works offline; nothing you look up leaves your device.</string>
+    <!-- Row label (noun): a source’s licence, e.g. “License  CC BY 4.0”. -->
+    <string name="study_license">License</string>
+    <!-- Link (noun) to where a dataset comes from. -->
+    <string name="study_source">Source</string>
+
+    <!-- Study: downloadable packs -->
+
+    <!-- %1$s is the name of the download, e.g. Commentary. -->
+    <string name="study_pack_waiting_wifi">Waiting for Wi-Fi to download %1$s</string>
+    <!-- %1$s is the name of the download, e.g. Commentary. -->
+    <string name="study_pack_downloading">Downloading %1$s…</string>
+    <!-- Button: download now over a mobile connection instead of waiting for Wi-Fi. -->
+    <string name="study_pack_download_now">Download Now</string>
+
+    <!-- Study: commentary -->
+
+    <string name="study_commentary_download_failed">Couldn’t Download Commentary</string>
+    <!-- %1$s is a commentary’s short name, e.g. Calvin. -->
+    <string name="study_commentary_nothing_title">Nothing from %1$s Here</string>
+    <!-- %1$s is a commentary’s name; %2$s is a verse, e.g. John 3:16. -->
+    <string name="study_commentary_nothing_body">%1$s doesn’t comment on %2$s.</string>
+    <!-- Button: switch to another commentary. %1$s is its short name, e.g. Gill. -->
+    <string name="study_commentary_read_other">Read %1$s</string>
+    <!-- %1$s is a book and chapter, e.g. Romans 5. -->
+    <string name="study_commentary_introduction">Introduction to %1$s</string>
+
+    <!-- Study: cross references -->
+
+    <string name="study_xref_empty_title">No Cross References</string>
+    <!-- %1$s is a verse, e.g. John 3:16. -->
+    <string name="study_xref_empty_body">Nothing is linked to %1$s yet.</string>
+    <!-- Section header: the most-voted cross references. -->
+    <string name="study_xref_strongest">Strongest</string>
+    <!-- %1$d is the number of references. -->
+    <string name="study_xref_ranked_one">%1$d reference, ranked by how many readers found each one helpful.</string>
+    <!-- %1$d is the number of references. -->
+    <string name="study_xref_ranked_other">%1$d references, ranked by how many readers found each one helpful.</string>
+    <!-- Section header. -->
+    <string name="study_xref_old_testament">Old Testament</string>
+    <!-- Section header. -->
+    <string name="study_xref_new_testament">New Testament</string>
+    <!-- Button. %1$d is the number of references. -->
+    <string name="study_xref_show_all_one">Show All %1$d Reference</string>
+    <!-- Button. %1$d is the number of references. -->
+    <string name="study_xref_show_all_other">Show All %1$d References</string>
+    <!-- TalkBack reads this as the long-press action of a cross reference. -->
+    <string name="study_xref_show_options">Show options</string>
+    <!-- TalkBack reads this as the tap action of a cross reference. %1$s is a passage, e.g. Romans 5:8. -->
+    <string name="study_xref_open_hint">Opens %1$s in the reader</string>
+    <!-- Menu item. %1$s is a passage, e.g. Romans 5:8. -->
+    <string name="study_xref_go_to">Go to %1$s</string>
+    <string name="study_xref_copy_refused">This translation\'s terms don\'t allow copying that passage.</string>
+
+    <!-- Study: original languages -->
+
+    <string name="study_original_download_failed">Couldn’t Download Original Languages</string>
+    <string name="study_original_unavailable">The original-language data isn\'t available.</string>
+    <string name="study_original_no_verse_data">This verse has no original-language data.</string>
+    <string name="study_original_load_failed">The data didn\'t load.</string>
+    <string name="study_original_empty_title">No Original-Language Data</string>
+    <string name="study_original_bsb_note">English shown word-by-word is the Berean Standard Bible\'s, which this data is keyed to.</string>
+    <!-- Section header: credits for the Hebrew and Greek data. -->
+    <string name="study_original_sources">Sources</string>
+    <!-- Small label beside a word that belongs to a psalm’s title (superscription). -->
+    <string name="study_original_superscription">superscription</string>
+
+    <!-- Study: Context tab -->
+
+    <!-- Section heading: when the chapter happened. -->
+    <string name="context_when">When</string>
+    <!-- Section heading: where the chapter happened. -->
+    <string name="context_where">Where</string>
+    <!-- Button, shown when no chart is suggested for this book. -->
+    <string name="context_browse_charts">Browse Charts</string>
+    <!-- Button, shown below the charts suggested for this book. -->
+    <string name="context_all_charts">All Charts</string>
+    <!-- Accessibility. %1$s is a historical era’s name; %2$s is its dates. -->
+    <string name="context_timeline_a11y">Timeline. %1$s, %2$s.</string>
+    <!-- When a chapter’s events happened. %1$s is a book and chapter, e.g. Exodus 12; %2$s is a year, e.g. c. 1446 BC. -->
+    <string name="context_chapter_year">%1$s: %2$s</string>
+    <!-- When a book was written. %1$s is a year, e.g. c. AD 55. -->
+    <string name="context_written">Written %1$s</string>
+    <!-- %1$s is a comma-separated list of historical eras. -->
+    <string name="context_also_spans">Also spans: %1$s</string>
+    <!-- Accessibility label of the mark beside a disputed date. -->
+    <string name="context_date_debated">Date debated</string>
+    <!-- %1$s is a book and chapter, e.g. Romans 5. -->
+    <string name="context_no_places">No places are named in %1$s.</string>
+    <!-- Button. -->
+    <string name="context_open_map">Open the Map</string>
+    <!-- Accessibility label of the button that opens the full-size map. -->
+    <string name="context_open_large_map">Open Large Map</string>
+    <!-- %1$s is a verse number. -->
+    <string name="context_place_verses_one">Verse %1$s</string>
+    <!-- %1$s is a comma-separated list of verse numbers. -->
+    <string name="context_place_verses_other">Verses %1$s</string>
+    <!-- Appended to a place’s location confidence, e.g. “Likely location · approximate area”. -->
+    <string name="context_approximate_area">approximate area</string>
+    <!-- Placeholder of the map’s search field. -->
+    <string name="context_find_place">Find a place</string>
+    <!-- A search result. %1$d is how many verses mention the place. -->
+    <string name="context_place_mentions_one">%1$d verse</string>
+    <!-- A search result. %1$d is how many verses mention the place. -->
+    <string name="context_place_mentions_other">%1$d verses</string>
+    <!-- A search result. %1$s is the modern name of the site; %2$d is how many verses mention the place. -->
+    <string name="context_place_mentions_modern_one">%1$s · %2$d verse</string>
+    <!-- A search result. %1$s is the modern name of the site; %2$d is how many verses mention the place. -->
+    <string name="context_place_mentions_modern_other">%1$s · %2$d verses</string>
+    <string name="context_timeline_footnote">Dates before the divided kingdom are approximate; ? marks dates that scholars dispute. Sources are listed under Sources &amp; Credits.</string>
+    <!-- On the era the chapter belongs to. %1$s is a book and chapter, e.g. Exodus 12; %2$s is a year, e.g. c. 1446 BC. -->
+    <string name="context_era_chapter_year">%1$s — %2$s</string>
+    <!-- On the era the chapter belongs to. %1$s is a book and chapter, e.g. Genesis 1. -->
+    <string name="context_era_chapter_set_here">%1$s is set here</string>
+    <!-- Button: shows why an era’s dates are approximate or disputed. -->
+    <string name="context_about_dates">About these dates</string>
+    <!-- Section header: the charts for the current book. %1$s is a book name, e.g. Acts. -->
+    <string name="context_charts_for_book">For %1$s</string>
+    <!-- Section header: the charts not specific to the current book. -->
+    <string name="context_more_charts">More Charts</string>
+    <!-- Accessibility label of a link to a passage. %1$s is a passage, e.g. Genesis 29:32. -->
+    <string name="context_read_passage">Read %1$s</string>
+
+    <!-- Study: a place -->
+
+    <!-- Row label: the modern site the biblical place is identified with. -->
+    <string name="context_place_identified_with">Identified with</string>
+    <!-- Row label: the kind of place, e.g. Settlement. -->
+    <string name="context_place_type">Type</string>
+    <!-- Row label: how confidently the place’s location is known. -->
+    <string name="context_place_confidence">Confidence</string>
+    <string name="context_place_alternatives_one">One other location has been proposed.</string>
+    <!-- %1$d is how many other locations have been proposed. -->
+    <string name="context_place_alternatives_other">%1$d other locations have been proposed.</string>
+    <!-- Link to the place’s page on OpenBible.info (a website name; keep it). -->
+    <string name="context_place_evidence">Evidence at OpenBible.info</string>
+    <!-- Section header. %1$s is a book name; %2$d is how many of its verses mention the place. -->
+    <string name="context_place_book_count">%1$s (%2$d)</string>
+    <!-- How confidently a biblical place’s location is known. -->
+    <string name="context_confidence_identified">Identified</string>
+    <!-- How confidently a biblical place’s location is known. -->
+    <string name="context_confidence_likely">Likely location</string>
+    <!-- How confidently a biblical place’s location is known. -->
+    <string name="context_confidence_uncertain">Uncertain location</string>
+
+    <!-- Study: years -->
+
+    <!-- An approximate year before Christ. %1$d is the year. -->
+    <string name="context_year_approx_bc">c. %1$d BC</string>
+    <!-- A year before Christ. %1$d is the year. -->
+    <string name="context_year_bc">%1$d BC</string>
+    <!-- An approximate year after Christ. %1$d is the year. -->
+    <string name="context_year_approx_ad">c. AD %1$d</string>
+    <!-- A year after Christ. %1$d is the year. -->
+    <string name="context_year_ad">AD %1$d</string>
+
+    <!-- Study: Sources & Credits for the context -->
+
+    <string name="context_credits_intro">Study context works entirely offline. Nothing about what you read is sent anywhere; the one exception is a link you choose to open.</string>
+    <!-- Section header. -->
+    <string name="context_credits_places">Places</string>
+    <!-- Credit for a data source. -->
+    <string name="context_credits_openbible_detail">Places named in the Bible, their most likely locations, confidence scores and the verses that mention them. By Stephen Smith, OpenBible.info. Licensed CC BY 4.0. Used unmodified except for choosing each place’s most confident identification.</string>
+    <!-- Credit for a data source. -->
+    <string name="context_credits_osm_detail">A few site coordinates in the OpenBible data come from OpenStreetMap. © OpenStreetMap contributors, available under the Open Database License.</string>
+    <!-- Section header. -->
+    <string name="context_credits_base_map">Base map</string>
+    <!-- Credit for a data source. -->
+    <string name="context_credits_natural_earth_detail">Coastlines, land, lakes and rivers at 1:10 million, clipped to the lands of the Bible and simplified. Public domain. Modern reservoirs and canals are left out.</string>
+    <!-- Section header. -->
+    <string name="context_credits_timeline">Timeline and charts</string>
+    <!-- Credit for a data source in Sources & Credits. -->
+    <string name="context_credits_written_for">Written for Scripture Alone</string>
+    <!-- Credit for a data source. -->
+    <string name="context_credits_written_detail">Eras, events, and the kings, journeys, tribes and feasts charts were compiled for this app from the biblical text and standard chronologies. Many dates are approximate and some are disputed; the app notes where.</string>
+    <string name="context_credits_agpl">Scripture Alone is free software under the GNU AGPL. The full list of sources, versions and checksums is in docs/context-sources.md in the source code.</string>
+
+    <!-- Study: the map -->
+
+    <!-- Accessibility description of the map when no places are pinned. -->
+    <string name="map_summary_empty">Map of the lands of the Bible.</string>
+    <!-- Accessibility description of the map. %1$s is a list of place names. -->
+    <string name="map_summary">Map showing %1$s.</string>
+    <!-- Accessibility: ends a list of place names on a map. %1$s is the comma-separated list; %2$d is how many more places are pinned. -->
+    <string name="map_summary_more_one">%1$s, and %2$d more</string>
+    <!-- Accessibility: ends a list of place names on a map. %1$s is the comma-separated list; %2$d is how many more places are pinned. -->
+    <string name="map_summary_more_other">%1$s, and %2$d more</string>
+    <!-- Accessibility label of a map button. -->
+    <string name="map_zoom_in">Zoom In</string>
+    <!-- Accessibility label of a map button. -->
+    <string name="map_zoom_out">Zoom Out</string>
+    <!-- Accessibility label of a map button: zooms to fit every pinned place. -->
+    <string name="map_show_all_places">Show All Places</string>
+
+    <!-- Study: charts -->
+
+    <!-- Verdict on a king of Israel or Judah. -->
+    <string name="chart_verdict_good">Did right</string>
+    <!-- Verdict on a king of Israel or Judah. -->
+    <string name="chart_verdict_evil">Did evil</string>
+    <!-- Verdict on a king of Israel or Judah. -->
+    <string name="chart_verdict_mixed">Mixed</string>
+    <!-- The united monarchy of Israel under Saul, David and Solomon. -->
+    <string name="chart_kings_united">United Kingdom</string>
+    <!-- The northern kingdom. -->
+    <string name="chart_kings_israel_north">Israel (north)</string>
+    <!-- The southern kingdom. -->
+    <string name="chart_kings_judah_south">Judah (south)</string>
+    <!-- The kingdom of Israel (a segmented-control label; keep it short). -->
+    <string name="chart_kings_israel">Israel</string>
+    <!-- The southern kingdom (a segmented-control label; keep it short). -->
+    <string name="chart_kings_judah">Judah</string>
+    <!-- How long a king reigned. %1$d is a number of years. -->
+    <string name="chart_king_years_one">%1$d year</string>
+    <!-- How long a king reigned. %1$d is a number of years. -->
+    <string name="chart_king_years_other">%1$d years</string>
+    <!-- Accessibility for a king. %1$s name, %2$s kingdom, %3$s reign dates, %4$s length of reign, %5$s the verdict (e.g. Did right). -->
+    <string name="chart_king_a11y">%1$s, %2$s, %3$s, %4$s. %5$s.</string>
+    <!-- Accessibility, appended to a king’s description when the reader is in his account. -->
+    <string name="chart_king_current">The chapter you are reading.</string>
+    <!-- Short name of one of Paul’s missionary journeys (segmented control). -->
+    <string name="chart_journey_first">1st</string>
+    <!-- Short name of one of Paul’s missionary journeys (segmented control). -->
+    <string name="chart_journey_second">2nd</string>
+    <!-- Short name of one of Paul’s missionary journeys (segmented control). -->
+    <string name="chart_journey_third">3rd</string>
+    <!-- Short name of Paul’s journey to Rome (segmented control). -->
+    <string name="chart_journey_rome">Rome</string>
+    <string name="chart_tribes_note">Label positions mark the approximate center of each allotment (Joshua 13–19).</string>
+    <!-- A tribe’s founder as a son of Jacob. %1$d is his birth order; %2$s is his mother’s name. -->
+    <string name="chart_tribe_son">Son %1$d · %2$s</string>
+    <!-- Link to the passage recording a tribe’s founder’s birth. -->
+    <string name="chart_tribe_birth">Birth</string>
+    <!-- Link to Jacob’s blessing of the tribe (Genesis 49). -->
+    <string name="chart_tribe_jacob_blessing">Jacob’s blessing</string>
+    <!-- Link to Moses’ blessing of the tribe (Deuteronomy 33). -->
+    <string name="chart_tribe_moses_blessing">Moses’ blessing</string>
+    <!-- Link to the passage allotting the Levites’ cities. -->
+    <string name="chart_tribe_cities">Cities</string>
+    <!-- Link to the passage allotting a tribe’s land. -->
+    <string name="chart_tribe_land">Land</string>
+    <!-- Season. -->
+    <string name="chart_feast_spring">Spring</string>
+    <!-- Season. -->
+    <string name="chart_feast_autumn">Autumn</string>
+    <!-- One of the three feasts every man went to Jerusalem for. -->
+    <string name="chart_feast_pilgrim">Pilgrim feast</string>
+    <!-- A feast instituted after the Law, e.g. Purim. -->
+    <string name="chart_feast_later">Later feast</string>
+    <!-- Heading over a New Testament passage traditionally linked to the feast (shown uppercase). -->
+    <string name="chart_feast_often_connected">Often connected with</string>
+    <!-- Heading over the feast’s appearance in the New Testament (shown uppercase). -->
+    <string name="chart_feast_in_nt">In the New Testament</string>
+
+    <!-- ===== Keepsake, sharing, camera notes and appearance ===== -->
+    <!-- ===== Keepsake: shared wording (KeepsakeBuilder.kt) ===== -->
+
+    <!-- The months a keepsake's marks span, e.g. "March 2019 to September 2026". %1$s and %2$s are a month and year. -->
+    <string name="keepsake_date_span">%1$s to %2$s</string>
+    <!-- Part of a keepsake's summary line: "412 highlights · 38 notes · 2019–2026 · read in the ASV". -->
+    <string name="keepsake_count_highlights_one">%1$d highlight</string>
+    <string name="keepsake_count_highlights_other">%1$d highlights</string>
+    <string name="keepsake_count_notes_one">%1$d note</string>
+    <string name="keepsake_count_notes_other">%1$d notes</string>
+    <!-- Part of a keepsake's summary line. %1$s is a translation abbreviation, e.g. ASV. -->
+    <string name="keepsake_read_in">read in the %1$s</string>
+    <!-- After making a Keepsake Bible. %1$s is the file name, e.g. "Dad’s Bible.scripturelegacy". -->
+    <string name="keepsake_ready">%1$s is ready. It’s a snapshot of today; make a new one whenever you like, and it will replace the older copy when your family opens it.</string>
+    <!-- After making a passphrase-protected Keepsake Bible. %1$s is the file name, e.g. "Dad’s Bible.scripturelegacy". -->
+    <string name="keepsake_ready_protected">%1$s is ready, protected with your passphrase. It’s a snapshot of today; make a new one whenever you like, and it will replace the older copy when your family opens it.</string>
+    <!-- Error when a received keepsake can’t be stored on the device. -->
+    <string name="keepsake_library_cant_keep">Can’t keep this keepsake on the device.</string>
+    <!-- Field placeholder for a keepsake’s passphrase. -->
+    <string name="keepsake_passphrase">Passphrase</string>
+
+    <!-- ===== Keepsake: Create a Keepsake (KeepsakeCreateSheet.kt) ===== -->
+
+    <!-- Screen title and button: make a Keepsake Bible. -->
+    <string name="keepsake_create_a_keepsake">Create a Keepsake</string>
+    <string name="keepsake_create_intro">A Keepsake Bible is a copy of your highlights and notes that your family can open in Scripture Alone and read as you marked it — the way a well-worn Bible gets passed down. It’s a single file you keep and give however you like: Quick Share, Messages, a USB drive, or with your papers.</string>
+    <!-- Section header: the details that come from the person making the keepsake. -->
+    <string name="keepsake_create_section_from_you">From You</string>
+    <!-- Placeholder for the keepsake owner’s name. -->
+    <string name="keepsake_create_name_placeholder">Your name, as family knows you</string>
+    <!-- Label: a few words that open the keepsake. -->
+    <string name="keepsake_create_dedication">Dedication</string>
+    <!-- Label: which Bible translation the keepsake opens in. -->
+    <string name="keepsake_create_translation">Translation</string>
+    <string name="keepsake_create_dedication_footer">The dedication opens their copy — a few words to whoever reads it next. The translation is the one it opens in.</string>
+    <!-- Section header: what the keepsake will contain. -->
+    <string name="keepsake_create_section_included">What’s Included</string>
+    <!-- Row label, followed by a count. -->
+    <string name="keepsake_create_highlights">Highlights</string>
+    <!-- Row label, followed by a count. -->
+    <string name="keepsake_create_notes">Notes</string>
+    <!-- Row label: the months the highlights and notes were made in, e.g. "March 2019 to September 2026". -->
+    <string name="keepsake_create_from">From</string>
+    <!-- Section header. -->
+    <string name="keepsake_create_section_privacy">Privacy</string>
+    <!-- Switch label. -->
+    <string name="keepsake_create_protect">Protect with a Passphrase</string>
+    <string name="keepsake_create_hint_placeholder">Hint (optional, shown to anyone)</string>
+    <string name="keepsake_create_protect_footer_on">Write the passphrase down exactly as shown and keep it with the file — for example, with your will. Without it, no one can open this keepsake: not your family, and not us. There is no reset.</string>
+    <string name="keepsake_create_protect_footer_off">Without a passphrase, anyone who has the file can read it, like a Bible on a shelf. That’s usually what you want for family. Add one if the file might travel somewhere less private.</string>
+    <!-- Button: hand the keepsake file to the share sheet. -->
+    <string name="keepsake_create_share">Share…</string>
+    <!-- Button: save the keepsake file with the system file picker. -->
+    <string name="keepsake_create_save_to_files">Save to Files…</string>
+    <string name="keepsake_create_no_receiver">Nothing on this device can receive it.</string>
+    <!-- Button: make the keepsake file. -->
+    <string name="keepsake_create_button">Create Keepsake</string>
+    <string name="keepsake_create_protecting">Protecting with your passphrase…</string>
+
+    <!-- ===== Keepsake: opening a keepsake file (KeepsakeImportSheet.kt) ===== -->
+
+    <!-- Sheet title. -->
+    <string name="keepsake_import_title">Keepsake Bible</string>
+    <string name="keepsake_import_protected_title">This keepsake is protected</string>
+    <string name="keepsake_import_protected_body">Whoever made it chose a passphrase so only family could open it. It may be written down with the file, or with their papers.</string>
+    <!-- Row label: the passphrase hint the keepsake’s maker left. -->
+    <string name="keepsake_import_hint">Hint</string>
+    <string name="keepsake_import_opening">Opening with the passphrase…</string>
+    <!-- Button: keep the received keepsake on this device. -->
+    <string name="keepsake_import_add">Add to My Library</string>
+    <string name="keepsake_import_ready_footer">Kept on this device, separate from your own highlights and notes. It’s read-only; nothing in it can be changed.</string>
+    <!-- Button. %1$s is the keepsake’s title, e.g. "Dad’s Bible". -->
+    <string name="keepsake_import_open_named">Open %1$s</string>
+    <!-- %1$s is a date. -->
+    <string name="keepsake_import_replaced">This replaced the copy from %1$s.</string>
+    <string name="keepsake_import_find_again">You’ll find it again under Appearance → Keepsake &amp; Export.</string>
+    <string name="keepsake_import_failed_title">Can’t Open This Keepsake</string>
+
+    <!-- ===== Keepsake: reading one (LegacyReadingViews.kt) ===== -->
+
+    <!-- Banner while reading someone’s keepsake. %1$s is its title, e.g. "Dad’s Bible". -->
+    <string name="keepsake_banner_reading">Reading %1$s</string>
+    <!-- Accessibility action on the banner’s dedication. -->
+    <string name="keepsake_banner_show_less">Show less</string>
+    <!-- Accessibility action on the banner’s dedication. -->
+    <string name="keepsake_banner_show_dedication">Show the whole dedication</string>
+    <string name="keepsake_banner_read_only">Read-only keepsake</string>
+    <!-- Accessibility label of the My Bible button. -->
+    <string name="keepsake_banner_return">Return to My Bible</string>
+    <!-- Button: leave the keepsake and go back to the reader’s own Bible. -->
+    <string name="keepsake_banner_my_bible">My Bible</string>
+    <!-- Segmented control: show every note. -->
+    <string name="keepsake_notes_scope_all">All Notes</string>
+    <!-- Segmented control: show only notes on the current chapter. -->
+    <string name="keepsake_notes_scope_chapter">This Chapter</string>
+    <!-- Panel title. -->
+    <string name="keepsake_notes_title">Notes</string>
+    <!-- Accessibility label of the export button. -->
+    <string name="keepsake_notes_export">Export Notes</string>
+    <string name="keepsake_notes_search_placeholder">Search these notes</string>
+    <!-- %1$s is the keepsake’s title, e.g. "Dad’s Bible". -->
+    <string name="keepsake_notes_read_only">%1$s · read-only</string>
+    <string name="keepsake_notes_empty_title">No Notes Here</string>
+    <string name="keepsake_notes_no_matches">No Matches</string>
+    <string name="keepsake_notes_empty_chapter">There are no notes on this chapter.</string>
+    <string name="keepsake_notes_try_another_word">Try another word.</string>
+    <!-- Accessibility label after a note was copied. -->
+    <string name="keepsake_note_copied">Copied</string>
+    <!-- Accessibility label of the copy button. -->
+    <string name="keepsake_note_copy">Copy Note</string>
+
+    <!-- ===== Keepsake & Export (LegacySettingsSheet.kt) ===== -->
+
+    <!-- Sheet title, and the row in Appearance that opens it. -->
+    <string name="keepsake_settings_title">Keepsake &amp; Export</string>
+    <!-- Section header. -->
+    <string name="keepsake_settings_section_yours">Your Keepsake Bible</string>
+    <string name="keepsake_settings_give_footer">Give your family a copy of your highlights and notes — a digital version of the Bible you’ve marked over the years. It’s a file you hand over yourself; nothing is sent anywhere.</string>
+    <!-- Section header. -->
+    <string name="keepsake_settings_section_given">Keepsakes You’ve Been Given</string>
+    <!-- Button: pick a keepsake file. -->
+    <string name="keepsake_settings_open_file">Open a Keepsake File…</string>
+    <string name="keepsake_settings_given_footer_empty">When someone gives you a Keepsake Bible, open the file here — or tap it in Messages, Gmail or Files. It stays on this device, apart from your own notes.</string>
+    <string name="keepsake_settings_given_footer">Tap one to read it. Their highlights and notes appear in the text, just as they left them. Touch and hold for more.</string>
+    <!-- Section header. -->
+    <string name="keepsake_settings_section_elsewhere">Coming From Somewhere Else</string>
+    <!-- Button: import notes from another Bible app. -->
+    <string name="keepsake_settings_bring_notes">Bring Notes From Another App…</string>
+    <!-- "Life Bible" and "Tecarta Bible" are app names. -->
+    <string name="keepsake_settings_bring_notes_footer">If you’ve been reading in Life Bible — the app formerly called Tecarta Bible — your notes, highlights and saved verses can come with you.</string>
+    <!-- Section header (noun). -->
+    <string name="keepsake_settings_section_export">Export</string>
+    <!-- Button. -->
+    <string name="keepsake_settings_export_all">Export All Notes…</string>
+    <!-- Title of an exported document of the reader’s own notes. -->
+    <string name="keepsake_settings_export_title">Notes</string>
+    <string name="keepsake_settings_export_footer">Your notes as a PDF to print or keep, as Markdown, or as plain text — with the verses they’re about.</string>
+    <!-- %1$s is a translation abbreviation, e.g. ESV. -->
+    <string name="keepsake_settings_export_not_allowed">%1$s doesn’t allow its text to be exported. Switch to another translation to export your notes with the verses they’re about.</string>
+    <!-- Section header. -->
+    <string name="keepsake_settings_section_how">How This Works</string>
+    <string name="keepsake_settings_how_snapshot">A keepsake is a snapshot. Notes you write afterwards aren’t in it — when you’d like your family to have them, make a new keepsake. Opening a newer one replaces the older copy on their device.</string>
+    <string name="keepsake_settings_how_files">Keepsakes are ordinary files: a ZIP archive of readable text. Even without this app, the words stay recoverable.</string>
+    <!-- Dialog title. %1$s is the keepsake’s title, e.g. "Dad’s Bible". -->
+    <string name="keepsake_remove_title">Remove %1$s?</string>
+    <string name="keepsake_remove_message">The keepsake will be removed from this device. If you want it again later, you’ll need the original file.</string>
+    <!-- Destructive dialog button. -->
+    <string name="keepsake_remove_confirm">Remove from This Device</string>
+    <!-- Accessibility label of a keepsake row’s long-press action. -->
+    <string name="keepsake_row_show_options">Show options</string>
+    <!-- Badge on the keepsake being read right now (an adjective: "currently open"). -->
+    <string name="keepsake_row_open_badge">Open</string>
+    <!-- Menu item: share the stored keepsake file. -->
+    <string name="keepsake_row_share_copy">Share a Copy</string>
+    <!-- Menu item: remove the keepsake (asks first). -->
+    <string name="keepsake_row_remove">Remove…</string>
+    <!-- When a keepsake was made. %1$s is a date. -->
+    <string name="keepsake_row_made">made %1$s</string>
+
+    <!-- ===== Share image designer (ShareStyle.kt, ShareDesigner.kt, ShareExport.kt) ===== -->
+
+    <!-- Verse-card template names. -->
+    <string name="share_template_parchment">Parchment</string>
+    <string name="share_template_ink">Ink</string>
+    <string name="share_template_dawn">Dawn</string>
+    <string name="share_template_night">Night</string>
+    <string name="share_template_linen">Linen</string>
+    <string name="share_template_stone">Stone</string>
+    <string name="share_template_olive">Olive</string>
+    <string name="share_template_minimal">Minimal</string>
+    <!-- Card shape: 1:1. -->
+    <string name="share_aspect_square">Square</string>
+    <!-- Card shape: tall, as for a social-media story. -->
+    <string name="share_aspect_story">Story</string>
+    <!-- Card shape: landscape. -->
+    <string name="share_aspect_wide">Wide</string>
+    <!-- Text alignment: left-aligned. -->
+    <string name="share_alignment_leading">Left</string>
+    <!-- Text alignment: centered. -->
+    <string name="share_alignment_center">Centered</string>
+    <!-- %1$d verses shown out of %2$d selected; %3$s is the reference shown, e.g. "John 3:16–20". -->
+    <string name="share_trim_note">A card holds %1$d of these %2$d verses, so it shows %3$s. Select fewer verses, or share the text for the whole passage.</string>
+    <string name="share_error_prepare">Can’t prepare the image.</string>
+    <string name="share_error_encode">Can’t encode the image.</string>
+    <string name="share_error_photos">Scripture Alone can’t add to your photo library.</string>
+    <string name="share_error_make">Can’t make the image.</string>
+    <!-- Title of the share-image screen, and its share button’s accessibility label. -->
+    <string name="share_image">Share Image</string>
+    <!-- Switch: show the words of Christ in red on the card. -->
+    <string name="share_red_letters">Words of Christ in red</string>
+    <!-- Switch. -->
+    <string name="share_verse_numbers">Verse numbers</string>
+    <!-- Switch: print "Scripture Alone" on the card. -->
+    <string name="share_wordmark">Scripture Alone wordmark</string>
+    <string name="share_made_on_device">Text sizes itself to fit. Made on this device — nothing is uploaded.</string>
+    <!-- Button. -->
+    <string name="share_save_to_photos">Save to Photos</string>
+    <string name="share_saved_to_photos">Saved to Photos</string>
+    <!-- Button. -->
+    <string name="share_share_link">Share Link</string>
+    <!-- Button. -->
+    <string name="share_copy_link">Copy Link</string>
+    <string name="share_link_copied">Link copied</string>
+    <string name="share_link_explainer">The link carries the verse itself, so the card rebuilds in any browser. No server stores it.</string>
+    <string name="share_link_too_long">This passage is too long for a link — share the image or the text instead.</string>
+    <string name="share_link_not_allowed">Links aren’t available for this translation — share the image instead.</string>
+    <!-- Accessibility label of the card preview. %1$s is the reference, e.g. "John 3:16"; %2$s is the template name, e.g. "Parchment". -->
+    <string name="share_preview_description">Preview: %1$s, %2$s</string>
+    <!-- Row label: the card’s font. -->
+    <string name="share_typeface">Typeface</string>
+    <!-- Accessibility label. %1$s is a font name, e.g. "Source Serif 4". -->
+    <string name="share_typeface_description">Typeface, %1$s</string>
+    <!-- Under an open-licensed font’s name: the iPhone font it stands in for. %1$s is a font name, e.g. "New York". -->
+    <string name="share_font_for">For %1$s</string>
+    <!-- Accessibility label of the check mark on the chosen option. -->
+    <string name="share_selected">Selected</string>
+
+    <!-- ===== Camera: scanning a sermon slide (SlideCapture.kt, SlideScanner.kt, SlideReviewSheet.kt, SlidePhotoSection.kt) ===== -->
+
+    <string name="camera_not_an_image">That file doesn’t look like an image.</string>
+    <!-- Button in a note: add a slide photo’s text to it. -->
+    <string name="camera_add_from_camera">Add from Camera</string>
+    <!-- Button in the Notes panel: photograph a sermon slide. -->
+    <string name="camera_scan_slide">Scan Slide</string>
+    <!-- Menu item. -->
+    <string name="camera_take_photo">Take Photo of Slide</string>
+    <!-- Menu item and button. -->
+    <string name="camera_choose_from_photos">Choose from Photos</string>
+    <!-- Menu item. -->
+    <string name="camera_choose_file">Choose Image File…</string>
+    <!-- Menu item. -->
+    <string name="camera_paste_image">Paste Image</string>
+    <string name="camera_no_clipboard_image">There’s no image on the clipboard.</string>
+    <string name="camera_image_unreadable">That image couldn’t be read.</string>
+    <string name="camera_photo_unopenable">That photo couldn’t be opened.</string>
+    <string name="camera_file_unopenable">That file couldn’t be opened.</string>
+    <!-- Alert title. -->
+    <string name="camera_failure_title">Couldn’t Use That Image</string>
+    <!-- Section title in the note editor. -->
+    <string name="camera_slide_photo">Slide Photo</string>
+    <!-- Accessibility description of the kept photo. -->
+    <string name="camera_slide_photo_description">Photo of the sermon slide</string>
+    <!-- Button: remove the kept photo from the note. -->
+    <string name="camera_remove_photo">Remove Photo</string>
+    <string name="camera_scanner_instructions">Point at the slide. Tap any highlighted text or the shutter.</string>
+    <!-- Accessibility label of the shutter button. -->
+    <string name="camera_take_photo_description">Take photo of slide</string>
+    <string name="camera_access_off_title">Camera Access Is Off</string>
+    <string name="camera_access_off_message">Scripture Alone reads slides on your phone and never uploads them. Turn on camera access in Settings, or choose a photo you’ve already taken.</string>
+    <!-- Button: open the app’s system settings. -->
+    <string name="camera_open_settings">Open Settings</string>
+    <!-- Spoken once a slide is read. %1$s is the list of what was found, e.g. "Title: Grace, 2 passages, 5 other lines". -->
+    <string name="camera_announce_slide_read">Slide read. %1$s</string>
+    <!-- Part of the spoken summary. %1$s is the slide’s title. -->
+    <string name="camera_announce_title">Title: %1$s</string>
+    <!-- Part of the spoken summary. -->
+    <string name="camera_announce_passages_one">%1$d passage</string>
+    <string name="camera_announce_passages_other">%1$d passages</string>
+    <!-- Part of the spoken summary: lines of text other than the title and passages. -->
+    <string name="camera_announce_lines_one">%1$d other line</string>
+    <string name="camera_announce_lines_other">%1$d other lines</string>
+    <string name="camera_read_failed">The text on this photo couldn’t be read. You can still type a title and passages.</string>
+    <!-- Sheet title and save button when adding the slide to an existing note. -->
+    <string name="camera_add_to_note">Add to Note</string>
+    <!-- Sheet title when the slide starts a new note. -->
+    <string name="camera_new_note">New Note</string>
+    <!-- Save button when the slide starts a new note. -->
+    <string name="camera_create_note">Create Note</string>
+    <!-- Accessibility description of the slide photo being reviewed. -->
+    <string name="camera_photo_of_slide">Photo of the slide</string>
+    <!-- Switch. -->
+    <string name="camera_keep_photo">Keep this photo with the note</string>
+    <string name="camera_photo_kept_footer">The photo is saved with the note, on this device.</string>
+    <string name="camera_photo_discarded_footer">The photo was read on this device and will be discarded — only the text below is kept.</string>
+    <string name="camera_reading_slide">Reading the slide…</string>
+    <!-- Section title and placeholder: a heading added inside an existing note. -->
+    <string name="camera_heading">Heading</string>
+    <!-- Section title and placeholder: a new note’s title. -->
+    <string name="camera_title">Title</string>
+    <!-- Accessibility label of the heading field. -->
+    <string name="camera_heading_label">Heading added to the note</string>
+    <!-- Accessibility label of the title field. -->
+    <string name="camera_title_label">Note title</string>
+    <string name="camera_heading_footer">Added above this slide’s lines. Leave it empty to add just the lines.</string>
+    <string name="camera_no_title_footer">No title was found — type one, or the first passage will name the note.</string>
+    <!-- Section title. -->
+    <string name="camera_passages">Passages</string>
+    <!-- Placeholder; "John 10:11" is an example Bible reference. -->
+    <string name="camera_add_passage_placeholder">Add a passage, e.g. John 10:11</string>
+    <!-- Accessibility label of the passage field. -->
+    <string name="camera_add_passage">Add a passage</string>
+    <string name="camera_no_passages">No passages were found on the slide.</string>
+    <!-- Section title when adding to an existing note. -->
+    <string name="camera_add_these_lines">Add these lines</string>
+    <!-- Section title for a new note’s opening lines. -->
+    <string name="camera_start_note_with">Start the note with</string>
+    <string name="camera_nothing_else">Nothing else was on the slide.</string>
+    <!-- Row label: which note the slide is saved to. -->
+    <string name="camera_save_to">Save to</string>
+    <!-- Choice: save the slide as a new note. -->
+    <string name="camera_a_new_note">A new note</string>
+    <!-- Accessibility action on a passage chip. -->
+    <string name="camera_remove_passage">Remove</string>
+    <!-- Accessibility state of a slide line: it will be saved. -->
+    <string name="camera_line_included">Included</string>
+    <!-- Accessibility state of a slide line: it won’t be saved. -->
+    <string name="camera_line_left_out">Left out</string>
+    <!-- Placeholder of an empty slide line. -->
+    <string name="camera_line">Line</string>
+    <!-- Accessibility label of a slide line’s text field. -->
+    <string name="camera_edit_line">Edit line</string>
+
+    <!-- ===== Appearance (AppearanceSheet.kt, FontLicences.kt) ===== -->
+
+    <!-- Section title: the app’s accent colour. -->
+    <string name="appearance_accent">Accent</string>
+    <string name="appearance_accent_footer">Colours verse numbers, links and the app’s controls.</string>
+    <!-- Section title: text size, spacing and layout. -->
+    <string name="appearance_text">Text</string>
+    <!-- Accessibility label: make the text smaller. -->
+    <string name="appearance_smaller">Smaller</string>
+    <!-- Accessibility label: make the text larger. -->
+    <string name="appearance_larger">Larger</string>
+    <!-- Accessibility label of the slider. -->
+    <string name="appearance_text_size">Text Size</string>
+    <!-- Text size, read by TalkBack. -->
+    <string name="appearance_points_one">%1$d point</string>
+    <string name="appearance_points_other">%1$d points</string>
+    <!-- Accessibility label of the slider. -->
+    <string name="appearance_line_spacing">Line Spacing</string>
+    <!-- %1$d is the text size in points; %2$s is the system font scale, e.g. 1.3. “Dynamic Type” is Apple’s name for the iPhone’s text-size setting. -->
+    <string name="appearance_font_scale_footer">%1$d pt, then scaled by the system font size (×%2$s), as Dynamic Type scales it on iPhone.</string>
+    <!-- Section title. -->
+    <string name="appearance_font">Font</string>
+    <string name="appearance_font_footer">Open-licensed faces standing in for the iPhone’s, which Apple licenses for its own devices only.</string>
+    <!-- Section title: what the reader shows. -->
+    <string name="appearance_show">Show</string>
+    <!-- Switch. -->
+    <string name="appearance_red_letters">Words of Christ in Red</string>
+    <!-- Switch. -->
+    <string name="appearance_verse_numbers">Verse Numbers</string>
+    <!-- Switch. -->
+    <string name="appearance_section_headings">Section Headings</string>
+    <!-- Switch. -->
+    <string name="appearance_footnotes">Footnotes</string>
+    <!-- Section title. -->
+    <string name="appearance_feedback">Feedback &amp; Support</string>
+    <string name="appearance_report_issue">Report an Issue</string>
+    <string name="appearance_suggest_feature">Suggest a Feature</string>
+    <string name="appearance_ask_question">Ask a Question</string>
+    <string name="appearance_feedback_footer">I can’t fix what I don’t know about. If something is broken, confusing, or missing, email me — one person reads every message, and a fix for you is a fix for everyone.</string>
+    <string name="appearance_rate">Rate Scripture Alone</string>
+    <!-- Row: a link to the developer’s other apps. -->
+    <string name="appearance_other_apps">My Other Apps</string>
+    <string name="appearance_other_apps_subtitle">Built by one person, same care</string>
+    <string name="appearance_rate_footer">Scripture Alone is made by one person, with no ads, no tracking, and no venture money behind it. A rating takes ten seconds and genuinely decides whether anyone else ever sees it.</string>
+    <!-- Section title. -->
+    <string name="appearance_about">About</string>
+    <!-- Row label, followed by the app version. -->
+    <string name="appearance_version">Version</string>
+    <string name="appearance_privacy_policy">Privacy Policy</string>
+    <string name="appearance_app_website">App Website</string>
+    <!-- Row and screen title. -->
+    <string name="appearance_font_licences">Font Licences</string>
+    <string name="appearance_about_footer">No accounts, no tracking, no ads — nothing you do in Scripture Alone is sent anywhere unless you send it yourself.</string>
+    <!-- Section title. -->
+    <string name="appearance_about_translation">About This Translation</string>
+    <!-- Shown for a translation with no copyright line. -->
+    <string name="appearance_public_domain">Public domain.</string>
+    <!-- Accessibility label of a theme swatch. %1$s is a theme name, e.g. "Sepia". -->
+    <string name="appearance_theme_description">%1$s theme</string>
+    <!-- Accessibility label of an accent swatch. %1$s is a colour name, e.g. "Blue". -->
+    <string name="appearance_accent_description">%1$s accent</string>
+    <!-- Feedback email subject: "Scripture Alone — Bug Report". %1$s is the kind of message below. -->
+    <string name="appearance_email_subject">Scripture Alone — %1$s</string>
+    <!-- Email subject suffix. -->
+    <string name="appearance_email_bug">Bug Report</string>
+    <!-- Email subject suffix. -->
+    <string name="appearance_email_feature">Feature Request</string>
+    <!-- Email subject suffix. -->
+    <string name="appearance_email_question">Question</string>
+    <!-- Label in a feedback email, followed by a translation abbreviation. -->
+    <string name="appearance_email_translation">Translation</string>
+    <!-- Explains the diagnostic block at the bottom of a feedback email. -->
+    <string name="appearance_email_details">These details help me diagnose it — please leave them in:</string>
+    <!-- Label in a bug report’s diagnostic block. -->
+    <string name="appearance_email_app">App</string>
+    <!-- Label in a bug report’s diagnostic block. -->
+    <string name="appearance_email_system">System</string>
+    <!-- Label in a bug report’s diagnostic block. -->
+    <string name="appearance_email_device">Device</string>
+    <!-- Label in a bug report’s diagnostic block. -->
+    <string name="appearance_email_language">Language</string>
+    <!-- Reassurance under the diagnostic block in a feedback email. -->
+    <string name="appearance_email_footer">That’s everything attached — no identifiers, no location, no logs. Delete any line you’d rather not send.</string>
+    <string name="appearance_licences_intro">Scripture Alone on iPhone reads in Apple’s own faces. Apple licenses them for its devices only, so on Android each is replaced by an open-licensed face of the same kind.</string>
+    <!-- Under an open-licensed font’s name. %1$s is the iPhone font it replaces, e.g. "New York". -->
+    <string name="appearance_licences_in_place_of">In place of %1$s</string>
+    <!-- Button. -->
+    <string name="appearance_licences_hide">Hide Licence</string>
+    <!-- Button. -->
+    <string name="appearance_licences_show">Show Licence</string>
+
+    <!-- ===== Messages from the data layer (errors, import notes, downloads) ===== -->
+    <!-- Online translations (Crossway ESV API, API.Bible): explanations and errors shown to the reader -->
+    <!-- Footer under the Crossway section in Manage Translations. -->
+    <string name="data_online_crossway_explanation">Crossway\'s free tier allows 5,000 requests a day for non-commercial use. The key is yours, and the ESV is read over the network — up to 500 verses are kept on the device, which is Crossway\'s limit.</string>
+    <!-- Footer under the API.Bible section in Manage Translations. -->
+    <string name="data_online_api_bible_explanation">The American Bible Society\'s free Starter plan is for non-commercial use and lets you pick three copyrighted translations. The key is yours.</string>
+    <string name="data_online_crossway_needs_key">Add your free Crossway key in Manage Translations to read the ESV.</string>
+    <string name="data_online_api_bible_needs_key">Add your free API.Bible key in Manage Translations to read this translation.</string>
+    <string name="data_online_crossway_unauthorized">Crossway didn\'t accept that API key. Check it at api.esv.org.</string>
+    <string name="data_online_api_bible_unauthorized">API.Bible didn\'t accept that key. Check it on api.bible.</string>
+    <string name="data_online_crossway_rate_limited">You\'ve reached Crossway\'s daily limit for your key. It resets tomorrow.</string>
+    <string name="data_online_api_bible_rate_limited">You\'ve used your API.Bible requests for this month.</string>
+    <!-- Error. %1$s is a Bible translation name or passage reference. -->
+    <string name="data_online_api_bible_not_available">%1$s isn\'t one of the translations your key can read. Choose it on api.bible first.</string>
+    <!-- Error. %1$d is an HTTP status code. -->
+    <string name="data_online_crossway_http">Crossway\'s API returned HTTP %1$d.</string>
+    <!-- Error. %1$d is an HTTP status code. -->
+    <string name="data_online_api_bible_http">API.Bible returned HTTP %1$d.</string>
+    <!-- Error. %1$s is a passage reference, e.g. “John 3”. -->
+    <string name="data_online_crossway_empty">Crossway returned nothing for %1$s.</string>
+    <!-- Error. %1$s is a passage reference, e.g. “John 3”, or “the Bible list”. -->
+    <string name="data_online_api_bible_empty">API.Bible returned nothing for %1$s.</string>
+    <string name="data_online_crossway_malformed">Crossway\'s reply couldn\'t be read.</string>
+    <string name="data_online_api_bible_malformed">API.Bible\'s reply couldn\'t be read.</string>
+    <!-- Fills the %1$s in “API.Bible returned nothing for %1$s.” -->
+    <string name="data_online_api_bible_list">the Bible list</string>
+    <!-- Error. %1$s is a technical error message. -->
+    <string name="data_online_cache_open_failed">Couldn’t open the offline copy: %1$s</string>
+    <!-- Error. %1$s is a technical error message. -->
+    <string name="data_online_cache_write_failed">Couldn’t save that chapter: %1$s</string>
+
+    <!-- Bible import (ePub / USFM): why an import stopped -->
+    <!-- Error. %1$s is a technical detail. -->
+    <string name="data_import_unreadable_file">Couldn’t read that file: %1$s</string>
+    <string name="data_import_not_a_zip">That file isn’t an ePub — it isn’t a ZIP container.</string>
+    <!-- Error. %1$s is a technical detail. -->
+    <string name="data_import_damaged_archive">That ePub is damaged: %1$s</string>
+    <!-- Error. %1$s is a file name inside the ePub. -->
+    <string name="data_import_entry_too_large">That ePub contains an implausibly large file (%1$s).</string>
+    <!-- Error. %1$s is a technical detail. -->
+    <string name="data_import_not_an_epub">That file isn’t a readable ePub: %1$s</string>
+    <!-- Error. %1$s is a technical detail. -->
+    <string name="data_import_unsupported_format">This app can’t read that file: %1$s</string>
+    <!-- Error. %1$s is a sentence saying how the file is protected. -->
+    <string name="data_import_protected_by_drm">%1$s This app cannot open protected files.</string>
+    <string name="data_import_no_scripture_found">No Bible text was found in that ePub.</string>
+    <string name="data_import_missing_copyright">That ePub carries no copyright line. Enter the publisher’s copyright notice to continue.</string>
+    <!-- Error. %1$s is a technical detail. -->
+    <string name="data_import_database_write">Couldn’t save the imported text: %1$s</string>
+    <string name="data_import_drm_encryption_manifest">That ePub is encrypted (it carries an encryption manifest).</string>
+    <string name="data_import_drm_adobe_adept">That ePub is protected with Adobe DRM.</string>
+    <string name="data_import_drm_readium_lcp">That ePub is protected with an LCP licence.</string>
+    <string name="data_import_drm_apple_fairplay">That ePub is protected with Apple’s FairPlay DRM.</string>
+    <string name="data_import_drm_zip_entry_encryption">That ePub’s contents are password-encrypted.</string>
+    <!-- Completes “That file isn’t a readable ePub: %1$s”. Keep META-INF/container.xml as it is. -->
+    <string name="data_import_detail_no_container">it has no META-INF/container.xml</string>
+    <!-- Completes “This app can’t read that file: %1$s”. -->
+    <string name="data_import_detail_unknown_format">it is neither an ePub nor a set of USFM books</string>
+    <!-- Completes “This app can’t read that file: %1$s”. USFM is a file format name. -->
+    <string name="data_import_detail_no_usfm_files">the archive holds no USFM files</string>
+    <!-- Suggested name for an imported Bible translation that has no title -->
+    <string name="data_import_untitled_bible">Imported Bible</string>
+
+    <!-- Bible import: the coverage summary and problems list -->
+    <!-- Import summary. %1$d chapters, %2$d verses. -->
+    <string name="data_import_summary_whole_bible">All 66 books, %1$d chapters, %2$d verses.</string>
+    <!-- Import summary. %1$d books (one), %2$d chapters, %3$d verses, %4$d is a percentage. -->
+    <string name="data_import_summary_one">%1$d book, %2$d chapters, %3$d verses — %4$d%% of the canon.</string>
+    <!-- Import summary. %1$d books, %2$d chapters, %3$d verses, %4$d is a percentage. -->
+    <string name="data_import_summary_other">%1$d books, %2$d chapters, %3$d verses — %4$d%% of the canon.</string>
+    <!-- Import problem. %1$d is a number of books (always more than six); %2$s is a comma-separated list of book names. -->
+    <string name="data_import_books_missing_many">%1$d books are missing, including %2$s.</string>
+    <!-- Import problem. %1$s is a comma-separated list of book names. -->
+    <string name="data_import_books_missing">Missing: %1$s.</string>
+    <!-- Import problem. %1$s is a book name; %2$d chapters found; %3$d chapters expected; %4$s is a list of chapter numbers like “1–3, 7”. -->
+    <string name="data_import_missing_chapters">%1$s: %2$d of %3$d chapters (missing %4$s).</string>
+    <!-- Import problem. %1$s is a book name; %2$s is a chapter number. -->
+    <string name="data_import_unexpected_chapters_one">%1$s: unexpected chapter %2$s.</string>
+    <!-- Import problem. %1$s is a book name; %2$s is a list of chapter numbers like “1–3, 7”. -->
+    <string name="data_import_unexpected_chapters_other">%1$s: unexpected chapters %2$s.</string>
+    <!-- Import problem. %1$s is a chapter reference, e.g. “John 3”; %2$s is a verse number. -->
+    <string name="data_import_missing_verses_one">%1$s: missing verse %2$s.</string>
+    <!-- Import problem. %1$s is a chapter reference, e.g. “John 3”; %2$s is a list of verse numbers like “1–3, 7”. -->
+    <string name="data_import_missing_verses_other">%1$s: missing verses %2$s.</string>
+    <!-- Import problem. %1$s is a chapter reference, e.g. “John 3”. -->
+    <string name="data_import_out_of_order">%1$s: verse numbers ran out of order.</string>
+    <!-- Import problem. %1$s is a file name; %2$s is an error message. -->
+    <string name="data_import_note_unreadable">%1$s could not be read: %2$s</string>
+    <!-- Import note. %1$s is a file name inside the ePub. -->
+    <string name="data_import_note_no_verse_markup">%1$s named a book but carried no verse markup.</string>
+    <!-- Import note. %1$d is a number of verses. -->
+    <string name="data_import_note_bridged_verses">%1$d verse(s) are printed combined with the verse before them.</string>
+    <!-- Import problem. %1$d is a number of passages of text. -->
+    <string name="data_import_note_dropped_text">%1$d run(s) of text were dropped because no book or verse was in scope.</string>
+    <!-- Import problem. %1$s is a file name. “\id” is a USFM marker; do not translate it. -->
+    <string name="data_import_note_no_id_marker">%1$s: no \\id marker, so it was skipped.</string>
+    <!-- Import problem. %1$s is a file name; %2$s is a three-letter book code. -->
+    <string name="data_import_note_unknown_book_code">%1$s: unknown book code “%2$s”, so it was skipped.</string>
+
+    <!-- Keepsake Bible: titles and errors opening a keepsake -->
+    <!-- Title of a keepsake Bible whose owner has no name -->
+    <string name="data_keepsake_title_unnamed">A Keepsake Bible</string>
+    <!-- Title of someone’s keepsake Bible. %1$s is the owner’s name. -->
+    <string name="data_keepsake_title_owner">%1$s’s Bible</string>
+    <!-- Title of someone’s keepsake Bible, for a name ending in “s”. %1$s is the owner’s name. -->
+    <string name="data_keepsake_title_owner_s">%1$s’ Bible</string>
+    <!-- Title of a note that has no title and no verse -->
+    <string name="data_keepsake_untitled_note">Untitled Note</string>
+    <string name="data_keepsake_not_a_keepsake">This file isn’t a Keepsake Bible keepsake.</string>
+    <!-- Error. %1$s is a technical detail. -->
+    <string name="data_keepsake_damaged">This keepsake appears to be damaged (%1$s). If you have another copy, try that one.</string>
+    <string name="data_keepsake_newer_version">This keepsake was made by a newer version of Scripture Alone. Update the app to open it.</string>
+    <string name="data_keepsake_passphrase_required">This keepsake is protected with a passphrase.</string>
+    <string name="data_keepsake_wrong_passphrase">That passphrase doesn’t open this keepsake. Check for capital letters and spaces, and try again.</string>
+
+    <!-- Exported notes (Markdown / plain text) -->
+    <!-- Heading of an exported notes document -->
+    <string name="data_export_notes_title">Notes</string>
+    <!-- Date line under an exported note. %1$s is a date. -->
+    <string name="data_export_written">Written %1$s</string>
+    <!-- Date line under an exported note. %1$s is when it was written, %2$s when it was last edited (both dates). -->
+    <string name="data_export_written_edited">Written %1$s · Edited %2$s</string>
+    <!-- Subtitle of an exported notes document. %1$d is the number of notes (one); %2$s is today’s date. -->
+    <string name="data_export_exported_one">%1$d note, exported %2$s</string>
+    <!-- Subtitle of an exported notes document. %1$d is the number of notes; %2$s is today’s date. -->
+    <string name="data_export_exported_other">%1$d notes, exported %2$s</string>
+    <!-- Appended to the subtitle of an exported notes document after “ · ”. %1$s is a translation abbreviation, e.g. “ASV”. -->
+    <string name="data_export_scripture_quoted_from">Scripture quoted from the %1$s</string>
+
+    <!-- eBible.org translation catalogue -->
+    <!-- Scope of a downloadable translation -->
+    <string name="data_catalog_scope_complete">Complete Bible</string>
+    <!-- Scope of a downloadable translation -->
+    <string name="data_catalog_scope_new_testament">New Testament</string>
+    <!-- Scope of a downloadable translation -->
+    <string name="data_catalog_scope_old_testament">Old Testament</string>
+    <!-- Scope of a downloadable translation. %1$d is the number of books of the Bible it has (one). -->
+    <string name="data_catalog_scope_books_one">%1$d book</string>
+    <!-- Scope of a downloadable translation. %1$d is the number of books of the Bible it has. -->
+    <string name="data_catalog_scope_books_other">%1$d books</string>
+    <!-- Error. %1$d is an HTTP status code. -->
+    <string name="data_catalog_http">eBible.org couldn\'t be reached (HTTP %1$d). Try again later.</string>
+    <!-- Error. %1$s is a technical detail. -->
+    <string name="data_catalog_malformed">eBible.org\'s catalogue couldn\'t be read (%1$s).</string>
+    <!-- Error. %1$d is an HTTP status code. -->
+    <string name="data_catalog_download_http">eBible.org returned HTTP %1$d for that translation.</string>
+    <string name="data_catalog_download_empty">That download arrived empty.</string>
+
+    <!-- Downloadable packs (Google Play asset packs): study resources and Bibles -->
+    <!-- Name of the downloadable pack of Bible commentaries -->
+    <string name="data_pack_commentary_title">Commentary</string>
+    <!-- Name of the downloadable pack of Hebrew and Greek (interlinear) data -->
+    <string name="data_pack_interlinear_title">Original Languages</string>
+    <!-- %1$d is a download size in megabytes. Calvin, Gill and Jamieson-Fausset-Brown are commentators’ names. -->
+    <string name="data_pack_commentary_explanation">Calvin, Gill and Jamieson-Fausset-Brown — about %1$d MB, downloaded once and kept.</string>
+    <!-- %1$d is a download size in megabytes. -->
+    <string name="data_pack_interlinear_explanation">The Hebrew and Greek behind every word, with a lexicon — about %1$d MB, downloaded once and kept.</string>
+    <!-- Shown while a Bible downloads. %1$d is a download size in megabytes. -->
+    <string name="data_pack_bible_explanation">About %1$d MB, downloaded once and kept for reading offline.</string>
+    <!-- Error. %1$s is a pack or Bible name, e.g. “King James Version” or “Commentary”. -->
+    <string name="data_pack_download_cancelled">The download of the %1$s was cancelled.</string>
+    <!-- Error. %1$s is a pack or Bible name, e.g. “King James Version”. -->
+    <string name="data_pack_needs_connection">%1$s needs a connection to download.</string>
+    <!-- Error. %1$s is a pack or Bible name, e.g. “King James Version”. -->
+    <string name="data_pack_insufficient_storage">There isn’t enough free space on this device for the %1$s.</string>
+    <!-- Error. %1$s is a pack or Bible name; %2$d is a Google Play error code. -->
+    <string name="data_pack_download_failed">%1$s couldn’t be downloaded. (Google Play error %2$d)</string>
+    <!-- Error. %1$s is a pack or Bible name, e.g. “King James Version”. -->
+    <string name="data_pack_not_from_play">The %1$s is delivered by Google Play, and this copy of the app wasn’t installed from Google Play.</string>
+
+    <!-- Translation packages (.sabible) and their content keys: why one was refused -->
+    <string name="data_package_not_a_package">That isn\'t a translation package.</string>
+    <!-- Error. %1$d is the package’s file-format version; %2$d is the version this app reads. -->
+    <string name="data_package_unsupported_version">This package is version %1$d; this app reads version %2$d.</string>
+    <!-- Error. %1$s is a technical detail. -->
+    <string name="data_package_damaged_header">This package\'s details are damaged: %1$s</string>
+    <!-- Error. %1$s is a technical detail. -->
+    <string name="data_package_unreadable">Couldn\'t read the package: %1$s</string>
+    <!-- Error. %1$s is a key identifier. -->
+    <string name="data_package_unknown_publisher_key">This package is signed by a key this app doesn\'t know (%1$s).</string>
+    <string name="data_package_signature_invalid">This package\'s details or terms have been altered, so it can\'t be opened.</string>
+    <!-- Error. %1$s is a date and time. -->
+    <string name="data_package_expired">This translation\'s licence ended %1$s.</string>
+    <string name="data_package_wrong_content_key">This translation\'s key isn\'t the one that opens this package.</string>
+    <!-- Error. %1$s identifies a chapter. -->
+    <string name="data_package_chapter_missing">%1$s isn\'t in this translation.</string>
+    <!-- Error. %1$s identifies a chapter. -->
+    <string name="data_package_chapter_tampered">%1$s failed its integrity check, so it can\'t be shown.</string>
+    <string name="data_package_truncated">This package is incomplete.</string>
+    <!-- Error. %1$s is a technical detail. -->
+    <string name="data_package_not_searchable">This translation can’t be searched: %1$s</string>
+    <!-- Error. %1$s is a technical detail. -->
+    <string name="data_package_damaged_index">This translation’s search index is damaged: %1$s</string>
+    <!-- Error. %1$d is an index section number. -->
+    <string name="data_package_bucket_tampered">Part of the search index (%1$d) failed its integrity check.</string>
+    <string name="data_package_no_content_key">No content key has been set up on this device.</string>
+    <!-- Error. %1$s is a technical detail. “Android Keystore” is the name of the system’s secure key store. -->
+    <string name="data_package_keystore_unavailable">The Android Keystore isn’t available: %1$s</string>
+    <string name="data_package_content_key_corrupted">The stored content key couldn’t be read.</string>
+
+    <!-- Study resources -->
+    <!-- Error. %1$d is a verse number key, e.g. 43003016. BSB is the Berean Standard Bible; keep it. -->
+    <string name="data_study_interlinear_mismatch">Original-language data for %1$d doesn\'t match this text; it is aligned to the BSB.</string>
+
+    <!-- Importing notes from another app (Life Bible export or pasted text) -->
+    <string name="data_notes_import_not_an_archive">That file isn\'t a zip archive.</string>
+    <!-- Error. “Settings → Advanced → Export your data” names menus in the Life Bible app; LifeBibleData.zip is a file name. -->
+    <string name="data_notes_import_not_life_bible">That doesn\'t look like a Life Bible export. Look for LifeBibleData.zip, from Settings → Advanced → Export your data.</string>
+    <string name="data_notes_import_nothing_to_import">That export has no notes, highlights or saved verses in it.</string>
+    <string name="data_notes_import_nothing_recognised">Nothing in that looked like a Bible reference. Each note needs to start with one — “John 3:16”, say — so it can be attached to the right verse.</string>
 </resources>

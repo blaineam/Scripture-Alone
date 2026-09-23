@@ -1,5 +1,9 @@
 package com.blainemiller.scripturealone.data.importer
 
+import androidx.annotation.StringRes
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
+
 /**
  * Why an import stopped, ported from `Import/BibleImportError.swift`. Every failure is typed so the
  * UI can say something true, and so the refusal cases can be asserted in tests.
@@ -10,36 +14,36 @@ package com.blainemiller.scripturealone.data.importer
  */
 sealed class BibleImportError(message: String) : Exception(message) {
     /** The file could not be read off disk at all. */
-    class UnreadableFile(val detail: String) : BibleImportError("Couldn’t read that file: $detail")
+    class UnreadableFile(val detail: String) : BibleImportError(AppText.get(R.string.data_import_unreadable_file, detail))
 
     /** Not a ZIP container (an ePub is a ZIP). */
-    class NotAZipArchive : BibleImportError("That file isn’t an ePub — it isn’t a ZIP container.")
+    class NotAZipArchive : BibleImportError(AppText.get(R.string.data_import_not_a_zip))
 
     /** A ZIP that is truncated, mis-indexed, or whose contents fail their checksum. */
-    class DamagedArchive(val detail: String) : BibleImportError("That ePub is damaged: $detail")
+    class DamagedArchive(val detail: String) : BibleImportError(AppText.get(R.string.data_import_damaged_archive, detail))
 
     /** An entry that claims a size we will not inflate. */
-    class EntryTooLarge(val name: String) : BibleImportError("That ePub contains an implausibly large file ($name).")
+    class EntryTooLarge(val name: String) : BibleImportError(AppText.get(R.string.data_import_entry_too_large, name))
 
     /** A ZIP that is not an ePub: wrong mimetype, no container.xml, no package document. */
-    class NotAnEPUB(val detail: String) : BibleImportError("That file isn’t a readable ePub: $detail")
+    class NotAnEPUB(val detail: String) : BibleImportError(AppText.get(R.string.data_import_not_an_epub, detail))
 
     /** A file the engine has no reader for. */
-    class UnsupportedFormat(val detail: String) : BibleImportError("This app can’t read that file: $detail")
+    class UnsupportedFormat(val detail: String) : BibleImportError(AppText.get(R.string.data_import_unsupported_format, detail))
 
     /** The file is protected. The engine refuses it and reads none of its content. */
     class ProtectedByDRM(val evidence: DRMEvidence) :
-        BibleImportError("${evidence.explanation} This app cannot open protected files.")
+        BibleImportError(AppText.get(R.string.data_import_protected_by_drm, evidence.explanation))
 
     /** The ePub opened and parsed, but nothing in it looked like scripture. */
-    class NoScriptureFound : BibleImportError("No Bible text was found in that ePub.")
+    class NoScriptureFound : BibleImportError(AppText.get(R.string.data_import_no_scripture_found))
 
     /** An import must carry a copyright line forward; the file had none and the caller supplied none. */
     class MissingCopyright :
-        BibleImportError("That ePub carries no copyright line. Enter the publisher’s copyright notice to continue.")
+        BibleImportError(AppText.get(R.string.data_import_missing_copyright))
 
     /** Writing the SQLite store failed. */
-    class DatabaseWrite(val detail: String) : BibleImportError("Couldn’t save the imported text: $detail")
+    class DatabaseWrite(val detail: String) : BibleImportError(AppText.get(R.string.data_import_database_write, detail))
 
     /** The case's associated value, for equality. */
     private val payload: Any?
@@ -71,19 +75,22 @@ sealed class BibleImportError(message: String) : Exception(message) {
  * engine can *stop*, never so it can *proceed differently*. A visible watermark is not DRM and is not
  * detected here. [rawValue] is the Swift case name, for anything persisted.
  */
-enum class DRMEvidence(val rawValue: String, val explanation: String) {
+enum class DRMEvidence(val rawValue: String, @StringRes private val explanationRes: Int) {
     /** `META-INF/encryption.xml` — the OCF encryption manifest. */
-    ENCRYPTION_MANIFEST("encryptionManifest", "That ePub is encrypted (it carries an encryption manifest)."),
+    ENCRYPTION_MANIFEST("encryptionManifest", R.string.data_import_drm_encryption_manifest),
 
     /** Adobe ADEPT: `META-INF/rights.xml`, or an `Adept.*` key in the package metadata. */
-    ADOBE_ADEPT("adobeADEPT", "That ePub is protected with Adobe DRM."),
+    ADOBE_ADEPT("adobeADEPT", R.string.data_import_drm_adobe_adept),
 
     /** Readium LCP: `META-INF/license.lcpl`. */
-    READIUM_LCP("readiumLCP", "That ePub is protected with an LCP licence."),
+    READIUM_LCP("readiumLCP", R.string.data_import_drm_readium_lcp),
 
     /** Apple FairPlay: `META-INF/sinf.xml`. */
-    APPLE_FAIRPLAY("appleFairPlay", "That ePub is protected with Apple’s FairPlay DRM."),
+    APPLE_FAIRPLAY("appleFairPlay", R.string.data_import_drm_apple_fairplay),
 
     /** The ZIP's own entry-encryption bit is set. */
-    ZIP_ENTRY_ENCRYPTION("zipEntryEncryption", "That ePub’s contents are password-encrypted."),
+    ZIP_ENTRY_ENCRYPTION("zipEntryEncryption", R.string.data_import_drm_zip_entry_encryption);
+
+    /** Why the file is refused, in the reader's language. */
+    val explanation: String get() = AppText.get(explanationRes)
 }

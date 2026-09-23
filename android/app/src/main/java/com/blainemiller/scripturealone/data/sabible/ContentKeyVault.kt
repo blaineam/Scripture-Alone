@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.data.sabible
 
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
 import java.io.File
 import java.security.GeneralSecurityException
 import java.security.ProviderException
@@ -49,10 +51,10 @@ class ContentKeyVault(
 ) {
     /** Why the key couldn't be read — `ContentKeyVault.Failure`. */
     sealed class Failure(message: String, cause: Throwable? = null) : Exception(message, cause) {
-        class NoKeyStored : Failure("No content key has been set up on this device.")
+        class NoKeyStored : Failure(AppText.get(R.string.data_package_no_content_key))
         class KeystoreUnavailable(why: String, cause: Throwable? = null) :
-            Failure("The Android Keystore isn’t available: $why", cause)
-        class Corrupted(cause: Throwable? = null) : Failure("The stored content key couldn’t be read.", cause)
+            Failure(AppText.get(R.string.data_package_keystore_unavailable, why), cause)
+        class Corrupted(cause: Throwable? = null) : Failure(AppText.get(R.string.data_package_content_key_corrupted), cause)
     }
 
     /** One sealed blob per translation, named by letters and digits only. */

@@ -1,7 +1,9 @@
 package com.blainemiller.scripturealone.data.importer
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookID
+import com.blainemiller.scripturealone.text.AppText
 
 /**
  * Turns an ePub's spine into `(book, chapter, verse, text)` rows. Ported from
@@ -36,7 +38,7 @@ class BibleTextExtractor(val options: Options = Options()) {
             val source = try {
                 pkg.document(item)
             } catch (error: BibleImportError) {
-                assembler.bible.notes.add(ImportNote(ImportNote.Severity.WARNING, "${item.path} could not be read: ${error.message}"))
+                assembler.bible.notes.add(ImportNote(ImportNote.Severity.WARNING, AppText.get(R.string.data_import_note_unreadable, item.path, error.message ?: "")))
                 continue
             }
             assembler.consume(DocumentScanner(options).scan(source), item.path)
@@ -582,7 +584,7 @@ internal class Assembler(private val options: BibleTextExtractor.Options) {
         closeBlock()
         if (!documentDeclaredPlace && bible.shapesByDocument[path] == VerseMarkupShape.NONE && hint.book != null) {
             // A file we could not read at all, whose name promised a book, is worth saying aloud.
-            bible.notes.add(ImportNote(ImportNote.Severity.INFO, "$path named a book but carried no verse markup."))
+            bible.notes.add(ImportNote(ImportNote.Severity.INFO, AppText.get(R.string.data_import_note_no_verse_markup, path)))
         }
     }
 
@@ -592,14 +594,14 @@ internal class Assembler(private val options: BibleTextExtractor.Options) {
         bible.outOfOrderChapters = outOfOrder.toSet()
         bible.bridgedVerses = bridged.toMap()
         if (bridged.isNotEmpty()) {
-            bible.notes.add(ImportNote(ImportNote.Severity.INFO, "${bridged.size} verse(s) are printed combined with the verse before them."))
+            bible.notes.add(ImportNote(ImportNote.Severity.INFO, AppText.get(R.string.data_import_note_bridged_verses, bridged.size)))
         }
         for (chapter in outOfOrder.sorted()) {
-            bible.notes.add(ImportNote(ImportNote.Severity.WARNING, "${chapter.display}: verse numbers ran out of order."))
+            bible.notes.add(ImportNote(ImportNote.Severity.WARNING, AppText.get(R.string.data_import_out_of_order, chapter.display)))
         }
         if (skippedText > 0) {
             bible.notes.add(
-                ImportNote(ImportNote.Severity.WARNING, "$skippedText run(s) of text were dropped because no book or verse was in scope."),
+                ImportNote(ImportNote.Severity.WARNING, AppText.get(R.string.data_import_note_dropped_text, skippedText)),
             )
         }
     }

@@ -12,6 +12,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.layout.ChapterLayout
 import com.blainemiller.scripturealone.data.layout.ChapterLayout.Kind
@@ -20,6 +21,7 @@ import com.blainemiller.scripturealone.data.layout.ChapterLayout.Span
 import com.blainemiller.scripturealone.data.layout.utf16Offset
 import com.blainemiller.scripturealone.data.layout.utf16Range
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.text.AppText
 
 /**
  * The typefaces a render uses. [body] is the reading face (one of [ReaderFontFamily]; Source
@@ -216,7 +218,7 @@ class ChapterRenderer(
                 spaceBefore = size * 2 * 2 + nextSize * NATURAL_LINE_HEIGHT,
                 lineHeight = nextSize * NATURAL_LINE_HEIGHT,
                 action = ReaderAction.NEXT_CHAPTER,
-                accessibilityLabel = "Next chapter, ${Canon.display(next)}",
+                accessibilityLabel = AppText.get(R.string.reader_next_chapter_label, Canon.display(next)),
             )
         }
         val fineSize = maxOf(10f, size * 0.55f)

@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.data.context
 
+import androidx.annotation.StringRes
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
@@ -12,6 +14,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.intOrNull
+import com.blainemiller.scripturealone.text.AppText
 
 // Value types for Study mode's context data (places, eras, events, charts), ported from
 // `ScriptureAloneCore/ContextModels.swift`. Built by Tools/build_context.py; see
@@ -51,8 +54,10 @@ data class Place(
     /** Coordinates derived from OpenStreetMap (attribution required, ODbL). */
     val fromOpenStreetMap: Boolean,
 ) {
-    enum class Confidence(val title: String) {
-        UNCERTAIN("Uncertain location"), LIKELY("Likely location"), IDENTIFIED("Identified")
+    enum class Confidence(@StringRes private val titleRes: Int) {
+        UNCERTAIN(R.string.context_confidence_uncertain), LIKELY(R.string.context_confidence_likely), IDENTIFIED(R.string.context_confidence_identified);
+
+        val title: String get() = AppText.get(titleRes)
     }
 
     val confidenceLevel: Confidence
@@ -115,9 +120,11 @@ data class ChapterTime(
 
 object ContextYear {
     /** -1446 -> "c. 1446 BC", 30 -> "c. AD 30". */
-    fun label(year: Int, approximate: Boolean = true): String {
-        val prefix = if (approximate) "c. " else ""
-        return if (year < 0) "$prefix${-year} BC" else "${prefix}AD $year"
+    fun label(year: Int, approximate: Boolean = true): String = when {
+        year < 0 && approximate -> AppText.get(R.string.context_year_approx_bc, -year)
+        year < 0 -> AppText.get(R.string.context_year_bc, -year)
+        approximate -> AppText.get(R.string.context_year_approx_ad, year)
+        else -> AppText.get(R.string.context_year_ad, year)
     }
 }
 
@@ -251,6 +258,11 @@ data class FeastsChart(val feasts: List<Feast>) {
         val pilgrim: Boolean?,
         val interpretive: Boolean?,
         val later: Boolean?,
+        /**
+         * "spring" or "autumn" for the feasts the chart groups by season, whatever language the season
+         * text is in (`ContextStore.localizedBody`).
+         */
+        val seasonGroup: String? = null,
     )
 }
 
@@ -324,7 +336,7 @@ internal object ChartDecoding {
                 also = optionalReference(feast, "also"), meaning = string(feast, "meaning"),
                 nt = optionalReference(feast, "nt"), ntText = optionalString(feast, "ntText"),
                 pilgrim = optionalBool(feast, "pilgrim"), interpretive = optionalBool(feast, "interpretive"),
-                later = optionalBool(feast, "later"),
+                later = optionalBool(feast, "later"), seasonGroup = optionalString(feast, "seasonGroup"),
             )
         })
     }

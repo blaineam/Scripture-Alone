@@ -68,6 +68,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -85,6 +86,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.camera.SlideImage
 import com.blainemiller.scripturealone.data.camera.SlideRecognizer
@@ -95,6 +97,7 @@ import com.blainemiller.scripturealone.data.slides.SlideParser
 import com.blainemiller.scripturealone.data.slides.SlideReading
 import com.blainemiller.scripturealone.data.userdata.Note
 import com.blainemiller.scripturealone.data.userdata.RANGE_ORDER
+import com.blainemiller.scripturealone.text.AppText
 import com.blainemiller.scripturealone.ui.notes.PanelColors
 import com.blainemiller.scripturealone.ui.notes.PanelGroup
 import com.blainemiller.scripturealone.ui.notes.PanelSectionTitle
@@ -194,15 +197,18 @@ internal fun SlideReviewSheet(
             val (_, reading) = SlideRecognizer.read(context, slide.image)
             apply(reading, resolve(model, reading.passages))
             phase = Phase.Ready
-            announcement = listOfNotNull(
-                reading.title.takeIf { it.isNotEmpty() }?.let { "Title: $it" },
-                ranges.size.takeIf { it > 0 }?.let { "$it passages" },
-                "${lines.size} other lines",
-            ).joinToString(", ", prefix = "Slide read. ")
+            val found = listOfNotNull(
+                reading.title.takeIf { it.isNotEmpty() }?.let { context.getString(R.string.camera_announce_title, it) },
+                ranges.size.takeIf { it > 0 }?.let {
+                    AppText.plural(R.string.camera_announce_passages_one, R.string.camera_announce_passages_other, it, it)
+                },
+                AppText.plural(R.string.camera_announce_lines_one, R.string.camera_announce_lines_other, lines.size, lines.size),
+            ).joinToString(", ")
+            announcement = context.getString(R.string.camera_announce_slide_read, found)
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (_: Exception) {
-            phase = Phase.Failed("The text on this photo couldn’t be read. You can still type a title and passages.")
+            phase = Phase.Failed(context.getString(R.string.camera_read_failed))
         }
     }
     LaunchedEffect(destination) { markLinesTheNoteHas() }
@@ -259,7 +265,8 @@ internal fun SlideReviewSheet(
             .takesTaps(),
     ) {
         ReviewHeader(
-            if (adding) "Add to Note" else "New Note", if (adding) "Add to Note" else "Create Note", palette,
+            stringResource(if (adding) R.string.camera_add_to_note else R.string.camera_new_note),
+            stringResource(if (adding) R.string.camera_add_to_note else R.string.camera_create_note), palette,
             saveEnabled = phase != Phase.Reading && !nothingToSave && !saving, onCancel = onDismiss, onSave = ::save,
         )
         val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -268,7 +275,7 @@ internal fun SlideReviewSheet(
             // The photo, and whether to keep it.
             PanelGroup(palette) {
                 Image(
-                    slide.image.asImageBitmap(), "Photo of the slide", contentScale = ContentScale.Fit,
+                    slide.image.asImageBitmap(), stringResource(R.string.camera_photo_of_slide), contentScale = ContentScale.Fit,
                     modifier = Modifier.fillMaxWidth().heightIn(max = 200.dp).padding(horizontal = 18.dp, vertical = 12.dp).clip(RoundedCornerShape(10.dp)),
                 )
                 PanelSeparator(palette)
@@ -276,7 +283,7 @@ internal fun SlideReviewSheet(
                     Modifier.fillMaxWidth().clickable(role = Role.Button) { keepPhoto = !keepPhoto }.padding(start = 18.dp, end = 14.dp, top = 6.dp, bottom = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("Keep this photo with the note", color = palette.ink, fontSize = 17.sp, modifier = Modifier.weight(1f))
+                    Text(stringResource(R.string.camera_keep_photo), color = palette.ink, fontSize = 17.sp, modifier = Modifier.weight(1f))
                     Switch(
                         keepPhoto, { keepPhoto = it },
                         colors = SwitchDefaults.colors(
@@ -288,8 +295,7 @@ internal fun SlideReviewSheet(
                 }
             }
             Footer(
-                if (keepPhoto) "The photo is saved with the note, on this device."
-                else "The photo was read on this device and will be discarded — only the text below is kept.",
+                stringResource(if (keepPhoto) R.string.camera_photo_kept_footer else R.string.camera_photo_discarded_footer),
                 palette,
             )
 
@@ -300,7 +306,7 @@ internal fun SlideReviewSheet(
                         Row(Modifier.padding(horizontal = 18.dp, vertical = 14.dp).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically) {
                             CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
                             Spacer(Modifier.width(12.dp))
-                            Text("Reading the slide…", color = palette.ink, fontSize = 17.sp)
+                            Text(stringResource(R.string.camera_reading_slide), color = palette.ink, fontSize = 17.sp)
                         }
                     }
                 }
@@ -324,19 +330,20 @@ internal fun SlideReviewSheet(
                 DestinationPicker(choices, targetNote, palette) { destination = it?.id }
             }
 
-            PanelSectionTitle(if (adding) "Heading" else "Title", palette)
+            PanelSectionTitle(stringResource(if (adding) R.string.camera_heading else R.string.camera_title), palette)
             PanelGroup(palette) {
                 ReviewField(
-                    title, if (adding) "Heading" else "Title", palette, fontSize = 20f, weight = FontWeight.SemiBold,
-                    label = if (adding) "Heading added to the note" else "Note title",
+                    title, stringResource(if (adding) R.string.camera_heading else R.string.camera_title), palette,
+                    fontSize = 20f, weight = FontWeight.SemiBold,
+                    label = stringResource(if (adding) R.string.camera_heading_label else R.string.camera_title_label),
                 ) { title = it }
             }
             when {
-                adding -> Footer("Added above this slide’s lines. Leave it empty to add just the lines.", palette)
-                title.isEmpty() && phase == Phase.Ready -> Footer("No title was found — type one, or the first passage will name the note.", palette)
+                adding -> Footer(stringResource(R.string.camera_heading_footer), palette)
+                title.isEmpty() && phase == Phase.Ready -> Footer(stringResource(R.string.camera_no_title_footer), palette)
             }
 
-            PanelSectionTitle("Passages", palette)
+            PanelSectionTitle(stringResource(R.string.camera_passages), palette)
             PanelGroup(palette) {
                 if (ranges.isNotEmpty()) {
                     FlowRow(
@@ -348,17 +355,17 @@ internal fun SlideReviewSheet(
                     PanelSeparator(palette)
                 }
                 ReviewField(
-                    passageText, "Add a passage, e.g. John 10:11", palette, singleLine = true, imeAction = ImeAction.Done,
-                    onDone = ::addTypedPassages, label = "Add a passage",
+                    passageText, stringResource(R.string.camera_add_passage_placeholder), palette, singleLine = true, imeAction = ImeAction.Done,
+                    onDone = ::addTypedPassages, label = stringResource(R.string.camera_add_passage),
                 ) { passageText = it }
             }
-            if (ranges.isEmpty() && phase == Phase.Ready) Footer("No passages were found on the slide.", palette)
+            if (ranges.isEmpty() && phase == Phase.Ready) Footer(stringResource(R.string.camera_no_passages), palette)
 
-            PanelSectionTitle(if (adding) "Add these lines" else "Start the note with", palette)
+            PanelSectionTitle(stringResource(if (adding) R.string.camera_add_these_lines else R.string.camera_start_note_with), palette)
             PanelGroup(palette) {
                 if (lines.isEmpty()) {
                     Text(
-                        if (phase == Phase.Ready) "Nothing else was on the slide." else "", color = palette.secondary, fontSize = 17.sp,
+                        if (phase == Phase.Ready) stringResource(R.string.camera_nothing_else) else "", color = palette.secondary, fontSize = 17.sp,
                         modifier = Modifier.padding(horizontal = 18.dp, vertical = 13.dp),
                     )
                 }
@@ -397,7 +404,7 @@ private fun ReviewHeader(title: String, saveTitle: String, palette: ReaderPalett
                 .clickable(role = Role.Button, onClick = onCancel).padding(horizontal = 18.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Text("Cancel", color = palette.ink, fontSize = 17.sp)
+            Text(stringResource(R.string.common_cancel), color = palette.ink, fontSize = 17.sp)
         }
         Text(
             title, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, maxLines = 1,
@@ -432,16 +439,16 @@ private fun DestinationPicker(choices: List<Note>, selected: Note?, palette: Rea
             Modifier.fillMaxWidth().clickable(role = Role.Button) { open = true }.padding(horizontal = 18.dp, vertical = 13.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Save to", color = palette.ink, fontSize = 17.sp)
+            Text(stringResource(R.string.camera_save_to), color = palette.ink, fontSize = 17.sp)
             Spacer(Modifier.width(12.dp))
             Text(
-                selected?.displayTitle ?: "A new note", color = palette.secondary, fontSize = 17.sp, maxLines = 1,
+                selected?.displayTitle ?: stringResource(R.string.camera_a_new_note), color = palette.secondary, fontSize = 17.sp, maxLines = 1,
                 overflow = TextOverflow.Ellipsis, textAlign = TextAlign.End, modifier = Modifier.weight(1f),
             )
             Icon(Icons.Rounded.UnfoldMore, null, tint = palette.secondary, modifier = Modifier.size(18.dp))
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }, modifier = Modifier.align(Alignment.TopEnd)) {
-            DropdownMenuItem(text = { Text("A new note", color = palette.ink, fontSize = 15.sp) }, onClick = {
+            DropdownMenuItem(text = { Text(stringResource(R.string.camera_a_new_note), color = palette.ink, fontSize = 15.sp) }, onClick = {
                 open = false
                 onSelect(null)
             })
@@ -461,11 +468,12 @@ private fun DestinationPicker(choices: List<Note>, selected: Note?, palette: Rea
 /** A passage on the review sheet; tapping it removes it. */
 @Composable
 private fun PassageChip(range: VerseRange, palette: ReaderPalette, onRemove: () -> Unit) {
+    val removeLabel = stringResource(R.string.camera_remove_passage)
     Row(
         Modifier.clip(CircleShape).background(palette.accent.copy(alpha = 0.14f)).clickable(role = Role.Button, onClick = onRemove)
             .semantics(mergeDescendants = true) {
                 contentDescription = range.display
-                onClick("Remove") { onRemove(); true }
+                onClick(removeLabel) { onRemove(); true }
             }
             .padding(horizontal = 10.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -480,13 +488,14 @@ private fun PassageChip(range: VerseRange, palette: ReaderPalette, onRemove: () 
 
 @Composable
 private fun LineRow(line: ReviewLine, palette: ReaderPalette) {
+    val state = stringResource(if (line.included) R.string.camera_line_included else R.string.camera_line_left_out)
     Row(Modifier.fillMaxWidth().padding(start = 12.dp), verticalAlignment = Alignment.Top) {
         Box(
             Modifier.padding(top = 6.dp).size(36.dp).clip(CircleShape).clickable(role = Role.Button) { line.included = !line.included }
                 .semantics {
                     role = Role.Checkbox
                     contentDescription = line.text
-                    stateDescription = if (line.included) "Included" else "Left out"
+                    stateDescription = state
                     selected = line.included
                 },
             contentAlignment = Alignment.Center,
@@ -497,7 +506,10 @@ private fun LineRow(line: ReviewLine, palette: ReaderPalette) {
             )
         }
         Box(Modifier.weight(1f)) {
-            ReviewField(line.text, "Line", palette, color = if (line.included) palette.ink else palette.secondary, label = "Edit line", startPadding = 6) {
+            ReviewField(
+                line.text, stringResource(R.string.camera_line), palette, color = if (line.included) palette.ink else palette.secondary,
+                label = stringResource(R.string.camera_edit_line), startPadding = 6,
+            ) {
                 line.text = it
             }
         }

@@ -28,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -65,18 +67,18 @@ fun StudyPanel(
     Column(Modifier.fillMaxSize().background(surface)) {
         Column(headerModifier) {
             SheetTopBar(
-                title = route?.let { routeTitle(it, study, reader) } ?: "Study",
+                title = route?.let { routeTitle(it, study, reader) } ?: stringResource(R.string.study_title),
                 palette = palette,
                 leading = {
                     if (route != null) {
                         GlassBackButton(palette, surface) { study.pop() }
                     } else {
-                        GlassIconButton(Icons.Rounded.Close, if (isSheet) "Close Study" else "Hide Study", palette, surface, onClick = onClose)
+                        GlassIconButton(Icons.Rounded.Close, stringResource(if (isSheet) R.string.study_close else R.string.study_hide), palette, surface, onClick = onClose)
                     }
                 },
                 trailing = {
                     if (route == null) {
-                        GlassIconButton(Icons.Outlined.Info, "About Study Resources", palette, surface, tint = palette.accent) {
+                        GlassIconButton(Icons.Outlined.Info, stringResource(R.string.study_about_resources), palette, surface, tint = palette.accent) {
                             study.push(StudyRoute.Sources)
                         }
                     }
@@ -84,10 +86,12 @@ fun StudyPanel(
             )
             if (route == null) {
                 VerseHeader(study, reader, palette)
+                // The commentary is English-only, so outside English it isn't offered (`StudyTab.available`).
+                val tabs = StudyTab.available
                 SegmentedPicker(
-                    StudyTab.entries.map { it.shortTitle }, study.tab.ordinal, palette,
+                    tabs.map { it.shortTitle }, tabs.indexOf(study.tab).coerceAtLeast(0), palette,
                     Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
-                ) { study.select(StudyTab.entries[it]) }
+                ) { study.select(tabs[it]) }
             } else if (route is StudyRoute.Viewer) {
                 SegmentedPicker(
                     StudyRoute.ViewerTab.entries.map { it.title }, route.tab.ordinal, palette,
@@ -113,13 +117,14 @@ fun StudyPanel(
     }
 }
 
+@Composable
 private fun routeTitle(route: StudyRoute, study: StudyModel, reader: ReaderViewModel): String = when (route) {
-    StudyRoute.Sources -> "Study Resources"
-    StudyRoute.Credits -> "Sources & Credits"
+    StudyRoute.Sources -> stringResource(R.string.study_resources_title)
+    StudyRoute.Credits -> stringResource(R.string.study_sources_credits)
     is StudyRoute.Viewer -> com.blainemiller.scripturealone.data.Canon.display(
         study.verse?.let { ChapterRef(it.book, it.chapter) } ?: reader.location,
     )
-    is StudyRoute.Chart -> StudyLibrary.contextDataOrNull()?.charts?.firstOrNull { it.id == route.id }?.title ?: "Chart"
+    is StudyRoute.Chart -> StudyLibrary.contextDataOrNull()?.charts?.firstOrNull { it.id == route.id }?.title ?: stringResource(R.string.study_chart_fallback)
     is StudyRoute.PlaceDetail -> route.place.name
 }
 
@@ -132,10 +137,11 @@ private fun VerseHeader(study: StudyModel, reader: ReaderViewModel, palette: Rea
     ) {
         val previous = study.history.lastOrNull()
         if (previous != null) {
+            val backTo = stringResource(R.string.study_back_to, previous.display)
             Row(
                 Modifier.clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button) { study.back(reader) }
                     .padding(horizontal = 4.dp, vertical = 4.dp)
-                    .semantics(mergeDescendants = true) { contentDescription = "Back to ${previous.display}" },
+                    .semantics(mergeDescendants = true) { contentDescription = backTo },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Rounded.ChevronLeft, null, tint = palette.accent, modifier = Modifier.size(22.dp))
@@ -158,17 +164,18 @@ private fun TabContent(study: StudyModel, reader: ReaderViewModel, palette: Read
     when {
         study.tab == StudyTab.CONTEXT -> ContextTab(chapter, verse?.verse, study, reader, palette)
         verse == null -> ContentUnavailable(
-            Icons.Rounded.TouchApp, "Tap a Verse",
-            "Tap any verse to see where else Scripture speaks to it, and what the old commentators said about it.",
+            Icons.Rounded.TouchApp, stringResource(R.string.study_tap_verse_title),
+            stringResource(R.string.study_tap_verse_body),
             palette, Modifier.padding(top = 24.dp),
         )
         study.tab == StudyTab.CROSS_REFERENCES -> CrossReferencesTab(verse, study, reader, palette)
-        study.tab == StudyTab.COMMENTARY -> CommentaryTab(verse, study, reader, palette)
+        study.tab == StudyTab.COMMENTARY && StudyTab.COMMENTARY in StudyTab.available -> CommentaryTab(verse, study, reader, palette)
+        study.tab == StudyTab.COMMENTARY -> CrossReferencesTab(verse, study, reader, palette)
         else -> InterlinearTab(verse, reader, palette)
     }
 }
 
-/** "About Study Resources": every dataset Study draws on, with its licence and attribution. */
+/** stringResource(R.string.study_about_resources): every dataset Study draws on, with its licence and attribution. */
 @Composable
 private fun StudySourcesScreen(palette: ReaderPalette) {
     val sources = loaded(Unit) { context -> StudyLibrary.crossReferences(context)?.sources.orEmpty() }
@@ -178,13 +185,13 @@ private fun StudySourcesScreen(palette: ReaderPalette) {
         GroupedSection(palette) {
             Cell(palette) {
                 Text(
-                    "Study mode uses only public-domain and openly licensed works. Everything is bundled with the app and works offline; nothing you look up leaves your device.",
+                    stringResource(R.string.study_resources_intro),
                     color = palette.secondary, fontSize = StudyStyle.callout,
                 )
             }
         }
         for (source in sources.orEmpty()) {
-            GroupedSection(palette, header = if (source.kind == StudySource.Kind.CROSS_REFERENCES) "Cross References" else "Commentary") {
+            GroupedSection(palette, header = stringResource(if (source.kind == StudySource.Kind.CROSS_REFERENCES) R.string.study_tab_cross_references else R.string.study_tab_commentary)) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                     Text(source.name, color = palette.ink, fontSize = StudyStyle.headline, fontWeight = FontWeight.SemiBold)
                     Text(source.author, color = palette.ink, fontSize = StudyStyle.subheadline)
@@ -194,19 +201,19 @@ private fun StudySourcesScreen(palette: ReaderPalette) {
                 }
                 CellDivider(palette)
                 Cell(palette, onClick = source.licenseUrl.takeIf { it.isNotEmpty() }?.let { url -> { uri.openUri(url) } }) {
-                    Text("License", color = palette.ink, fontSize = StudyStyle.body, modifier = Modifier.weight(1f))
+                    Text(stringResource(R.string.study_license), color = palette.ink, fontSize = StudyStyle.body, modifier = Modifier.weight(1f))
                     Text(source.license, color = if (source.licenseUrl.isNotEmpty()) palette.accent else palette.secondary, fontSize = StudyStyle.body)
                 }
                 if (source.url.isNotEmpty()) {
                     CellDivider(palette)
                     Cell(palette, onClick = { uri.openUri(source.url) }) {
-                        Text("Source", color = palette.accent, fontSize = StudyStyle.body)
+                        Text(stringResource(R.string.study_source), color = palette.accent, fontSize = StudyStyle.body)
                     }
                 }
             }
         }
         interlinear?.let { attribution ->
-            GroupedSection(palette, header = "Original Languages") {
+            GroupedSection(palette, header = stringResource(R.string.study_tab_original)) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                     for (line in attribution.requiredLines) {
                         Text(line, color = palette.secondary, fontSize = StudyStyle.caption, modifier = Modifier.padding(bottom = 6.dp))
@@ -214,7 +221,7 @@ private fun StudySourcesScreen(palette: ReaderPalette) {
                 }
                 CellDivider(palette)
                 Cell(palette, onClick = { uri.openUri(attribution.lexiconLicenseUrl) }) {
-                    Text("License", color = palette.ink, fontSize = StudyStyle.body, modifier = Modifier.weight(1f))
+                    Text(stringResource(R.string.study_license), color = palette.ink, fontSize = StudyStyle.body, modifier = Modifier.weight(1f))
                     Text(attribution.lexiconLicense, color = palette.accent, fontSize = StudyStyle.body)
                 }
             }

@@ -2,19 +2,21 @@ package com.blainemiller.scripturealone.ui.widget
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.companion.VerseSnapshot.Companion.FavoriteInput
 import com.blainemiller.scripturealone.companion.VerseSnapshot.Companion.HighlightInput
 import com.blainemiller.scripturealone.companion.VerseSnapshot.Companion.NoteInput
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookID
+import com.blainemiller.scripturealone.text.AppText
+import java.time.Duration
+import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
-import java.time.Duration
-import java.time.Instant
 
 /**
  * Where the Favorites & Notes widget — and the watch — get the reader's library.
@@ -124,20 +126,19 @@ class DemoWidgetContentSource(private val now: Instant = Instant.now()) : Widget
             )
             val notes = listOf(
                 NoteInput(
-                    title = "Sunday sermon: No condemnation",
+                    title = AppText.get(R.string.demo_note_romans_title),
                     anchors = listOf(range(ref(BookID.ROMANS, 8, 1), ref(BookID.ROMANS, 8, 17))),
                     date = now.minus(Duration.ofDays(7)),
-                    body = "Life in the Spirit. Verse 1 is the hinge — everything after it flows from “no condemnation.”",
+                    body = AppText.get(R.string.demo_note_romans_body),
                 ),
                 NoteInput(
-                    title = "Evening sermon: Born of the Spirit",
+                    title = AppText.get(R.string.demo_note_nicodemus_title),
                     anchors = listOf(
                         range(ref(BookID.JOHN, 3, 1), ref(BookID.JOHN, 3, 21)),
                         range(ref(BookID.NUMBERS, 21, 4), ref(BookID.NUMBERS, 21, 9)),
                     ),
                     date = now.minus(Duration.ofDays(3)),
-                    body = "• Nicodemus comes by night (v. 2)\n• “You must be born anew” — the Spirit’s work, not ours\n" +
-                        "• The serpent in the wilderness points to the cross (Numbers 21:8–9)",
+                    body = AppText.get(R.string.demo_note_nicodemus_body),
                 ),
             )
             return WidgetLibrary(favorites, highlights, notes)

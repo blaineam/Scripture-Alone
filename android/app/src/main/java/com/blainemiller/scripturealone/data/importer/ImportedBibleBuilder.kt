@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.data.importer
 
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -36,7 +38,7 @@ data class ImportedTranslationIdentity(
          */
         fun suggested(metadata: EPUBMetadata): ImportedTranslationIdentity {
             val title = metadata.title?.let(SwiftText::trimWhitespaceAndNewlines) ?: ""
-            val name = title.ifEmpty { "Imported Bible" }
+            val name = title.ifEmpty { AppText.get(R.string.data_import_untitled_bible) }
             var rights = metadata.rights?.let(SwiftText::trimWhitespaceAndNewlines) ?: ""
             val publisher = metadata.publisher
             if (rights.isEmpty() && !publisher.isNullOrEmpty()) rights = "© $publisher"
@@ -51,7 +53,7 @@ data class ImportedTranslationIdentity(
 
         /** A starting point taken from a USFM zip's own copyright page and DBL metadata. */
         fun suggested(metadata: USFMMetadata): ImportedTranslationIdentity {
-            val name = metadata.title?.let(SwiftText::trimWhitespaceAndNewlines)?.ifEmpty { null } ?: "Imported Bible"
+            val name = metadata.title?.let(SwiftText::trimWhitespaceAndNewlines)?.ifEmpty { null } ?: AppText.get(R.string.data_import_untitled_bible)
             val copyright = metadata.copyright?.let(SwiftText::trimWhitespaceAndNewlines) ?: ""
             return ImportedTranslationIdentity(
                 id = identifier(metadata.identifier ?: metadata.abbreviation ?: name),

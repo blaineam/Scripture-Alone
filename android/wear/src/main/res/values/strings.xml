@@ -1,7 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Scripture Alone</string>
+    <!-- The app's name, a proper name: never translated. -->
+    <string name="app_name" translatable="false">Scripture Alone</string>
+
+    <!-- Title of the daily verse card, tile and complication. Shown uppercased as a small label on the tile and home card. -->
     <string name="verse_of_the_day">Verse of the Day</string>
+    <!-- Watch face complication picker: what the Verse of the Day complication shows. -->
     <string name="complication_description">Today’s passage on your watch face.</string>
+    <!-- Tile picker: what the Verse of the Day tile shows. -->
     <string name="tile_description">Today’s passage, in the translation you read.</string>
+
+    <!-- Tile and complication -->
+    <!-- Tile, shown when today's verse can't be loaded. %1$s is the app's name, Scripture Alone. -->
+    <string name="wear_tile_open_app">Open %1$s</string>
+    <!-- Accessibility description of the Verse of the Day complication. %1$s is the passage, e.g. Psalm 23:1. -->
+    <string name="wear_complication_content_description">Verse of the Day, %1$s</string>
+
+    <!-- Home -->
+    <!-- Button (a verb): opens the Bible reader. Also the tile's button that opens today's verse. -->
+    <string name="wear_read">Read</string>
+    <!-- Accessibility label of the home screen's Verse of the Day card. %1$s is the passage, e.g. Psalm 23:1; %2$s is the verse text. -->
+    <string name="wear_home_votd_accessibility">Verse of the Day, %1$s. %2$s</string>
+    <!-- Home row and screen title: the verses favorited on the phone. -->
+    <string name="wear_favorites">Favorites</string>
+    <!-- Home row, screen title and section header: notes written on the phone. -->
+    <string name="wear_notes">Notes</string>
+    <!-- Home row and screen title: which Bible translation the watch reads. -->
+    <string name="wear_translation">Translation</string>
+
+    <!-- Verse -->
+    <!-- %1$s is a translation abbreviation, e.g. ASV. -->
+    <string name="wear_verse_not_in_edition">This passage isn’t in the watch’s %1$s.</string>
+    <!-- Button (a verb): reads the passage aloud. -->
+    <string name="wear_speak">Speak</string>
+    <!-- Button (a verb): stops reading aloud. -->
+    <string name="wear_stop">Stop</string>
+    <!-- Button: opens the whole chapter. %1$s is a book and chapter, e.g. John 3. -->
+    <string name="wear_read_chapter">Read %1$s</string>
+    <!-- Accessibility label of a numbered verse. %1$d is the verse number; %2$s is the verse text. -->
+    <string name="wear_verse_accessibility">Verse %1$d. %2$s</string>
+
+    <!-- Reader -->
+    <!-- Screen title: the list of the Bible's books. -->
+    <string name="wear_books">Books</string>
+    <!-- A book and chapter, e.g. John 3. %1$s is the book's name or abbreviation; %2$d is the chapter number. -->
+    <string name="wear_book_chapter">%1$s %2$d</string>
+    <!-- Accessibility label of a chapter button. %1$d is the chapter number. -->
+    <string name="wear_chapter_accessibility">Chapter %1$d</string>
+    <!-- Book group headers in the books list. -->
+    <string name="wear_book_group_law">Law</string>
+    <string name="wear_book_group_history">History</string>
+    <string name="wear_book_group_wisdom">Wisdom &amp; Poetry</string>
+    <string name="wear_book_group_major_prophets">Major Prophets</string>
+    <string name="wear_book_group_minor_prophets">Minor Prophets</string>
+    <string name="wear_book_group_gospels">Gospels</string>
+    <string name="wear_book_group_paul">Paul’s Letters</string>
+    <string name="wear_book_group_general">General Letters</string>
+    <!-- Book group header: the book of Revelation. -->
+    <string name="wear_book_group_prophecy">Prophecy</string>
+
+    <!-- Favorites and notes -->
+    <string name="wear_favorites_empty_title">No Favorites</string>
+    <string name="wear_favorites_empty_message">Favorite a verse on your phone and it appears here.</string>
+    <string name="wear_notes_empty_title">No Notes</string>
+    <string name="wear_notes_empty_message">Notes you write on your phone appear here.</string>
+    <!-- Shown when the note that was open was deleted on the phone. -->
+    <string name="wear_note_deleted">Note Deleted</string>
+    <string name="wear_note_edit_on_phone">Edit notes on your phone.</string>
+
+    <!-- Translations -->
+    <!-- Footer when the phone's translation isn't on the watch. %1$s is a translation abbreviation, e.g. ESV. -->
+    <string name="wear_translation_phone_unavailable">%1$s on your phone can’t be read here. Online translations can’t be stored on the watch.</string>
+    <!-- Footer of the translation picker: the watch's translation follows the phone's. -->
+    <string name="wear_translation_follows_phone">Follows your phone.</string>
 </resources>

@@ -51,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
@@ -58,6 +59,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.annotation.StringRes
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.keepsake.Keepsake
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeNote
 import com.blainemiller.scripturealone.data.keepsake.NotesTextExport
@@ -78,7 +81,7 @@ import com.blainemiller.scripturealone.ui.reader.glass
 import kotlinx.coroutines.delay
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.time.format.FormatStyle
 
 /**
  * "Reading Dad’s Bible · Read-only keepsake", above the text while a keepsake is open — `LegacyBanner`.
@@ -99,28 +102,29 @@ fun LegacyBanner(keepsake: Keepsake, palette: ReaderPalette, onClose: () -> Unit
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Text(
-                "Reading ${manifest.displayTitle}", color = palette.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+                stringResource(R.string.keepsake_banner_reading, manifest.displayTitle), color = palette.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
                 fontFamily = ReaderTypography.sourceSerif(15f),
             )
             manifest.dedication?.takeIf { it.isNotEmpty() }?.let {
                 Text(
                     it, color = palette.ink, fontSize = 13.sp, fontStyle = FontStyle.Italic, fontFamily = ReaderTypography.sourceSerif(13f),
                     maxLines = if (expanded) Int.MAX_VALUE else 1, overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.clickable(interactionSource = null, indication = null, onClickLabel = if (expanded) "Show less" else "Show the whole dedication") { expanded = !expanded },
+                    modifier = Modifier.clickable(interactionSource = null, indication = null, onClickLabel = stringResource(if (expanded) R.string.keepsake_banner_show_less else R.string.keepsake_banner_show_dedication)) { expanded = !expanded },
                 )
             }
-            Text("Read-only keepsake", color = palette.secondary, fontSize = 11.sp)
+            Text(stringResource(R.string.keepsake_banner_read_only), color = palette.secondary, fontSize = 11.sp)
         }
         Spacer(Modifier.width(8.dp))
+        val returnLabel = stringResource(R.string.keepsake_banner_return)
         Box(
             Modifier.clip(CircleShape).background(SheetColors.buttonFill(palette)).clickable(role = Role.Button, onClick = onClose)
-                .semantics { contentDescription = "Return to My Bible" }
+                .semantics { contentDescription = returnLabel }
                 .padding(horizontal = 14.dp, vertical = 7.dp),
-        ) { Text("My Bible", color = palette.accent, fontSize = 13.sp, fontWeight = FontWeight.SemiBold) }
+        ) { Text(stringResource(R.string.keepsake_banner_my_bible), color = palette.accent, fontSize = 13.sp, fontWeight = FontWeight.SemiBold) }
     }
 }
 
-private enum class LegacyScope(val title: String) { ALL("All Notes"), CHAPTER("This Chapter") }
+private enum class LegacyScope(@StringRes val titleRes: Int) { ALL(R.string.keepsake_notes_scope_all), CHAPTER(R.string.keepsake_notes_scope_chapter) }
 
 /**
  * The keepsake's notes, read-only, in place of the reader's own Notes panel — `LegacyNotesPanel`.
@@ -150,8 +154,8 @@ fun LegacyNotesPanel(
             LegacyNoteDetail(model, open, palette, onBack = { onOpenNoteChange(null) }, onClose = onDismiss)
             return@Column
         }
-        PanelHeader("Notes", palette, back = false, onLeading = onDismiss) {
-            PanelHeaderIcon(Icons.Outlined.IosShare, "Export Notes", palette) {
+        PanelHeader(stringResource(R.string.keepsake_notes_title), palette, back = false, onLeading = onDismiss) {
+            PanelHeaderIcon(Icons.Outlined.IosShare, stringResource(R.string.keepsake_notes_export), palette) {
                 if (keepsake.notes.isNotEmpty()) {
                     model.legacy.export = ExportRequest(
                         ExportSupport.canonicallySorted(keepsake.notes),
@@ -161,11 +165,12 @@ fun LegacyNotesPanel(
                 }
             }
         }
-        PanelSearchField(search, "Search these notes", palette) { search = it }
+        PanelSearchField(search, stringResource(R.string.keepsake_notes_search_placeholder), palette) { search = it }
         Spacer(Modifier.height(12.dp))
-        Segmented(LegacyScope.entries, scope, { it.title }, palette) { scope = it }
+        val scopeTitles = LegacyScope.entries.associateWith { stringResource(it.titleRes) }
+        Segmented(LegacyScope.entries, scope, { scopeTitles.getValue(it) }, palette) { scope = it }
         Text(
-            "${keepsake.manifest.displayTitle} · read-only", color = palette.secondary, fontSize = 13.sp,
+            stringResource(R.string.keepsake_notes_read_only, keepsake.manifest.displayTitle), color = palette.secondary, fontSize = 13.sp,
             modifier = Modifier.padding(start = 32.dp, top = 8.dp, bottom = 10.dp),
         )
         val location = model.location
@@ -176,8 +181,11 @@ fun LegacyNotesPanel(
         }
         if (notes.isEmpty()) {
             EmptyState(
-                ReaderIcons.NoteText, if (term.isEmpty()) "No Notes Here" else "No Matches",
-                if (term.isEmpty() && scope == LegacyScope.CHAPTER) "There are no notes on this chapter." else "Try another word.",
+                ReaderIcons.NoteText,
+                stringResource(if (term.isEmpty()) R.string.keepsake_notes_empty_title else R.string.keepsake_notes_no_matches),
+                stringResource(
+                    if (term.isEmpty() && scope == LegacyScope.CHAPTER) R.string.keepsake_notes_empty_chapter else R.string.keepsake_notes_try_another_word,
+                ),
                 palette,
             )
             return@Column
@@ -210,7 +218,7 @@ private fun LegacyNoteRow(note: KeepsakeNote, palette: ReaderPalette, onOpen: ()
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.getDefault()).format(note.updatedAt.atZone(ZoneId.systemDefault())),
+                DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).format(note.updatedAt.atZone(ZoneId.systemDefault())),
                 color = palette.secondary, fontSize = 12.sp,
             )
         }
@@ -237,7 +245,7 @@ private fun LegacyNoteDetail(model: ReaderViewModel, note: KeepsakeNote, palette
         }
     }
     PanelHeader(note.displayTitle, palette, back = true, onLeading = onBack) {
-        PanelHeaderIcon(if (copied) Icons.Rounded.Check else Icons.Outlined.ContentCopy, if (copied) "Copied" else "Copy Note", palette) {
+        PanelHeaderIcon(if (copied) Icons.Rounded.Check else Icons.Outlined.ContentCopy, stringResource(if (copied) R.string.keepsake_note_copied else R.string.keepsake_note_copy), palette) {
             copyText(context, note)
             copied = true
         }

@@ -1,10 +1,12 @@
 package com.blainemiller.scripturealone.data.userdata
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeHighlight
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeNote
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.text.AppText
 import java.time.Instant
 import java.util.UUID
 
@@ -54,7 +56,7 @@ data class Note(
     val origin: String = "manual",
 ) {
     val displayTitle: String
-        get() = title.trim().ifEmpty { anchors.firstOrNull()?.display ?: "Untitled Note" }
+        get() = title.trim().ifEmpty { anchors.firstOrNull()?.display ?: AppText.get(R.string.data_keepsake_untitled_note) }
 
     val anchorSummary: String get() = anchors.joinToString(" · ") { it.display }
 

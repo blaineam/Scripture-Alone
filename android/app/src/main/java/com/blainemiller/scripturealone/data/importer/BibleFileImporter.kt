@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.data.importer
 
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
 import java.io.File
 import java.io.IOException
 
@@ -136,9 +138,9 @@ class BibleFileImporter(
             if (zip.contains("META-INF/container.xml")) return ImportedFileFormat.EPUB
             if (zip.names.any { it.lowercase().endsWith(".usfm") || it.lowercase().endsWith(".sfm") }) return ImportedFileFormat.USFM_ZIP
             if (zip.names.any { it.lowercase().endsWith(".xhtml") || it.lowercase().endsWith(".html") }) {
-                throw BibleImportError.NotAnEPUB("it has no META-INF/container.xml")
+                throw BibleImportError.NotAnEPUB(AppText.get(R.string.data_import_detail_no_container))
             }
-            throw BibleImportError.UnsupportedFormat("it is neither an ePub nor a set of USFM books")
+            throw BibleImportError.UnsupportedFormat(AppText.get(R.string.data_import_detail_unknown_format))
         }
     }
 }

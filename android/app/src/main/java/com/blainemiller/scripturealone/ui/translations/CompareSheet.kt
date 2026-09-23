@@ -58,6 +58,9 @@ import com.blainemiller.scripturealone.ui.study.serifStyle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.produceState
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
 
 /**
  * [verse] is the number shown: the left-hand translation's own (the right's when it alone has it).
@@ -118,14 +121,14 @@ fun CompareSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: () ->
                         CompareRow(lv[key]?.first ?: rv[key]?.first ?: key % 1_000, lv[key]?.second, rv[key]?.second, key)
                     },
                 )
-            }.getOrElse { Comparison.Failed(it.message ?: "That translation isn't available.") }
+            }.getOrElse { Comparison.Failed(it.message ?: AppText.get(R.string.translations_compare_unavailable)) }
         }
     }
 
     Column(Modifier.fillMaxSize().clip(androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)).background(surface)
         .takesTaps()) {
         Box(Modifier.fillMaxWidth().height(60.dp).padding(horizontal = 14.dp)) {
-            Box(Modifier.align(Alignment.CenterStart)) { GlassTextButton("Close", palette, surface, onClick = onClose) }
+            Box(Modifier.align(Alignment.CenterStart)) { GlassTextButton(stringResource(R.string.common_close), palette, surface, onClick = onClose) }
             Box(Modifier.align(Alignment.Center)) {
                 Picker(left, other, candidates, palette) {
                     otherId = it
@@ -139,9 +142,9 @@ fun CompareSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: () ->
         )
         Box(Modifier.fillMaxWidth().height(0.5.dp).background(SheetColors.separator(palette)))
         when {
-            other == null -> ContentUnavailable(Icons.Rounded.ViewColumn, "Nothing to Compare With", "Add another translation first.", palette, Modifier.padding(top = 40.dp))
+            other == null -> ContentUnavailable(Icons.Rounded.ViewColumn, stringResource(R.string.translations_compare_empty_title), stringResource(R.string.translations_compare_empty_message), palette, Modifier.padding(top = 40.dp))
             state is Comparison.Failed -> ContentUnavailable(
-                Icons.Rounded.ErrorOutline, "Couldn't Load That Translation", (state as Comparison.Failed).message, palette, Modifier.padding(top = 40.dp),
+                Icons.Rounded.ErrorOutline, stringResource(R.string.translations_compare_failed_title), (state as Comparison.Failed).message, palette, Modifier.padding(top = 40.dp),
             )
             state is Comparison.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(26.dp))
@@ -180,7 +183,8 @@ private fun Side(text: String?, size: Float, palette: ReaderPalette) {
     if (text != null) {
         Text(text, style = serifStyle(size, palette.ink))
     } else {
-        Text("—", color = palette.secondary, modifier = Modifier.semantics { contentDescription = "Not in this translation" })
+        val missing = stringResource(R.string.translations_compare_verse_missing)
+        Text("—", color = palette.secondary, modifier = Modifier.semantics { contentDescription = missing })
     }
 }
 
@@ -188,22 +192,24 @@ private fun Side(text: String?, size: Float, palette: ReaderPalette) {
 @Composable
 private fun Picker(left: String, right: String?, candidates: List<String>, palette: ReaderPalette, onPick: (String) -> Unit) {
     var open by remember { mutableStateOf(false) }
+    val description = if (right != null) stringResource(R.string.translations_compare_picker_description, left, right)
+    else stringResource(R.string.translations_compare_picker_description_none, left)
     Box {
         Row(
             Modifier.height(40.dp).glass(palette, CircleShape, SheetColors.surface(palette), lifted = true)
                 .clickable(enabled = candidates.isNotEmpty(), role = Role.DropdownList) { open = true }.padding(horizontal = 16.dp)
-                .semantics(mergeDescendants = true) { contentDescription = "Compare $left with ${right ?: "nothing"}" },
+                .semantics(mergeDescendants = true) { contentDescription = description },
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(left, color = palette.ink, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.SemiBold)
             Icon(Icons.AutoMirrored.Rounded.CompareArrows, null, tint = palette.secondary, modifier = Modifier.padding(horizontal = 6.dp).size(18.dp))
-            Text(right ?: "Choose", color = palette.accent, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.SemiBold)
+            Text(right ?: stringResource(R.string.translations_compare_choose), color = palette.accent, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.SemiBold)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             for (id in candidates) {
                 DropdownMenuItem(
                     text = { Text(id, color = palette.ink) },
-                    trailingIcon = { if (id == right) Icon(Icons.Rounded.Check, "Selected", tint = palette.accent) },
+                    trailingIcon = { if (id == right) Icon(Icons.Rounded.Check, stringResource(R.string.translations_selected), tint = palette.accent) },
                     onClick = { open = false; onPick(id) },
                 )
             }

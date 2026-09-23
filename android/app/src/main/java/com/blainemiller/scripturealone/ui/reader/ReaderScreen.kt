@@ -141,6 +141,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.ui.navigation.GoToSheet
@@ -226,7 +228,7 @@ fun ReaderScreen(
         if (next != model.location) model.show(next)
     }
     val selectionActions = if (listen == null || listenStart == null) actions else actions.copy(onListen = { ranges ->
-        listenStart { scope.launch { listen.playSelection(model.translationId, model.rights, model.verses(ranges)) } }
+        listenStart { scope.launch { listen.playSelection(model.translationId, model.rights, model.chapter?.translation?.language, model.verses(ranges)) } }
     })
     fun listenFromTop() {
         val chapter = model.chapter?.takeIf { it.ref == model.location && it.translation.id == model.translationId } ?: return
@@ -343,7 +345,7 @@ fun ReaderScreen(
                     modifier = Modifier.align(Alignment.Center).size(28.dp),
                 )
                 else -> Text(
-                    "Can’t open this chapter.\n${model.loadError}",
+                    stringResource(R.string.reader_load_error, model.loadError.orEmpty()),
                     color = palette.secondary,
                     modifier = Modifier.align(Alignment.Center).padding(32.dp),
                 )
@@ -798,7 +800,7 @@ private fun noteMarkerContent(size: Float, palette: ReaderPalette): Map<String, 
         ChapterRenderer.NOTE_MARKER to InlineTextContent(
             Placeholder((side * 1.1f).sp, side.sp, PlaceholderVerticalAlign.TextCenter),
         ) {
-            Icon(ReaderIcons.TextBubbleFill, "Note", tint = palette.accent, modifier = Modifier.fillMaxSize())
+            Icon(ReaderIcons.TextBubbleFill, stringResource(R.string.reader_note_marker), tint = palette.accent, modifier = Modifier.fillMaxSize())
         },
     )
 }
@@ -821,7 +823,7 @@ private fun NotesPopoverContent(notes: List<Note>, palette: ReaderPalette, onOpe
                     Text(note.body, color = palette.ink, fontSize = 16.sp, lineHeight = 21.sp, maxLines = 10, overflow = TextOverflow.Ellipsis)
                 }
                 Text(
-                    "Open Note", color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
+                    stringResource(R.string.reader_open_note), color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.clip(RoundedCornerShape(6.dp)).clickable(role = Role.Button) { onOpen(note.id) }.padding(vertical = 2.dp),
                 )
             }
@@ -968,22 +970,24 @@ private fun TopBar(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Pill(palette) {
-                PillIcon(ReaderIcons.NoteText, "Notes", palette, enabled = true, tint = palette.ink, iconSize = 26.dp, onClick = onNotes)
+                PillIcon(ReaderIcons.NoteText, stringResource(R.string.reader_notes), palette, enabled = true, tint = palette.ink, iconSize = 26.dp, onClick = onNotes)
                 PillIcon(
-                    Icons.AutoMirrored.Outlined.MenuBook, "Study", palette, enabled = true, tint = palette.ink, iconSize = 26.dp,
+                    Icons.AutoMirrored.Outlined.MenuBook, stringResource(R.string.reader_study), palette, enabled = true, tint = palette.ink, iconSize = 26.dp,
                     // iOS: value On/Off, hint "Shows cross references and commentary for the verse you tap."
-                    state = if (studyOpen) "On" else "Off", actionLabel = "show cross references and commentary for the verse you tap",
+                    state = stringResource(if (studyOpen) R.string.reader_state_on else R.string.reader_state_off),
+                    actionLabel = stringResource(R.string.reader_study_action),
                     onClick = onStudy,
                 )
             }
             Box(Modifier.weight(1f)) {
+            val goToLabel = stringResource(R.string.reader_go_to_label, Canon.display(model.location))
             Row(
                 Modifier
                     .padding(start = 4.dp)
                     .clip(RoundedCornerShape(22.dp))
                     .clickable(role = Role.Button, onClick = onGoTo)
                     .padding(horizontal = 8.dp, vertical = 8.dp)
-                    .clearAndSetSemantics { contentDescription = "Go to passage, currently ${Canon.display(model.location)}" },
+                    .clearAndSetSemantics { contentDescription = goToLabel },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Shrinks to fit before it truncates — the iOS title's `minimumScaleFactor(0.7)` — so
@@ -1024,14 +1028,14 @@ private fun BottomBar(model: ReaderViewModel, palette: ReaderPalette, modifier: 
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Pill(palette) {
-                PillIcon(Icons.Rounded.ChevronLeft, "Previous Chapter", palette, enabled = Canon.previous(model.location) != null) {
+                PillIcon(Icons.Rounded.ChevronLeft, stringResource(R.string.reader_previous_chapter), palette, enabled = Canon.previous(model.location) != null) {
                     model.previous()
                 }
             }
             // Auto-Scroll and Listen, between the arrows, as in the iPhone's bottom toolbar.
             Pill(palette) { center() }
             Pill(palette) {
-                PillIcon(Icons.Rounded.ChevronRight, "Next Chapter", palette, enabled = Canon.next(model.location) != null) {
+                PillIcon(Icons.Rounded.ChevronRight, stringResource(R.string.reader_next_chapter), palette, enabled = Canon.next(model.location) != null) {
                     model.next()
                 }
             }
@@ -1083,10 +1087,11 @@ private fun PillIcon(
 @Composable
 private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, onCompare: () -> Unit, onManageTranslations: () -> Unit) {
     var open by remember { mutableStateOf(false) }
+    val translationLabel = stringResource(R.string.reader_translation_label, model.translationId)
     Box {
         Box(
             Modifier.height(44.dp).clip(RoundedCornerShape(22.dp)).clickable(role = Role.DropdownList) { open = true }
-                .clearAndSetSemantics { contentDescription = "Translation, ${model.translationId}" }
+                .clearAndSetSemantics { contentDescription = translationLabel }
                 .padding(horizontal = 12.dp),
             contentAlignment = Alignment.Center,
         ) {
@@ -1101,14 +1106,14 @@ private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, on
             }
             HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
             DropdownMenuItem(
-                text = { Text("Compare Translations…", color = palette.ink, fontSize = 15.sp) },
+                text = { Text(stringResource(R.string.reader_compare_translations), color = palette.ink, fontSize = 15.sp) },
                 onClick = {
                     open = false
                     onCompare()
                 },
             )
             DropdownMenuItem(
-                text = { Text("Manage Translations…", color = palette.ink, fontSize = 15.sp) },
+                text = { Text(stringResource(R.string.reader_manage_translations), color = palette.ink, fontSize = 15.sp) },
                 onClick = {
                     open = false
                     onManageTranslations()
@@ -1121,9 +1126,10 @@ private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, on
 /** The AA button: opens the Appearance sheet. */
 @Composable
 private fun AppearanceButton(palette: ReaderPalette, onClick: () -> Unit) {
+    val label = stringResource(R.string.reader_appearance)
     Row(
         Modifier.height(44.dp).clip(RoundedCornerShape(22.dp)).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 12.dp)
-            .clearAndSetSemantics { contentDescription = "Appearance" },
+            .clearAndSetSemantics { contentDescription = label },
         verticalAlignment = Alignment.Bottom,
     ) {
         Text("A", color = palette.accent, fontSize = 15.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(bottom = 11.dp))
@@ -1143,7 +1149,7 @@ private fun MenuChoice(title: String, selected: Boolean, palette: ReaderPalette,
                 Text(title, color = palette.ink, fontSize = 15.sp)
             }
         },
-        trailingIcon = { if (selected) Icon(Icons.Rounded.Check, "Selected", tint = palette.accent) },
+        trailingIcon = { if (selected) Icon(Icons.Rounded.Check, stringResource(R.string.reader_selected), tint = palette.accent) },
         onClick = onClick,
     )
 }

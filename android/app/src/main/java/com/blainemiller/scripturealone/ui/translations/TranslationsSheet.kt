@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -73,6 +74,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.TranslationInfo
@@ -109,6 +111,8 @@ import com.blainemiller.scripturealone.ui.study.ProminentButton
 import com.blainemiller.scripturealone.ui.study.SheetTopBar
 import com.blainemiller.scripturealone.ui.study.StudyStyle
 import com.blainemiller.scripturealone.ui.study.loaded
+import com.blainemiller.scripturealone.text.AppText
+import com.blainemiller.scripturealone.text.countedString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -160,7 +164,7 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
         if (uri == null) return@rememberLauncherForActivityResult
-        val name = displayName(context, uri) ?: "that file"
+        val name = displayName(context, uri) ?: AppText.get(R.string.translations_import_unnamed_file)
         importing = name
         scope.launch {
             // The picker hands over a content URI; the importer reads a file, so it is copied into
@@ -173,7 +177,7 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
                 }
             }
             copy.onSuccess { runImport(it, name, null, cleanUp = true) }
-                .onFailure { importing = null; failure = "Couldn’t read that file: ${it.message}" }
+                .onFailure { importing = null; failure = AppText.get(R.string.translations_import_read_failed, it.message.orEmpty()) }
         }
     }
 
@@ -203,7 +207,7 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
                         }
                     }
                     file.onSuccess { runImport(it, translation.title, translation.importIdentity, cleanUp = true) }
-                        .onFailure { importing = null; failure = it.message ?: "The download failed." }
+                        .onFailure { importing = null; failure = it.message ?: AppText.get(R.string.translations_download_failed) }
                 }
             }
             page == Page.KEYS -> OnlineKeysPage(reader, palette) { page = Page.MAIN }
@@ -218,12 +222,12 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
 
         importing?.let { name -> ProgressOverlay(name, progress, palette) }
         failure?.let { message ->
-            Alert("That translation couldn’t be added", message, palette, confirm = "OK", onConfirm = { failure = null })
+            Alert(stringResource(R.string.translations_add_failed_title), message, palette, confirm = stringResource(R.string.common_ok), onConfirm = { failure = null })
         }
         pendingRemoval?.let { entry ->
             Alert(
-                "Remove this translation?", "Your highlights and notes stay; they’re kept by verse, not by translation.", palette,
-                confirm = "Remove", destructive = true, onCancel = { pendingRemoval = null },
+                stringResource(R.string.translations_remove_title), stringResource(R.string.translations_remove_message), palette,
+                confirm = stringResource(R.string.common_remove), destructive = true, onCancel = { pendingRemoval = null },
                 onConfirm = {
                     // Never leave the reader pointing at a store that no longer exists.
                     if (reader.translationId == entry.id) reader.selectTranslation(BundledTranslations.DEFAULT)
@@ -264,13 +268,13 @@ private fun MainPage(
     val current = reader.chapter?.translation
     Column(Modifier.fillMaxSize()) {
         SheetTopBar(
-            "Translations", palette,
-            trailing = { GlassTextButton("Done", palette, surface, bold = true, tint = palette.accent, onClick = onClose) },
+            stringResource(R.string.translations_title), palette,
+            trailing = { GlassTextButton(stringResource(R.string.common_done), palette, surface, bold = true, tint = palette.accent, onClick = onClose) },
         )
         Column(
             Modifier.fillMaxSize().background(StudyStyle.groupedBackground(palette)).verticalScroll(rememberScrollState()),
         ) {
-            GroupedSection(palette, header = "Included") {
+            GroupedSection(palette, header = stringResource(R.string.translations_section_included)) {
                 val infos = bundled ?: BundledTranslations.bundled.map { TranslationInfo(it, it, it, "") }
                 infos.forEachIndexed { i, info ->
                     if (i > 0) CellDivider(palette)
@@ -279,19 +283,19 @@ private fun MainPage(
             }
             if (library.online.isNotEmpty()) {
                 GroupedSection(
-                    palette, header = "Online",
-                    footer = "These need a connection. What you read is cached up to the publisher's limit, and they can't be searched offline.",
+                    palette, header = stringResource(R.string.translations_section_online),
+                    footer = stringResource(R.string.translations_section_online_footer),
                 ) {
                     library.online.forEachIndexed { i, entry ->
                         if (i > 0) CellDivider(palette)
-                        TranslationRow(entry.name, entry.id, "Read over the network", palette, entry.id == reader.translationId) {
+                        TranslationRow(entry.name, entry.id, stringResource(R.string.translations_online_note), palette, entry.id == reader.translationId) {
                             reader.selectTranslation(entry.id)
                         }
                     }
                 }
             }
             if (library.imported.isNotEmpty()) {
-                GroupedSection(palette, header = "Added by You") {
+                GroupedSection(palette, header = stringResource(R.string.translations_section_added)) {
                     library.imported.forEachIndexed { i, entry ->
                         if (i > 0) CellDivider(palette)
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -300,9 +304,10 @@ private fun MainPage(
                                     reader.selectTranslation(entry.id)
                                 }
                             }
+                            val removeLabel = stringResource(R.string.translations_remove_named, entry.info.name)
                             Box(
                                 Modifier.padding(end = 8.dp).size(40.dp).clip(CircleShape).clickable(role = Role.Button) { onRemove(entry) }
-                                    .semantics { contentDescription = "Remove ${entry.info.name}" },
+                                    .semantics { contentDescription = removeLabel },
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(Icons.Outlined.Delete, null, tint = palette.red, modifier = Modifier.size(20.dp))
@@ -312,14 +317,14 @@ private fun MainPage(
                 }
             }
             GroupedSection(
-                palette, header = "Add a Translation",
-                footer = "Free translations come from eBible.org, and nothing is downloaded until you choose one. A file can be a USFM zip or an ePub you own — anything copy-protected is refused. The ESV, CSB, NASB and NKJV can't be given away by anyone, so they're read over the network with your own free key.",
+                palette, header = stringResource(R.string.translations_section_add),
+                footer = stringResource(R.string.translations_section_add_footer),
             ) {
-                ActionRow(Icons.Outlined.Language, "Browse Free Translations…", palette, onCatalog)
+                ActionRow(Icons.Outlined.Language, stringResource(R.string.translations_browse_free), palette, onCatalog)
                 CellDivider(palette, 52.dp)
-                ActionRow(Icons.Outlined.Folder, "Import a File…", palette, onImport)
+                ActionRow(Icons.Outlined.Folder, stringResource(R.string.translations_import_file), palette, onImport)
                 CellDivider(palette, 52.dp)
-                ActionRow(Icons.Outlined.Key, "Online Translations…", palette, onKeys)
+                ActionRow(Icons.Outlined.Key, stringResource(R.string.translations_online_keys), palette, onKeys)
             }
             current?.let { info -> AboutTranslation(info, palette) }
             Spacer(Modifier.height(WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 32.dp))
@@ -344,7 +349,7 @@ private fun TranslationRow(name: String, abbreviation: String, note: String?, pa
             }
         }
         Box(Modifier.width(30.dp), contentAlignment = Alignment.CenterEnd) {
-            if (selected) Icon(Icons.Rounded.Check, "Reading", tint = palette.accent, modifier = Modifier.size(20.dp))
+            if (selected) Icon(Icons.Rounded.Check, stringResource(R.string.translations_reading), tint = palette.accent, modifier = Modifier.size(20.dp))
         }
     }
 }
@@ -363,12 +368,17 @@ private fun ActionRow(icon: ImageVector, title: String, palette: ReaderPalette, 
 private fun AboutTranslation(info: TranslationInfo, palette: ReaderPalette) {
     val rights = info.rights
     val sharing = when {
-        rights.hasExpired() -> "This translation's licence has expired: its text can be read, but not copied or shared."
-        rights.maxQuotationVerses == TranslationRights.UNLIMITED_QUOTATION -> "Free to copy and share."
-        else -> "Copy and share up to ${rights.maxQuotationVerses} verses at a time, with its notice." +
-            if (!rights.allowExternalHandoff) " Its text isn't handed to other apps." else ""
+        rights.hasExpired() -> stringResource(R.string.translations_about_expired)
+        rights.maxQuotationVerses == TranslationRights.UNLIMITED_QUOTATION -> stringResource(R.string.translations_about_free)
+        else -> {
+            val limit = countedString(
+                R.string.translations_about_limit_one, R.string.translations_about_limit_other,
+                rights.maxQuotationVerses.toInt(), rights.maxQuotationVerses,
+            )
+            if (!rights.allowExternalHandoff) stringResource(R.string.translations_about_limit_no_handoff, limit) else limit
+        }
     }
-    GroupedSection(palette, header = "About This Translation", footer = sharing) {
+    GroupedSection(palette, header = stringResource(R.string.translations_about_title), footer = sharing) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(info.name, color = palette.ink, fontSize = StudyStyle.headline, fontWeight = FontWeight.SemiBold)
             if (info.copyright.isNotEmpty()) Text(info.copyright, color = palette.secondary, fontSize = StudyStyle.footnote)
@@ -400,20 +410,20 @@ private fun CatalogPage(palette: ReaderPalette, onBack: () -> Unit, onPick: (Cat
         state = withContext(Dispatchers.IO) {
             runCatching { EBibleCatalog.fetch() }.fold(
                 { all -> CatalogState.Loaded(CatalogLanguageMatch.ordered(all.filter(CatalogCuration::isCurated))) },
-                { CatalogState.Failed(it.message ?: "The catalogue couldn't be read.") },
+                { CatalogState.Failed(it.message ?: AppText.get(R.string.translations_catalog_unreadable)) },
             )
         }
     }
     Column(Modifier.fillMaxSize()) {
-        SheetTopBar("Free Translations", palette, leading = { GlassBackButton(palette, surface, onBack) })
+        SheetTopBar(stringResource(R.string.translations_catalog_title), palette, leading = { GlassBackButton(palette, surface, onBack) })
         when (val s = state) {
             CatalogState.Loading -> Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                 CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(26.dp))
                 Spacer(Modifier.height(10.dp))
-                Text("Asking eBible.org…", color = palette.secondary, fontSize = StudyStyle.subheadline)
+                Text(stringResource(R.string.translations_catalog_loading), color = palette.secondary, fontSize = StudyStyle.subheadline)
             }
-            is CatalogState.Failed -> ContentUnavailable(Icons.Outlined.WifiOff, "Couldn't reach eBible.org", s.message, palette, Modifier.padding(top = 40.dp)) {
-                ProminentButton("Try Again", palette) { attempt++ }
+            is CatalogState.Failed -> ContentUnavailable(Icons.Outlined.WifiOff, stringResource(R.string.translations_catalog_failed_title), s.message, palette, Modifier.padding(top = 40.dp)) {
+                ProminentButton(stringResource(R.string.common_try_again), palette) { attempt++ }
             }
             is CatalogState.Loaded -> {
                 SearchField(query, palette, surface) { query = it }
@@ -423,14 +433,14 @@ private fun CatalogPage(palette: ReaderPalette, onBack: () -> Unit, onPick: (Cat
                 }
                 Column(Modifier.fillMaxSize().background(StudyStyle.groupedBackground(palette)).verticalScroll(rememberScrollState())) {
                     GroupedSection(
-                        palette, header = if (needle.isEmpty()) "Offered by Scripture Alone" else "Results",
-                        footer = if (needle.isEmpty()) "Complete Bibles translated from the Hebrew and Greek. Reading in another language? Download a Bible from eBible.org and use Import a File." else null,
+                        palette, header = if (needle.isEmpty()) stringResource(R.string.translations_catalog_offered) else stringResource(R.string.translations_catalog_results),
+                        footer = if (needle.isEmpty()) stringResource(R.string.translations_catalog_footer) else null,
                     ) {
                         shown.forEachIndexed { i, t ->
                             if (i > 0) CellDivider(palette)
                             Column(Modifier.fillMaxWidth().clickable(role = Role.Button) { onPick(t) }.padding(horizontal = 16.dp, vertical = 10.dp)) {
                                 Text(t.title, color = palette.ink, fontSize = StudyStyle.body)
-                                Text("${t.languageNameInEnglish} · ${t.scope}", color = palette.secondary, fontSize = StudyStyle.caption)
+                                Text(stringResource(R.string.translations_catalog_language_scope, t.languageNameInEnglish, t.scope), color = palette.secondary, fontSize = StudyStyle.caption)
                                 Text(t.copyright, color = palette.secondary, fontSize = StudyStyle.caption2, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         }
@@ -455,7 +465,7 @@ private fun SearchField(query: String, palette: ReaderPalette, surface: Color, o
             query, onChange, singleLine = true, textStyle = TextStyle(color = palette.ink, fontSize = 17.sp),
             cursorBrush = SolidColor(palette.accent), modifier = Modifier.weight(1f),
             decorationBox = { field ->
-                if (query.isEmpty()) Text("Language or name", color = palette.secondary, fontSize = 17.sp)
+                if (query.isEmpty()) Text(stringResource(R.string.translations_catalog_search_placeholder), color = palette.secondary, fontSize = 17.sp)
                 field()
             },
         )
@@ -503,7 +513,7 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
             val result = withContext(Dispatchers.IO) { runCatching { APIBibleClient(key).availableTranslations() } }
             checking = false
             result.onSuccess { list -> available = list.sortedBy { it.name.lowercase() } }
-                .onFailure { failure = it.message ?: "API.Bible couldn't be reached." }
+                .onFailure { failure = it.message ?: AppText.get(R.string.translations_keys_api_bible_unreachable) }
         }
     }
 
@@ -532,19 +542,19 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
 
     Column(Modifier.fillMaxSize()) {
         SheetTopBar(
-            "Online Translations", palette,
-            leading = { GlassTextButton("Cancel", palette, surface, onClick = onDone) },
-            trailing = { GlassTextButton("Done", palette, surface, bold = true, tint = palette.accent, onClick = ::save) },
+            stringResource(R.string.translations_keys_title), palette,
+            leading = { GlassTextButton(stringResource(R.string.common_cancel), palette, surface, onClick = onDone) },
+            trailing = { GlassTextButton(stringResource(R.string.common_done), palette, surface, bold = true, tint = palette.accent, onClick = ::save) },
         )
         Column(Modifier.fillMaxSize().background(StudyStyle.groupedBackground(palette)).verticalScroll(rememberScrollState())) {
             for (provider in OnlineProvider.entries) {
                 GroupedSection(palette, header = provider.title, footer = provider.explanation) {
-                    KeyField(entry[provider].orEmpty(), "${provider.title} API key", palette) { entry[provider] = it }
+                    KeyField(entry[provider].orEmpty(), stringResource(R.string.translations_keys_field_description, provider.title), palette) { entry[provider] = it }
                     CellDivider(palette)
                     Cell(palette, onClick = { uri.openUri(provider.signupUrl) }) {
                         Icon(Icons.AutoMirrored.Outlined.OpenInNew, null, tint = palette.accent, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(12.dp))
-                        Text("Get a free key…", color = palette.accent, fontSize = StudyStyle.body)
+                        Text(stringResource(R.string.translations_keys_get_free), color = palette.accent, fontSize = StudyStyle.body)
                     }
                     if (stored[provider] == true) {
                         CellDivider(palette)
@@ -554,7 +564,7 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
                         }) {
                             Icon(Icons.Outlined.Delete, null, tint = palette.red, modifier = Modifier.size(20.dp))
                             Spacer(Modifier.width(12.dp))
-                            Text("Remove Key", color = palette.red, fontSize = StudyStyle.body)
+                            Text(stringResource(R.string.translations_keys_remove), color = palette.red, fontSize = StudyStyle.body)
                         }
                     }
                     if (provider == OnlineProvider.API_BIBLE && entry[provider].orEmpty().isNotBlank()) {
@@ -563,12 +573,12 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
                             checking -> Cell(palette) {
                                 CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(12.dp))
-                                Text("Asking API.Bible what your key can read…", color = palette.ink, fontSize = StudyStyle.callout)
+                                Text(stringResource(R.string.translations_keys_checking), color = palette.ink, fontSize = StudyStyle.callout)
                             }
                             available.isEmpty() -> Cell(palette, onClick = ::loadAvailable) {
                                 Icon(Icons.Outlined.Refresh, null, tint = palette.accent, modifier = Modifier.size(20.dp))
                                 Spacer(Modifier.width(12.dp))
-                                Text("Check My Translations", color = palette.accent, fontSize = StudyStyle.body)
+                                Text(stringResource(R.string.translations_keys_check), color = palette.accent, fontSize = StudyStyle.body)
                             }
                             else -> available.forEachIndexed { i, t ->
                                 if (i > 0) CellDivider(palette)
@@ -577,7 +587,7 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
                                         Text(t.name, color = palette.ink, fontSize = StudyStyle.body)
                                         Text(t.language, color = palette.secondary, fontSize = StudyStyle.caption)
                                     }
-                                    if (chosen[t.id] == true) Icon(Icons.Rounded.Check, "Chosen", tint = palette.accent, modifier = Modifier.size(20.dp))
+                                    if (chosen[t.id] == true) Icon(Icons.Rounded.Check, stringResource(R.string.translations_keys_chosen), tint = palette.accent, modifier = Modifier.size(20.dp))
                                 }
                             }
                         }
@@ -587,7 +597,7 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
             Spacer(Modifier.height(48.dp))
         }
     }
-    failure?.let { Alert("That didn't work", it, palette, confirm = "OK", onConfirm = { failure = null }) }
+    failure?.let { Alert(stringResource(R.string.translations_keys_failed_title), it, palette, confirm = stringResource(R.string.common_ok), onConfirm = { failure = null }) }
 }
 
 /** A secure field: the key is masked, never autocorrected, never suggested. */
@@ -602,7 +612,7 @@ private fun KeyField(value: String, label: String, palette: ReaderPalette, onCha
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
             modifier = Modifier.fillMaxWidth().semantics { contentDescription = label },
             decorationBox = { field ->
-                if (value.isEmpty()) Text("API key", color = palette.secondary.copy(alpha = 0.7f), fontSize = 17.sp)
+                if (value.isEmpty()) Text(stringResource(R.string.translations_keys_placeholder), color = palette.secondary.copy(alpha = 0.7f), fontSize = 17.sp)
                 field()
             },
         )
@@ -621,27 +631,27 @@ private fun ImportSummary(result: BibleImportResult, palette: ReaderPalette, onD
     val report = result.report
     val gaps = report.books.filter { !it.isComplete }
     Column(Modifier.fillMaxSize()) {
-        SheetTopBar("Added", palette, trailing = { GlassTextButton("Done", palette, surface, bold = true, tint = palette.accent, onClick = onDone) })
+        SheetTopBar(stringResource(R.string.translations_summary_title), palette, trailing = { GlassTextButton(stringResource(R.string.common_done), palette, surface, bold = true, tint = palette.accent, onClick = onDone) })
         Column(Modifier.fillMaxSize().background(StudyStyle.groupedBackground(palette)).verticalScroll(rememberScrollState())) {
             GroupedSection(palette, footer = result.identity.copyright) {
-                LabeledCell(palette, "Translation", result.identity.name)
+                LabeledCell(palette, stringResource(R.string.translations_summary_translation), result.identity.name)
                 CellDivider(palette)
-                LabeledCell(palette, "Books", "${report.books.size}")
+                LabeledCell(palette, stringResource(R.string.translations_summary_books), NumberFormat.getIntegerInstance().format(report.books.size))
                 CellDivider(palette)
-                LabeledCell(palette, "Verses", NumberFormat.getIntegerInstance().format(report.totalVerses))
+                LabeledCell(palette, stringResource(R.string.translations_summary_verses), NumberFormat.getIntegerInstance().format(report.totalVerses))
             }
             if (gaps.isEmpty() && report.booksMissing.isEmpty()) {
                 GroupedSection(palette) {
                     Cell(palette) {
                         Icon(Icons.Outlined.CheckCircle, null, tint = Color(0xFF34A853), modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(10.dp))
-                        Text("Every book read cleanly.", color = Color(0xFF2E8B57), fontSize = StudyStyle.body)
+                        Text(stringResource(R.string.translations_summary_clean), color = Color(0xFF2E8B57), fontSize = StudyStyle.body)
                     }
                 }
             } else {
                 GroupedSection(
-                    palette, header = "Gaps",
-                    footer = "Some translations genuinely omit verses, and some files are simply incomplete. You can read what imported either way.",
+                    palette, header = stringResource(R.string.translations_summary_gaps),
+                    footer = stringResource(R.string.translations_summary_gaps_footer),
                 ) {
                     gaps.forEachIndexed { i, book ->
                         if (i > 0) CellDivider(palette)
@@ -653,7 +663,7 @@ private fun ImportSummary(result: BibleImportResult, palette: ReaderPalette, onD
                     if (report.booksMissing.isNotEmpty()) {
                         if (gaps.isNotEmpty()) CellDivider(palette)
                         Text(
-                            "Not in this file: ${report.booksMissing.joinToString(", ") { it.displayName }}",
+                            stringResource(R.string.translations_summary_missing, report.booksMissing.joinToString(", ") { it.displayName }),
                             color = palette.secondary, fontSize = StudyStyle.caption, modifier = Modifier.padding(16.dp),
                         )
                     }
@@ -669,11 +679,18 @@ private fun ImportSummary(result: BibleImportResult, palette: ReaderPalette, onD
  * verses like Luke 17:36 — and "24 of 24 chapters" under a "Gaps" heading reads as a bug.
  */
 internal fun gapSummary(book: ImportCoverageReport.BookCoverage): String {
-    if (book.missingChapters.isNotEmpty()) return "${book.chaptersFound} of ${book.chaptersExpected} chapters"
+    if (book.missingChapters.isNotEmpty()) {
+        return AppText.plural(
+            R.string.translations_gap_chapters_one, R.string.translations_gap_chapters_other,
+            book.chaptersExpected, book.chaptersFound, book.chaptersExpected,
+        )
+    }
     val refs = book.chaptersWithGaps.flatMap { c -> c.missingVerses.map { "${c.chapter}:$it" } }
-    if (refs.isEmpty()) return "${book.versesFound} verses"
+    if (refs.isEmpty()) return AppText.plural(R.string.translations_gap_verses_one, R.string.translations_gap_verses_other, book.versesFound, book.versesFound)
     val extra = refs.size - minOf(refs.size, 4)
-    return "Not in this file: ${refs.take(4).joinToString(", ")}${if (extra > 0) " and $extra more" else ""}"
+    val shown = refs.take(4).joinToString(", ")
+    return if (extra > 0) AppText.get(R.string.translations_summary_missing_more, shown, extra)
+    else AppText.get(R.string.translations_summary_missing, shown)
 }
 
 // ---- Overlays ---------------------------------------------------------------------------------------
@@ -694,12 +711,12 @@ private fun ProgressOverlay(name: String, progress: Double?, palette: ReaderPale
                     modifier = Modifier.width(180.dp),
                 )
                 Spacer(Modifier.height(12.dp))
-                Text("Downloading $name…", color = palette.ink, fontSize = StudyStyle.callout, textAlign = TextAlign.Center)
+                Text(stringResource(R.string.translations_progress_downloading, name), color = palette.ink, fontSize = StudyStyle.callout, textAlign = TextAlign.Center)
             } else {
                 CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(26.dp))
                 Spacer(Modifier.height(12.dp))
-                Text("Reading $name…", color = palette.ink, fontSize = StudyStyle.callout, textAlign = TextAlign.Center)
-                Text("This takes a few seconds for a whole Bible.", color = palette.secondary, fontSize = StudyStyle.caption, textAlign = TextAlign.Center)
+                Text(stringResource(R.string.translations_progress_reading, name), color = palette.ink, fontSize = StudyStyle.callout, textAlign = TextAlign.Center)
+                Text(stringResource(R.string.translations_progress_note), color = palette.secondary, fontSize = StudyStyle.caption, textAlign = TextAlign.Center)
             }
         }
     }
@@ -729,7 +746,7 @@ internal fun Alert(
             Box(Modifier.fillMaxWidth().height(0.5.dp).background(SheetColors.separator(palette)))
             Row(Modifier.fillMaxWidth().height(46.dp)) {
                 if (onCancel != null) {
-                    AlertButton("Cancel", palette.accent, FontWeight.Normal, Modifier.weight(1f), onCancel)
+                    AlertButton(stringResource(R.string.common_cancel), palette.accent, FontWeight.Normal, Modifier.weight(1f), onCancel)
                     Box(Modifier.width(0.5.dp).height(46.dp).background(SheetColors.separator(palette)))
                 }
                 AlertButton(confirm, if (destructive) palette.red else palette.accent, FontWeight.SemiBold, Modifier.weight(1f), onConfirm)

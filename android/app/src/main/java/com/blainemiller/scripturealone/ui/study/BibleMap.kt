@@ -46,7 +46,10 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.countedString
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextMeasurer
@@ -294,10 +297,12 @@ fun BibleMap(
     LaunchedEffect(fitToken) { if (camera != null) fit(animated = true) }
 
     val summary = if (content.pins.isEmpty()) {
-        "Map of the lands of the Bible."
+        stringResource(R.string.map_summary_empty)
     } else {
         val names = content.pins.take(12).joinToString(", ") { it.name }
-        "Map showing $names${if (content.pins.size > 12) ", and ${content.pins.size - 12} more" else ""}."
+        val more = content.pins.size - 12
+        val list = if (more > 0) countedString(R.string.map_summary_more_one, R.string.map_summary_more_other, more, names, more) else names
+        stringResource(R.string.map_summary, list)
     }
 
     Box(
@@ -347,15 +352,15 @@ fun BibleMap(
         }
         if (showsControls) {
             Column(Modifier.align(Alignment.BottomEnd).padding(10.dp)) {
-                MapControl(Icons.Rounded.Add, "Zoom In", palette) {
+                MapControl(Icons.Rounded.Add, stringResource(R.string.map_zoom_in), palette) {
                     camera?.let { userMoved = true; camera = it.zoomed(1.8f, sizeDp.center, sizeDp) }
                 }
                 Box(Modifier.size(8.dp))
-                MapControl(Icons.Rounded.Remove, "Zoom Out", palette) {
+                MapControl(Icons.Rounded.Remove, stringResource(R.string.map_zoom_out), palette) {
                     camera?.let { userMoved = true; camera = it.zoomed(1 / 1.8f, sizeDp.center, sizeDp) }
                 }
                 Box(Modifier.size(8.dp))
-                MapControl(Icons.Rounded.CenterFocusStrong, "Show All Places", palette) { fit(animated = true) }
+                MapControl(Icons.Rounded.CenterFocusStrong, stringResource(R.string.map_show_all_places), palette) { fit(animated = true) }
             }
         }
     }

@@ -38,11 +38,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.keepsake.Keepsake
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeArchive
 import com.blainemiller.scripturealone.ui.export.ExportedFile
@@ -61,6 +63,7 @@ import com.blainemiller.scripturealone.ui.notes.PanelSeparator
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.ReaderTypography
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
+import com.blainemiller.scripturealone.text.AppText
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -101,17 +104,17 @@ private fun LegacySettingsForm(model: ReaderViewModel, palette: ReaderPalette, o
         onDone()
     }
 
-    FormSheet("Keepsake & Export", palette, leading = "Done", onLeading = onDone) {
-        FormHeader("Your Keepsake Bible", palette)
+    FormSheet(stringResource(R.string.keepsake_settings_title), palette, leading = stringResource(R.string.common_done), onLeading = onDone) {
+        FormHeader(stringResource(R.string.keepsake_settings_section_yours), palette)
         PanelGroup(palette) {
-            FormButton("Create a Keepsake", palette, icon = Icons.Outlined.CardGiftcard, push = true, onClick = onCreate)
+            FormButton(stringResource(R.string.keepsake_create_a_keepsake), palette, icon = Icons.Outlined.CardGiftcard, push = true, onClick = onCreate)
         }
         FormFooter(
-            "Give your family a copy of your highlights and notes — a digital version of the Bible you’ve marked over the years. It’s a file you hand over yourself; nothing is sent anywhere.",
+            stringResource(R.string.keepsake_settings_give_footer),
             palette,
         )
 
-        FormHeader("Keepsakes You’ve Been Given", palette)
+        FormHeader(stringResource(R.string.keepsake_settings_section_given), palette)
         PanelGroup(palette) {
             for (entry in legacy.entries) {
                 KeepsakeRow(
@@ -133,49 +136,47 @@ private fun LegacySettingsForm(model: ReaderViewModel, palette: ReaderPalette, o
                 )
                 PanelSeparator(palette)
             }
-            FormButton("Open a Keepsake File…", palette, icon = Icons.Outlined.MoveToInbox) {
+            FormButton(stringResource(R.string.keepsake_settings_open_file), palette, icon = Icons.Outlined.MoveToInbox) {
                 pick.launch(arrayOf(ExportFiles.KEEPSAKE, "application/zip", "application/octet-stream", "*/*"))
             }
         }
         FormFooter(
-            if (legacy.entries.isEmpty()) {
-                "When someone gives you a Keepsake Bible, open the file here — or tap it in Messages, Gmail or Files. It stays on this device, apart from your own notes."
-            } else {
-                "Tap one to read it. Their highlights and notes appear in the text, just as they left them. Touch and hold for more."
-            },
+            stringResource(
+                if (legacy.entries.isEmpty()) R.string.keepsake_settings_given_footer_empty else R.string.keepsake_settings_given_footer,
+            ),
             palette,
         )
 
-        FormHeader("Coming From Somewhere Else", palette)
+        FormHeader(stringResource(R.string.keepsake_settings_section_elsewhere), palette)
         PanelGroup(palette) {
-            FormButton("Bring Notes From Another App…", palette, icon = Icons.Outlined.FileDownload) { legacy.importing = true }
+            FormButton(stringResource(R.string.keepsake_settings_bring_notes), palette, icon = Icons.Outlined.FileDownload) { legacy.importing = true }
         }
         FormFooter(
-            "If you've been reading in Life Bible — the app formerly called Tecarta Bible — your notes, highlights and saved verses can come with you.",
+            stringResource(R.string.keepsake_settings_bring_notes_footer),
             palette,
         )
 
-        FormHeader("Export", palette)
+        FormHeader(stringResource(R.string.keepsake_settings_section_export), palette)
         PanelGroup(palette) {
-            FormButton("Export All Notes…", palette, icon = Icons.Outlined.IosShare, enabled = notes.isNotEmpty() && mayExport) {
-                legacy.export = ExportRequest(ExportSupport.canonicallySorted(notes.map { it.toKeepsake() }), "Notes")
+            FormButton(stringResource(R.string.keepsake_settings_export_all), palette, icon = Icons.Outlined.IosShare, enabled = notes.isNotEmpty() && mayExport) {
+                legacy.export = ExportRequest(ExportSupport.canonicallySorted(notes.map { it.toKeepsake() }), context.getString(R.string.keepsake_settings_export_title))
             }
         }
         FormFooter(
-            if (mayExport) "Your notes as a PDF to print or keep, as Markdown, or as plain text — with the verses they’re about."
-            else "${model.translationAbbreviation} doesn’t allow its text to be exported. Switch to another translation to export your notes with the verses they’re about.",
+            if (mayExport) stringResource(R.string.keepsake_settings_export_footer)
+            else stringResource(R.string.keepsake_settings_export_not_allowed, model.translationAbbreviation),
             palette,
         )
 
-        FormHeader("How This Works", palette)
+        FormHeader(stringResource(R.string.keepsake_settings_section_how), palette)
         PanelGroup(palette) {
             Column(Modifier.padding(horizontal = 18.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    "A keepsake is a snapshot. Notes you write afterwards aren’t in it — when you’d like your family to have them, make a new keepsake. Opening a newer one replaces the older copy on their device.",
+                    stringResource(R.string.keepsake_settings_how_snapshot),
                     color = palette.secondary, fontSize = 15.sp, lineHeight = 20.sp,
                 )
                 Text(
-                    "Keepsakes are ordinary files: a ZIP archive of readable text. Even without this app, the words stay recoverable.",
+                    stringResource(R.string.keepsake_settings_how_files),
                     color = palette.secondary, fontSize = 15.sp, lineHeight = 20.sp,
                 )
             }
@@ -185,15 +186,15 @@ private fun LegacySettingsForm(model: ReaderViewModel, palette: ReaderPalette, o
     removing?.let { entry ->
         AlertDialog(
             onDismissRequest = { removing = null },
-            title = { Text("Remove ${entry.title}?") },
-            text = { Text("The keepsake will be removed from this device. If you want it again later, you’ll need the original file.") },
+            title = { Text(stringResource(R.string.keepsake_remove_title, entry.title)) },
+            text = { Text(stringResource(R.string.keepsake_remove_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     removing = null
                     legacy.remove(entry.id) { model.closeKeepsake() }
-                }) { Text("Remove from This Device", color = palette.red) }
+                }) { Text(stringResource(R.string.keepsake_remove_confirm), color = palette.red) }
             },
-            dismissButton = { TextButton(onClick = { removing = null }) { Text("Cancel", color = palette.ink) } },
+            dismissButton = { TextButton(onClick = { removing = null }) { Text(stringResource(R.string.common_cancel), color = palette.ink) } },
             containerColor = com.blainemiller.scripturealone.ui.reader.SheetColors.popover(palette),
             titleContentColor = palette.ink,
             textContentColor = palette.secondary,
@@ -215,7 +216,7 @@ private fun KeepsakeRow(
     var menu by remember { mutableStateOf(false) }
     Box {
         Row(
-            Modifier.fillMaxWidth().combinedClickable(role = Role.Button, onLongClickLabel = "Show options", onLongClick = { menu = true }, onClick = onOpen)
+            Modifier.fillMaxWidth().combinedClickable(role = Role.Button, onLongClickLabel = stringResource(R.string.keepsake_row_show_options), onLongClick = { menu = true }, onClick = onOpen)
                 .padding(horizontal = 18.dp, vertical = 12.dp),
             verticalAlignment = Alignment.Top,
         ) {
@@ -231,20 +232,26 @@ private fun KeepsakeRow(
                 }
                 Text(rowDetail(entry), color = palette.secondary, fontSize = 12.sp)
             }
-            if (isOpen) Text("Open", color = palette.accent, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            if (isOpen) Text(stringResource(R.string.keepsake_row_open_badge), color = palette.accent, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
         }
         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-            DropdownMenuItem(text = { Text("Open", color = palette.ink) }, onClick = { menu = false; onOpen() })
-            DropdownMenuItem(text = { Text("Share a Copy", color = palette.ink) }, onClick = { menu = false; onShare() })
-            DropdownMenuItem(text = { Text("Remove…", color = palette.red) }, onClick = { menu = false; onRemove() })
+            DropdownMenuItem(text = { Text(stringResource(R.string.common_open), color = palette.ink) }, onClick = { menu = false; onOpen() })
+            DropdownMenuItem(text = { Text(stringResource(R.string.keepsake_row_share_copy), color = palette.ink) }, onClick = { menu = false; onShare() })
+            DropdownMenuItem(text = { Text(stringResource(R.string.keepsake_row_remove), color = palette.red) }, onClick = { menu = false; onRemove() })
         }
     }
 }
 
 private fun rowDetail(entry: KeepsakeLibrary.Entry): String {
     val parts = mutableListOf<String>()
-    entry.manifest.counts?.let { parts += "${it.highlights} highlights · ${it.notes} notes" }
-    parts += "made " + DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).format(entry.manifest.createdAt.atZone(ZoneId.systemDefault()))
+    entry.manifest.counts?.let {
+        parts += AppText.plural(R.string.keepsake_count_highlights_one, R.string.keepsake_count_highlights_other, it.highlights, it.highlights)
+        parts += AppText.plural(R.string.keepsake_count_notes_one, R.string.keepsake_count_notes_other, it.notes, it.notes)
+    }
+    parts += AppText.get(
+        R.string.keepsake_row_made,
+        DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).format(entry.manifest.createdAt.atZone(ZoneId.systemDefault())),
+    )
     return parts.joinToString(" · ")
 }
 

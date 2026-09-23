@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.data.listen
 
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
 import java.util.Locale
 
 /**
@@ -18,14 +20,15 @@ data class VoiceInfo(
     /** False when the engine lists the voice but its data isn't on the device yet. */
     val installed: Boolean = true,
 ) {
-    val language: String get() = Locale.forLanguageTag(languageTag).language
+    /** The voice's language, "cmn" (some engines' Mandarin) read as "zh". */
+    val language: String get() = Locale.forLanguageTag(languageTag).language.let { if (it == "cmn") "zh" else it }
     val region: String get() = Locale.forLanguageTag(languageTag).country
 
     /** iOS's badge, by the engine's own quality grade. */
     val badge: String?
         get() = when {
-            quality >= QUALITY_VERY_HIGH -> "Premium"
-            quality >= QUALITY_HIGH -> "Enhanced"
+            quality >= QUALITY_VERY_HIGH -> AppText.get(R.string.listen_voice_premium)
+            quality >= QUALITY_HIGH -> AppText.get(R.string.listen_voice_enhanced)
             else -> null
         }
 
@@ -37,9 +40,9 @@ data class VoiceInfo(
         val region = Locale.forLanguageTag(languageTag).let { l ->
             l.getDisplayCountry(displayLocale).ifEmpty { l.getDisplayLanguage(displayLocale) }
         }.ifEmpty { languageTag }
-        val tags = listOfNotNull(badge, if (requiresNetwork) "Online" else null)
-        val suffix = if (tags.isEmpty()) "" else " (${tags.joinToString(", ")})"
-        return "$name$suffix · $region"
+        val tags = listOfNotNull(badge, if (requiresNetwork) AppText.get(R.string.listen_voice_online) else null)
+        val named = if (tags.isEmpty()) name else AppText.get(R.string.listen_voice_with_tags, name, tags.joinToString(", "))
+        return AppText.get(R.string.listen_voice_title, named, region)
     }
 
     /** The part of the engine's name that tells voices apart: "iol" in "en-us-x-iol-local". */
@@ -54,7 +57,9 @@ data class VoiceInfo(
      * "Voice IOL"; the engine's plain per-language voice ("en-us-language", no variant code) is its
      * "Standard Voice".
      */
-    val name: String get() = shortName?.let { "Voice ${it.uppercase(Locale.ROOT)}" } ?: "Standard Voice"
+    val name: String
+        get() = shortName?.let { AppText.get(R.string.listen_voice_code_name, it.uppercase(Locale.ROOT)) }
+            ?: AppText.get(R.string.listen_voice_standard)
 
     companion object {
         const val QUALITY_HIGH = 400
@@ -104,7 +109,11 @@ object VoiceCatalog {
         val allowed = options(voices, language, homeRegion, allowNetwork)
         if (saved != null) {
             allowed.firstOrNull { it.id == saved }?.let { return Resolution.Use(it) }
-            val refused = voices.firstOrNull { it.id == saved && it.installed && it.requiresNetwork && !allowNetwork }
+            // A saved voice in another language (an English voice picked while reading the KJV, now
+            // reading Segond) is passed over for this text — not refused, and not forgotten.
+            val refused = voices.firstOrNull {
+                it.id == saved && it.installed && it.requiresNetwork && !allowNetwork && it.language.equals(language, ignoreCase = true)
+            }
             if (refused != null) return Resolution.Refused(allowed.firstOrNull())
         }
         return Resolution.Use(allowed.firstOrNull())
@@ -119,7 +128,39 @@ object VoiceCatalog {
     fun allowsNetworkVoices(externalHandoffPermitted: Boolean): Boolean = externalHandoffPermitted
 
     /** The notice for [Resolution.Refused] — worded as iOS's `translationNotPermitted` explanation. */
-    const val NETWORK_VOICE_REFUSED =
-        "That voice reads over the internet, which this translation’s licence doesn’t allow. " +
-            "A voice on this device reads it instead."
+    val NETWORK_VOICE_REFUSED: String get() = AppText.get(R.string.listen_network_voice_refused)
+
+    /**
+     * The voice language for the language a text is written in — `SpeechVoices.voiceLanguage(for:)`:
+     * "fr" for "fr", "zh" for "zh-Hans", "pt" for "pt-BR"; English for a text that doesn't say (the
+     * ASV, BSB and KJV, imports). The voices offered and chosen are the text's: an English voice
+     * reading Louis Segond helps no one.
+     */
+    fun voiceLanguage(textLanguage: String?): String =
+        textLanguage?.let { Locale.forLanguageTag(it).language }?.takeIf { it.isNotEmpty() && it != "und" } ?: "en"
+
+    /**
+     * The region whose voices come first: the text's own ("pt-BR" → Brazil), mainland Mandarin for the
+     * simplified-script 和合本 whatever region the device is in, else the device's own region.
+     */
+    fun preferredRegion(textLanguage: String?, deviceRegion: String?): String? {
+        val locale = textLanguage?.let(Locale::forLanguageTag)
+        return when {
+            locale == null -> deviceRegion
+            locale.country.isNotEmpty() -> locale.country
+            locale.language == "zh" -> "CN"
+            else -> deviceRegion
+        }
+    }
+
+    /** The engine's fallback locale for a text when no listed voice fits: "fr-FR" for LSG, "zh-CN" for the 和合本. */
+    fun fallbackLocale(textLanguage: String?, deviceLanguage: String, deviceRegion: String?): Locale {
+        val language = voiceLanguage(textLanguage)
+        val region = preferredRegion(textLanguage, deviceRegion.takeIf { deviceLanguage == language })
+        return when {
+            !region.isNullOrEmpty() -> Locale.Builder().setLanguage(language).setRegion(region).build()
+            language == "en" -> Locale.US
+            else -> Locale.Builder().setLanguage(language).build()
+        }
+    }
 }

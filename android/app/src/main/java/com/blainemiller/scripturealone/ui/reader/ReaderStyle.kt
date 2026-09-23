@@ -1,14 +1,21 @@
 package com.blainemiller.scripturealone.ui.reader
 
+import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
 
 /**
  * The reader's themes, with the exact page / ink / secondary / red / accent values of
  * `ReaderTheme.palette(for:)` in `ScriptureAlone/Reader/ReaderStyle.swift`. These are the colours a
  * reader who uses both platforms will compare side by side, so they are copied, not re-tuned.
  */
-enum class ReaderTheme(val title: String) {
-    SYSTEM("Auto"), LIGHT("Light"), SEPIA("Sepia"), DARK("Dark"), BLACK("Black");
+enum class ReaderTheme(@StringRes private val titleRes: Int) {
+    SYSTEM(R.string.reader_theme_auto), LIGHT(R.string.reader_theme_light), SEPIA(R.string.reader_theme_sepia),
+    DARK(R.string.reader_theme_dark), BLACK(R.string.reader_theme_black);
+
+    /** The theme's name in the Appearance sheet, in the app's language. */
+    val title: String get() = AppText.get(titleRes)
 
     /** [systemDark] is the device's current appearance; only [SYSTEM] follows it. */
     fun palette(systemDark: Boolean): ReaderPalette = when (this) {
@@ -39,14 +46,17 @@ enum class ReaderTheme(val title: String) {
  * lifted rather than merely brightened, because a colour that reads well on paper goes muddy on
  * black at the same saturation.
  */
-enum class ReaderAccent(val title: String, private val light: Long, private val dark: Long) {
-    SUNRISE("Sunrise", 0x9A6B2F, 0xE0B872),
-    EMBER("Ember", 0xA8412A, 0xF08A6C),
-    OLIVE("Olive", 0x5E6B32, 0xB6C57A),
-    SEA("Sea", 0x1F6F72, 0x76CBCE),
-    LAPIS("Lapis", 0x2C4C8C, 0x8FB3F0),
-    PLUM("Plum", 0x6E3A72, 0xC79AD0),
-    INK("Ink", 0x45484D, 0xB3B7BE);
+enum class ReaderAccent(@StringRes private val titleRes: Int, private val light: Long, private val dark: Long) {
+    SUNRISE(R.string.reader_accent_sunrise, 0x9A6B2F, 0xE0B872),
+    EMBER(R.string.reader_accent_ember, 0xA8412A, 0xF08A6C),
+    OLIVE(R.string.reader_accent_olive, 0x5E6B32, 0xB6C57A),
+    SEA(R.string.reader_accent_sea, 0x1F6F72, 0x76CBCE),
+    LAPIS(R.string.reader_accent_lapis, 0x2C4C8C, 0x8FB3F0),
+    PLUM(R.string.reader_accent_plum, 0x6E3A72, 0xC79AD0),
+    INK(R.string.reader_accent_ink, 0x45484D, 0xB3B7BE);
+
+    /** The accent's name in the Appearance sheet, in the app's language. */
+    val title: String get() = AppText.get(titleRes)
 
     fun color(isDark: Boolean): Color = rgb(if (isDark) dark else light)
 
@@ -84,8 +94,11 @@ data class ReaderPalette(
     }
 }
 
-enum class ReadingLayout(val title: String) {
-    PARAGRAPHS("Paragraphs"), VERSES("Verse by Verse");
+enum class ReadingLayout(@StringRes private val titleRes: Int) {
+    PARAGRAPHS(R.string.reader_layout_paragraphs), VERSES(R.string.reader_layout_verses);
+
+    /** The layout's name in the Appearance sheet, in the app's language. */
+    val title: String get() = AppText.get(titleRes)
 
     /** The Swift raw value, as stored under `reader.layout`: "paragraphs" or "verses". */
     val raw: String get() = name.lowercase()

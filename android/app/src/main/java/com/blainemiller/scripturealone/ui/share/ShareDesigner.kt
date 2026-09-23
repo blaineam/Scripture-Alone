@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -69,6 +70,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.ui.appearance.SwitchRow
 import com.blainemiller.scripturealone.ui.notes.PanelColors
 import com.blainemiller.scripturealone.ui.notes.Segmented
@@ -133,7 +135,7 @@ fun ShareDesigner(model: ReaderViewModel, source: ShareSource, palette: ReaderPa
                 throw e
             } catch (e: Exception) {
                 // An IOException from the file or photo library, a SecurityException from MediaStore.
-                flash(e.message ?: "Can’t make the image.")
+                flash(e.message ?: context.getString(R.string.share_error_make))
             } finally {
                 busy = false
             }
@@ -152,9 +154,10 @@ fun ShareDesigner(model: ReaderViewModel, source: ShareSource, palette: ReaderPa
                 Modifier.align(Alignment.CenterStart).height(44.dp).glass(palette, CircleShape, surface, lifted = true)
                     .clickable(role = Role.Button, onClick = onDone).padding(horizontal = 18.dp),
                 contentAlignment = Alignment.Center,
-            ) { Text("Done", color = palette.ink, fontSize = 17.sp) }
+            ) { Text(stringResource(R.string.common_done), color = palette.ink, fontSize = 17.sp) }
+            val shareImage = stringResource(R.string.share_image)
             Text(
-                "Share Image", color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
+                shareImage, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.align(Alignment.Center),
             )
             Box(
@@ -165,7 +168,7 @@ fun ShareDesigner(model: ReaderViewModel, source: ShareSource, palette: ReaderPa
                             context.startActivity(ShareExport.shareIntent(uri, fit?.content?.reference ?: name))
                         }
                     }
-                    .semantics { contentDescription = "Share Image" },
+                    .semantics { contentDescription = shareImage },
                 contentAlignment = Alignment.Center,
             ) {
                 if (fit == null || busy) {
@@ -191,42 +194,43 @@ fun ShareDesigner(model: ReaderViewModel, source: ShareSource, palette: ReaderPa
             Flush { Segmented(ShareAlignment.entries, style.alignment, { it.title }, palette) { model.shareAlignment = it } }
 
             Column {
-                SwitchRow("Words of Christ in red", style.redLetters && source.hasRed, palette, enabled = source.hasRed, inset = 0.dp) {
+                SwitchRow(stringResource(R.string.share_red_letters), style.redLetters && source.hasRed, palette, enabled = source.hasRed, inset = 0.dp) {
                     model.shareRedLetters = it
                 }
                 if (source.verses.size > 1) {
-                    SwitchRow("Verse numbers", style.verseNumbers, palette, inset = 0.dp) { model.shareVerseNumbers = it }
+                    SwitchRow(stringResource(R.string.share_verse_numbers), style.verseNumbers, palette, inset = 0.dp) { model.shareVerseNumbers = it }
                 }
-                SwitchRow("Scripture Alone wordmark", style.wordmark, palette, inset = 0.dp) { model.shareWordmark = it }
+                SwitchRow(stringResource(R.string.share_wordmark), style.wordmark, palette, inset = 0.dp) { model.shareWordmark = it }
             }
 
-            Text("Text sizes itself to fit. Made on this device — nothing is uploaded.", color = palette.secondary, fontSize = 12.sp, lineHeight = 16.sp)
+            Text(stringResource(R.string.share_made_on_device), color = palette.secondary, fontSize = 12.sp, lineHeight = 16.sp)
 
             // Actions.
             val link = source.link(style)
-            ActionButton("Save to Photos", Icons.Outlined.SaveAlt, palette, enabled = fit != null && !busy) {
+            val savedToPhotos = stringResource(R.string.share_saved_to_photos)
+            ActionButton(stringResource(R.string.share_save_to_photos), Icons.Outlined.SaveAlt, palette, enabled = fit != null && !busy) {
                 export { bitmap, name ->
                     ShareExport.saveToPhotos(context, bitmap, name)
-                    flash("Saved to Photos")
+                    flash(savedToPhotos)
                 }
             }
             if (link != null) {
+                val linkCopied = stringResource(R.string.share_link_copied)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    ActionButton("Share Link", Icons.Outlined.Link, palette, Modifier.weight(1f)) { sendText(context, link, source.reference) }
-                    ActionButton("Copy Link", Icons.Outlined.ContentCopy, palette, Modifier.weight(1f)) {
+                    ActionButton(stringResource(R.string.share_share_link), Icons.Outlined.Link, palette, Modifier.weight(1f)) { sendText(context, link, source.reference) }
+                    ActionButton(stringResource(R.string.share_copy_link), Icons.Outlined.ContentCopy, palette, Modifier.weight(1f)) {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         clipboard.setPrimaryClip(ClipData.newPlainText(source.reference, link))
-                        flash("Link copied")
+                        flash(linkCopied)
                     }
                 }
                 Text(
-                    "The link carries the verse itself, so the card rebuilds in any browser. No server stores it.",
+                    stringResource(R.string.share_link_explainer),
                     color = palette.secondary, fontSize = 12.sp, lineHeight = 16.sp,
                 )
             } else {
                 Text(
-                    if (source.linksAllowed) "This passage is too long for a link — share the image or the text instead."
-                    else "Links aren’t available for this translation — share the image instead.",
+                    stringResource(if (source.linksAllowed) R.string.share_link_too_long else R.string.share_link_not_allowed),
                     color = palette.secondary, fontSize = 12.sp, lineHeight = 16.sp,
                 )
             }
@@ -267,12 +271,13 @@ fun Preview(renderer: ShareCardRenderer, content: ShareCardContent?, style: Shar
         val scale = min(maxWidth.value / style.aspect.width, maxHeight / style.aspect.height)
         val width = (style.aspect.width * scale).dp
         val height = (style.aspect.height * scale).dp
+        val description = stringResource(R.string.share_preview_description, reference, style.template.title)
         Box(
             Modifier.size(width, height)
                 .shadow(14.dp, RoundedCornerShape(14.dp), ambientColor = Color.Black.copy(alpha = 0.18f), spotColor = Color.Black.copy(alpha = 0.18f))
                 .clip(RoundedCornerShape(14.dp))
                 .background(templateBrush(style.template))
-                .semantics { contentDescription = "Preview: $reference, ${style.template.title}" },
+                .semantics { contentDescription = description },
         ) {
             if (content != null) {
                 Canvas(Modifier.fillMaxSize()) {
@@ -303,10 +308,11 @@ private fun TemplateStrip(style: ShareStyle, palette: ReaderPalette, onSelect: (
     LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         items(ShareTemplate.entries) { item ->
             val chosen = item == style.template
+            val name = item.title
             Column(
                 Modifier.clip(RoundedCornerShape(10.dp)).clickable(role = Role.Button) { onSelect(item) }
                     .semantics {
-                        contentDescription = item.title
+                        contentDescription = name
                         selected = chosen
                     }
                     .padding(vertical = 4.dp),
@@ -324,7 +330,7 @@ private fun TemplateStrip(style: ShareStyle, palette: ReaderPalette, onSelect: (
                 ) {
                     Text("Aa", color = Color(ShareCardRenderer.argb(item.ink)), fontSize = 17.sp, fontFamily = family)
                 }
-                Text(item.title, color = if (chosen) palette.ink else palette.secondary, fontSize = 11.sp)
+                Text(name, color = if (chosen) palette.ink else palette.secondary, fontSize = 11.sp)
             }
         }
     }
@@ -335,11 +341,12 @@ private fun TemplateStrip(style: ShareStyle, palette: ReaderPalette, onSelect: (
 private fun TypefaceRow(family: ReaderFontFamily, palette: ReaderPalette, onSelect: (ReaderFontFamily) -> Unit) {
     var open by remember { mutableStateOf(false) }
     Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text("Typeface", color = palette.ink, fontSize = 17.sp, modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.share_typeface), color = palette.ink, fontSize = 17.sp, modifier = Modifier.weight(1f))
         Box {
+            val description = stringResource(R.string.share_typeface_description, family.title)
             Row(
                 Modifier.clip(RoundedCornerShape(10.dp)).clickable(role = Role.Button) { open = true }.padding(horizontal = 8.dp, vertical = 6.dp)
-                    .semantics { contentDescription = "Typeface, ${family.title}" },
+                    .semantics { contentDescription = description },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(family.title, color = palette.accent, fontSize = 17.sp, fontFamily = family.fontFamily(17f))
@@ -352,11 +359,11 @@ private fun TypefaceRow(family: ReaderFontFamily, palette: ReaderPalette, onSele
                         text = {
                             Column {
                                 Text(option.title, color = palette.ink, fontSize = 16.sp, fontFamily = option.fontFamily(16f))
-                                Text("For ${option.iosTitle}", color = palette.secondary, fontSize = 11.sp)
+                                Text(stringResource(R.string.share_font_for, option.iosTitle), color = palette.secondary, fontSize = 11.sp)
                             }
                         },
                         trailingIcon = {
-                            if (option == family) Icon(Icons.Rounded.Check, "Selected", tint = palette.accent)
+                            if (option == family) Icon(Icons.Rounded.Check, stringResource(R.string.share_selected), tint = palette.accent)
                         },
                         onClick = {
                             open = false

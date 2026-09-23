@@ -67,11 +67,11 @@ class VerseOfDayTileService : TileService() {
         fun layout(context: Context, device: DeviceParameters, today: WatchVerseOfDay?): LayoutElementBuilders.LayoutElement {
             val secondary = argb(0xFFB4ABA2.toInt())
             val accent = argb(VersePalette.DARK.accent.toInt())
-            val label = Text.Builder(context, "VERSE OF THE DAY")
+            val label = Text.Builder(context, context.getString(R.string.verse_of_the_day).uppercase())
                 .setTypography(Typography.TYPOGRAPHY_CAPTION2).setColor(secondary).build()
             if (today == null) {
                 return PrimaryLayout.Builder(device).setPrimaryLabelTextContent(label)
-                    .setContent(Text.Builder(context, "Open Scripture Alone").setColor(argb(0xFFFFFFFF.toInt())).build())
+                    .setContent(Text.Builder(context, context.getString(R.string.wear_tile_open_app, context.getString(R.string.app_name))).setColor(argb(0xFFFFFFFF.toInt())).build())
                     .build()
             }
             val content = LayoutElementBuilders.Column.Builder()
@@ -104,7 +104,7 @@ class VerseOfDayTileService : TileService() {
                 .setPrimaryLabelTextContent(label)
                 .setContent(content)
                 .setPrimaryChipContent(
-                    CompactChip.Builder(context, "Read", open, device)
+                    CompactChip.Builder(context, context.getString(R.string.wear_read), open, device)
                         .setChipColors(ChipColors(accent, argb(0xFF000000.toInt())))
                         .build(),
                 )
@@ -138,7 +138,7 @@ class VerseComplicationService : SuspendingTimelineComplicationDataSourceService
             ?.let { data(type, WatchVerseOfDay(it, DailyVerseCatalog.FALLBACK_TRANSLATION)) }
 
     private fun data(type: ComplicationType, verse: WatchVerseOfDay): ComplicationData? {
-        val description = PlainComplicationText.Builder("Verse of the Day, ${verse.reference}").build()
+        val description = PlainComplicationText.Builder(getString(R.string.wear_complication_content_description, verse.reference)).build()
         val icon = MonochromaticImage.Builder(Icon.createWithResource(this, R.drawable.ic_book)).build()
         val tap = verse.range?.let { tapAction(this, ScriptureLink.url(it)) }
         return when (type) {

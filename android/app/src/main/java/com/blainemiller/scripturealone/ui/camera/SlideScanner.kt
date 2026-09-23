@@ -68,6 +68,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -80,6 +81,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.camera.SlideImage
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.google.mlkit.vision.text.TextRecognition
@@ -228,7 +230,7 @@ private fun LiveScanner(onCapture: (Bitmap) -> Unit, onCancel: () -> Unit) {
         }
 
         Text(
-            "Point at the slide. Tap any highlighted text or the shutter.",
+            stringResource(R.string.camera_scanner_instructions),
             color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium, textAlign = TextAlign.Center,
             modifier = Modifier.align(Alignment.TopCenter).windowInsetsPadding(WindowInsets.statusBars).padding(top = 24.dp, start = 24.dp, end = 24.dp)
                 .background(Color.Black.copy(alpha = 0.45f), CircleShape).padding(horizontal = 14.dp, vertical = 8.dp),
@@ -241,17 +243,18 @@ private fun LiveScanner(onCapture: (Bitmap) -> Unit, onCancel: () -> Unit) {
         ) {
             Box(Modifier.width(96.dp)) {
                 Text(
-                    "Cancel", color = Color.White, fontSize = 17.sp,
+                    stringResource(R.string.common_cancel), color = Color.White, fontSize = 17.sp,
                     modifier = Modifier.background(Color.Black.copy(alpha = 0.45f), CircleShape)
                         .border(0.5.dp, Color.White.copy(alpha = 0.3f), CircleShape)
                         .clickable(role = Role.Button, onClick = onCancel).padding(horizontal = 18.dp, vertical = 11.dp),
                 )
             }
             Spacer(Modifier.weight(1f))
+            val shutterLabel = stringResource(R.string.camera_take_photo_description)
             Box(
                 Modifier.size(76.dp).border(4.dp, Color.White, CircleShape).padding(7.dp).background(Color.White, CircleShape)
                     .clickable(enabled = !capturing, role = Role.Button, onClick = ::capture)
-                    .semantics { contentDescription = "Take photo of slide" },
+                    .semantics { contentDescription = shutterLabel },
                 contentAlignment = Alignment.Center,
             ) {
                 if (capturing) CircularProgressIndicator(color = Color.Black, strokeWidth = 2.5.dp, modifier = Modifier.size(28.dp))
@@ -296,10 +299,10 @@ private fun CameraDenied(palette: ReaderPalette, onChoosePhoto: () -> Unit, onCa
     ) {
         Icon(Icons.Rounded.CameraAlt, null, tint = palette.secondary, modifier = Modifier.size(48.dp))
         Spacer(Modifier.height(14.dp))
-        Text("Camera Access Is Off", color = palette.ink, fontSize = 22.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+        Text(stringResource(R.string.camera_access_off_title), color = palette.ink, fontSize = 22.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
         Spacer(Modifier.height(8.dp))
         Text(
-            "Scripture Alone reads slides on your phone and never uploads them. Turn on camera access in Settings, or choose a photo you’ve already taken.",
+            stringResource(R.string.camera_access_off_message),
             color = palette.secondary, fontSize = 15.sp, lineHeight = 20.sp, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(22.dp))
@@ -312,11 +315,11 @@ private fun CameraDenied(palette: ReaderPalette, onChoosePhoto: () -> Unit, onCa
             }.padding(horizontal = 22.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Text("Open Settings", color = if (palette.isDark) Color.Black else Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.camera_open_settings), color = if (palette.isDark) Color.Black else Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         }
         Spacer(Modifier.height(10.dp))
-        DeniedTextButton("Choose from Photos", palette, onChoosePhoto)
-        DeniedTextButton("Cancel", palette, onCancel)
+        DeniedTextButton(stringResource(R.string.camera_choose_from_photos), palette, onChoosePhoto)
+        DeniedTextButton(stringResource(R.string.common_cancel), palette, onCancel)
     }
 }
 

@@ -28,6 +28,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.share.SharePassageText
 import com.blainemiller.scripturealone.data.share.ShareLinkPayload
 import com.blainemiller.scripturealone.ui.share.Preview
@@ -79,8 +81,8 @@ fun SharedPassageCard(
                     Preview(renderer, content, style, maxHeight = cardHeight, reference = payload.reference)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    if (onDesign != null) CardButton("Make Image…", palette, onDesign)
-                    CardButton("Done", palette, onDismiss)
+                    if (onDesign != null) CardButton(stringResource(R.string.reader_make_image), palette, onDesign)
+                    CardButton(stringResource(R.string.common_done), palette, onDismiss)
                 }
             }
         }

@@ -1,9 +1,12 @@
 package com.blainemiller.scripturealone.data.listen
 
+import androidx.annotation.StringRes
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.ChapterVerse
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookID
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.text.AppText
 
 /**
  * What Listen reads and in what order — the queue half of `ScriptureAlone/Listen/ListenController.swift`,
@@ -29,7 +32,8 @@ object ListenQueue {
     /** "John, chapter 3." — or just "Jude" for a single-chapter book, as iOS announces it. */
     fun announcement(ref: ChapterRef): String {
         val book = BookID.of(ref.book) ?: return ""
-        return if (book.isSingleChapter) book.displayName else "${book.displayName}, chapter ${ref.chapter}."
+        return if (book.isSingleChapter) book.displayName
+        else AppText.get(R.string.listen_chapter_announcement, book.displayName, ref.chapter)
     }
 
     /**
@@ -113,13 +117,15 @@ object ListenQueue {
 }
 
 /** Stops listening after a while — for falling asleep to the Psalms. The iOS options and titles. */
-enum class SleepTimer(val title: String, val durationMillis: Long?) {
-    OFF("Off", null),
-    MINUTES_15("15 Minutes", 15 * 60_000L),
-    MINUTES_30("30 Minutes", 30 * 60_000L),
-    MINUTES_60("1 Hour", 60 * 60_000L),
-    END_OF_CHAPTER("End of Chapter", null),
+enum class SleepTimer(@StringRes private val titleRes: Int, val durationMillis: Long?) {
+    OFF(R.string.listen_sleep_off, null),
+    MINUTES_15(R.string.listen_sleep_15_minutes, 15 * 60_000L),
+    MINUTES_30(R.string.listen_sleep_30_minutes, 30 * 60_000L),
+    MINUTES_60(R.string.listen_sleep_1_hour, 60 * 60_000L),
+    END_OF_CHAPTER(R.string.listen_sleep_end_of_chapter, null),
     ;
+
+    val title: String get() = AppText.get(titleRes)
 
     /**
      * The moment a timed option runs out, on a clock that keeps counting while the phone sleeps

@@ -33,7 +33,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
+import com.blainemiller.scripturealone.R
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -75,7 +77,7 @@ fun CommentaryTab(verse: VerseRef, study: StudyModel, reader: ReaderViewModel, p
     val sources = loaded(ready) { context -> StudyLibrary.commentary(context)?.commentarySources }
     if (sources == null) {
         if (!ready) {
-            PackDownload(AssetPack.COMMENTARY, "Couldn’t Download Commentary", palette)
+            PackDownload(AssetPack.COMMENTARY, stringResource(R.string.study_commentary_download_failed), palette)
             return
         }
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -110,11 +112,11 @@ fun CommentaryTab(verse: VerseRef, study: StudyModel, reader: ReaderViewModel, p
                 CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(26.dp))
             }
             commentary.entries.isEmpty() && commentary.introduction == null -> ContentUnavailable(
-                Icons.AutoMirrored.Rounded.MenuBook, "Nothing from ${source.shortName} Here",
-                "${source.name} doesn’t comment on ${verse.display}.", palette, Modifier.padding(top = 16.dp),
+                Icons.AutoMirrored.Rounded.MenuBook, stringResource(R.string.study_commentary_nothing_title, source.shortName),
+                stringResource(R.string.study_commentary_nothing_body, source.name, verse.display), palette, Modifier.padding(top = 16.dp),
             ) {
                 for (other in commentary.alternatives) {
-                    BorderedButton("Read ${other.shortName}", palette, Modifier.padding(top = 6.dp)) { study.selectCommentary(other.id) }
+                    BorderedButton(stringResource(R.string.study_commentary_read_other, other.shortName), palette, Modifier.padding(top = 6.dp)) { study.selectCommentary(other.id) }
                 }
             }
             else -> Reading(commentary, source, study, reader, palette)
@@ -142,7 +144,7 @@ private fun Reading(loaded: LoadedCommentary, source: StudySource, study: StudyM
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            "Introduction to ${Canon.display(ChapterRef(intro.book, intro.chapter))}",
+                            stringResource(R.string.study_commentary_introduction, Canon.display(ChapterRef(intro.book, intro.chapter))),
                             color = palette.ink, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.weight(1f),
                         )

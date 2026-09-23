@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.companion.VersePalette
 import kotlinx.coroutines.launch
 
@@ -102,13 +104,13 @@ private fun SourcePicker(selected: VerseSource?, onPick: (VerseSource) -> Unit) 
             .padding(horizontal = 24.dp, vertical = 32.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text("Favorites & Notes", color = ink, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.widget_favorites_name), color = ink, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
         Text(
-            "Rotates through the verses you’ve favorited, highlighted or written notes on.",
+            stringResource(R.string.widget_favorites_configure_detail),
             color = Color(palette.secondaryInk), fontSize = 15.sp,
         )
         Spacer(Modifier.height(20.dp))
-        Text("SHOW", color = Color(palette.secondaryInk), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.widget_favorites_configure).uppercase(), color = Color(palette.secondaryInk), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
         Column(Modifier.selectableGroup()) {
             VerseSource.entries.forEach { source ->
                 Row(

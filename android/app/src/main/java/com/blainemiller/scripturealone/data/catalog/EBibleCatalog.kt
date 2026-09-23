@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.data.catalog
 
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -48,10 +50,10 @@ data class CatalogTranslation(
     /** Whole-Bible translations say so; the rest are mostly New Testaments. */
     val scope: String
         get() = when {
-            otBooks >= 39 && ntBooks >= 27 -> "Complete Bible"
-            otBooks == 0 && ntBooks >= 1 -> "New Testament"
-            otBooks >= 1 && ntBooks == 0 -> "Old Testament"
-            else -> "$bookCount book${if (bookCount == 1) "" else "s"}"
+            otBooks >= 39 && ntBooks >= 27 -> AppText.get(R.string.data_catalog_scope_complete)
+            otBooks == 0 && ntBooks >= 1 -> AppText.get(R.string.data_catalog_scope_new_testament)
+            otBooks >= 1 && ntBooks == 0 -> AppText.get(R.string.data_catalog_scope_old_testament)
+            else -> AppText.plural(R.string.data_catalog_scope_books_one, R.string.data_catalog_scope_books_other, bookCount, bookCount)
         }
 
     /** Where eBible hosts the USFM zip. A string, as Swift's `URL.absoluteString`. */
@@ -68,8 +70,8 @@ object EBibleCatalog {
     const val CATALOG_URL = "https://ebible.org/Scriptures/translations.csv"
 
     sealed class Failure(message: String) : Exception(message) {
-        class Http(val code: Int) : Failure("eBible.org couldn't be reached (HTTP $code). Try again later.")
-        class Malformed(val what: String) : Failure("eBible.org's catalogue couldn't be read ($what).")
+        class Http(val code: Int) : Failure(AppText.get(R.string.data_catalog_http, code))
+        class Malformed(val what: String) : Failure(AppText.get(R.string.data_catalog_malformed, what))
     }
 
     /**

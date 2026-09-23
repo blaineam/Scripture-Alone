@@ -9,6 +9,8 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.content.FileProvider
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -29,10 +31,10 @@ object ShareExport {
     suspend fun write(context: Context, bitmap: Bitmap, filename: String): Uri = withContext(Dispatchers.IO) {
         val directory = File(context.cacheDir, DIRECTORY)
         directory.deleteRecursively()
-        if (!directory.mkdirs() && !directory.isDirectory) throw IOException("Can’t prepare the image.")
+        if (!directory.mkdirs() && !directory.isDirectory) throw IOException(AppText.get(R.string.share_error_prepare))
         val file = File(directory, filename)
         file.outputStream().use { out ->
-            if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) throw IOException("Can’t encode the image.")
+            if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) throw IOException(AppText.get(R.string.share_error_encode))
         }
         FileProvider.getUriForFile(context, authority(context), file)
     }
@@ -60,11 +62,11 @@ object ShareExport {
             put(MediaStore.Images.Media.IS_PENDING, 1)
         }
         val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-            ?: throw IOException("Scripture Alone can’t add to your photo library.")
+            ?: throw IOException(AppText.get(R.string.share_error_photos))
         try {
             resolver.openOutputStream(uri)?.use { out ->
-                if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) throw IOException("Can’t encode the image.")
-            } ?: throw IOException("Scripture Alone can’t add to your photo library.")
+                if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) throw IOException(AppText.get(R.string.share_error_encode))
+            } ?: throw IOException(AppText.get(R.string.share_error_photos))
             resolver.update(uri, ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }, null, null)
         } catch (e: IOException) {
             resolver.delete(uri, null, null)

@@ -1,16 +1,23 @@
 package com.blainemiller.scripturealone.data.listen
 
+import androidx.annotation.StringRes
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
+
 /**
  * Hands-free scrolling — `autoScrollControl` in `ReaderView.swift` and the display-link stepper in
  * `ChapterTextView.swift`.
  */
 object AutoScroll {
     /** The four speeds, in points (dp) per second, with iOS's names. */
-    enum class Speed(val title: String, val pointsPerSecond: Double) {
-        SLOW("Slow", 16.0),
-        RELAXED("Relaxed", 28.0),
-        STEADY("Steady", 44.0),
-        BRISK("Brisk", 64.0),
+    enum class Speed(@StringRes private val titleRes: Int, val pointsPerSecond: Double) {
+        SLOW(R.string.listen_scroll_slow, 16.0),
+        RELAXED(R.string.listen_scroll_relaxed, 28.0),
+        STEADY(R.string.listen_scroll_steady, 44.0),
+        BRISK(R.string.listen_scroll_brisk, 64.0),
+        ;
+
+        val title: String get() = AppText.get(titleRes)
     }
 
     /** iOS's `@AppStorage(SettingsKey.autoScrollSpeed)` default. */

@@ -42,7 +42,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import com.blainemiller.scripturealone.R
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
@@ -345,7 +347,7 @@ fun GlassTextButton(title: String, palette: ReaderPalette, surface: Color, bold:
 /** The back chevron in a glass circle. */
 @Composable
 fun GlassBackButton(palette: ReaderPalette, surface: Color, onClick: () -> Unit) =
-    GlassIconButton(Icons.Rounded.ChevronLeft, "Back", palette, surface, onClick = onClick)
+    GlassIconButton(Icons.Rounded.ChevronLeft, stringResource(R.string.common_back), palette, surface, onClick = onClick)
 
 /** A section title with a symbol — `Label(title, systemImage:)` in `.title3.weight(.semibold)`. */
 @Composable

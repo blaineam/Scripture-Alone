@@ -1,7 +1,9 @@
 package com.blainemiller.scripturealone.data.importer
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookID
+import com.blainemiller.scripturealone.text.AppText
 import java.io.File
 import java.io.IOException
 
@@ -39,7 +41,7 @@ class USFMPackage internal constructor(private val zip: ZipReader) {
             val lowered = name.lowercase()
             lowered.endsWith(".usfm") || lowered.endsWith(".sfm")
         }.sorted()
-        if (files.isEmpty()) throw BibleImportError.UnsupportedFormat("the archive holds no USFM files")
+        if (files.isEmpty()) throw BibleImportError.UnsupportedFormat(AppText.get(R.string.data_import_detail_no_usfm_files))
         metadata = readMetadata(zip)
     }
 
@@ -215,7 +217,7 @@ class USFMImporter(val options: BibleTextExtractor.Options = BibleTextExtractor.
             try {
                 files.add(file to pkg.source(file))
             } catch (error: BibleImportError) {
-                unreadable.add(ImportNote(ImportNote.Severity.WARNING, "$file could not be read: ${error.message}"))
+                unreadable.add(ImportNote(ImportNote.Severity.WARNING, AppText.get(R.string.data_import_note_unreadable, file, error.message ?: "")))
             }
         }
         val bible = extract(files)
@@ -236,12 +238,12 @@ class USFMImporter(val options: BibleTextExtractor.Options = BibleTextExtractor.
         for ((name, usfm) in files) {
             val code = USFMBookParser.bookCode(usfm)
             if (code == null) {
-                notes.add(ImportNote(ImportNote.Severity.WARNING, "$name: no \\id marker, so it was skipped."))
+                notes.add(ImportNote(ImportNote.Severity.WARNING, AppText.get(R.string.data_import_note_no_id_marker, name)))
                 continue
             }
             val book = USFMBookParser.book(code)
             if (book == null) {
-                notes.add(ImportNote(ImportNote.Severity.WARNING, "$name: unknown book code “$code”, so it was skipped."))
+                notes.add(ImportNote(ImportNote.Severity.WARNING, AppText.get(R.string.data_import_note_unknown_book_code, name, code)))
                 continue
             }
             parsed.add(Parsed(book, name, usfm))
@@ -260,10 +262,10 @@ class USFMImporter(val options: BibleTextExtractor.Options = BibleTextExtractor.
         bible.bridgedVerses = bridged.toMap()
         bible.notes.addAll(notes)
         for (chapter in outOfOrder.sorted()) {
-            bible.notes.add(ImportNote(ImportNote.Severity.WARNING, "${chapter.display}: verse numbers ran out of order."))
+            bible.notes.add(ImportNote(ImportNote.Severity.WARNING, AppText.get(R.string.data_import_out_of_order, chapter.display)))
         }
         if (bridged.isNotEmpty()) {
-            bible.notes.add(ImportNote(ImportNote.Severity.INFO, "${bridged.size} verse(s) are printed combined with the verse before them."))
+            bible.notes.add(ImportNote(ImportNote.Severity.INFO, AppText.get(R.string.data_import_note_bridged_verses, bridged.size)))
         }
         if (bible.isEmpty) throw BibleImportError.NoScriptureFound()
         return bible

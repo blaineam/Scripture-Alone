@@ -37,6 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.assets.AssetState
@@ -78,14 +80,14 @@ fun TranslationDownloadBanner(model: ReaderViewModel, palette: ReaderPalette, mo
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                if (failed != null) "Couldn’t download the ${pack.title}" else "Downloading the ${pack.title}…",
+                stringResource(if (failed != null) R.string.reader_download_failed else R.string.reader_downloading, pack.title),
                 color = palette.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
                 fontFamily = ReaderTypography.sourceSerif(15f),
             )
             when (state) {
                 is AssetState.Downloading -> Progress(state.fraction, palette)
                 is AssetState.NeedsConfirmation -> Text(
-                    "Waiting for Wi-Fi. ${pack.explanation}", color = palette.secondary, fontSize = 11.sp,
+                    stringResource(R.string.reader_download_waiting_for_wifi, pack.explanation), color = palette.secondary, fontSize = 11.sp,
                     maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
                 is AssetState.Failed -> Text(state.message, color = palette.secondary, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -96,11 +98,11 @@ fun TranslationDownloadBanner(model: ReaderViewModel, palette: ReaderPalette, mo
         when {
             failed != null && translation != null -> {
                 Spacer(Modifier.width(8.dp))
-                Capsule("Try Again", palette) { model.selectTranslation(translation) }
+                Capsule(stringResource(R.string.common_try_again), palette) { model.selectTranslation(translation) }
             }
             state is AssetState.NeedsConfirmation -> {
                 Spacer(Modifier.width(8.dp))
-                Capsule("Download Now", palette) { AssetLibrary.confirm() }
+                Capsule(stringResource(R.string.reader_download_now), palette) { AssetLibrary.confirm() }
             }
         }
     }
@@ -109,10 +111,11 @@ fun TranslationDownloadBanner(model: ReaderViewModel, palette: ReaderPalette, mo
 @Composable
 private fun Progress(fraction: Float, palette: ReaderPalette) {
     val percent = (fraction * 100).roundToInt()
+    val label = stringResource(R.string.reader_download_percent, percent)
     LinearProgressIndicator(
         progress = { fraction }, color = palette.accent, trackColor = palette.secondary.copy(alpha = 0.2f),
         modifier = Modifier.widthIn(max = 220.dp).fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp))
-            .semantics { contentDescription = "$percent percent" },
+            .semantics { contentDescription = label },
     )
 }
 

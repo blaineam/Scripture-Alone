@@ -160,6 +160,13 @@ Done, iOS/Core (all `[ci skip]` on main; 1.0.0 b71 is in review):
   `BookID.name` follows the Bible being read; the parser reads every language (3章16節, 3장 16절,
   "Joh 3,16", full-width digits, per-language priority for ambiguous abbreviations).
 
+Android (2026-09-23): core as above; then every user-visible string in `app/src/main/res/values/strings.xml`
+(~835; Levi fills `values-*` — it reads `<string>` only, so counts are `…_one`/`…_other` pairs picked by
+`text/AppText.kt`) and `wear/src/main/res/values/strings.xml` (Levi's android surface covers only the phone's
+res dir); Listen's voice follows the Bible's `meta.language`; `ContextStore` reads the `translations` table
+(missing table = English); commentary and lexicon English hidden outside English (`AppLanguage`); Verse of
+the Day `themes`; per-app language via `generateLocaleConfig`.
+
 Next: interface strings (Levi) · Context.sqlite labels · commentary/lexicon gating · Verse of the
 Day per locale · watch + widgets (editions carry `kjv_map`; `BookNames` from the snapshot) ·
 Android parity for all of the above · store listings + localized screenshots · packs uploaded and

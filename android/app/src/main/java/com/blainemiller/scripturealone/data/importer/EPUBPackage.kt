@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.data.importer
 
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.AppText
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -69,7 +71,7 @@ class EPUBPackage internal constructor(private val zip: ZipReader) {
             if (declared != "application/epub+zip") throw BibleImportError.NotAnEPUB("its mimetype is “$declared”")
         }
 
-        if (!zip.contains("META-INF/container.xml")) throw BibleImportError.NotAnEPUB("it has no META-INF/container.xml")
+        if (!zip.contains("META-INF/container.xml")) throw BibleImportError.NotAnEPUB(AppText.get(R.string.data_import_detail_no_container))
         val containerXML = text(zip.data("META-INF/container.xml"))
         val rootPath = rootfilePath(containerXML) ?: throw BibleImportError.NotAnEPUB("its container names no package document")
         if (!zip.contains(rootPath)) throw BibleImportError.NotAnEPUB("its package document ($rootPath) is missing")

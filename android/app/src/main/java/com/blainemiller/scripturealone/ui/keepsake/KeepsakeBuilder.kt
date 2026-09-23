@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.keepsake
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.keepsake.Keepsake
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeHighlight
 import com.blainemiller.scripturealone.data.keepsake.KeepsakeManifest
@@ -8,6 +9,7 @@ import com.blainemiller.scripturealone.data.userdata.Highlight
 import com.blainemiller.scripturealone.data.userdata.HighlightColor
 import com.blainemiller.scripturealone.data.userdata.Note
 import com.blainemiller.scripturealone.data.userdata.Selection
+import com.blainemiller.scripturealone.text.AppText
 import com.blainemiller.scripturealone.ui.export.ExportSupport
 import java.time.Instant
 import java.time.ZoneId
@@ -42,7 +44,7 @@ object KeepsakeBuilder {
         val format = DateTimeFormatter.ofPattern("LLLL yyyy", locale)
         val a = format.format(first.atZone(zone))
         val b = format.format(last.atZone(zone))
-        return if (a == b) a else "$a to $b"
+        return if (a == b) a else AppText.get(R.string.keepsake_date_span, a, b)
     }
 
     /** The keepsake — `KeepsakeCreateView.create`, before encoding. Blank name and dedication are left out. */
@@ -88,19 +90,19 @@ object KeepsakeText {
     fun summaryDetail(manifest: KeepsakeManifest, zone: ZoneId = ZoneId.systemDefault()): String {
         val parts = mutableListOf<String>()
         manifest.counts?.let {
-            parts += "${it.highlights} ${if (it.highlights == 1) "highlight" else "highlights"}"
-            parts += "${it.notes} ${if (it.notes == 1) "note" else "notes"}"
+            parts += AppText.plural(R.string.keepsake_count_highlights_one, R.string.keepsake_count_highlights_other, it.highlights, it.highlights)
+            parts += AppText.plural(R.string.keepsake_count_notes_one, R.string.keepsake_count_notes_other, it.notes, it.notes)
         }
         manifest.dateRange?.let {
             val start = it.start.atZone(zone).year.toString()
             val end = it.end.atZone(zone).year.toString()
             parts += if (start == end) start else "$start–$end"
         }
-        manifest.preferredTranslation?.let { parts += "read in the $it" }
+        manifest.preferredTranslation?.let { parts += AppText.get(R.string.keepsake_read_in, it) }
         return parts.joinToString(" · ")
     }
 
     /** The create sheet's closing line — "Dad’s Bible.scripturelegacy is ready, protected with your passphrase. …" */
     fun ready(name: String, protected: Boolean): String =
-        "$name is ready${if (protected) ", protected with your passphrase" else ""}. It’s a snapshot of today; make a new one whenever you like, and it will replace the older copy when your family opens it."
+        AppText.get(if (protected) R.string.keepsake_ready_protected else R.string.keepsake_ready, name)
 }

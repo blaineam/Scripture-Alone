@@ -1,6 +1,8 @@
 package com.blainemiller.scripturealone.data.catalog
 
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.importer.ImportedTranslationIdentity
+import com.blainemiller.scripturealone.text.AppText
 import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -16,8 +18,8 @@ import java.util.UUID
 object CatalogDownloader {
 
     sealed class Failure(message: String) : IOException(message) {
-        class Http(val code: Int) : Failure("eBible.org returned HTTP $code for that translation.")
-        class Empty : Failure("That download arrived empty.")
+        class Http(val code: Int) : Failure(AppText.get(R.string.data_catalog_download_http, code))
+        class Empty : Failure(AppText.get(R.string.data_catalog_download_empty))
     }
 
     /**

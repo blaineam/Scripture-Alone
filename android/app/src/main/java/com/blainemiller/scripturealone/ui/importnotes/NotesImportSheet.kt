@@ -37,6 +37,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.text.countedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -104,20 +107,20 @@ fun NotesImportSheet(model: ReaderViewModel, palette: ReaderPalette, onDone: () 
     }
 
     if (pasting) {
-        FormSheet("Paste Notes", palette, leading = "Cancel", onLeading = {
+        FormSheet(stringResource(R.string.import_paste_title), palette, leading = stringResource(R.string.common_cancel), onLeading = {
             pasting = false
             pasted = ""
         }) {
             FormHeader("", palette)
             PanelGroup(palette) {
                 FormField(
-                    pasted, "John 3:16 — the whole gospel in one verse\n\nRomans 8:28 — not that all things are good",
+                    pasted, stringResource(R.string.import_paste_placeholder),
                     palette, singleLine = false, minHeight = 260,
                 ) { pasted = it }
             }
             FormHeader("", palette)
             PanelGroup(palette) {
-                FormButton("Read", palette, bold = true, enabled = pasted.isNotBlank(), busy = working) {
+                FormButton(stringResource(R.string.import_read), palette, bold = true, enabled = pasted.isNotBlank(), busy = working) {
                     val text = pasted
                     working = true
                     scope.launch {
@@ -133,7 +136,7 @@ fun NotesImportSheet(model: ReaderViewModel, palette: ReaderPalette, onDone: () 
             }
         }
     } else {
-        FormSheet("Bring Your Notes", palette, leading = "Done", onLeading = onDone) {
+        FormSheet(stringResource(R.string.import_title), palette, leading = stringResource(R.string.common_done), onLeading = onDone) {
             val done = outcome
             val result = found
             when {
@@ -157,9 +160,9 @@ fun NotesImportSheet(model: ReaderViewModel, palette: ReaderPalette, onDone: () 
     failure?.let { message ->
         AlertDialog(
             onDismissRequest = { failure = null },
-            title = { Text("That didn't work") },
+            title = { Text(stringResource(R.string.import_failed_title)) },
             text = { Text(message) },
-            confirmButton = { TextButton(onClick = { failure = null }) { Text("OK", color = palette.accent) } },
+            confirmButton = { TextButton(onClick = { failure = null }) { Text(stringResource(R.string.common_ok), color = palette.accent) } },
             containerColor = com.blainemiller.scripturealone.ui.reader.SheetColors.popover(palette),
             titleContentColor = palette.ink,
             textContentColor = palette.secondary,
@@ -169,31 +172,31 @@ fun NotesImportSheet(model: ReaderViewModel, palette: ReaderPalette, onDone: () 
 
 @Composable
 private fun Instructions(palette: ReaderPalette, working: Boolean, onChoose: () -> Unit, onPaste: () -> Unit) {
-    FormHeader("From Life Bible", palette)
-    PanelGroup(palette) { FormButton("Choose a File…", palette, icon = Icons.AutoMirrored.Outlined.NoteAdd, busy = working, onClick = onChoose) }
+    FormHeader(stringResource(R.string.import_from_life_bible), palette)
+    PanelGroup(palette) { FormButton(stringResource(R.string.import_choose_file), palette, icon = Icons.AutoMirrored.Outlined.NoteAdd, busy = working, onClick = onChoose) }
     FormFooter(
-        "Life Bible — the app that used to be called Tecarta Bible — can export everything you've written. Your notes, highlights and saved verses come across; nothing is sent anywhere, and the file never leaves your device.",
+        stringResource(R.string.import_life_bible_footer),
         palette,
     )
 
-    FormHeader("From Anywhere Else", palette)
-    PanelGroup(palette) { FormButton("Paste Notes From Any App…", palette, icon = Icons.Outlined.ContentPaste, onClick = onPaste) }
+    FormHeader(stringResource(R.string.import_from_anywhere), palette)
+    PanelGroup(palette) { FormButton(stringResource(R.string.import_paste_from_any_app), palette, icon = Icons.Outlined.ContentPaste, onClick = onPaste) }
     FormFooter(
-        "Paste notes, or a CSV you exported. Each entry needs to start with a reference — “John 3:16” — so it can be attached to the right verse. Anything that doesn't name a verse is listed for you rather than guessed at.",
+        stringResource(R.string.import_paste_footer),
         palette,
     )
 
-    FormHeader("How to get the file", palette)
+    FormHeader(stringResource(R.string.import_how_to_title), palette)
     PanelGroup(palette) {
         Column(Modifier.padding(horizontal = 18.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Step(1, "Open Life Bible, or sign in at lifebible.com.", palette)
-            Step(2, "Tap the menu, then Settings.", palette)
-            Step(3, "Scroll to Advanced and tap “Export your data”.", palette)
-            Step(4, "Save LifeBibleData.zip, then choose it above.", palette)
+            Step(1, stringResource(R.string.import_how_to_step_1), palette)
+            Step(2, stringResource(R.string.import_how_to_step_2), palette)
+            Step(3, stringResource(R.string.import_how_to_step_3), palette)
+            Step(4, stringResource(R.string.import_how_to_step_4), palette)
             Row(verticalAlignment = Alignment.Top) {
                 Icon(Icons.Outlined.WarningAmber, null, tint = palette.secondary, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("Don't tap “Delete your account” — it sits just below Export.", color = palette.secondary, fontSize = 13.sp)
+                Text(stringResource(R.string.import_how_to_warning), color = palette.secondary, fontSize = 13.sp)
             }
         }
     }
@@ -210,59 +213,59 @@ private fun Step(number: Int, text: String, palette: ReaderPalette) {
 
 @Composable
 private fun Preview(result: ImportedNotes, palette: ReaderPalette, working: Boolean, onAdd: () -> Unit, onDifferent: () -> Unit) {
-    FormHeader("Found in this file", palette)
+    FormHeader(stringResource(R.string.import_found_title), palette)
     PanelGroup(palette) {
-        CountRow("Notes on verses", result.verseNotes.size, Icons.Outlined.FormatQuote, palette)
+        CountRow(stringResource(R.string.import_count_verse_notes), result.verseNotes.size, Icons.Outlined.FormatQuote, palette)
         PanelSeparator(palette)
-        CountRow("Journal entries", result.journals.size, Icons.AutoMirrored.Outlined.MenuBook, palette)
+        CountRow(stringResource(R.string.import_count_journals), result.journals.size, Icons.AutoMirrored.Outlined.MenuBook, palette)
         PanelSeparator(palette)
-        CountRow("Highlights", result.highlights.size, Icons.Outlined.BorderColor, palette)
+        CountRow(stringResource(R.string.import_count_highlights), result.highlights.size, Icons.Outlined.BorderColor, palette)
         PanelSeparator(palette)
-        CountRow("Saved verses", result.saved.size, Icons.Outlined.FavoriteBorder, palette)
+        CountRow(stringResource(R.string.import_count_saved), result.saved.size, Icons.Outlined.FavoriteBorder, palette)
     }
-    FormFooter("Nothing has been added yet. Importing twice is safe — anything already here is left alone rather than duplicated.", palette)
+    FormFooter(stringResource(R.string.import_preview_footer), palette)
 
     if (result.unresolved.isNotEmpty()) {
-        FormHeader("${result.unresolved.size} couldn't be placed", palette)
+        FormHeader(countedString(R.string.import_unresolved_one, R.string.import_unresolved_other, result.unresolved.size, result.unresolved.size), palette)
         PanelGroup(palette) {
             Column(Modifier.padding(horizontal = 18.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 for (line in result.unresolved.take(8)) Text(line, color = palette.secondary, fontSize = 12.sp, maxLines = 3)
-                if (result.unresolved.size > 8) Text("…and ${result.unresolved.size - 8} more", color = palette.secondary, fontSize = 12.sp)
+                if (result.unresolved.size > 8) Text(countedString(R.string.import_unresolved_more_one, R.string.import_unresolved_more_other, result.unresolved.size - 8, result.unresolved.size - 8), color = palette.secondary, fontSize = 12.sp)
             }
         }
         FormFooter(
-            "These name something this app can't find a verse for. They'll be skipped rather than guessed at, so you can copy them over yourself.",
+            stringResource(R.string.import_unresolved_footer),
             palette,
         )
     }
 
     FormHeader("", palette)
     PanelGroup(palette) {
-        FormButton("Add ${result.total} Items", palette, bold = true, busy = working, enabled = result.total > 0, onClick = onAdd)
+        FormButton(countedString(R.string.import_add_items_one, R.string.import_add_items_other, result.total, result.total), palette, bold = true, busy = working, enabled = result.total > 0, onClick = onAdd)
         PanelSeparator(palette)
-        FormButton("Choose a Different File", palette, onClick = onDifferent)
+        FormButton(stringResource(R.string.import_choose_different), palette, onClick = onDifferent)
     }
 }
 
 @Composable
 private fun Finished(outcome: NotesImportTally, palette: ReaderPalette) {
-    FormHeader(if (outcome.total > 0) "Brought across" else "Nothing new to add", palette)
+    FormHeader(if (outcome.total > 0) stringResource(R.string.import_finished_title) else stringResource(R.string.import_finished_nothing_title), palette)
     PanelGroup(palette) {
         val rows = mutableListOf<@Composable () -> Unit>()
         if (outcome.total > 0) {
-            rows += { CountRow("Notes on verses", outcome.notes, Icons.Outlined.FormatQuote, palette) }
-            rows += { CountRow("Journal entries", outcome.journals, Icons.AutoMirrored.Outlined.MenuBook, palette) }
-            rows += { CountRow("Highlights", outcome.highlights, Icons.Outlined.BorderColor, palette) }
-            rows += { CountRow("Saved verses", outcome.favorites, Icons.Outlined.FavoriteBorder, palette) }
+            rows += { CountRow(stringResource(R.string.import_count_verse_notes), outcome.notes, Icons.Outlined.FormatQuote, palette) }
+            rows += { CountRow(stringResource(R.string.import_count_journals), outcome.journals, Icons.AutoMirrored.Outlined.MenuBook, palette) }
+            rows += { CountRow(stringResource(R.string.import_count_highlights), outcome.highlights, Icons.Outlined.BorderColor, palette) }
+            rows += { CountRow(stringResource(R.string.import_count_saved), outcome.favorites, Icons.Outlined.FavoriteBorder, palette) }
         }
-        if (outcome.alreadyThere > 0) rows += { CountRow("Already here", outcome.alreadyThere, Icons.Outlined.CheckCircle, palette) }
+        if (outcome.alreadyThere > 0) rows += { CountRow(stringResource(R.string.import_count_already_here), outcome.alreadyThere, Icons.Outlined.CheckCircle, palette) }
         rows.forEachIndexed { index, row ->
             if (index > 0) PanelSeparator(palette)
             row()
         }
     }
     FormFooter(
-        if (outcome.total > 0) "They're in your notes and highlights now, kept on this device." else "Everything in that file was already here.",
+        if (outcome.total > 0) stringResource(R.string.import_finished_footer) else stringResource(R.string.import_finished_nothing_footer),
         palette,
     )
 }

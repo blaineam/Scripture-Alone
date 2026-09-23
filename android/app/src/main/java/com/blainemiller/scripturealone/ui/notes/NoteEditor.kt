@@ -51,6 +51,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -61,6 +62,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.userdata.Note
 import com.blainemiller.scripturealone.data.userdata.RANGE_ORDER
@@ -124,10 +126,10 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
         PanelHeader(note.copy(title = title).displayTitle, palette, back = true, onLeading = onBack) {
             SlideCaptureMenu(capture, palette, addingToNote = true)
             Box {
-                PanelHeaderIcon(Icons.Rounded.MoreHoriz, "More", palette) { menu = true }
+                PanelHeaderIcon(Icons.Rounded.MoreHoriz, stringResource(R.string.common_more), palette) { menu = true }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     DropdownMenuItem(
-                        text = { Text("Share Note", color = palette.ink, fontSize = 15.sp) },
+                        text = { Text(stringResource(R.string.notes_share_note), color = palette.ink, fontSize = 15.sp) },
                         onClick = {
                             menu = false
                             val intent = Intent(Intent.ACTION_SEND).apply {
@@ -139,7 +141,7 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
                         },
                     )
                     DropdownMenuItem(
-                        text = { Text("Export…", color = palette.ink, fontSize = 15.sp) },
+                        text = { Text(stringResource(R.string.notes_export_menu), color = palette.ink, fontSize = 15.sp) },
                         onClick = {
                             menu = false
                             model.legacy.export = com.blainemiller.scripturealone.ui.keepsake.ExportRequest(
@@ -148,7 +150,7 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
                         },
                     )
                     DropdownMenuItem(
-                        text = { Text("Delete Note", color = palette.red, fontSize = 15.sp) },
+                        text = { Text(stringResource(R.string.notes_delete_note), color = palette.red, fontSize = 15.sp) },
                         onClick = {
                             menu = false
                             confirmDelete = true
@@ -164,7 +166,7 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
             Spacer(Modifier.height(8.dp))
             PanelGroup(palette) {
                 Field(
-                    title, "Title", palette, fontSize = 22f, weight = FontWeight.SemiBold,
+                    title, stringResource(R.string.notes_field_title), palette, fontSize = 22f, weight = FontWeight.SemiBold,
                     modifier = Modifier.focusRequester(titleFocus),
                 ) { value ->
                     title = value
@@ -172,7 +174,7 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
                 }
             }
 
-            PanelSectionTitle("Passages", palette)
+            PanelSectionTitle(stringResource(R.string.notes_section_passages), palette)
             PanelGroup(palette) {
                 for (range in note.anchors) {
                     // Stored as a KJV range; shown as the translation being read numbers it.
@@ -185,13 +187,13 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
                 Row(Modifier.padding(end = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.weight(1f)) {
                         Field(
-                            passageText, "Add a passage, e.g. Rom 8:1-17", palette, singleLine = true,
+                            passageText, stringResource(R.string.notes_add_passage_placeholder), palette, singleLine = true,
                             imeAction = ImeAction.Done, onDone = ::addTypedPassages,
                         ) { passageText = it }
                     }
                     if (model.selection.isNotEmpty()) {
                         Text(
-                            "Add Selection", color = palette.accent, fontSize = 16.sp,
+                            stringResource(R.string.notes_add_selection), color = palette.accent, fontSize = 16.sp,
                             modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button) {
                                 val ranges = model.selectedRanges
                                 save { it.copy(anchors = (it.anchors + ranges).distinct().sortedWith(RANGE_ORDER)) }
@@ -202,9 +204,9 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
                 }
             }
 
-            PanelSectionTitle("Note", palette)
+            PanelSectionTitle(stringResource(R.string.notes_section_note), palette)
             PanelGroup(palette) {
-                Field(body, "", palette, minHeight = 220, label = "Note") { value ->
+                Field(body, "", palette, minHeight = 220, label = stringResource(R.string.notes_section_note)) { value ->
                     body = value
                     save { it.copy(body = value) }
                 }
@@ -214,9 +216,9 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
 
             Spacer(Modifier.height(22.dp))
             PanelGroup(palette) {
-                Stamp("Created", note.createdAt, palette)
+                Stamp(stringResource(R.string.notes_created), note.createdAt, palette)
                 PanelSeparator(palette)
-                Stamp("Edited", note.updatedAt, palette)
+                Stamp(stringResource(R.string.notes_edited), note.updatedAt, palette)
             }
         }
     }
@@ -232,6 +234,7 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
 
 @Composable
 private fun PassageRow(display: String, palette: ReaderPalette, onOpen: () -> Unit, onRemove: () -> Unit) {
+    val removeLabel = stringResource(R.string.notes_remove_passage, display)
     Row(Modifier.fillMaxWidth().padding(start = 6.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Row(
             Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).clickable(role = Role.Button, onClick = onOpen).padding(horizontal = 12.dp, vertical = 12.dp),
@@ -243,7 +246,7 @@ private fun PassageRow(display: String, palette: ReaderPalette, onOpen: () -> Un
         }
         Box(
             Modifier.size(40.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onRemove)
-                .semantics { contentDescription = "Remove $display" },
+                .semantics { contentDescription = removeLabel },
             contentAlignment = Alignment.Center,
         ) {
             Icon(Icons.Rounded.RemoveCircle, null, tint = palette.secondary, modifier = Modifier.size(22.dp))
@@ -317,16 +320,16 @@ private fun ConfirmDelete(palette: ReaderPalette, onCancel: () -> Unit, onDelete
             Modifier.widthIn(max = 320.dp).clip(RoundedCornerShape(22.dp)).background(PanelColors.card(palette)).padding(top = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Delete this note?", color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.notes_delete_title), color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(6.dp))
             Text(
-                "It will be removed from this device.", color = palette.secondary, fontSize = 14.sp,
+                stringResource(R.string.notes_delete_message), color = palette.secondary, fontSize = 14.sp,
                 textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 20.dp),
             )
             Spacer(Modifier.height(18.dp))
             Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                DialogButton("Cancel", palette.ink, palette, Modifier.weight(1f), onCancel)
-                DialogButton("Delete Note", palette.red, palette, Modifier.weight(1f), onDelete)
+                DialogButton(stringResource(R.string.common_cancel), palette.ink, palette, Modifier.weight(1f), onCancel)
+                DialogButton(stringResource(R.string.notes_delete_note), palette.red, palette, Modifier.weight(1f), onDelete)
             }
         }
     }
