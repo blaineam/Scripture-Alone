@@ -121,6 +121,9 @@ allows one version in review at a time.
       | `blivre` | Bibles/BLIVRE.sqlite | pt-BR |
       | `riv1927` | Bibles/RIV1927.sqlite | it |
 
+      **Uploaded 2026-09-23: version 1 of all eight, READY_FOR_TESTING.** Still to do: add them to
+      the review submission with the version.
+
       Plus new versions of `bsb` / `kjv` only if their databases change (e.g. a `kjv_map`
       table) — a pack update reaches app versions already installed, so keep it readable by them.
 - [ ] Store listing (name, subtitle, promo, description, keywords, what's new) in all 8 locales —
