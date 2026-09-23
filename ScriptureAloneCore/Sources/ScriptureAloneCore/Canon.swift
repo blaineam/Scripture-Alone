@@ -18,8 +18,11 @@ public enum BookID: Int, CaseIterable, Sendable, Codable, Hashable, Comparable, 
     public static func < (lhs: BookID, rhs: BookID) -> Bool { lhs.rawValue < rhs.rawValue }
 
     public var info: BookInfo { BookInfo.all[rawValue - 1] }
-    public var name: String { info.name }
-    public var abbreviation: String { info.abbreviation }
+    /// The book's name in the language of the Bible being read (`BookNames`); English by default.
+    public var name: String { BookNames.name(self) ?? info.name }
+    public var abbreviation: String { BookNames.abbreviation(self) ?? info.abbreviation }
+    /// Always English — for stored text meant to be read anywhere (exports, keepsake references).
+    public var englishName: String { info.name }
     public var code: String { info.code }
     public var chapterCount: Int { info.chapters }
     public var isNewTestament: Bool { rawValue >= BookID.matthew.rawValue }

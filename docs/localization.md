@@ -145,3 +145,22 @@ allows one version in review at a time.
 **Search** — done at build time: zh-Hans, ja and ko Bibles use FTS5's `trigram` tokenizer
 (`meta.tokenizer`); the app must send those a substring query, and `LIKE` for queries under three
 characters (二-character Chinese words are common).
+
+## Progress (2026-09-23)
+
+Done, iOS/Core (all `[ci skip]` on main; 1.0.0 b71 is in review):
+- Phase 1 — the eight Bibles, built and checked; build made deterministic.
+- Numbering — `kjv_map` in each database; `VerseNumbering` in Core; the app stores/looks up KJV
+  keys and draws native numbers (highlights, notes, favorites, study, compare, share links, slides,
+  listen, search, position, translation switches).
+- Search — trigram for zh/ja/ko with LIKE under three characters; search hits carry their KJV key.
+- Packs — `AssetPack` has the eight; manifests in Tools/asset-packs; first launch prefers the
+  device language's Bible (non-blocking; verified: a fresh French install opens in Louis Segond).
+- Book names — `BookNames` (generated table: names from each Bible, standard abbreviations);
+  `BookID.name` follows the Bible being read; the parser reads every language (3章16節, 3장 16절,
+  "Joh 3,16", full-width digits, per-language priority for ambiguous abbreviations).
+
+Next: interface strings (Levi) · Context.sqlite labels · commentary/lexicon gating · Verse of the
+Day per locale · watch + widgets (editions carry `kjv_map`; `BookNames` from the snapshot) ·
+Android parity for all of the above · store listings + localized screenshots · packs uploaded and
+in the submission · website per-locale Bible info.

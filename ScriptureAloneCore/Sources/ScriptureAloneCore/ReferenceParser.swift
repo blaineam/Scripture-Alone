@@ -81,25 +81,45 @@ public enum ReferenceParser {
 
     /// Books matching what the user has typed so far, best first. Exact abbreviations win,
     /// then prefixes of names or abbreviations, ordered by how often each book is read.
-    public static func books(matching raw: String) -> [BookID] {
+    public static func books(matching raw: String, language: String? = BookNames.current) -> [BookID] {
         let token = BookInfo.normalize(normalizeOrdinals(raw.lowercased().trimmingCharacters(in: .whitespaces)))
         guard !token.isEmpty else { return [] }
-        if let exact = BookID.allCases.first(where: { $0.info.aliases.contains(token) }) {
-            let others = prefixMatches(token).filter { $0 != exact }
-            return [exact] + others
+        // The reader's own language first, then English, then every other language's spellings
+        // that mean only one book — "Jean 3:16" works for anyone, "Es 1" only means Isaiah in French.
+        let tiers = spellingTiers(language)
+        for tier in tiers {
+            if let exact = BookID.allCases.first(where: { tier[$0]?.contains(token) == true }) {
+                let others = prefixMatches(token, tiers).filter { $0 != exact }
+                return [exact] + others
+            }
         }
-        return prefixMatches(token)
+        return prefixMatches(token, tiers)
     }
 
-    private static func prefixMatches(_ token: String) -> [BookID] {
-        BookID.allCases
-            .filter { book in book.info.aliases.contains { $0.hasPrefix(token) } }
-            .sorted { rank($0) < rank($1) }
+    private static func spellingTiers(_ current: String?) -> [[BookID: Set<String>]] {
+        var tiers: [[BookID: Set<String>]] = []
+        if let current, let own = BookNames.aliases[current] { tiers.append(own) }
+        tiers.append(Dictionary(uniqueKeysWithValues: BookID.allCases.map { ($0, Set($0.info.aliases)) }))
+        var others: [BookID: Set<String>] = [:]
+        for (language, books) in BookNames.aliases where language != current {
+            for (book, spellings) in books { others[book, default: []].formUnion(spellings.subtracting(BookNames.ambiguous)) }
+        }
+        tiers.append(others)
+        return tiers
+    }
+
+    private static func prefixMatches(_ token: String, _ tiers: [[BookID: Set<String>]]) -> [BookID] {
+        for tier in tiers {
+            let hits = BookID.allCases.filter { book in tier[book]?.contains { $0.hasPrefix(token) } == true }
+            if !hits.isEmpty { return hits.sorted { rank($0) < rank($1) } }
+        }
+        return []
     }
 
     private static let pattern: NSRegularExpression = {
         // book, chapter, (":" verse | " " verse), ("-" chapter-or-verse (":" verse)?)
-        let p = #"^([1-3]?\s*[a-z][a-z ]*?)\s*(\d+)?(?:\s*[:.]\s*(\d+)|\s+(\d+))?(?:\s*-\s*(\d+)?(?:\s*[:.]\s*(\d+))?)?$"#
+        // Letters in any script: "Genèse", "创世记", "요한복음", "ヨハネ傳福音書".
+        let p = #"^([1-3]?\s*\p{L}[\p{L}\p{M} ]*?)\s*(\d+)?(?:\s*[:.]\s*(\d+)|\s+(\d+))?(?:\s*-\s*(\d+)?(?:\s*[:.]\s*(\d+))?)?$"#
         return try! NSRegularExpression(pattern: p)
     }()
 
@@ -107,15 +127,34 @@ public enum ReferenceParser {
         var s = text.lowercased()
             .replacingOccurrences(of: "–", with: "-")
             .replacingOccurrences(of: "—", with: "-")
+            .replacingOccurrences(of: "〜", with: "-")
+            .replacingOccurrences(of: "～", with: "-")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        // Full-width digits and punctuation, as a Chinese, Japanese or Korean keyboard types them.
+        s = String(s.unicodeScalars.map { scalar -> Character in
+            switch scalar.value {
+            case 0xFF10...0xFF19: Character(UnicodeScalar(scalar.value - 0xFF10 + 0x30)!)
+            case 0xFF1A: ":"
+            case 0xFF0E, 0x3002: "."
+            case 0xFF0D: "-"
+            default: Character(scalar)
+            }
+        })
+        // "3章16節", "3章16节", "3장 16절": chapter and verse counters.
+        s = s.replacingOccurrences(of: #"(\d+)\s*[章장]\s*(\d+)\s*[節节절]?"#, with: "$1:$2", options: .regularExpression)
+        s = s.replacingOccurrences(of: #"(\d+)\s*[章장節节절]"#, with: "$1", options: .regularExpression)
+        // "Joh 3,16": German writes chapter and verse with a comma.
+        s = s.replacingOccurrences(of: #"(\d),(\d)"#, with: "$1:$2", options: .regularExpression)
+        // "1. Mose", "2. Korinther": a German ordinal's period is not a separator.
+        s = s.replacingOccurrences(of: #"^([1-3])\.\s*(?=\p{L})"#, with: "$1 ", options: .regularExpression)
         // Periods after abbreviations ("Rom. 8") are noise; keep "3.16" as a separator.
-        s = s.replacingOccurrences(of: #"(?<=[a-z])\."#, with: " ", options: .regularExpression)
+        s = s.replacingOccurrences(of: #"(?<=\p{L})\."#, with: " ", options: .regularExpression)
         s = s.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
         return normalizeOrdinals(s)
     }
 
     /// Parses a single reference: "jn 3 16", "Rom 8:28-39", "1co13", "Ps 23", "Gen 1:1–2:3", "Jude 3".
-    public static func parse(_ text: String) -> Passage? {
+    public static func parse(_ text: String, language: String? = BookNames.current) -> Passage? {
         let s = clean(text)
         let ns = s as NSString
         guard let m = pattern.firstMatch(in: s, range: NSRange(location: 0, length: ns.length)) else { return nil }
@@ -124,7 +163,7 @@ public enum ReferenceParser {
             return r.location == NSNotFound ? nil : ns.substring(with: r)
         }
         func number(_ i: Int) -> Int? { group(i).flatMap { Int($0) } }
-        guard let bookText = group(1), let book = books(matching: bookText).first else { return nil }
+        guard let bookText = group(1), let book = books(matching: bookText, language: language).first else { return nil }
 
         let first = number(2)
         let verse = number(3) ?? number(4)
@@ -157,18 +196,21 @@ public enum ReferenceParser {
 
     /// Parses a list: "Eph 2:1-10; Rom 3:23, 6:23" or "Ps 23, 24". Later items inherit the book
     /// (and chapter, for bare verse numbers after a verse reference).
-    public static func parseList(_ text: String) -> [Passage] {
+    public static func parseList(_ text: String, language: String? = BookNames.current) -> [Passage] {
         var results: [Passage] = []
-        let pieces = text.split(whereSeparator: { $0 == ";" || $0 == "," }).map { $0.trimmingCharacters(in: .whitespaces) }
+        // Full-width separators too: "；" "，" "、" in Chinese and Japanese lists.
+        // A comma between digits is German's chapter-verse separator ("Joh 3,16"), not a list break.
+        let joined = text.replacingOccurrences(of: #"(\d),(\d)"#, with: "$1:$2", options: .regularExpression)
+        let pieces = joined.split(whereSeparator: { ";,；，、".contains($0) }).map { $0.trimmingCharacters(in: .whitespaces) }
         for piece in pieces where !piece.isEmpty {
-            if piece.first?.isLetter == true || piece.range(of: #"^[1-3]\s*[A-Za-z]"#, options: .regularExpression) != nil {
-                if let p = parse(piece) { results.append(p) }
+            if piece.first?.isLetter == true || piece.range(of: #"^[1-3]\.?\s*\p{L}"#, options: .regularExpression) != nil {
+                if let p = parse(piece, language: language) { results.append(p) }
                 continue
             }
             guard let last = results.last else { continue }
             let s = clean(piece)
             if s.contains(":") || s.contains(".") {
-                if let p = parse("\(last.book.info.aliases[0]) \(s)") { results.append(p) }
+                if let p = parse("\(last.book.info.aliases[0]) \(s)", language: language) { results.append(p) }
             } else if last.startVerse != nil {
                 // "Rom 3:23, 25" → verse 25 of the same chapter; "…, 25-27" → a verse range.
                 let parts = s.split(separator: "-").compactMap { Int($0.trimmingCharacters(in: .whitespaces)) }
@@ -176,7 +218,7 @@ public enum ReferenceParser {
                     results.append(Passage(book: last.book, startChapter: last.endChapter, startVerse: v1,
                                            endChapter: last.endChapter, endVerse: parts.count > 1 ? parts[1] : v1))
                 }
-            } else if let p = parse("\(last.book.info.aliases[0]) \(s)") {
+            } else if let p = parse("\(last.book.info.aliases[0]) \(s)", language: language) {
                 results.append(p)
             }
         }

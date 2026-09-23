@@ -428,6 +428,13 @@ final class ReaderModel {
         show(native.chapterKey, verse: native.verse)
     }
 
+    /// Names books in the language of the Bible being read — "Jean", "约翰福音" — so the header,
+    /// the picker and every reference agree with the text. A Bible with no language of its own (the
+    /// English ones, imports) is named in the reader's device language. See `BookNames`.
+    private func nameBooks() {
+        BookNames.use(language: (source as? BibleStore)?.language ?? Locale.preferredLanguages.first)
+    }
+
     /// The verse at the top of the screen as a KJV key, taken before the source changes.
     private var readingAnchor: Int? { topVerse.map { numbering.kjv(forNative: $0) } }
 
@@ -466,6 +473,7 @@ final class ReaderModel {
     func previous() { if let previous = location.previous { show(previous) } }
 
     private func load() {
+        nameBooks()
         if let online = onlineTranslation {
             loadOnline(online.entry)
             return
