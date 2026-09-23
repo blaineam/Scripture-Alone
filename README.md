@@ -22,6 +22,10 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   James Version are bundled as SQLite databases with full-text search. All three are public
   domain. The ASV's words of Christ are aligned from the KJV it revised; its section headings
   come from the BSB.
+- **Nine languages** — English plus Simplified Chinese, Japanese, German, French, Spanish, Korean,
+  Brazilian Portuguese and Italian, each with a whole 66-book Bible of its own (和合本, 文語訳,
+  Lutherbibel 1912, Louis Segond, Reina-Valera 1909, 개역한글, Bíblia Livre, Riveduta), downloaded
+  on first launch and drawn with its own verse numbering. See [docs/localization.md](docs/localization.md).
 - **Reader** — paragraph or verse-by-verse layout, poetry indentation, words of Christ in red,
   footnotes, seven typefaces, five themes (Auto, Light, Sepia, Dark, Black), Dynamic Type,
   auto-scroll that carries on into the next chapter.
@@ -34,6 +38,9 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 - **Highlights and notes** — tap verses to select; highlight in five colors; attach a note to one
   or more verse ranges (a sermon on Romans 8:1–17). Notes show inline beside the verse and in a
   searchable Notes panel.
+- **Shortcuts, Siri and Spotlight** — verse lookup in any translation, verse images, notes and
+  favorites as App Intents; notes and favorites in Spotlight when switched on; any OSIS reference
+  (`urn:osis:John.3.16`) or `scripturealone://open?ref=` link opens the passage.
 - **Camera notes** — snap the sermon slide (or pick a photo; on Mac, an image file, the clipboard
   or Import from iPhone) and on-device text recognition starts the note: titled with the sermon
   title, linked to every passage on the slide, with the other lines as bullets. Review and edit

@@ -2,6 +2,25 @@
 
 ## After 1.0.0
 
+- Scripture Alone speaks eight more languages — Simplified Chinese, Japanese, German, French,
+  Spanish, Korean, Brazilian Portuguese and Italian — on iPhone, iPad, Apple Watch, the widgets
+  and Android. Each language comes with a whole 66-book Bible of its own: the 和合本, the 文語訳,
+  the Lutherbibel 1912, Louis Segond, the Reina-Valera 1909, the 개역한글, the Bíblia Livre and the
+  Riveduta. The app opens to the ASV at once and switches when the reader's Bible has downloaded;
+  it never waits on it. Each Bible keeps its own verse numbering on screen while highlights,
+  notes and shared links stay interchangeable between translations. Book names, typed
+  references (3章16節, 3장 16절, Joh 3,16), search (Chinese, Japanese and Korean included), the
+  study panel's places, people and feasts, the Verse of the Day and Listen all follow the
+  reader's language. The commentary and lexicon definitions exist only in English and are hidden
+  elsewhere; the Hebrew and Greek keep their words, parsing and Strong's numbers.
+- Shortcuts and Siri: open a passage, get a verse in any translation, make a verse image, create
+  and find notes, favorite or unfavorite a verse, and open the Verse of the Day. Notes and
+  favorites can be added to Spotlight (off until switched on in Settings), and a result opens
+  straight to the note or verse. Any standard OSIS reference opens the app — urn:osis:John.3.16,
+  scripturealone://open?ref=Ps.23 — as do wemiller.com passage links. Tapping the Verse of the
+  Day widget opens that verse.
+- Android has the same links, app shortcuts and system search for notes and favorites.
+
 - A fresh install always opens to the Bible. The American Standard Version ships inside the app
   again rather than as an asset pack meant to arrive with the install: App Review's iPad launched
   to a spinner that never ended when it didn't. If the ASV ever can't be opened, the reader now
