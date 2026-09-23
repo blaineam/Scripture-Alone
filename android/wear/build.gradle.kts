@@ -14,14 +14,13 @@ android {
         applicationId = "com.blainemiller.scripturealone"
         minSdk = 30
         targetSdk = 36
-        // The phone and watch bundles share one package, and Play needs every uploaded bundle's
-        // versionCode to be unique across the app, so the watch counts up from 1,000,000. (1,000,001
-        // was consumed by a Play draft that never shipped; a code, once uploaded, can't be reused.)
-        // The release workflow passes -PsaWearVersionCode (Play's highest Wear code + 1) and
-        // -PsaVersionName (the tag); local builds use these defaults.
-        versionCode = providers.gradleProperty("saWearVersionCode").orNull?.toInt() ?: 1_000_004
+        // The phone and watch bundles share one package, so every uploaded bundle needs its own
+        // versionCode: one sequential counter, the phone taking the next code and the watch the one
+        // after (scripts/play-publish.mjs). 1,000,001–1,000,004 are a retired Wear range. The release
+        // workflow passes -PsaWearVersionCode and -PsaVersionName (the tag); local builds use these.
+        versionCode = providers.gradleProperty("saWearVersionCode").orNull?.toInt() ?: 4
         versionName = providers.gradleProperty("saVersionName").orNull ?: "1.0.0"
-        check(versionCode!! >= 1_000_000) { "Wear OS versionCode $versionCode must be ≥ 1,000,000 (phone codes live below)" }
+        check(versionCode!! < 1_000_000) { "Wear OS versionCode $versionCode is in the retired 1,000,000+ range" }
     }
 
     buildTypes.getByName("debug") {

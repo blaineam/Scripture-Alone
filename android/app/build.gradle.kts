@@ -14,10 +14,10 @@ android {
         targetSdk = 36
         // Local builds use these; the release workflow (.github/workflows/android.yml) passes
         // -PsaVersionCode (Play's highest phone code + 1) and -PsaVersionName (the tag).
-        // Phone codes stay below 1,000,000 — the Wear OS bundle counts from there.
-        versionCode = providers.gradleProperty("saVersionCode").orNull?.toInt() ?: 2
+        // One sequential counter with the Wear OS bundle — see android/wear/build.gradle.kts.
+        versionCode = providers.gradleProperty("saVersionCode").orNull?.toInt() ?: 3
         versionName = providers.gradleProperty("saVersionName").orNull ?: "1.0.0"
-        check(versionCode!! < 1_000_000) { "phone versionCode $versionCode collides with the Wear OS range (≥ 1,000,000)" }
+        check(versionCode!! < 1_000_000) { "phone versionCode $versionCode is in the retired 1,000,000+ range" }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

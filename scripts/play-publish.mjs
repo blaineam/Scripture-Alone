@@ -4,13 +4,13 @@
  *
  *   node scripts/play-publish.mjs plan
  *       Read-only. Opens an edit, lists every track and every uploaded bundle, prints them, derives
- *       the next versionCodes (phone < 1,000,000; Wear OS ≥ 1,000,000), deletes the edit. With
+ *       the next versionCodes (one sequential counter: phone = next, Wear OS = next + 1), deletes the edit. With
  *       --check-tracks a,b,c it also fails if a CUSTOM track name is not one Play lists (so a wrong
  *       Wear closed-track id fails in seconds, before a 30-minute build).
  *
  *   node scripts/play-publish.mjs publish --version-name 1.1.0 \
  *       --phone-aab app-release.aab --phone-code 3 --phone-tracks internal,alpha \
- *       [--wear-aab wear-release.aab --wear-code 1000005 --wear-tracks "wear:internal,wear:Wear OS closed testing"] \
+ *       [--wear-aab wear-release.aab --wear-code 4 --wear-tracks "wear:internal,wear:Wear OS closed testing"] \
  *       [--status completed|inProgress|draft] [--user-fraction 0.2] [--notes-dir DIR] [--dry-run]
  *       ONE edit: upload both bundles, assign each to its tracks (the same versionCode may sit on
  *       several tracks — nothing is uploaded twice), attach release notes, validate, commit.
@@ -36,7 +36,9 @@ import { join } from 'node:path';
 
 const API = 'https://androidpublisher.googleapis.com/androidpublisher/v3/applications';
 const UPLOAD = 'https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications';
-const WEAR_FLOOR = 1_000_000;
+// Codes from 1,000,000 up are the Wear OS app's retired range (1,000,001–1,000,004, before the
+// switch to one sequential counter on 2026-09-23). They stay burned but no longer count.
+const LEGACY_WEAR_FLOOR = 1_000_000;
 
 const die = (m) => { console.error(`✗ ${m}`); summary(`- ❌ Play: ${m}`); process.exit(1); };
 // Inside an open edit, fail by THROWING so `finally` deletes the edit (process.exit would skip it).
@@ -154,13 +156,11 @@ function checkTracks(tracks, wanted) {
 }
 
 function nextCodes(codes) {
-	const phone = codes.filter((c) => c < WEAR_FLOOR), wear = codes.filter((c) => c >= WEAR_FLOOR);
-	// Repo defaults are the floor (android/app & wear build.gradle.kts): Play never saw a code
-	// below them that matters, and a code in the repo may have been burned in a Console draft.
-	const phoneNext = Math.max(phone.length ? Math.max(...phone) + 1 : 1, 2 + 1);
-	const wearNext = Math.max(wear.length ? Math.max(...wear) + 1 : WEAR_FLOOR + 1, 1_000_004 + 1);
-	if (phoneNext >= WEAR_FLOOR) fail(`next phone versionCode ${phoneNext} would enter the Wear OS range`);
-	return { phoneNext, wearNext };
+	// One counter for both form factors: every upload takes the next number. Phone and watch share
+	// the package, so their codes must differ; the phone takes `next`, the watch `next + 1`.
+	const used = codes.filter((c) => c < LEGACY_WEAR_FLOOR);
+	const phoneNext = Math.max(used.length ? Math.max(...used) + 1 : 1, 3);   // 1 and 2 are burned
+	return { phoneNext, wearNext: phoneNext + 1 };
 }
 
 function releaseNotes(dir) {
@@ -219,8 +219,8 @@ async function main() {
 		if (!a.phoneAab || !a.phoneCode || !a.phoneTracks?.length) fail('--phone-aab, --phone-code and --phone-tracks are required');
 		const wear = Boolean(a.wearAab);
 		if (wear && (!a.wearCode || !a.wearTracks?.length)) fail('--wear-aab needs --wear-code and --wear-tracks');
-		if (a.phoneCode >= WEAR_FLOOR) fail(`phone versionCode ${a.phoneCode} is in the Wear OS range`);
-		if (wear && a.wearCode < WEAR_FLOOR) fail(`Wear OS versionCode ${a.wearCode} is below 1,000,000`);
+		if (a.phoneCode >= LEGACY_WEAR_FLOOR || (wear && a.wearCode >= LEGACY_WEAR_FLOOR)) fail('versionCodes from 1,000,000 up are retired — the plan step picks sequential codes');
+		if (wear && a.wearCode === a.phoneCode) fail('the phone and Wear OS bundles need different versionCodes');
 		for (const [c, what] of [[a.phoneCode, 'phone'], ...(wear ? [[a.wearCode, 'Wear OS']] : [])]) {
 			if (snap.codes.includes(c)) fail(`${what} versionCode ${c} was already used on Play — codes can never be reused; re-run the workflow so the plan step picks a fresh one`);
 		}

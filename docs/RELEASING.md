@@ -103,11 +103,14 @@ reviewSubmission as the version. It's added as a `backgroundAssetVersion` item. 
 
 ### Play: versionCodes and tracks
 
-- The phone is always below 1,000,000 and the Wear OS app is always at 1,000,000 or above. The
-  plan step reads every code Play has ever seen (uploaded bundles plus track releases), and each
-  build gets `max + 1`, passed as `-PsaVersionCode` / `-PsaWearVersionCode`. The defaults in
-  `android/app` and `android/wear/build.gradle.kts` are only for local builds. Codes can never be
-  reused.
+- **One sequential counter** for both form factors (since 2026-09-23): the plan step reads every
+  code Play has ever seen, takes `max + 1` for the phone and `max + 2` for the watch, and passes
+  them as `-PsaVersionCode` / `-PsaWearVersionCode`. The first release after the switch is phone 3,
+  Wear 4. Codes can never be reused. The defaults in `android/app` and `android/wear/build.gradle.kts`
+  are only for local builds.
+- **Retired range:** Wear OS used 1,000,001–1,000,004 before the switch. Those stay burned and are
+  ignored. A watch that installed 1,000,00x cannot "upgrade" to a smaller code — Wear testers from
+  before the switch uninstall and reinstall once (closed testing only; there are no public users).
 - Both bundles and every track assignment go into **one edit**: all or nothing. Re-running is
   safe, because an uncommitted edit consumes no code.
 - Play refuses a Wear bundle on a phone track. Wear OS tracks are form-factor tracks with a
@@ -120,7 +123,7 @@ reviewSubmission as the version. It's added as a `backgroundAssetVersion` item. 
   The plan step fails in seconds, listing every track Play knows, if any track id is wrong.
   Play's track list on 2026-09-23 (from a `plan_only` run): `production`, `beta`, `alpha`
   (phone 2), `internal`, `wear:production`, `wear:beta`, `wear:internal`, and
-  `wear:Wear OS closed testing` (Wear 1,000,004). The next codes are phone 3 and Wear 1,000,005.
+  `wear:Wear OS closed testing` (Wear 1,000,004). The next codes are phone 3 and Wear 4.
 - Every 64-bit `.so` in both bundles must be 16 KB page aligned (`scripts/check-16kb-pages.py`).
   32-bit libraries are reported, not failed. ML Kit's armeabi-v7a/x86 OCR library is 4 KB aligned
   today; 16 KB devices are 64-bit only.
