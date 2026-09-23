@@ -17,7 +17,7 @@ android {
         // The phone and watch bundles share one package, and Play needs every uploaded bundle's
         // versionCode to be unique across the app, so the watch counts up from 1,000,000. (1,000,001
         // was consumed by a Play draft that never shipped; a code, once uploaded, can't be reused.)
-        versionCode = 1_000_002
+        versionCode = 1_000_003
         versionName = "1.0.0"
     }
 
