@@ -29,6 +29,13 @@ export CAP_APP_NAME="Scripture Alone"
 ONLY="${1:-all}"
 read -r -a LOCALES <<<"${SHOT_LOCALES:-en-US zh-Hans ja de-DE fr-FR es-ES ko pt-BR it}"
 
+locale_bible() {  # locale_bible <asc locale> -> the Bible a reader in that locale opens to
+    case "$1" in
+        zh-Hans) echo CUVS ;; ja) echo BUNGO ;; de-DE) echo LUT1912 ;; fr-FR) echo LSG ;;
+        es-ES) echo RVR1909 ;; ko) echo KRV ;; pt-BR) echo BLIVRE ;; it) echo RIV1927 ;; *) echo ASV ;;
+    esac
+}
+
 locale_dir() {  # locale_dir <base dir> <asc locale> -> where that locale's captures go
     if [ "$2" = "en-US" ]; then echo "$1"; else echo "$1/$2"; fi
 }
@@ -126,7 +133,9 @@ capture_ios() {  # capture_ios "<sim spec>" <rawKey>
             IFS='|' read -r file scene extra <<<"$entry"
             cap_terminate_foreign "$udid" "$BUNDLE_ID"
             # shellcheck disable=SC2086
-            CAP_EXTRA_LAUNCH_ARGS="-inMemoryStore -seedDemoLibrary $(cap_locale_args "$locale") $extra" \
+            # -translation sets that launch's saved translation: without it, the simulator keeps the
+            # last locale's (the English pass's ASV), and a French screenshot shows English text.
+            CAP_EXTRA_LAUNCH_ARGS="-inMemoryStore -seedDemoLibrary $(cap_locale_args "$locale") -translation $(locale_bible "$locale") $extra" \
                 cap_launch "$udid" "$BUNDLE_ID" "$scene" screenshotScene
             # Scenes stage themselves ~0.7-3 s after launch; the listen scene needs a voice going.
             local settle=6

@@ -84,4 +84,22 @@ import Testing
         #expect(BookNames.tableKey(for: "pt-BR") == "pt")
         #expect(BookNames.tableKey(for: "fr-CA") == "fr")
     }
+
+    @Test func slidesInEveryLanguageYieldTheirPassages() {
+        let cases: [(String, [BookID])] = [
+            ("Le bon berger\nJean 10:11–18  ·  Psaumes 23:1–6", [.john, .psalms]),
+            ("Der gute Hirte\nJohannes 10,11–18  ·  Psalm 23,1–6", [.john, .psalms]),
+            ("El buen pastor\nJuan 10:11–18  ·  Salmos 23:1–6", [.john, .psalms]),
+            ("好牧人\n约翰福音 10:11–18  ·  诗篇 23:1–6", [.john, .psalms]),
+            ("善き牧者\nヨハネ傳福音書 10:11–18  ·  詩篇 23:1–6", [.john, .psalms]),
+            ("선한 목자\n요한복음 10:11–18  ·  시편 23:1–6", [.john, .psalms]),
+            ("The Good Shepherd\nJohn 10:11–18  ·  Psalm 23:1–6", [.john, .psalms]),
+        ]
+        for (text, books) in cases {
+            let found = ReferenceDetector.detect(in: text).map(\.passage.book)
+            #expect(found == books, "\(text) → \(found)")
+        }
+        // Ordinary words are not books: "Il connaît les siens par leur nom" names none.
+        #expect(ReferenceDetector.detect(in: "Il connaît les siens par leur nom").isEmpty)
+    }
 }

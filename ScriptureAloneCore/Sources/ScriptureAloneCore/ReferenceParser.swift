@@ -153,6 +153,23 @@ public enum ReferenceParser {
         return normalizeOrdinals(s)
     }
 
+    /// Parses a reference in whichever of the nine languages its book name belongs to — for text
+    /// that isn't in the reader's own language (a slide, a pasted note). The book must be a whole
+    /// name or abbreviation of some language; a prefix doesn't count.
+    public static func parseAnyLanguage(_ text: String) -> Passage? {
+        for language in [BookNames.current] + BookNames.languages.map(Optional.some) + [nil] {
+            guard let passage = parse(text, language: language) else { continue }
+            let s = clean(text)
+            let ns = s as NSString
+            guard let m = pattern.firstMatch(in: s, range: NSRange(location: 0, length: ns.length)),
+                  m.range(at: 1).location != NSNotFound else { continue }
+            let token = BookInfo.normalize(normalizeOrdinals(ns.substring(with: m.range(at: 1))))
+            let exact = spellingTiers(language).contains { $0[passage.book]?.contains(token) == true }
+            if exact, passage.startChapter <= passage.book.chapterCount { return passage }
+        }
+        return nil
+    }
+
     /// Parses a single reference: "jn 3 16", "Rom 8:28-39", "1co13", "Ps 23", "Gen 1:1–2:3", "Jude 3".
     public static func parse(_ text: String, language: String? = BookNames.current) -> Passage? {
         let s = clean(text)
