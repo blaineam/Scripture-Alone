@@ -40,7 +40,7 @@ struct TranslationDownloadBanner: View {
 
     /// A translation download that failed stays visible until retried or another is chosen.
     private var failedPack: AssetPack? {
-        [AssetPack.bsb, .kjv].first {
+        AssetPack.translations.first {
             if case .failed = AssetLibrary.shared.state(of: $0) { return true }
             return false
         }
@@ -73,10 +73,6 @@ struct TranslationDownloadBanner: View {
     }
 
     private func translationID(for pack: AssetPack) -> String {
-        switch pack {
-        case .bsb: "BSB"
-        case .kjv: "KJV"
-        default: "ASV"
-        }
+        pack.translationID ?? ReaderModel.defaultTranslation
     }
 }

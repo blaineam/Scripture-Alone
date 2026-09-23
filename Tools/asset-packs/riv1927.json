@@ -1,0 +1,15 @@
+{
+  "assetPackID": "riv1927",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/RIV1927.sqlite",
+      "fileDestination": "RIV1927.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

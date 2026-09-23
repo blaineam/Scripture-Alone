@@ -1054,7 +1054,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "[ \"$CONFIGURATION\" = \"Debug\" ] || exit 0\nDEST=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nR=\"$SRCROOT/ScriptureAlone/Resources\"\nfor f in Bibles/BSB.sqlite Bibles/KJV.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do\n  cp -f \"$R/$f\" \"$DEST/\"\ndone\n";
+			shellScript = "[ \"$CONFIGURATION\" = \"Debug\" ] || exit 0\nDEST=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nR=\"$SRCROOT/ScriptureAlone/Resources\"\nfor f in Bibles/BSB.sqlite Bibles/KJV.sqlite Bibles/CUVS.sqlite Bibles/BUNGO.sqlite Bibles/LUT1912.sqlite Bibles/LSG.sqlite Bibles/RVR1909.sqlite Bibles/KRV.sqlite Bibles/BLIVRE.sqlite Bibles/RIV1927.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do\n  cp -f \"$R/$f\" \"$DEST/\"\ndone\n";
 		};
 		A7E8A4B1EA53B0B00CE405D9 /* Strip xattrs (codesign workaround) */ = {
 			isa = PBXShellScriptBuildPhase;

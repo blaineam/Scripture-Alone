@@ -1,0 +1,15 @@
+{
+  "assetPackID": "bungo",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/BUNGO.sqlite",
+      "fileDestination": "BUNGO.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

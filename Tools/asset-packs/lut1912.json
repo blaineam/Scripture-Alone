@@ -1,0 +1,15 @@
+{
+  "assetPackID": "lut1912",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/LUT1912.sqlite",
+      "fileDestination": "LUT1912.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

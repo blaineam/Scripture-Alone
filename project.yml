@@ -113,7 +113,7 @@ targets:
           [ "$CONFIGURATION" = "Debug" ] || exit 0
           DEST="$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH"
           R="$SRCROOT/ScriptureAlone/Resources"
-          for f in Bibles/BSB.sqlite Bibles/KJV.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do
+          for f in Bibles/BSB.sqlite Bibles/KJV.sqlite Bibles/CUVS.sqlite Bibles/BUNGO.sqlite Bibles/LUT1912.sqlite Bibles/LSG.sqlite Bibles/RVR1909.sqlite Bibles/KRV.sqlite Bibles/BLIVRE.sqlite Bibles/RIV1927.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do
             cp -f "$R/$f" "$DEST/"
           done
       - name: Strip xattrs (codesign workaround)

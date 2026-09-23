@@ -1,0 +1,15 @@
+{
+  "assetPackID": "rvr1909",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/RVR1909.sqlite",
+      "fileDestination": "RVR1909.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

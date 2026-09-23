@@ -38,6 +38,73 @@ enum AssetPack: String, CaseIterable, Sendable {
     case kjv
     case commentary
     case interlinear
+    // The big-8 locales' Bibles (docs/localization.md): each the whole 66-book Protestant canon,
+    // `onDemand`, and the one matching the device's language is fetched at first launch.
+    case cuvs
+    case bungo
+    case lut1912
+    case lsg
+    case rvr1909
+    case krv
+    case blivre
+    case riv1927
+
+    /// Every translation delivered as a pack, in the order the Translations screen lists them.
+    static let translations: [AssetPack] = [.bsb, .kjv, .cuvs, .bungo, .lut1912, .lsg, .rvr1909, .krv, .blivre, .riv1927]
+
+    /// The translation this pack carries (its `meta.id`), or nil for a study pack.
+    var translationID: String? {
+        switch self {
+        case .asv: "ASV"
+        case .bsb: "BSB"
+        case .kjv: "KJV"
+        case .cuvs: "CUVS"
+        case .bungo: "BUNGO"
+        case .lut1912: "LUT1912"
+        case .lsg: "LSG"
+        case .rvr1909: "RVR1909"
+        case .krv: "KRV"
+        case .blivre: "BLIVRE"
+        case .riv1927: "RIV1927"
+        case .commentary, .interlinear: nil
+        }
+    }
+
+    /// The language this Bible is for, as a BCP 47 tag — which device languages it is chosen for.
+    var locale: String? {
+        switch self {
+        case .cuvs: "zh-Hans"
+        case .bungo: "ja"
+        case .lut1912: "de"
+        case .lsg: "fr"
+        case .rvr1909: "es"
+        case .krv: "ko"
+        case .blivre: "pt-BR"
+        case .riv1927: "it"
+        default: nil
+        }
+    }
+
+    /// The Bible for the first of the reader's preferred languages that has one, or nil for
+    /// English and every language without one. Simplified Chinese only: the 和合本 here is the
+    /// simplified-script edition, and a Traditional reader should not be handed it unasked.
+    static func bible(forPreferredLanguages languages: [String]) -> AssetPack? {
+        for tag in languages {
+            let language = Locale.Language(identifier: tag)
+            guard let code = language.languageCode?.identifier else { continue }
+            if code == "en" { return nil }
+            if code == "zh" {
+                let script = language.script?.identifier ?? Locale.Language(identifier: tag).maximalIdentifier
+                    .split(separator: "-").dropFirst().first.map(String.init)
+                if script == "Hans" { return .cuvs }
+                continue
+            }
+            if let pack = translations.first(where: { $0.locale?.split(separator: "-").first.map(String.init) == code }) {
+                return pack
+            }
+        }
+        return nil
+    }
 
     /// The asset-pack identifier as uploaded to App Store Connect. Must match `assetPackID` in
     /// `Tools/asset-packs/<id>.json`. Plain names, not reverse-DNS: App Store Connect rejects an
@@ -57,12 +124,8 @@ enum AssetPack: String, CaseIterable, Sendable {
 
     /// The pack for a bundled translation, or nil for anything else.
     init?(translationID: String) {
-        switch translationID {
-        case "ASV": self = .asv
-        case "BSB": self = .bsb
-        case "KJV": self = .kjv
-        default: return nil
-        }
+        guard let pack = AssetPack.allCases.first(where: { $0.translationID == translationID }) else { return nil }
+        self = pack
     }
 
     /// The file inside the pack (at its root — the manifests set `fileDestination`), and the name
@@ -74,6 +137,7 @@ enum AssetPack: String, CaseIterable, Sendable {
         case .kjv: "KJV.sqlite"
         case .commentary: "Study.sqlite"
         case .interlinear: "Interlinear.sqlite"
+        default: "\(translationID ?? rawValue.uppercased()).sqlite"
         }
     }
 
@@ -84,6 +148,15 @@ enum AssetPack: String, CaseIterable, Sendable {
         case .kjv: "King James Version"
         case .commentary: "Commentary"
         case .interlinear: "Original Languages"
+        // A Bible's own name, in its own language, as its readers know it.
+        case .cuvs: "和合本（新标点）"
+        case .bungo: "文語訳聖書"
+        case .lut1912: "Lutherbibel 1912"
+        case .lsg: "Louis Segond 1910"
+        case .rvr1909: "Reina-Valera 1909"
+        case .krv: "개역한글"
+        case .blivre: "Bíblia Livre"
+        case .riv1927: "Riveduta 1927"
         }
     }
 
@@ -95,19 +168,27 @@ enum AssetPack: String, CaseIterable, Sendable {
         case .kjv: 15
         case .commentary: 44
         case .interlinear: 11
+        case .cuvs: 17
+        case .bungo: 20
+        case .lut1912: 14
+        case .lsg: 15
+        case .rvr1909: 13
+        case .krv: 20
+        case .blivre: 13
+        case .riv1927: 14
         }
     }
 
     /// What the reader is waiting for, in their terms.
     var explanation: String {
         switch self {
-        case .asv, .bsb, .kjv:
-            "About \(megabytes) MB, downloaded once and kept for reading offline."
         case .commentary:
             "Calvin, Gill and Jamieson-Fausset-Brown — about \(megabytes) MB, downloaded once and kept."
         case .interlinear:
             "The Hebrew and Greek behind every word, with a lexicon — about \(megabytes) MB, "
                 + "downloaded once and kept."
+        default:
+            "About \(megabytes) MB, downloaded once and kept for reading offline."
         }
     }
 }
@@ -246,7 +327,7 @@ final class AssetLibrary {
     /// Forgets a failed translation download once the reader has moved on to another, so its
     /// "couldn't download" banner doesn't outlive the choice it was about.
     func clearFailedTranslations(except pack: AssetPack?) {
-        for other in [AssetPack.bsb, .kjv] where other != pack {
+        for other in AssetPack.translations where other != pack {
             if case .failed = states[other] { states[other] = .absent }
         }
     }

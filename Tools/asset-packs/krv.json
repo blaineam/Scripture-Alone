@@ -1,0 +1,15 @@
+{
+  "assetPackID": "krv",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/KRV.sqlite",
+      "fileDestination": "KRV.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

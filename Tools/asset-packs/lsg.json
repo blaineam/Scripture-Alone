@@ -1,0 +1,15 @@
+{
+  "assetPackID": "lsg",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/LSG.sqlite",
+      "fileDestination": "LSG.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

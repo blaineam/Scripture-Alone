@@ -1,0 +1,15 @@
+{
+  "assetPackID": "cuvs",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/CUVS.sqlite",
+      "fileDestination": "CUVS.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "assetPackID": "blivre",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "ScriptureAlone/Resources/Bibles/BLIVRE.sqlite",
+      "fileDestination": "BLIVRE.sqlite"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}
