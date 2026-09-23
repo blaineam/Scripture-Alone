@@ -81,8 +81,7 @@ TRANSLATIONS = [
     },
     # The big-8 locales' Bibles (docs/localization.md): each the whole 66-book Protestant canon,
     # translated from the Hebrew and Greek, and free to redistribute. Delivered as on-demand packs
-    # and chosen by the device's language at first launch. Japanese is still open: the 口語訳's
-    # CrossWire module is missing whole chapters, and its public-domain status is disputed.
+    # and chosen by the device's language at first launch.
     {
         "id": "CUVS",
         "locale": "zh-Hans",
@@ -93,6 +92,19 @@ TRANSLATIONS = [
         "license": "Public domain",
         "source": "https://ebible.org/find/details.php?id=cmn-cu89s",
         "john_3_16": "「 神爱世人，",
+    },
+    {
+        # The 文語訳 rather than the 口語訳: the 口語訳's CrossWire module is missing whole chapters
+        # and its public-domain status is disputed (docs/localization.md). Literary Japanese.
+        "id": "BUNGO",
+        "locale": "ja",
+        "zip": "jpn-bungo_usfm.zip",   # converted by Tools/sword_to_usfm.py from CrossWire JapBungo
+        "name": "文語訳聖書",
+        "abbreviation": "文語訳",
+        "copyright": "文語訳聖書（旧約：明治元訳 1887年、新約：大正改訳 1917年）。パブリックドメイン。",
+        "license": "Public domain",
+        "source": "https://www.crosswire.org/sword/modules/ModInfo.jsp?modName=JapBungo",
+        "john_3_16": "それ神はその獨子を賜ふほどに世を愛し給へり",
     },
     {
         "id": "LUT1912",

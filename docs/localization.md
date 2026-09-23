@@ -22,7 +22,7 @@ All complete (1,189 chapters), no deuterocanon, redistributable.
 | Locale | Translation | License | Source |
 |---|---|---|---|
 | zh-Hans | Chinese Union Version, simplified (和合本, 1919) | Public domain | eBible `cmn-cu89s` |
-| ja | **Open** — see below | | |
+| ja | 文語訳 (Meiji OT 1887, from the 1953 printing + Taishō NT 1917) | Public domain | CrossWire `JapBungo` |
 | de | Luther 1912 | Public domain | eBible `deu1912` |
 | fr | Louis Segond 1910 | Public domain | eBible `fraLSG` |
 | es | Reina-Valera 1909 | Public domain | eBible `spaRV1909` |
@@ -33,14 +33,16 @@ All complete (1,189 chapters), no deuterocanon, redistributable.
 Rejected: eBible's only complete Japanese Bible, `jpnm` ("Freedom Bible"), is marked by its own
 page as a translation **draft**; the only eBible Korean is the archaic 1910 text.
 
-**Japanese is open.** The standard text is the Colloquial Japanese 口語訳 (1954/55). CrossWire's
+**Japanese: the 文語訳 (owner, 2026-09-23).** The standard modern text is the Colloquial Japanese 口語訳 (1954/55). CrossWire's
 `JapKougo` module says its copyright expired on 2006-01-01 (Japan's 50-year term for works
 published by an organization), but the module is **missing whole chapters** — Matthew 25–28,
 John 19, Romans 10, Psalm 130, Proverbs 30 and more (473 verses) — so it cannot be the source.
 Japanese Wikisource's 口語訳 pages are under a **deletion request on copyright grounds**
-(削除依頼中), so the text's status is disputed there. Options: confirm the status (e.g. with the
-Japan Bible Society) and take the full text from another source, or use the 文語訳 (Meiji 1887 /
-Taishō 1917), unquestionably public domain but literary, archaic Japanese.
+(削除依頼中), so the text's status is disputed there. So the app ships the 文語訳 instead:
+unquestionably public domain, and literary Japanese of 1887/1917 rather than modern. The CrossWire
+module is complete — 31,099 verses; Exodus 7:25, 2 Samuel 19:25 and 2 Chronicles 2:13 are printed
+with a neighbouring verse, not missing — and its book names are the translation's own (ヱレミヤ記,
+使徒行傳, …), from Japanese Wikisource's tables of contents.
 
 **Versification.** Highlights, notes and cross-references are keyed by KJV-style verse numbers.
 Louis Segond numbers psalm titles as verse 1 and Malachi 4 as 3:19–24 (31,170 verses), and the
