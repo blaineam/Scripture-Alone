@@ -65,7 +65,7 @@ A private Bible that lives on your device. Read offline, take sermon notes, list
 The first release of Scripture Alone.
 
 ## review_notes
-Scripture Alone is a free, open-source Bible app (AGPL-3.0, https://github.com/blaineam/Scripture-Alone). No account or login is required for any feature, and the app reads offline from its first launch.
+Scripture Alone is an open-source Bible app (AGPL-3.0, https://github.com/blaineam/Scripture-Alone). No account or login is required for any feature, and the app reads offline from its first launch.
 
 The American Standard Version, the default translation, is now built into the app itself, so a fresh install opens straight to the Bible with or without a network. (Build 40 relied on an asset pack for it, which is why it loaded indefinitely on your iPad; that path is gone.)
 
@@ -81,7 +81,7 @@ Quick tour: tap the passage title to jump anywhere (try "jn 3 16"). Tap verses t
 
 Original languages: with a verse selected, choose Original Languages to see it word by word in Hebrew or Greek with parsing, Strong's numbers and a lexicon. This works in every translation; it downloads once on first use.
 
-Additional translations (Manage Translations): dozens of public-domain translations can be downloaded free from eBible.org, and a user may import a USFM zip or a DRM-free ePub they own. "Browse Free Translations" fetches https://ebible.org/Scriptures/translations.csv (a public catalogue) only when tapped; no identifiers are sent. Files carrying any copy protection are refused and the app contains no decryption code. The ESV, CSB, NASB and NKJV cannot be licensed for redistribution by anyone, so they are not included — instead a user may paste their own free API key from the publisher's own service (api.esv.org or api.bible) and those translations are then read over the network. NOTHING IN THE REVIEW REQUIRES A KEY: the three bundled translations are fully functional on a fresh install, and the key screen is optional.
+Additional translations (Manage Translations): dozens of public-domain translations can be downloaded from eBible.org, and a user may import a USFM zip or a DRM-free ePub they own. The Browse… button (globe icon) in Manage Translations fetches https://ebible.org/Scriptures/translations.csv (a public catalogue) only when tapped; no identifiers are sent. Files carrying any copy protection are refused and the app contains no decryption code. The ESV, CSB, NASB and NKJV cannot be licensed for redistribution by anyone, so they are not included — instead a user may paste their own API key from the publisher's own service (api.esv.org or api.bible) and those translations are then read over the network. NOTHING IN THE REVIEW REQUIRES A KEY: the three bundled translations are fully functional on a fresh install, and the key screen is optional.
 
 Importing notes (Notes panel > Bring Your Notes): a user can import their own notes from Life Bible (formerly Tecarta Bible) using that app's own export file, or paste notes or a CSV from any other source. Nothing is fetched from another vendor's servers — the user supplies the file.
 
