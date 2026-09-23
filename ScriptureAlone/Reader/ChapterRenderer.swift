@@ -373,7 +373,7 @@ enum ChapterRenderer {
             let result = NSMutableAttributedString()
             if fragment.numbered, style.verseNumbers, fragment.verse > 0 {
                 // Narrow no-break space keeps the number on the same line as its first word.
-                result.append(NSAttributedString(string: "\(fragment.verse)\u{202F}", attributes: [
+                result.append(NSAttributedString(string: "\(fragment.label)\u{202F}", attributes: [
                     .font: numberFont, .foregroundColor: style.palette.accent,
                     .baselineOffset: style.size * 0.32, .verseKey: key,
                 ]))

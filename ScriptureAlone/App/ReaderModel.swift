@@ -98,6 +98,11 @@ final class ReaderModel {
     /// text — selection, quotation, listening, compare, notes — asks this rather than `store`.
     var source: (any ChapterTextSource)? { packageSource ?? store }
 
+    /// How the text being read numbers its verses against the KJV keys marks are stored under.
+    /// Everything stored, shared or looked up is a KJV key; `layout`, `selection`, `topVerse` and
+    /// `scrollTarget` are in the translation's own numbering. See `VerseNumbering`.
+    var numbering: VerseNumbering { source?.numbering ?? .identity }
+
     /// The online translation in use, when the current text comes from an API rather than a file.
     private(set) var onlineTranslation: (entry: TranslationEntry, info: TranslationInfo)?
     /// Supplied by the app so the model needn't know about keychains or providers.
@@ -159,7 +164,10 @@ final class ReaderModel {
         // not — and nothing else is on the device to read — say so. A spinner with nothing behind
         // it is what App Review saw on 1.0.0 build 40, and it never ends.
         if source == nil, onlineTranslation == nil { reportDefaultTranslationFailure() }
-        if let saved, saved.verse > 1 { scrollTarget = saved.key }
+        // The saved position is a KJV key; open at the verse the translation calls it.
+        // A different chapter than was loaded above means loading again: the pane refuses to draw
+        // a layout under another chapter's reference, so a stale one would just spin.
+        if let saved, land(onKJV: saved.key, scroll: saved.verse > 1) { load() }
     }
 
     /// Adds the imported translations to the pickers. Called after an import or a removal, so
@@ -343,10 +351,11 @@ final class ReaderModel {
                 setLayout(nil, for: nil)
                 return
             }
+            let anchor = readingAnchor
             packageSource = package
             store = nil
             if persist { rememberTranslation(entry) }
-            if let top = topVerse { scrollTarget = top }
+            keepPlace(anchor)
             load()
             return
         }
@@ -370,9 +379,10 @@ final class ReaderModel {
         do {
             let store = try stores[id] ?? BibleStore(url: url)
             stores[id] = store
+            let anchor = readingAnchor
             self.store = store
             if persist { rememberTranslation(entry) }
-            if let top = topVerse { scrollTarget = top }
+            keepPlace(anchor)
             load()
         } catch {
             loadError = error.localizedDescription
@@ -400,7 +410,36 @@ final class ReaderModel {
         show(clamped.chapter, verse: clamped.startVerse)
     }
 
-    func go(to verse: VerseRef) { show(verse.chapterKey, verse: verse.verse) }
+    /// Goes to a verse given by its **KJV key** — a search hit, a cross-reference, a note, a link —
+    /// landing on the verse this translation calls it. (A `Passage` the reader typed is already in
+    /// their translation's numbering: see `go(to: Passage)`.)
+    func go(to verse: VerseRef) {
+        guard let native = numbering.native(forKJV: verse.key).flatMap(VerseRef.init(key:)) else {
+            show(verse.chapterKey, verse: verse.verse)
+            return
+        }
+        show(native.chapterKey, verse: native.verse)
+    }
+
+    /// The verse at the top of the screen as a KJV key, taken before the source changes.
+    private var readingAnchor: Int? { topVerse.map { numbering.kjv(forNative: $0) } }
+
+    /// After a translation switch: stay on the same verse, in the new translation's numbering —
+    /// which may be a different chapter (French Exodus 7:26 is English 8:1).
+    private func keepPlace(_ anchor: Int?) {
+        guard let anchor else { return }
+        land(onKJV: anchor, scroll: true)
+    }
+
+    /// Returns whether the chapter changed.
+    @discardableResult
+    private func land(onKJV key: Int, scroll: Bool) -> Bool {
+        guard let native = numbering.native(forKJV: key).flatMap(VerseRef.init(key:)) else { return false }
+        let moved = native.chapterKey != location
+        if moved { location = native.chapterKey }
+        if scroll { scrollTarget = native.key }
+        return moved
+    }
 
     func show(_ chapter: ChapterRef, verse: Int? = nil) {
         if chapter != location {
@@ -479,9 +518,11 @@ final class ReaderModel {
         if let ref = VerseRef(key: key) { savePosition(ref) }
     }
 
+    /// Saved as a KJV key, so the place survives a switch of translation and another device.
     private func savePosition(_ ref: VerseRef) {
-        defaults.set(ref.key, forKey: "position")
-        cloud.set(ref.key, forKey: "position")
+        let key = numbering.kjv(forNative: ref.key)
+        defaults.set(key, forKey: "position")
+        cloud.set(key, forKey: "position")
     }
 
     private func remember(_ chapter: ChapterRef) {
@@ -524,10 +565,22 @@ final class ReaderModel {
         if selection.contains(verseKey) { selection.remove(verseKey) } else { selection.insert(verseKey) }
     }
 
+    /// The selection as KJV ranges — what a highlight, note, favorite or link stores.
     var selectedRanges: [VerseRange] {
         guard let source else { return [] }
-        return VerseRange.ranges(from: selection) { source.verseCount($0) }
+        let native = VerseRange.ranges(from: selection) { source.verseCount($0) }
+        let numbering = source.numbering
+        return numbering.isIdentity ? native : native.map(numbering.kjvRange)
     }
+
+    /// The KJV keys the selection holds, one per KJV verse — what highlights are stored under.
+    var selectedKJVKeys: Set<Int> {
+        let numbering = self.numbering
+        return Set(selection.flatMap(numbering.kjvKeyList(forNative:)))
+    }
+
+    /// A stored (KJV) range as the reader's translation numbers it, for showing a reference.
+    func displayRange(_ range: VerseRange) -> VerseRange { numbering.nativeRange(range) ?? range }
 
     /// What the translation being read permits. A packaged translation carries its publisher's own
     /// answer; everything else derives one from its licence line. One question, one answer, asked
@@ -558,7 +611,7 @@ final class ReaderModel {
             let text = verses.count == 1
                 ? verses[0].text
                 : verses.map { "\($0.ref.verse) \($0.text)" }.joined(separator: " ")
-            return "\(text)\n— \(range.display) (\(store.info.abbreviation))"
+            return "\(text)\n— \(displayRange(range).display) (\(store.info.abbreviation))"
         }
         return blocks.joined(separator: "\n\n")
     }

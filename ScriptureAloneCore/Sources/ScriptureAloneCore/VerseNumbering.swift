@@ -64,6 +64,18 @@ public struct VerseNumbering: Sendable, Equatable {
         return row.kjv...row.kjvLast
     }
 
+    /// Every KJV key a native verse holds, for storing one highlight per KJV verse — so the
+    /// color shows on each of them in a translation that numbers them separately. A span that runs
+    /// into the next chapter (the Reina-Valera's Job 39:30 holds 39:27-40:5) is listed as the rest
+    /// of the first chapter's verses the map names plus the second chapter's from verse 1; the KJV's
+    /// own chapter lengths are not known here, so the first chapter stops at its first key.
+    public func kjvKeyList(forNative key: Int) -> [Int] {
+        let range = kjvKeys(forNative: key)
+        let firstChapter = range.lowerBound / 1_000, lastChapter = range.upperBound / 1_000
+        if firstChapter == lastChapter { return Array(range) }
+        return [range.lowerBound] + Array((lastChapter * 1_000 + 1)...range.upperBound)
+    }
+
     /// The KJV key a native verse is stored under: the first it holds.
     public func kjv(forNative key: Int) -> Int { forward[key]?.kjv ?? key }
 

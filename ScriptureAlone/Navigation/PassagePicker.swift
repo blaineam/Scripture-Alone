@@ -192,7 +192,7 @@ struct PassagePicker: View {
                     ForEach(results) { hit in
                         Button {
                             model.rememberSearch(query)
-                            model.go(to: hit.ref)
+                            model.go(to: hit.kjv)   // the KJV key; the reader lands on its own verse
                             dismiss()
                         } label: {
                             VStack(alignment: .leading, spacing: 4) {

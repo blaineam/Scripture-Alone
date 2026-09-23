@@ -92,15 +92,18 @@ private struct ShareSupport: ViewModifier {
         }
     }
 
-    /// Goes to the passage and selects it.
+    /// Goes to the passage and selects it. A link carries KJV keys; the reader lands on, and
+    /// selects, the verses as the translation being read numbers them. Any source will do — the
+    /// sealed ASV has no `store`, which used to make a link open nothing.
     private func reveal(_ ranges: [VerseRange]) {
-        guard let first = ranges.first, let store = model.store else { return }
+        guard let first = ranges.first, let source = model.source else { return }
         if coordinator.designer != nil { coordinator.designer = nil }
-        model.show(first.start.chapterKey, verse: first.start.verse)
-        model.selection = Set(ranges.flatMap { Self.verseKeys(in: $0, store: store) })
+        model.go(to: first.start)
+        let native = ranges.compactMap { source.numbering.nativeRange($0) }
+        model.selection = Set(native.flatMap { Self.verseKeys(in: $0, store: source) })
     }
 
-    static func verseKeys(in range: VerseRange, store: BibleStore) -> [Int] {
+    static func verseKeys(in range: VerseRange, store: any ChapterTextSource) -> [Int] {
         var keys: [Int] = []
         var chapter = range.start.chapterKey
         var verse = range.start.verse

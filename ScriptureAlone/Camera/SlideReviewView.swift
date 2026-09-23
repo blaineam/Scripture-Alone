@@ -241,10 +241,13 @@ struct SlideReviewView: View {
     private func save() {
         let heading = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let photo = keepPhoto ? SlideImage.jpeg(slide.image) : nil
+        // The slide cites the congregation's own numbering — the translation being read; notes
+        // store KJV keys (`VerseNumbering`). `ranges` stays native so the review shows the slide's.
+        let stored = ranges.map(model.numbering.kjvRange)
         let note: Note
         if let target = targetNote {
             note = target
-            note.anchors = SlideParser.merging(note.anchors, ranges)
+            note.anchors = SlideParser.merging(note.anchors, stored)
             if note.title.trimmingCharacters(in: .whitespaces).isEmpty {
                 note.title = heading
                 note.body = SlideParser.append(heading: nil, lines: includedLines, to: note.body)
@@ -257,7 +260,7 @@ struct SlideReviewView: View {
             note.updatedAt = .now
         } else {
             note = Note(title: heading, body: SlideParser.body(for: includedLines),
-                        anchors: SlideParser.merging([], ranges), origin: "camera")
+                        anchors: SlideParser.merging([], stored), origin: "camera")
             note.slidePhoto = photo
             context.insert(note)
         }

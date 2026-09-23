@@ -63,7 +63,10 @@ struct ReaderView: View {
 
     var body: some View {
         NavigationStack {
-            ChapterPane(chapter: model.location, style: style, autoScrollSpeed: autoScrolling ? autoScrollSpeed : 0,
+            ChapterPane(chapter: model.location,
+                        markKeys: model.numbering.kjvKeyRange(of: model.location,
+                                                              verseCount: model.source?.verseCount(model.location) ?? 0),
+                        style: style, autoScrollSpeed: autoScrolling ? autoScrollSpeed : 0,
                         onTap: handle, onReachedEnd: advanceWhileScrolling, onUserScroll: { autoScrolling = false })
                 .ignoresSafeArea(edges: .bottom)
                 .background(Color(style.palette.page))
@@ -255,7 +258,7 @@ struct ReaderView: View {
                 study.isOn = false
             } else {
                 showNotes = false
-                study.turnOn(selection: model.selection)
+                study.turnOn(selection: model.selectedKJVKeys)
             }
         } label: {
             Label("Study", systemImage: study.isOn ? "book.and.wrench.fill" : "book.and.wrench")
@@ -371,7 +374,7 @@ struct ReaderView: View {
         case .verse(let key):
             // A keepsake is read-only: no selecting to highlight or annotate.
             if legacy.reading == nil { model.toggle(key) }
-            if study.isOn { study.follow(key) }
+            if study.isOn { study.follow(model.numbering.kjv(forNative: key)) }
         case .notes(let ids, let rect):
             popover = ReaderPopover(kind: .notes(ids), rect: rect)
         case .footnote(let text, let rect):
@@ -402,7 +405,7 @@ struct ReaderView: View {
             let verse = ScreenshotScene.key(.john, 3, 16)
             model.selection = [verse]
             study.tab = .crossReferences
-            study.turnOn(selection: model.selection)
+            study.turnOn(selection: model.selectedKJVKeys)
         case .maps:
             // ContextReaderHooks opens the viewer on the map.
             model.show(ChapterRef(.acts, 13), verse: 1)
@@ -478,16 +481,18 @@ private struct ChapterPane: View {
     @Query(sort: \Note.updatedAt, order: .reverse) private var notes: [Note]
     @State private var cache = RenderCache()
 
-    init(chapter: ChapterRef, style: ReaderStyle, autoScrollSpeed: Double, onTap: @escaping (ChapterTap) -> Void,
-         onReachedEnd: @escaping () -> Void, onUserScroll: @escaping () -> Void) {
+    /// - Parameter markKeys: the KJV keys this chapter's verses hold (`VerseNumbering.kjvKeyRange`)
+    ///   — where its highlights are stored, which is not always this chapter's own numbers.
+    init(chapter: ChapterRef, markKeys: ClosedRange<Int>, style: ReaderStyle, autoScrollSpeed: Double,
+         onTap: @escaping (ChapterTap) -> Void, onReachedEnd: @escaping () -> Void, onUserScroll: @escaping () -> Void) {
         self.chapter = chapter
         self.style = style
         self.autoScrollSpeed = autoScrollSpeed
         self.onTap = onTap
         self.onReachedEnd = onReachedEnd
         self.onUserScroll = onUserScroll
-        let low = chapter.keyRange.lowerBound
-        let high = chapter.keyRange.upperBound
+        let low = markKeys.lowerBound
+        let high = markKeys.upperBound
         _highlights = Query(filter: #Predicate<Highlight> { $0.verseKey >= low && $0.verseKey <= high })
     }
 
@@ -537,15 +542,20 @@ private struct ChapterPane: View {
                                       nextTitle: chapter.next.map(\.display), copyright: source.info.copyright,
                                       keepsake: true)
         }
+        // Marks are stored under KJV keys; the renderer draws this translation's own verses.
+        let numbering = source.numbering
         // Newest highlight wins when two devices colored the same verse.
         var colors: [Int: (String, Date)] = [:]
         for highlight in highlights {
-            if let existing = colors[highlight.verseKey], existing.1 > highlight.createdAt { continue }
-            colors[highlight.verseKey] = (highlight.colorName, highlight.createdAt)
+            guard let key = numbering.native(forKJV: highlight.verseKey), key / 1_000 == chapter.keyRange.lowerBound / 1_000
+            else { continue }
+            if let existing = colors[key], existing.1 > highlight.createdAt { continue }
+            colors[key] = (highlight.colorName, highlight.createdAt)
         }
         var noteMarkers: [Int: [String]] = [:]
         for note in notes {
-            for anchor in note.anchors where anchor.overlaps(chapter) {
+            for stored in note.anchors {
+                guard let anchor = numbering.nativeRange(stored), anchor.overlaps(chapter) else { continue }
                 // Mark the last verse of the range that falls in this chapter.
                 let end = anchor.end.chapterKey == chapter
                     ? anchor.end.key

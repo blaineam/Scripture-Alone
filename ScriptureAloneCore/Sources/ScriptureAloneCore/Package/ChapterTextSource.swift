@@ -32,12 +32,15 @@ public protocol ChapterTextSource: Sendable {
     /// `verses(in:)` takes KJV keys; `layout(for:)` and `verseCount(_:)` are in the source's own
     /// numbering. See `VerseNumbering`.
     var numbering: VerseNumbering { get }
+    /// Verses by this source's own keys — a chapter as the reader sees it, for reading aloud.
+    func nativeVerses(in range: VerseRange) throws -> [VerseText]
 }
 
 public extension ChapterTextSource {
     func search(_ query: String) throws -> [BibleStore.SearchHit] { try search(query, limit: 300) }
     /// Sources without a `kjv_map` — packages, imports, the online cache — number as the KJV does.
     var numbering: VerseNumbering { .identity }
+    func nativeVerses(in range: VerseRange) throws -> [VerseText] { try verses(in: range) }
 }
 
 extension BibleStore: ChapterTextSource {

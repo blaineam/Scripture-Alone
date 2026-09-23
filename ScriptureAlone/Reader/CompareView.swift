@@ -18,10 +18,13 @@ struct CompareView: View {
     @State private var loading = false
 
     private struct Row: Identifiable {
+        /// The verse number shown: the left-hand translation's own (the right's when it alone has it).
         let verse: Int
         let left: String?
         let right: String?
-        var id: Int { verse }
+        /// Rows pair up by KJV key, not by number: French Psalm 51:12 sits beside English 51:10.
+        let key: Int
+        var id: Int { key }
         /// Nothing to compare when one side simply doesn't have the verse — translations differ on
         /// which verses they print at all.
         var isOneSided: Bool { left == nil || right == nil }
@@ -132,12 +135,20 @@ struct CompareView: View {
         }
         guard let right else { failure = "That translation isn't available."; rows = []; return }
 
-        let leftVerses = (try? left.verses(in: chapter.wholeChapter)) ?? []
-        let rightVerses = (try? right.verses(in: chapter.wholeChapter)) ?? []
-        let leftByNumber = Dictionary(uniqueKeysWithValues: leftVerses.map { ($0.ref.verse, $0.text) })
-        let rightByNumber = Dictionary(uniqueKeysWithValues: rightVerses.map { ($0.ref.verse, $0.text) })
-        let numbers = Set(leftByNumber.keys).union(rightByNumber.keys).sorted()
-        rows = numbers.map { Row(verse: $0, left: leftByNumber[$0], right: rightByNumber[$0]) }
+        // The chapter on screen by its own numbers; the other side by the KJV keys those verses hold,
+        // which for a translation that numbers differently can reach into a neighbouring chapter.
+        let leftVerses = (try? left.nativeVerses(in: chapter.wholeChapter)) ?? []
+        let span = left.numbering.kjvKeyRange(of: chapter, verseCount: left.verseCount(chapter))
+        let rightVerses = VerseRef(key: span.lowerBound).flatMap { start in
+            VerseRef(key: span.upperBound).flatMap { end in try? right.verses(in: VerseRange(start, end)) }
+        } ?? []
+        var leftByKey: [Int: (Int, String)] = [:], rightByKey: [Int: (Int, String)] = [:]
+        for verse in leftVerses { leftByKey[left.numbering.kjv(forNative: verse.ref.key)] = (verse.ref.verse, verse.text) }
+        for verse in rightVerses { rightByKey[right.numbering.kjv(forNative: verse.ref.key)] = (verse.ref.verse, verse.text) }
+        rows = Set(leftByKey.keys).union(rightByKey.keys).sorted().map { key in
+            Row(verse: leftByKey[key]?.0 ?? rightByKey[key]?.0 ?? key % 1_000,
+                left: leftByKey[key]?.1, right: rightByKey[key]?.1, key: key)
+        }
     }
 }
 

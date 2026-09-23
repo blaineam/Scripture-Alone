@@ -60,7 +60,9 @@ final class StudyModel {
         return AssetLibrary.shared.state(of: .commentary)
     }
 
-    /// A tap in the text while study mode is on.
+    /// A tap in the text while study mode is on. `verseKey` is a **KJV key** — cross-references,
+    /// commentary, the Hebrew and Greek and the places are all keyed that way — so callers convert a
+    /// tapped verse with `ReaderModel.numbering` first.
     func follow(_ verseKey: Int) {
         guard let ref = VerseRef(key: verseKey), ref != verse else { return }
         verse = ref
@@ -81,6 +83,7 @@ final class StudyModel {
         reader.go(to: previous)
     }
 
+    /// `selection` in KJV keys (`ReaderModel.selectedKJVKeys`).
     func turnOn(selection: Set<Int>) {
         isOn = true
         // Pick up a verse the reader already had selected.

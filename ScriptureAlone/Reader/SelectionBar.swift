@@ -98,9 +98,10 @@ struct SelectionBar: View {
 
     /// Word-by-word makes sense for one verse at a time; a selection spanning several would be a
     /// wall rather than a study aid.
+    /// As a KJV key: the word-by-word data and `verses(in:)` are both keyed that way.
     private var singleVerse: VerseRef? {
         guard model.selection.count == 1, let key = model.selection.first else { return nil }
-        return VerseRef(key: key)
+        return VerseRef(key: model.numbering.kjv(forNative: key))
     }
 
     /// Says whose limit it is and what it is, because "this doesn't work" is not an explanation.
@@ -136,15 +137,17 @@ struct SelectionBar: View {
         return ((try? context.fetch(descriptor)) ?? []).filter { keys.contains($0.verseKey) }
     }
 
+    /// Highlights are stored one per KJV verse (`selectedKJVKeys`), so they show in every
+    /// translation whatever it calls the verse.
     private func highlight(_ color: HighlightColor) {
-        let keys = model.selection
+        let keys = model.selectedKJVKeys
         for old in existing(for: keys) { context.delete(old) }
         for key in keys { context.insert(Highlight(verseKey: key, color: color)) }
         model.selection.removeAll()
     }
 
     private func removeHighlights() {
-        for old in existing(for: model.selection) { context.delete(old) }
+        for old in existing(for: model.selectedKJVKeys) { context.delete(old) }
         model.selection.removeAll()
     }
 

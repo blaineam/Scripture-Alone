@@ -186,8 +186,9 @@ final class ListenController {
         let count = store.verseCount(chapter)
         guard count > 0 else { return [] }
         let first = min(max(1, verse), count)
-        let verses = (try? store.verses(in: VerseRange(VerseRef(chapter.book, chapter.chapter, first),
-                                                         VerseRef(chapter.book, chapter.chapter, count)))) ?? []
+        // The chapter on screen, by its own numbers (items key the verse the reader sees marked).
+        let verses = (try? store.nativeVerses(in: VerseRange(VerseRef(chapter.book, chapter.chapter, first),
+                                                               VerseRef(chapter.book, chapter.chapter, count)))) ?? []
         var result: [Item] = []
         if first == 1 {
             let title = chapter.book.isSingleChapter ? chapter.book.name : "\(chapter.book.name), chapter \(chapter.chapter)."
