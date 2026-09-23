@@ -59,7 +59,7 @@ Free, and it will stay free. Built to help people study God's word and grow clos
 bible,scripture,kjv,asv,bsb,offline,study,commentary,devotional,sermon,notes,reformed,christian
 
 ## promotional_text
-A free, private Bible that lives on your device. Read offline, take sermon notes, listen, and study with cross-references, commentary and maps. No ads, no accounts.
+A private Bible that lives on your device. Read offline, take sermon notes, listen, and study with cross-references, commentary and maps. No ads, no accounts.
 
 ## whats_new
 The first release of Scripture Alone.
