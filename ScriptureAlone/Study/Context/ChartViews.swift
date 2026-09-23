@@ -409,7 +409,9 @@ private struct TribeCard: View {
         ReferenceButton(range: tribe.birth.range, label: String(localized: "Birth", comment: "Link to the passage recording a tribe's founder's birth"))
         ReferenceButton(range: tribe.jacob.range, label: String(localized: "Jacob’s blessing"))
         if let moses = tribe.moses { ReferenceButton(range: moses.range, label: String(localized: "Moses’ blessing")) }
-        ReferenceButton(range: tribe.allotment.range, label: tribe.name == "Levi" ? String(localized: "Cities", comment: "Link to the passage allotting the Levites' cities") : String(localized: "Land", comment: "Link to the passage allotting a tribe's land"))
+        // Levi's "allotment" is Joshua 21, the Levites' cities — found by the passage, since the
+        // name is translated outside English.
+        ReferenceButton(range: tribe.allotment.range, label: tribe.allotment.range.start.chapterKey == ChapterRef(.joshua, 21) ? String(localized: "Cities", comment: "Link to the passage allotting the Levites' cities") : String(localized: "Land", comment: "Link to the passage allotting a tribe's land"))
     }
 }
 
