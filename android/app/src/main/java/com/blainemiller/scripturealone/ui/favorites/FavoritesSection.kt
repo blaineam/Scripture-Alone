@@ -75,7 +75,7 @@ fun FavoritesSection(
     val verseCount = { book: com.blainemiller.scripturealone.data.canon.BookID, chapter: Int ->
         model.verseCount(ChapterRef(book.number, chapter))
     }
-    val rows = favorites.filter { NoteSearch.matches(it, texts[it.id].orEmpty(), search, verseCount) }
+    val rows = favorites.filter { NoteSearch.matches(it, texts[it.id].orEmpty(), search, verseCount, model.numbering) }
 
     if (rows.isEmpty()) {
         EmptyState(
@@ -108,7 +108,7 @@ fun FavoritesSection(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                favorite.range.display, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
+                                model.displayRange(favorite.range).display, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
                                 maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
                             )
                             Icon(Icons.Rounded.Favorite, null, tint = Color(0xFFFF3B30), modifier = Modifier.size(14.dp))

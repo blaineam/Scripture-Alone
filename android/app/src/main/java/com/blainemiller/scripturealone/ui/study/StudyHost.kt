@@ -103,11 +103,12 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
                     study.close()
                 } else {
                     // The verse selected, else the one the panel last showed in this chapter, else the
-                    // chapter's first — `StudyModel.turnOn(selection:)`.
+                    // chapter's first — `StudyModel.turnOn(selection:)`. Study is keyed by KJV keys, so the
+                    // reader's own verses are converted (`ReaderModel.selectedKJVKeys`).
                     val here = reader.location
-                    val key = reader.selection.maxOrNull()
+                    val key = reader.selection.maxOrNull()?.let(reader.numbering::kjv)
                         ?: study.verse?.takeIf { it.book == here.book && it.chapter == here.chapter }?.key
-                        ?: VerseRef(here.book, here.chapter, 1).key
+                        ?: reader.numbering.kjv(VerseRef(here.book, here.chapter, 1).key)
                     study.open(key)
                 }
             },
@@ -122,8 +123,9 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
             openMaps = {
                 val here = reader.location
                 study.select(StudyTab.CONTEXT)
-                study.open(reader.selection.maxOrNull() ?: study.verse?.takeIf { it.book == here.book && it.chapter == here.chapter }?.key
-                    ?: VerseRef(here.book, here.chapter, 1).key)
+                study.open(reader.selection.maxOrNull()?.let(reader.numbering::kjv)
+                    ?: study.verse?.takeIf { it.book == here.book && it.chapter == here.chapter }?.key
+                    ?: reader.numbering.kjv(VerseRef(here.book, here.chapter, 1).key))
             },
         )
     }
@@ -131,7 +133,9 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
     // Study doesn't change what a tap does — a tap still selects — the panel simply follows the verse
     // most recently selected, as on iOS.
     LaunchedEffect(reader.selection) {
-        if (study.isOpen) reader.selection.maxOrNull()?.let(study::follow)
+        // A tapped verse is followed by its KJV key: cross-references, commentary, the Hebrew and Greek
+        // and the places are all keyed that way.
+        if (study.isOpen) reader.selection.maxOrNull()?.let { study.follow(reader.numbering.kjv(it)) }
     }
 
     // The development hook, beside MainActivity's: `--ei study <verseKey>` opens Study on a verse,

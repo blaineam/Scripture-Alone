@@ -6,6 +6,7 @@ import androidx.wear.tiles.TileService
 import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUpdateRequester
 import com.blainemiller.scripturealone.companion.TranslationChoice
 import com.blainemiller.scripturealone.companion.VerseSnapshot
+import com.blainemiller.scripturealone.data.canon.BookNames
 import com.blainemiller.scripturealone.data.daily.DailyVerse
 import com.blainemiller.scripturealone.data.daily.DailyVerseCatalog
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,6 +44,18 @@ class WatchBible private constructor(private val app: Context) {
 
     private val prefs = app.getSharedPreferences("watch", Context.MODE_PRIVATE)
     private val opened = mutableMapOf<String, WatchEdition>()
+
+    init {
+        // Books are named in the language of the Bible being read, or the device's for a Bible without
+        // one (docs/localization.md). The watch's editions are all English today, so it is always the
+        // device's language: a French watch reads "Jean 3" over the ASV's text, as the phone does.
+        //
+        // TODO(localization): the big-8 Bibles have no watch editions yet (iOS's watch has none either).
+        // When `Tools/build_companion_data.py` builds them, they must carry `kjv_map` and books keyed by
+        // native numbers, `WatchEdition` must read by native keys and convert through `VerseNumbering`
+        // (the phone's snapshot is in KJV keys), and this should name books in the edition's language.
+        BookNames.use(java.util.Locale.getDefault().toLanguageTag())
+    }
 
     /** Bundled editions, in the picker's order. */
     val editions: List<Edition> = BUNDLED.map { Edition(it, NAMES.getValue(it)) }

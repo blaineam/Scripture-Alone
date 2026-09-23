@@ -169,6 +169,7 @@ object WidgetSnapshots {
     fun build(context: Context, library: WidgetLibrary, readerTranslation: String, now: Instant = Instant.now()): VerseSnapshot {
         val translation = readerTranslation.takeIf { it in offlineTranslations() } ?: BundledTranslations.DEFAULT
         val source = BundledTranslations.source(context, translation)
+        val numbering = source.numbering
         val chapters = HashMap<ChapterRef, List<ChapterVerse>>()
         fun verses(book: Int, chapter: Int): List<ChapterVerse> = chapters.getOrPut(ChapterRef(book, chapter)) {
             val ref = ChapterRef(book, chapter)
@@ -181,7 +182,8 @@ object WidgetSnapshots {
             translation = translation,
             generatedAt = now,
             verseCount = { book, chapter -> verses(book, chapter).maxOfOrNull { it.ref.verse } ?: 0 },
-            text = { range -> textOf(range, ::verses) },
+            // Marks are KJV ranges; the text is read from the verses the translation calls them.
+            text = { range -> numbering.nativeRange(range)?.let { textOf(it, ::verses) }.orEmpty() },
         )
     }
 

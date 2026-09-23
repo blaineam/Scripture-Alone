@@ -15,7 +15,7 @@ import kotlinx.serialization.json.intOrNull
  *
  *     {"b": [{"k": "p", "t"?: heading text, "f"?: [{"v": 3, "n"?: 1, "t": "…",
  *                                                  "s"?: [[start, length, "r"|"i"|"c"]],
- *                                                  "fn"?: [[position, "note"]]}]}]}
+ *                                                  "fn"?: [[position, "note"]], "e"?: 13}]}]}
  *
  * Span starts, lengths and footnote positions are **Unicode scalar** counts, exactly as stored. They
  * are deliberately not converted here: the conversion to UTF-16 happens once, where an
@@ -52,7 +52,15 @@ data class ChapterLayout(val blocks: List<Block>) {
         val text: String,
         val spans: List<Span> = emptyList(),
         val footnotes: List<Footnote> = emptyList(),
-    )
+        /**
+         * The last verse, when this fragment is a printed range ("12–13": the 和合本 prints a few
+         * dozen). Null for a single verse.
+         */
+        val lastVerse: Int? = null,
+    ) {
+        /** The number as printed: "12", or "12–13" for a range. */
+        val label: String get() = lastVerse?.let { "$verse–$it" } ?: "$verse"
+    }
 
     /** [start] and [length] in Unicode scalars. [style] is null for a style this build doesn't know. */
     data class Span(val start: Int, val length: Int, val style: Style?) {
@@ -107,6 +115,7 @@ data class ChapterLayout(val blocks: List<Block>) {
                 text = o.requireField("t").asString("t"),
                 spans = o.optional("s")?.asArray("s")?.map(::span) ?: emptyList(),
                 footnotes = o.optional("fn")?.asArray("fn")?.map(::footnote) ?: emptyList(),
+                lastVerse = o.optional("e")?.asInt("e"),
             )
         }
 

@@ -22,7 +22,11 @@ include(":wear")
 // Play Asset Delivery packs: the Bibles and study databases, delivered beside the app rather than
 // inside its base module, whose download Google Play caps. iOS ships the same files as Background
 // Assets packs — see `Tools/asset-packs/` and data/assets/AssetPack.kt.
-for (pack in listOf("asv", "bsb", "kjv", "study_commentary", "study_interlinear")) {
+// The big-8 locales' Bibles are on-demand packs too (docs/localization.md).
+for (pack in listOf(
+    "asv", "bsb", "kjv", "study_commentary", "study_interlinear",
+    "cuvs", "bungo", "lut1912", "lsg", "rvr1909", "krv", "blivre", "riv1927",
+)) {
     include(":$pack")
     project(":$pack").projectDir = file("packs/$pack")
 }

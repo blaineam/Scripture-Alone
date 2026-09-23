@@ -78,11 +78,14 @@ android {
     val localPacks = providers.gradleProperty("localPacks").orNull?.toBooleanStrictOrNull()
         ?: gradle.startParameter.taskNames.none { it.contains("bundle", ignoreCase = true) }
     if (localPacks) sourceSets["debug"].assets.srcDir(layout.buildDirectory.dir("generated/localPackData"))
-    assetPacks += listOf(":asv", ":bsb", ":kjv", ":study_commentary", ":study_interlinear")
+    assetPacks += listOf(
+        ":asv", ":bsb", ":kjv", ":study_commentary", ":study_interlinear",
+        ":cuvs", ":bungo", ":lut1912", ":lsg", ":rvr1909", ":krv", ":blivre", ":riv1927",
+    )
 
     // `-PsideloadApk` with `assembleRelease`: a release APK for installing outside Google Play, with
-    // every pack's file in its own assets (about 115 MB), since only Play can deliver an on-demand
-    // pack. Signed with the upload key, not Play's app-signing key, so a Play install can't update it
+    // every pack's file in its own assets (about 225 MB with the big-8 Bibles), since only Play can
+    // deliver an on-demand pack. Signed with the upload key, not Play's app-signing key, so a Play install can't update it
     // in place. Never with a bundle, where the packs themselves carry these files.
     if (providers.gradleProperty("sideloadApk").isPresent) {
         check(gradle.startParameter.taskNames.none { it.contains("bundle", ignoreCase = true) }) {
@@ -153,7 +156,12 @@ tasks.named("preBuild") { dependsOn(syncBundledData) }
  */
 val syncLocalPackData by tasks.registering(Sync::class) {
     from(rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources")) {
-        include("Packages/ASV.sabible", "Bibles/BSB.sqlite", "Bibles/KJV.sqlite", "Study/Study.sqlite", "Study/Interlinear.sqlite")
+        include(
+            "Packages/ASV.sabible", "Bibles/BSB.sqlite", "Bibles/KJV.sqlite", "Study/Study.sqlite", "Study/Interlinear.sqlite",
+            // The big-8 locales' Bibles — docs/localization.md.
+            "Bibles/CUVS.sqlite", "Bibles/BUNGO.sqlite", "Bibles/LUT1912.sqlite", "Bibles/LSG.sqlite",
+            "Bibles/RVR1909.sqlite", "Bibles/KRV.sqlite", "Bibles/BLIVRE.sqlite", "Bibles/RIV1927.sqlite",
+        )
         eachFile { path = name }
         includeEmptyDirs = false
     }

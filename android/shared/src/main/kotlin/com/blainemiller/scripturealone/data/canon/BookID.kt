@@ -10,8 +10,10 @@ package com.blainemiller.scripturealone.data.canon
  */
 enum class BookID(
     val code: String,
-    val displayName: String,
-    val abbreviation: String,
+    /** Always English — for stored text meant to be read anywhere (a database's `books` table, exports). */
+    val englishName: String,
+    /** The English abbreviation ("1 Cor"), whatever language books are being named in. */
+    val englishAbbreviation: String,
     val chapterCount: Int,
     extraAliases: List<String>,
     val group: BookGroup,
@@ -83,13 +85,22 @@ enum class BookID(
     JUDE("JUD", "Jude", "Jude", 1, listOf("jud", "jd"), BookGroup.GENERAL),
     REVELATION("REV", "Revelation", "Rev", 22, listOf("rev", "rv", "revelations", "apocalypse"), BookGroup.PROPHECY);
 
+    /**
+     * The book's name in the language of the Bible being read ([BookNames]) — "Jean", "约翰福音" —
+     * English by default. `BookID.name` on iOS.
+     */
+    val displayName: String get() = BookNames.name(this) ?: englishName
+
+    /** "Jn", "约" in the language books are named in; English by default. */
+    val abbreviation: String get() = BookNames.abbreviation(this) ?: englishAbbreviation
+
     /** Canonical ordinal, 1–66. */
     val number: Int get() = ordinal + 1
 
     /** The book's normalized name first, then every other accepted spelling. */
     // Computed with the top-level function, not the companion's: a companion object is not yet
     // initialised while the enum's own entries are being constructed.
-    val aliases: List<String> = normalizeBookToken(displayName).let { key -> listOf(key) + extraAliases.filter { it != key } }
+    val aliases: List<String> = normalizeBookToken(englishName).let { key -> listOf(key) + extraAliases.filter { it != key } }
 
     val isNewTestament: Boolean get() = number >= MATTHEW.number
     val isSingleChapter: Boolean get() = chapterCount == 1

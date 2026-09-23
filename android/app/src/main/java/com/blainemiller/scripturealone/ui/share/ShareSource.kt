@@ -25,8 +25,14 @@ data class ShareSource(
     val rights: TranslationRights,
     private val verseCount: (ChapterRef) -> Int,
     val linkStyle: ShareLinkPayload? = null,
+    /**
+     * [ranges] as the translation numbers them, for the reference printed on the card. [ranges] are KJV
+     * keys — what a link carries — and differ only for a Bible with its own numbering (Louis Segond's
+     * Psalm 51:12 is the KJV's 51:10; see `VerseNumbering`).
+     */
+    val displayRanges: List<VerseRange> = ranges,
 ) {
-    val reference: String get() = ranges.joinToString(", ") { it.display }
+    val reference: String get() = displayRanges.joinToString(", ") { it.display }
 
     val hasRed: Boolean get() = verses.any { it.red.isNotEmpty() }
 

@@ -83,8 +83,10 @@ class AssetPackDefinitionsTest {
             assertTrue("${manifest.name} names another file", text.contains("\"fileDestination\": \"${pack.file}\""))
             val iosEssential = text.contains("\"essential\"")
             // The BSB arrives with the install on Android (Study's word data is keyed to it); on iOS
-            // it is on demand. Every other pack's timing matches.
-            val expectedInstallTime = iosEssential || pack == AssetPack.BSB
+            // it is on demand. The ASV is in the iOS app bundle itself since App Review's endless
+            // spinner (its pack, now on demand, only carries updates); on Android the install-time
+            // pack is how it arrives with the install. Every other pack's timing matches.
+            val expectedInstallTime = iosEssential || pack == AssetPack.BSB || pack == AssetPack.ASV
             assertEquals("${pack.packName} timing", expectedInstallTime, pack.delivery == AssetPack.Delivery.INSTALL_TIME)
         }
     }

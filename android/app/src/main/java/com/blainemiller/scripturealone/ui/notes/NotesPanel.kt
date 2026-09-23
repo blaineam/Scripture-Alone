@@ -52,6 +52,7 @@ import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.userdata.Favorite
 import com.blainemiller.scripturealone.data.userdata.Note
 import com.blainemiller.scripturealone.data.userdata.NoteSearch
+import com.blainemiller.scripturealone.data.userdata.overlaps
 import com.blainemiller.scripturealone.ui.camera.SlideCapture
 import com.blainemiller.scripturealone.ui.camera.SlideCaptureHost
 import com.blainemiller.scripturealone.ui.camera.SlideCaptureMenu
@@ -128,7 +129,9 @@ fun NotesPanel(
                 model.verseCount(ChapterRef(book.number, chapter))
             }
             val filtered = notes.filter { note ->
-                (scope == NotesScope.ALL || note.touches(location)) && NoteSearch.matches(note, search, verseCount)
+                // Anchors are KJV ranges; "this chapter" is the chapter as the translation numbers it.
+                (scope == NotesScope.ALL || note.anchors.any { model.displayRange(it).overlaps(location) }) &&
+                    NoteSearch.matches(note, search, verseCount, model.numbering)
             }
             PanelHeader("Notes", palette, back = false, onLeading = ::dismiss) {
                 PanelHeaderIcon(ReaderIcons.SquareAndPencil, "New Note", palette) {

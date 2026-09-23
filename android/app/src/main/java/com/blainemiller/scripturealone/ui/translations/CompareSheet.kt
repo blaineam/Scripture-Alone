@@ -43,6 +43,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.blainemiller.scripturealone.data.BundledTranslations
+import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
@@ -57,7 +59,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.produceState
 
-private class CompareRow(val verse: Int, val left: String?, val right: String?) {
+/**
+ * [verse] is the number shown: the left-hand translation's own (the right's when it alone has it).
+ * Rows pair up by [key], a KJV key, not by number: French Psalm 51:12 sits beside English 51:10.
+ */
+private class CompareRow(val verse: Int, val left: String?, val right: String?, val key: Int) {
     /** A verse only one side prints — the most interesting row on the screen, so it is marked. */
     val isOneSided: Boolean get() = left == null || right == null
 }
@@ -90,11 +96,28 @@ fun CompareSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: () ->
         if (other == null) return@produceState
         value = withContext(Dispatchers.IO) {
             runCatching {
-                val l = BundledTranslations.source(context, left).chapter(chapter).verses
-                val r = BundledTranslations.source(context, other).chapter(chapter).verses
-                val lv = l.filter { it.ref.verse > 0 }.associate { it.ref.verse to it.text }
-                val rv = r.filter { it.ref.verse > 0 }.associate { it.ref.verse to it.text }
-                Comparison.Rows((lv.keys + rv.keys).sorted().map { CompareRow(it, lv[it], rv[it]) })
+                // The chapter on screen by its own numbers; the other side by the KJV keys those verses
+                // hold, which for a translation that numbers differently can reach into a neighbouring
+                // chapter.
+                val leftSource = BundledTranslations.source(context, left)
+                val leftChapter = leftSource.chapter(chapter)
+                val span = leftChapter.markKeys
+                val rightSource = BundledTranslations.source(context, other)
+                val rightNumbering = rightSource.numbering
+                val r = if (rightNumbering.isIdentity && leftChapter.numbering.isIdentity) {
+                    rightSource.chapter(chapter).verses
+                } else {
+                    TranslationLibrary.verses(context, other, VerseRange(VerseRef.fromKey(span.first), VerseRef.fromKey(span.last)))
+                }
+                val lv = HashMap<Int, Pair<Int, String>>()
+                for (v in leftChapter.verses) if (v.ref.verse > 0) lv[leftChapter.numbering.kjv(v.ref.key)] = v.ref.verse to v.text
+                val rv = HashMap<Int, Pair<Int, String>>()
+                for (v in r) if (v.ref.verse > 0) rv[rightNumbering.kjv(v.ref.key)] = v.ref.verse to v.text
+                Comparison.Rows(
+                    (lv.keys + rv.keys).sorted().map { key ->
+                        CompareRow(lv[key]?.first ?: rv[key]?.first ?: key % 1_000, lv[key]?.second, rv[key]?.second, key)
+                    },
+                )
             }.getOrElse { Comparison.Failed(it.message ?: "That translation isn't available.") }
         }
     }
@@ -126,7 +149,7 @@ fun CompareSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: () ->
             else -> {
                 val size = reader.fontSize * 0.82f
                 LazyColumn(Modifier.fillMaxSize()) {
-                    items((state as Comparison.Rows).rows, key = { it.verse }) { row ->
+                    items((state as Comparison.Rows).rows, key = { it.key }) { row ->
                         Row(
                             Modifier.fillMaxWidth()
                                 .background(if (row.isOneSided) palette.accent.copy(alpha = 0.07f) else androidx.compose.ui.graphics.Color.Transparent)

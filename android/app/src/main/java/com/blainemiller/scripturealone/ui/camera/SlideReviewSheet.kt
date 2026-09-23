@@ -221,7 +221,9 @@ internal fun SlideReviewSheet(
         if (saving) return
         saving = true
         val heading = title.trim()
-        val slideRanges = ranges.toList()
+        // The slide cites the congregation's own numbering — the translation being read; notes store KJV
+        // keys (`VerseNumbering`). `ranges` stays native so the review shows the slide's.
+        val slideRanges = ranges.map(model.numbering::kjvRange)
         val slideLines = includedLines
         val target = targetNote
         scope.launch {

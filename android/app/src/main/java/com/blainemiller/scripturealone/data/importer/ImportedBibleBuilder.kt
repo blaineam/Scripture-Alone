@@ -212,7 +212,7 @@ object ImportedBibleBuilder {
             "INSERT INTO books VALUES (?1, ?2, ?3, ?4)",
             bible.books.asSequence().map { book ->
                 val chapters = bible.chapterOrder.filter { it.book == book }.map { it.chapter }.toSet().size
-                listOf(book.number.toLong(), book.code, book.displayName, chapters.toLong())
+                listOf(book.number.toLong(), book.code, book.englishName, chapters.toLong())
             },
         )
     }

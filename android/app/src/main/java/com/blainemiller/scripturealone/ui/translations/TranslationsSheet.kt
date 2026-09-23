@@ -74,6 +74,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.blainemiller.scripturealone.data.BundledTranslations
+import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.TranslationInfo
 import com.blainemiller.scripturealone.data.catalog.CatalogCuration
 import com.blainemiller.scripturealone.data.catalog.CatalogDownloader
@@ -253,7 +254,12 @@ private fun MainPage(
     val surface = SheetColors.surface(palette)
     val library by TranslationLibrary.state.collectAsState()
     val bundled = loaded(Unit) { context ->
-        BundledTranslations.bundled.mapNotNull { id -> runCatching { BundledTranslations.source(context, id).info }.getOrNull() }
+        // A pack not downloaded yet can't be opened for its name: it is listed under its pack's title,
+        // and choosing it fetches it (`ReaderViewModel.selectTranslation`).
+        BundledTranslations.bundled.mapNotNull { id ->
+            runCatching { BundledTranslations.source(context, id).info }.getOrNull()
+                ?: AssetPack.forTranslation(id)?.let { TranslationInfo(id, it.title, id, "") }
+        }
     }
     val current = reader.chapter?.translation
     Column(Modifier.fillMaxSize()) {

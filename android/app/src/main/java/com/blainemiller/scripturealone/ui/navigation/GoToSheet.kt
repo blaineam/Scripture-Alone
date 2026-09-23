@@ -124,13 +124,13 @@ fun GoToSheet(model: ReaderViewModel, palette: ReaderPalette, onDismiss: () -> U
         if (query.isEmpty() || query.any { it.isDigit() }) emptyList() else ReferenceParser.books(query).take(6)
     }
     /** Words, not a reference: what iOS sends to the search. */
-    val isWordSearch = query.length >= 3 && passage == null
+    val isWordSearch = VerseSearch.isLongEnough(query) && passage == null
 
     // A reference navigates; anything else searches the text — after 180 ms, as iOS waits, so a
     // search isn't run for every keystroke of a word still being typed.
     LaunchedEffect(query, model.translationId) {
         val text = query
-        if (text.length < 3 || passage != null || !model.isSearchable) {
+        if (!VerseSearch.isLongEnough(text) || passage != null || !model.isSearchable) {
             results = emptyList()
             answered = text
             return@LaunchedEffect
@@ -148,7 +148,7 @@ fun GoToSheet(model: ReaderViewModel, palette: ReaderPalette, onDismiss: () -> U
 
     fun openResult(hit: SearchHit) {
         model.rememberSearch(query)
-        model.go(hit.ref)
+        model.go(hit.kjv)   // the KJV key; the reader lands on its own verse
         dismiss()
     }
 

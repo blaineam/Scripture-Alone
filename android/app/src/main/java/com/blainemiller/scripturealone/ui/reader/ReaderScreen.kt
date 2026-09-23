@@ -302,10 +302,13 @@ fun ReaderScreen(
             when {
                 chapter != null && chapter.ref == model.location && chapter.translation.id == model.translationId ->
                     key(chapter.ref, chapter.translation.id) {
+                        // Marks are stored under KJV keys and drawn on the translation's own verses.
                         val markers = remember(notes, chapter) {
-                            Selection.noteMarkers(notes, chapter.ref, chapter.verses.maxOfOrNull { it.ref.verse } ?: 0)
+                            Selection.noteMarkers(notes, chapter.ref, chapter.verseCount, chapter.numbering)
                         }
-                        val colors = remember(highlights, chapter.ref) { Selection.highlightColors(highlights, chapter.ref) }
+                        val colors = remember(highlights, chapter) {
+                            Selection.highlightColors(highlights, chapter.ref, chapter.numbering, chapter.verseCount)
+                        }
                         ChapterColumn(
                             rendered = remember(chapter, style, markers) {
                                 ChapterRenderer(style, ReaderTypography.fonts(style.size, style.family))
@@ -985,7 +988,8 @@ private fun TopBar(
             ) {
                 // Shrinks to fit before it truncates — the iOS title's `minimumScaleFactor(0.7)` — so
                 // "Psalms 119" survives a larger system font size.
-                val title = Canon.display(model.location)
+                // Keyed on the language books are named in (`BookNames`), so the title follows it.
+                val title = remember(model.location, model.bookNamesLanguage) { Canon.display(model.location) }
                 var titleScale by remember(title) { mutableStateOf(1f) }
                 Text(
                     title,

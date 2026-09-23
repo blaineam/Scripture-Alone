@@ -113,7 +113,7 @@ fun SelectionBar(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                ranges.joinToString(", ") { it.display }, color = palette.ink, fontSize = 15.sp,
+                ranges.joinToString(", ") { model.displayRange(it).display }, color = palette.ink, fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
@@ -159,7 +159,7 @@ fun SelectionBar(
                     val text = model.quotation(ranges)
                     if (text.isEmpty()) return@launch
                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText(ranges.joinToString(", ") { it.display }, text))
+                    clipboard.setPrimaryClip(ClipData.newPlainText(ranges.joinToString(", ") { model.displayRange(it).display }, text))
                     copied = true
                     delay(1_200)
                     copied = false
@@ -168,7 +168,8 @@ fun SelectionBar(
             val single = model.selection.singleOrNull()
             if (single != null) {
                 BarIcon(Icons.Outlined.Translate, "Original Language", palette) {
-                    actions.onOriginalLanguage(VerseRef.fromKey(single))
+                    // As a KJV key: the word-by-word data is keyed that way.
+                    actions.onOriginalLanguage(VerseRef.fromKey(model.numbering.kjv(single)))
                 }
             }
             ShareMenu(model, palette, ranges, enabled = mayQuote)
@@ -239,7 +240,7 @@ private fun RowScope.ShareMenu(model: ReaderViewModel, palette: ReaderPalette, r
     val selection = model.selection
     LaunchedEffect(selection, model.translationId, model.shareStyle) { link = model.shareLink(ranges) }
     val shareAllowed = model.rights.permits(TranslationRights.Permission.SHARE)
-    val reference = ranges.joinToString(", ") { it.display }
+    val reference = ranges.joinToString(", ") { model.displayRange(it).display }
 
     fun send(text: String) {
         val intent = Intent(Intent.ACTION_SEND).apply {

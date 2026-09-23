@@ -218,13 +218,16 @@ object TranslationLibrary {
     enum class Kind { BUNDLED, IMPORTED, ONLINE, MISSING }
 
     /**
-     * The verses of [range] in translation [id], for previews beside the text — cross references,
+     * The verses of [kjvRange] in translation [id], for previews beside the text — cross references,
      * Compare. Never a network request: an online translation answers from what it has cached.
      * Blocking; call off the main thread.
      */
-    fun verses(context: Context, id: String, range: VerseRange): List<ChapterVerse> {
-        online(id)?.let { return loader.cachedVerses(it, range.start.key, range.end.key) }
+    fun verses(context: Context, id: String, kjvRange: VerseRange): List<ChapterVerse> {
+        online(id)?.let { return loader.cachedVerses(it, kjvRange.start.key, kjvRange.end.key) }
         val source = runCatching { BundledTranslations.source(context, id) }.getOrNull() ?: return emptyList()
+        // [kjvRange] is in KJV keys — cross references, notes and study data are keyed that way — and the
+        // verses come back with the translation's own references (`VerseNumbering`).
+        val range = runCatching { source.numbering }.getOrNull()?.nativeRange(kjvRange) ?: return emptyList()
         val out = mutableListOf<ChapterVerse>()
         var chapter = ChapterRef(range.start.book, range.start.chapter)
         while (chapter.book < range.end.book || (chapter.book == range.end.book && chapter.chapter <= range.end.chapter)) {

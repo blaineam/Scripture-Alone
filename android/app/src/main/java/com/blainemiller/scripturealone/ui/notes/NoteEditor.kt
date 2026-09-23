@@ -175,7 +175,8 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
             PanelSectionTitle("Passages", palette)
             PanelGroup(palette) {
                 for (range in note.anchors) {
-                    PassageRow(range, palette, onOpen = {
+                    // Stored as a KJV range; shown as the translation being read numbers it.
+                    PassageRow(model.displayRange(range).display, palette, onOpen = {
                         model.go(range.start)
                         onClose()
                     }, onRemove = { save { it.copy(anchors = it.anchors - range) } })
@@ -230,7 +231,7 @@ fun NoteEditor(model: ReaderViewModel, palette: ReaderPalette, note: Note, captu
 }
 
 @Composable
-private fun PassageRow(range: VerseRange, palette: ReaderPalette, onOpen: () -> Unit, onRemove: () -> Unit) {
+private fun PassageRow(display: String, palette: ReaderPalette, onOpen: () -> Unit, onRemove: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(start = 6.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
         Row(
             Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).clickable(role = Role.Button, onClick = onOpen).padding(horizontal = 12.dp, vertical = 12.dp),
@@ -238,11 +239,11 @@ private fun PassageRow(range: VerseRange, palette: ReaderPalette, onOpen: () -> 
         ) {
             Icon(Icons.AutoMirrored.Outlined.MenuBook, null, tint = palette.accent, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(10.dp))
-            Text(range.display, color = palette.accent, fontSize = 17.sp)
+            Text(display, color = palette.accent, fontSize = 17.sp)
         }
         Box(
             Modifier.size(40.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onRemove)
-                .semantics { contentDescription = "Remove ${range.display}" },
+                .semantics { contentDescription = "Remove $display" },
             contentAlignment = Alignment.Center,
         ) {
             Icon(Icons.Rounded.RemoveCircle, null, tint = palette.secondary, modifier = Modifier.size(22.dp))

@@ -1,11 +1,16 @@
 package com.blainemiller.scripturealone.data.search
 
+import com.blainemiller.scripturealone.data.VerseNumbering
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.sql.SqlSource
 import java.text.Normalizer
 
-/** One verse a search found: where it is, and its plain text for the results list. */
-data class SearchHit(val ref: VerseRef, val text: String)
+/**
+ * One verse a search found: where it is as the translation numbers it ([ref] — what the result shows),
+ * its plain text for the results list, and the KJV key it is stored under ([kjv] — where tapping the
+ * result goes; see [com.blainemiller.scripturealone.data.VerseNumbering]).
+ */
+data class SearchHit(val ref: VerseRef, val text: String, val kjv: VerseRef = ref)
 
 /**
  * Full-text search over a plain Bible store's `verses_fts` table — `BibleStore.search` in
@@ -17,23 +22,82 @@ data class SearchHit(val ref: VerseRef, val text: String)
  * ([com.blainemiller.scripturealone.data.sabible.TranslationPackage.search]), which answers the same
  * queries with the same verses.
  */
-class VerseSearch(private val sql: SqlSource) {
+class VerseSearch(
+    private val sql: SqlSource,
+    /** The index is FTS5 `trigram` (`meta.tokenizer`): Chinese, Japanese and Korean, which search by substring. */
+    private val substring: Boolean = false,
+    /** How the store numbers its verses, so each hit carries its KJV key too. */
+    private val numbering: VerseNumbering = VerseNumbering.IDENTITY,
+) {
 
     /**
      * The matching verses in canonical order — `ORDER BY rowid`, and the rowid *is* the verse key —
      * at most [limit] of them. An empty or punctuation-only query finds nothing rather than failing.
      */
     fun search(query: String, limit: Int = DEFAULT_LIMIT): List<SearchHit> {
+        if (substring) return substringSearch(query, limit)
         val match = ftsQuery(query) ?: return emptyList()
-        return sql.query(
-            "SELECT rowid, text FROM verses_fts WHERE verses_fts MATCH ? ORDER BY rowid LIMIT ?",
-            match, limit,
-        ) { row -> SearchHit(VerseRef.fromKey(row.long(0).toInt()), row.text(1)) }
+        return hits("SELECT rowid, text FROM verses_fts WHERE verses_fts MATCH ? ORDER BY rowid LIMIT ?", match, limit)
     }
+
+    /**
+     * Chinese, Japanese and Korean — `BibleStore.substringSearch`: every term must appear as a
+     * substring. The trigram index answers terms of three characters or more; shorter ones — 恩典, 神 —
+     * are matched with LIKE, which scans ~31,000 verses in milliseconds. Terms are whatever the reader
+     * separated with spaces (Korean writes them; Chinese and Japanese queries are usually one term).
+     */
+    internal fun substringSearch(query: String, limit: Int): List<SearchHit> {
+        val terms = query.split(Regex("""\s+""")).filter { it.isNotEmpty() }
+        if (terms.isEmpty()) return emptyList()
+        val long = terms.filter { it.codePointCount(0, it.length) >= 3 }
+        val short = terms.filter { it.codePointCount(0, it.length) < 3 }
+        val args = mutableListOf<Any>()
+        val prefix = if (long.isEmpty()) "" else "v."
+        val statement = StringBuilder(
+            if (long.isEmpty()) {
+                "SELECT id, text FROM verses WHERE 1"
+            } else {
+                args += long.joinToString(" ") { "\"" + it.replace("\"", "\"\"") + "\"" }
+                "SELECT v.id, v.text FROM verses_fts JOIN verses v ON v.id = verses_fts.rowid WHERE verses_fts MATCH ?"
+            },
+        )
+        for (term in short) {
+            args += "%" + term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+            statement.append(" AND ${prefix}text LIKE ? ESCAPE '\\'")
+        }
+        args += limit
+        statement.append(" ORDER BY ${prefix}id LIMIT ?")
+        return hits(statement.toString(), *args.toTypedArray())
+    }
+
+    private fun hits(statement: String, vararg args: Any): List<SearchHit> =
+        sql.query(statement, *args) { row ->
+            val key = row.long(0).toInt()
+            SearchHit(VerseRef.fromKey(key), row.text(1), VerseRef.fromKey(numbering.kjv(key)))
+        }
 
     companion object {
         /** iOS caps a search at 300 and the results header says "300+ verses" when it's hit. */
         const val DEFAULT_LIMIT = 300
+
+        /**
+         * Whether a query is long enough to search as the reader types: three characters, as on iOS —
+         * or two when it holds Chinese, Japanese or Korean, where a two-character word (恩典, 은혜) is a
+         * whole word and the trigram stores answer it with LIKE.
+         */
+        fun isLongEnough(query: String): Boolean {
+            val trimmed = query.trim()
+            val length = trimmed.codePointCount(0, trimmed.length)
+            if (length >= 3) return true
+            return length == 2 && trimmed.codePoints().anyMatch(::isCjk)
+        }
+
+        private fun isCjk(cp: Int): Boolean = when (Character.UnicodeScript.of(cp)) {
+            Character.UnicodeScript.HAN, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA,
+            Character.UnicodeScript.HANGUL,
+            -> true
+            else -> false
+        }
 
         /**
          * Turns what the reader typed into an FTS5 query — a line-for-line port of

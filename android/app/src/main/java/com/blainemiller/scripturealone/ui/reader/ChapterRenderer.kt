@@ -458,7 +458,8 @@ class ChapterRenderer(
                 fontFamily = fonts.chrome, fontWeight = FontWeight.SemiBold, fontSize = numberSize.sp,
                 color = palette.accent, baselineShift = shift(size * 0.32f, numberSize),
             )
-            result.withStyle(number) { append(fragment.verse.toString()) }
+            // "12", or "12–13" where the translation prints a range as one verse (the 和合本).
+            result.withStyle(number) { append(fragment.label) }
             // The platform sans draws U+202F about twice as wide as SF does, which opened a visible
             // gap between number and word; tightened to match the iOS reference (Genesis 2).
             result.withStyle(number.copy(letterSpacing = NUMBER_GAP_TIGHTENING.em)) { append("\u202F") }

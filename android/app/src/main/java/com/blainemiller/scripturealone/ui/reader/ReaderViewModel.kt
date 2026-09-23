@@ -31,7 +31,9 @@ import com.blainemiller.scripturealone.ui.share.ShareAspect
 import com.blainemiller.scripturealone.ui.share.ShareSource
 import com.blainemiller.scripturealone.ui.share.ShareStyle
 import com.blainemiller.scripturealone.ui.share.ShareTemplate
+import com.blainemiller.scripturealone.data.VerseNumbering
 import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.data.canon.BookNames
 import com.blainemiller.scripturealone.data.prefs.ReaderKeys
 import com.blainemiller.scripturealone.data.prefs.ReaderPrefs
 import com.blainemiller.scripturealone.data.prefs.ReaderSettings
@@ -60,12 +62,46 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     private val prefs = ReaderPrefs(application.readerDataStore)
     private val saved: ReaderSettings = prefs.load()
 
-    /** Where the reader left off; John 1 on a first launch, as on iOS. */
+    /**
+     * Where the reader left off; John 1 on a first launch, as on iOS. The saved position is a KJV key;
+     * the first [load] moves this to the chapter the translation calls it.
+     */
     var location by mutableStateOf(saved.position?.let { ChapterRef(it.book, it.chapter) } ?: ChapterRef(43, 1))
         private set
+
+    /**
+     * First launch: the Bible in the reader's own language, when the app has one (Simplified Chinese
+     * only for the 和合本; none for English) — `AssetPack.bible(forPreferredLanguages:)`. It is an
+     * on-demand pack, so the ASV opens at once and the banner says theirs is on its way; the reader
+     * switches when it lands. Nothing waits on it — a launch that waited on a pack is what App Review
+     * rejected (1.0.0 build 40).
+     */
+    private val firstLaunchBible: String? = if (saved.translation != null) {
+        null
+    } else {
+        AssetPack.bible(deviceLanguages())?.translationId?.takeIf { it in BundledTranslations.ids }
+    }
+
     var translationId by mutableStateOf(
-        saved.translation?.takeIf { it in BundledTranslations.ids && isOnDevice(it) } ?: BundledTranslations.DEFAULT,
+        saved.translation?.takeIf { it in BundledTranslations.ids && isOnDevice(it) }
+            ?: firstLaunchBible?.takeIf { isOnDevice(it) }
+            ?: BundledTranslations.DEFAULT,
     )
+        private set
+
+    /**
+     * How the translation being read numbers its verses against the KJV keys marks are stored under.
+     * Everything stored, shared or looked up is a KJV key; [location], [chapter], [selection],
+     * [topVerse] and [scrollTarget] are in the translation's own numbering. See [VerseNumbering].
+     */
+    var numbering by mutableStateOf(VerseNumbering.IDENTITY)
+        private set
+
+    /**
+     * The language books are named in ([BookNames.current]), as observable state: a composable that
+     * prints a book's name reads it, so the name changes when the Bible being read does.
+     */
+    var bookNamesLanguage by mutableStateOf(BookNames.current)
         private set
 
     /**
@@ -87,7 +123,7 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
      * Set by a launch that restores a position past verse 1, a Go To with a verse, and a translation
      * switch — iOS's `scrollTarget`.
      */
-    var scrollTarget by mutableStateOf(saved.position?.takeIf { it.verse > 1 }?.key)
+    var scrollTarget by mutableStateOf<Int?>(null)
         private set
 
     /** The verse currently at the top of the page, as last reported by the reader — where Listen starts. */
@@ -140,7 +176,17 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     private var loading: Job? = null
 
     init {
-        load()
+        // The saved position is a KJV key: the first load lands on the verse the translation calls it.
+        load(anchor = saved.position?.key)
+        firstLaunchBible?.let { preferred ->
+            if (preferred == translationId) {
+                // Here already (a debug build carries every pack): the choice is made, and kept.
+                prefs.write { it[ReaderKeys.TRANSLATION] = preferred }
+            } else {
+                // Fetched while the ASV is read; the reader switches when it lands (or retries).
+                selectTranslation(preferred)
+            }
+        }
     }
 
     // Navigation — `show`, `go(to:)`, `next`, `previous` in ReaderModel.swift.
@@ -169,7 +215,32 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         show(ChapterRef(p.book.number, p.startChapter), p.startVerse)
     }
 
-    fun go(verse: VerseRef) = show(ChapterRef(verse.book, verse.chapter), verse.verse)
+    /**
+     * Goes to a verse given by its **KJV key** — a search hit, a cross-reference, a note, a favorite, a
+     * link — landing on the verse this translation calls it. (A [Passage] the reader typed is already
+     * in their translation's numbering: see [go] with a passage.)
+     */
+    fun go(verse: VerseRef) {
+        val native = numbering.native(verse.key)?.let(VerseRef::fromKey) ?: verse
+        show(ChapterRef(native.book, native.chapter), native.verse)
+    }
+
+    /** A stored (KJV) range as the reader's translation numbers it, for showing a reference. */
+    fun displayRange(range: VerseRange): VerseRange = numbering.nativeRange(range) ?: range
+
+    /**
+     * After a translation switch or at launch: stay on the verse [kjvKey] names, in the translation's
+     * own numbering — which may be a different chapter (French Exodus 7:26 is English 8:1).
+     */
+    private fun land(kjvKey: Int, scroll: Boolean) {
+        val native = numbering.native(kjvKey)?.let(VerseRef::fromKey) ?: return
+        val chapter = ChapterRef(native.book, native.chapter)
+        if (chapter != location) {
+            selection = emptySet()
+            location = chapter
+        }
+        if (scroll && native.verse > 1) scrollTarget = native.key
+    }
 
     /** The development hook in MainActivity: a chapter and, optionally, a translation. */
     fun open(ref: ChapterRef, translation: String = translationId) {
@@ -201,23 +272,28 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         // A choice made; any other translation's failed download is no longer what the reader wants.
         AssetLibrary.clearFailedTranslations(except = pack)
         if (id == translationId) return
-        // The KJV is an on-demand pack: listed from the start, fetched the first time it's chosen.
+        // The KJV and the big-8 Bibles are on-demand packs: listed from the start, fetched the first time
+        // one is chosen.
         // Nothing changes on screen until the file is here — the reader keeps reading what they had,
         // with a banner — and then this runs again and switches.
         if (pack != null && !isOnDevice(id)) {
             if (downloadingPack != null) return
             downloadingPack = pack
+            val reading = translationId
             viewModelScope.launch {
                 val arrived = AssetLibrary.ensure(pack)
                 downloadingPack = null
-                if (arrived) selectTranslation(id)
+                // Unless the reader has since chosen another translation that was already here.
+                if (arrived && translationId == reading) selectTranslation(id)
             }
             return
         }
+        // The verse at the top as a KJV key, taken before the numbering changes: the new translation
+        // opens on the same verse, whatever it calls it.
+        val anchor = numbering.kjv(topVerse ?: VerseRef(location.book, location.chapter, 1).key)
         translationId = id
         prefs.write { it[ReaderKeys.TRANSLATION] = id }
-        topVerse?.takeIf { VerseRef.fromKey(it).verse > 1 }?.let { scrollTarget = it }
-        load()
+        load(anchor = anchor)
     }
 
     fun scrolledToTarget() {
@@ -231,7 +307,11 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         savePosition(VerseRef.fromKey(key))
     }
 
-    private fun savePosition(ref: VerseRef) = prefs.write { it[ReaderKeys.POSITION] = ref.key }
+    /** Saved as a KJV key, so the place survives a switch of translation (and numbering). */
+    private fun savePosition(ref: VerseRef) {
+        val key = numbering.kjv(ref.key)
+        prefs.write { it[ReaderKeys.POSITION] = key }
+    }
 
     private fun rememberChapter(ref: ChapterRef) {
         recent = Recents.chapters(recent, ref)
@@ -292,15 +372,33 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
      * still for the current location and translation: a slow decrypt of the chapter the reader just
      * paged past must never land under the new chapter's title.
      */
-    private fun load() {
-        val ref = location
+    private fun load(anchor: Int? = null) {
         val id = translationId
         loading?.cancel()
         loading = viewModelScope.launch {
+            // The source first — its numbering and language decide which chapter to read and what to
+            // call its books — then the chapter.
+            val opened = withContext(Dispatchers.IO) {
+                runCatching {
+                    val source = BundledTranslations.source(getApplication(), id)
+                    Triple(source, source.numbering, source.info.language)
+                }
+            }
+            if (id != translationId) return@launch
+            opened.getOrNull()?.let { (_, sourceNumbering, language) ->
+                numbering = sourceNumbering
+                // Books are named in the language of the Bible being read — "Jean", "约翰福音" — so the
+                // header, the picker and every reference agree with the text; a Bible without a
+                // language of its own (the English ones, imports) in the device's language.
+                BookNames.use(language ?: deviceLanguages().firstOrNull())
+                bookNamesLanguage = BookNames.current
+                if (anchor != null) land(anchor, scroll = true)
+            }
+            val ref = location
             var searchable = true
             val result = withContext(Dispatchers.IO) {
                 runCatching {
-                    val source = BundledTranslations.source(getApplication(), id)
+                    val source = opened.getOrThrow().first
                     searchable = source.isSearchable
                     source.chapter(ref)
                 }
@@ -357,7 +455,20 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
 
     fun verseCount(ref: ChapterRef): Int = verseCounts[ref] ?: 0
 
-    val selectedRanges: List<VerseRange> get() = Selection.ranges(selection) { verseCount(it) }
+    /** The selection as KJV ranges — what a highlight, note, favorite or link stores. */
+    val selectedRanges: List<VerseRange>
+        get() {
+            val native = Selection.ranges(selection) { verseCount(it) }
+            val numbering = numbering
+            return if (numbering.isIdentity) native else native.map(numbering::kjvRange)
+        }
+
+    /** The KJV keys the selection holds, one per KJV verse — what highlights are stored under. */
+    val selectedKjvKeys: Set<Int>
+        get() {
+            val numbering = numbering
+            return selection.flatMapTo(mutableSetOf()) { numbering.kjvKeyList(it) }
+        }
 
     /** What the translation being read permits; public domain until its chapter has loaded. */
     val rights: TranslationRights get() = chapter?.translation?.rights ?: TranslationRights.PUBLIC_DOMAIN
@@ -370,16 +481,24 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
      */
     fun mayQuote(): Boolean = rights.mayQuote(selection.size)
 
-    /** The verses [ranges] cover, in the current translation, read chapter by chapter off the main thread. */
+    /**
+     * The verses [ranges] — **KJV keys** — cover, in [translation], read chapter by chapter off the main
+     * thread. The verses come back with the translation's own references, so a quotation prints the
+     * numbers its reader knows.
+     */
     suspend fun verses(ranges: List<VerseRange>, translation: String = translationId): List<ChapterVerse> {
         val id = translation
-        val chapters = ranges.flatMap { range ->
-            val first = ChapterRef(range.start.book, range.start.chapter)
-            val last = ChapterRef(range.end.book, range.end.chapter)
-            generateSequence(first) { if (it == last) null else Canon.next(it) }.take(200).toList()
-        }.distinct()
+        val current = numbering.takeIf { id == translationId }
         val loaded = chapter
         return withContext(Dispatchers.IO) {
+            val numbering = current ?: runCatching { BundledTranslations.source(getApplication(), id).numbering }
+                .getOrDefault(VerseNumbering.IDENTITY)
+            val native = ranges.mapNotNull { numbering.nativeRange(it) }
+            val chapters = native.flatMap { range ->
+                val first = ChapterRef(range.start.book, range.start.chapter)
+                val last = ChapterRef(range.end.book, range.end.chapter)
+                generateSequence(first) { if (it == last) null else Canon.next(it) }.take(200).toList()
+            }.distinct()
             chapters.flatMap { ref ->
                 val verses = if (loaded != null && loaded.ref == ref && loaded.translation.id == id) {
                     loaded.verses
@@ -387,7 +506,7 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
                     runCatching { BundledTranslations.source(getApplication(), id).chapter(ref).verses }.getOrDefault(emptyList())
                 }
                 if (id == translationId) verses.maxOfOrNull { it.ref.verse }?.let { verseCounts[ref] = it }
-                verses.filter { v -> ranges.any { it.contains(v.ref.key) } }
+                verses.filter { v -> native.any { it.contains(v.ref.key) } }
             }
         }
     }
@@ -398,7 +517,7 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
      */
     suspend fun quotation(ranges: List<VerseRange> = selectedRanges): String {
         if (!rights.mayQuote(selection.size)) return ""
-        return Selection.quotation(ranges, verses(ranges), translationAbbreviation)
+        return Selection.quotation(ranges.map(::displayRange), verses(ranges), translationAbbreviation)
     }
 
     /**
@@ -424,10 +543,12 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         } ?: return null
         val verses = verses(ranges, id).map { ShareVerse.fromScalars(it.ref, it.text, it.red.map { r -> r.start to r.length }) }
         if (verses.isEmpty()) return null
+        // The card prints the translation's own numbers; the link carries the KJV keys.
+        val displayRanges = if (id == translationId) ranges.map(::displayRange) else ranges
         return ShareSource(
             ranges = ranges, verses = verses, translation = info.abbreviation,
             notice = TranslationRights.attributionNotice(info.license, info.copyright),
-            rights = info.rights, verseCount = ::verseCount, linkStyle = linkStyle,
+            rights = info.rights, verseCount = ::verseCount, linkStyle = linkStyle, displayRanges = displayRanges,
         )
     }
 
@@ -461,15 +582,20 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /**
-     * Goes to a passage a link named and selects it — `ShareSupport.reveal`. The chapters' verse
-     * counts are read first, so a range crossing a chapter selects the right verses.
+     * Goes to a passage a link named and selects it — `ShareSupport.reveal`. A link carries KJV keys;
+     * the reader lands on, and selects, the verses as the translation being read numbers them. The
+     * chapters' verse counts are read first, so a range crossing a chapter selects the right verses.
      */
     fun reveal(ranges: List<VerseRange>) {
         val first = ranges.firstOrNull() ?: return
-        show(ChapterRef(first.start.book, first.start.chapter), first.start.verse)
+        val opening = loading
         viewModelScope.launch {
+            // A link that opened the app arrives before the translation's numbering is known.
+            opening?.join()
+            go(first.start)
             verses(ranges)
-            selection = ranges.flatMap { Selection.keys(it) { ref -> verseCount(ref) } }.toSet()
+            val native = ranges.mapNotNull { numbering.nativeRange(it) }
+            selection = native.flatMap { Selection.keys(it) { ref -> verseCount(ref) } }.toSet()
         }
     }
 
@@ -485,8 +611,15 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    /** Typed passages ("Rom 8:1-17; Ps 23") as ranges, whole chapters resolved against real verse counts. */
+    /**
+     * Typed passages ("Rom 8:1-17; Ps 23") as **KJV** ranges — what a note anchors to — whole chapters
+     * resolved against real verse counts. The reader typed them in their own translation's numbering.
+     */
     suspend fun resolvePassages(text: String): List<VerseRange> =
+        resolveNativePassages(text).map(numbering::kjvRange)
+
+    /** Typed passages as the translation being read numbers them. */
+    suspend fun resolveNativePassages(text: String): List<VerseRange> =
         com.blainemiller.scripturealone.data.reference.ReferenceParser.parseList(text).map { passage ->
             val clamped = passage.clamped
             val counts = HashMap<Int, Int>()
@@ -533,13 +666,17 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         UserDataStore(BundledUserDatabase(File(application.filesDir, "userdata.sqlite")))
     }
 
+    /**
+     * Highlights are stored one per KJV verse ([selectedKjvKeys]), so they show in every translation
+     * whatever it calls the verse.
+     */
     fun highlightSelection(color: HighlightColor) {
-        userData.highlight(selection, color)
+        userData.highlight(selectedKjvKeys, color)
         clearSelection()
     }
 
     fun removeSelectedHighlights() {
-        userData.removeHighlights(selection)
+        userData.removeHighlights(selectedKjvKeys)
         clearSelection()
     }
 
@@ -556,7 +693,8 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     fun newNote(): Note {
         if (selection.isNotEmpty()) return newNoteFromSelection()
         val count = verseCount(location).coerceAtLeast(1)
-        return userData.newNote(listOf(VerseRange(VerseRef(location.book, location.chapter, 1), VerseRef(location.book, location.chapter, count))))
+        val chapter = VerseRange(VerseRef(location.book, location.chapter, 1), VerseRef(location.book, location.chapter, count))
+        return userData.newNote(listOf(numbering.kjvRange(chapter)))
     }
 
     // Keepsakes, notes export and import (ui/keepsake/, ui/export/, ui/importnotes/).
@@ -573,6 +711,12 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     fun closeKeepsake() = legacy.close(translationId, ::selectTranslation)
 
     private companion object {
+        /** The device's languages, most preferred first, as BCP 47 tags. */
+        fun deviceLanguages(): List<String> {
+            val list = android.os.LocaleList.getDefault()
+            return (0 until list.size()).map { list[it].toLanguageTag() }
+        }
+
         /**
          * Whether [id] opens without a download. A launch that restores a translation must only ever
          * pick one of these: silently fetching 15 MB because the reader's translation wasn't here

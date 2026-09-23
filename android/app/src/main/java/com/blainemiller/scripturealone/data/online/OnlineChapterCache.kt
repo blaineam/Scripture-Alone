@@ -462,7 +462,7 @@ class OnlineChapterCache(
             }.mapNotNull { (number, count) -> BookID.of(number)?.let { it to count } }
             db.execute("DELETE FROM books")
             for ((book, count) in counts.sortedBy { it.first.number }) {
-                db.execute("INSERT INTO books VALUES (?1, ?2, ?3, ?4)", book.number, book.code, book.displayName, count)
+                db.execute("INSERT INTO books VALUES (?1, ?2, ?3, ?4)", book.number, book.code, book.englishName, count)
             }
         }
 

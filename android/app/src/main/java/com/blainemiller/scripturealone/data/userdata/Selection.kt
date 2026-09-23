@@ -2,6 +2,7 @@ package com.blainemiller.scripturealone.data.userdata
 
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.ChapterVerse
+import com.blainemiller.scripturealone.data.VerseNumbering
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
@@ -80,13 +81,23 @@ object Selection {
      * Newest highlight wins when a verse has more than one — `ChapterPane.renderInput`. Only verses in
      * [chapter].
      */
-    fun highlightColors(highlights: Collection<Highlight>, chapter: ChapterRef): Map<Int, String> {
-        val keys = VerseRef.chapterRange(chapter.book, chapter.chapter)
+    fun highlightColors(
+        highlights: Collection<Highlight>,
+        chapter: ChapterRef,
+        numbering: VerseNumbering = VerseNumbering.IDENTITY,
+        verseCount: Int = 0,
+    ): Map<Int, String> {
+        // Marks are stored under KJV keys; the chapter is drawn in the translation's own numbering. The
+        // KJV keys a native chapter holds may reach into a neighbouring KJV chapter.
+        val keys = numbering.kjvKeyRange(chapter.book, chapter.chapter, verseCount)
+        val own = VerseRef.chapterRange(chapter.book, chapter.chapter)
         val newest = mutableMapOf<Int, Highlight>()
         for (h in highlights) {
             if (h.verseKey !in keys) continue
-            val existing = newest[h.verseKey]
-            if (existing == null || !existing.createdAt.isAfter(h.createdAt)) newest[h.verseKey] = h
+            val key = numbering.native(h.verseKey) ?: continue
+            if (key !in own) continue
+            val existing = newest[key]
+            if (existing == null || !existing.createdAt.isAfter(h.createdAt)) newest[key] = h
         }
         return newest.mapValues { it.value.color }
     }
@@ -96,10 +107,17 @@ object Selection {
      * the chapter's last verse, when the anchor runs on past it) — `ChapterPane.renderInput`.
      * Ids are UUID strings, newest-edited note first as Swift's query sorts them.
      */
-    fun noteMarkers(notes: Collection<Note>, chapter: ChapterRef, verseCount: Int): Map<Int, List<String>> {
+    fun noteMarkers(
+        notes: Collection<Note>,
+        chapter: ChapterRef,
+        verseCount: Int,
+        numbering: VerseNumbering = VerseNumbering.IDENTITY,
+    ): Map<Int, List<String>> {
         val markers = linkedMapOf<Int, MutableList<String>>()
         for (note in notes.sortedByDescending { it.updatedAt }) {
-            for (anchor in note.anchors) {
+            for (stored in note.anchors) {
+                // Anchors are KJV ranges; the markers go on the translation's own verses.
+                val anchor = numbering.nativeRange(stored) ?: continue
                 if (!anchor.overlaps(chapter)) continue
                 val end = if (anchor.end.book == chapter.book && anchor.end.chapter == chapter.chapter) {
                     anchor.end.key

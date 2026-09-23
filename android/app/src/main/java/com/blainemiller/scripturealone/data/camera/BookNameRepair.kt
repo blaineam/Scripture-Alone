@@ -33,17 +33,17 @@ object BookNameRepair {
 
     /** Books whose names carry a number: the ordinal before them may be a misread "1". */
     private val numberedNames: Set<String> = BookID.entries
-        .filter { it.displayName.first().isDigit() }
-        .flatMap { listOf(stripOrdinal(it.displayName), stripOrdinal(it.abbreviation)) }
+        .filter { it.englishName.first().isDigit() }
+        .flatMap { listOf(stripOrdinal(it.englishName), stripOrdinal(it.englishAbbreviation)) }
         .map { it.lowercase() }
         .toSet() + setOf("jn", "jo", "jhn", "sa", "sm", "ki", "kg", "ch", "chron", "co", "th", "ti", "pe", "pt")
 
     /** Every name a slide might print, without its ordinal: "Corinthians", "Thess", "Psalm", "Psalms", … */
     private val names: Map<String, String> = buildMap {
         for (book in BookID.entries) {
-            val name = stripOrdinal(book.displayName)
+            val name = stripOrdinal(book.englishName)
             put(name.lowercase(), name)
-            val abbreviation = stripOrdinal(book.abbreviation)
+            val abbreviation = stripOrdinal(book.englishAbbreviation)
             if (abbreviation.length >= 4) put(abbreviation.lowercase(), abbreviation)
         }
         put("psalm", "Psalm")

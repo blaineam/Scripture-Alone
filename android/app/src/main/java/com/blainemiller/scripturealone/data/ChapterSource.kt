@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.data
 
 import android.content.Context
+import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.layout.ChapterLayout
 import com.blainemiller.scripturealone.data.rights.TranslationRights
 import com.blainemiller.scripturealone.data.rights.rights
@@ -32,6 +33,8 @@ data class TranslationInfo(
     val copyright: String,
     val license: String = "",
     val rights: TranslationRights = TranslationRights.of(license, copyright),
+    /** The language the text is written in (a BCP 47 tag, from `meta.language`), when the store says. */
+    val language: String? = null,
 )
 
 /** One verse's text and its words-of-Christ ranges, still in **Unicode scalars** as stored. */
@@ -40,13 +43,23 @@ data class ChapterVerse(val ref: VerseRef, val text: String, val red: List<Scala
 /**
  * One chapter, ready to render: its parsed layout, plus the plain verse rows the layout was built
  * from (for copy, search and Listen later — the renderer itself draws only from [layout], as on iOS).
+ *
+ * [ref], the layout and the verses are in the translation's **own** numbering; [numbering] converts
+ * to the KJV keys marks are stored under.
  */
 data class Chapter(
     val translation: TranslationInfo,
     val ref: ChapterRef,
     val layout: ChapterLayout,
     val verses: List<ChapterVerse>,
-)
+    val numbering: VerseNumbering = VerseNumbering.IDENTITY,
+) {
+    /** The chapter's verse count, as this translation numbers it. */
+    val verseCount: Int get() = verses.maxOfOrNull { it.ref.verse } ?: 0
+
+    /** The KJV keys this chapter's verses hold — where its marks are stored. */
+    val markKeys: IntRange get() = numbering.kjvKeyRange(ref.book, ref.chapter, verseCount)
+}
 
 /**
  * Anything the reader can draw a chapter from — `ChapterTextSource` on iOS. A plain SQLite store
@@ -71,6 +84,13 @@ interface ChapterSource {
      * an online translation at its provider.
      */
     fun search(query: String, limit: Int = VerseSearch.DEFAULT_LIMIT): List<SearchHit>
+
+    /**
+     * How this source's verse numbers line up with the KJV keys marks are stored under
+     * ([VerseNumbering]). [chapter] is in the source's own numbering. Sources without a `kjv_map` —
+     * packages, imports, the online cache — number as the KJV does.
+     */
+    val numbering: VerseNumbering get() = VerseNumbering.IDENTITY
 }
 
 /**
@@ -109,7 +129,32 @@ object StoreChapters {
         val id = meta["id"] ?: fallbackId
         return TranslationInfo(
             id, meta["name"].orEmpty(), meta["abbreviation"] ?: id, meta["copyright"].orEmpty(), meta["license"].orEmpty(),
+            language = meta["language"],
         )
+    }
+
+    fun hasTable(db: SqlSource, name: String): Boolean =
+        db.query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", name) { true }.isNotEmpty()
+
+    /**
+     * The store's `kjv_map` — a table newer than the store format's first release, absent from the
+     * English Bibles, imports and the online cache, which is exactly "numbers as the KJV does".
+     */
+    fun numbering(db: SqlSource): VerseNumbering {
+        if (!hasTable(db, "kjv_map")) return VerseNumbering.IDENTITY
+        val rows = db.query("SELECT id, kjv, kjv_last FROM kjv_map") { r ->
+            VerseNumbering.Row(r.long(0).toInt(), r.long(1).toInt(), r.long(2).toInt())
+        }
+        return VerseNumbering(rows)
+    }
+
+    /** `meta.tokenizer` is `trigram`: Chinese, Japanese and Korean search by substring. */
+    fun searchesBySubstring(db: SqlSource): Boolean = meta(db)["tokenizer"] == "trigram"
+
+    /** Book names as this translation prints them ("Genèse", "创世记"), by book number; empty for an English store. */
+    fun bookNames(db: SqlSource): Map<Int, String> {
+        if (meta(db)["language"] == null || !hasTable(db, "books")) return emptyMap()
+        return db.query("SELECT book, name FROM books") { it.long(0).toInt() to it.text(1) }.toMap()
     }
 
     fun layoutJson(db: SqlSource, ref: ChapterRef): String? =
@@ -123,10 +168,15 @@ object StoreChapters {
             ChapterVerse(VerseRef.fromKey(r.long(0).toInt()), r.text(1), ChapterRows.parseRed(red))
         }
 
-    fun chapter(db: SqlSource, info: TranslationInfo, ref: ChapterRef): Chapter {
+    fun chapter(
+        db: SqlSource,
+        info: TranslationInfo,
+        ref: ChapterRef,
+        numbering: VerseNumbering = VerseNumbering.IDENTITY,
+    ): Chapter {
         val json = layoutJson(db, ref) ?: throw NoSuchElementException("${info.id} has no $ref")
         val range = VerseRef.chapterRange(ref.book, ref.chapter)
-        return Chapter(info, ref, ChapterLayout.parse(json), verses(db, range.first, range.last))
+        return Chapter(info, ref, ChapterLayout.parse(json), verses(db, range.first, range.last), numbering)
     }
 }
 
@@ -138,11 +188,23 @@ class SqliteChapterSource(private val context: Context, private val assetName: S
 
     override val info: TranslationInfo by lazy { read { StoreChapters.info(it, assetName.substringBefore('.')) } }
 
+    override val numbering: VerseNumbering by lazy { read(StoreChapters::numbering) }
+
+    private val substring: Boolean by lazy { read(StoreChapters::searchesBySubstring) }
+
     override fun contains(ref: ChapterRef): Boolean = read { StoreChapters.layoutJson(it, ref) } != null
 
-    override fun chapter(ref: ChapterRef): Chapter = read { StoreChapters.chapter(it, info, ref) }
+    override fun chapter(ref: ChapterRef): Chapter {
+        val info = info
+        val numbering = numbering
+        return read { StoreChapters.chapter(it, info, ref, numbering) }
+    }
 
-    override fun search(query: String, limit: Int): List<SearchHit> = read { VerseSearch(it).search(query, limit) }
+    override fun search(query: String, limit: Int): List<SearchHit> {
+        val substring = substring
+        val numbering = numbering
+        return read { VerseSearch(it, substring, numbering).search(query, limit) }
+    }
 }
 
 /**
@@ -187,8 +249,11 @@ class PackageChapterSource(private val pkg: TranslationPackage) : ChapterSource 
  * reader needs no branch for them.
  */
 object BundledTranslations {
-    /** The translations inside the APK. */
-    val bundled: List<String> = listOf("ASV", "BSB", "KJV")
+    /**
+     * The translations the app ships — in its base module or as asset packs: the English three, then a
+     * Bible for each of the big-8 locales (docs/localization.md), in the Translations screen's order.
+     */
+    val bundled: List<String> = listOf("ASV") + AssetPack.translations.mapNotNull { it.translationId }
     const val DEFAULT = "ASV"
 
     /** Everything the reader can switch to right now: [bundled], then imported, then online. */
