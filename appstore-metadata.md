@@ -9,13 +9,13 @@ Scripture Alone Bible
 Private, offline Bible study
 
 ## description
-Scripture Alone is a free Bible for iPhone, iPad, Mac and Apple Watch, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. The Bible lives on your device, so it works anywhere in the world, with or without a connection.
+Scripture Alone is a Bible for iPhone, iPad, Mac and Apple Watch, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. The Bible lives on your device, so it works anywhere in the world, with or without a connection.
 
 Read the whole Bible, offline
 The American Standard Version is on your device from the moment it installs. The Berean Standard Bible and the King James Version download once, the first time you choose one, and read offline from then on. All three have full-text search. The words of Christ appear in red, poetry is set as poetry, and section headings and footnotes are a tap away.
 
 Add the translations you want
-Browse the free translations eBible.org publishes, in your own language first, or bring a USFM zip or a DRM-free ePub you already own. The ESV, CSB, NASB and NKJV can't be given away by anyone, so they're read over the network with your own free publisher key.
+Browse the openly licensed translations eBible.org publishes, in your own language first, or bring a USFM zip or a DRM-free ePub you already own. The ESV, CSB, NASB and NKJV can't be given away by anyone, so they're read over the network with your own publisher key.
 
 Make it comfortable
 Seven typefaces, adjustable size and line spacing, five themes (Auto, Light, Sepia, Dark and Black), paragraphs or verse by verse, and full Dynamic Type. Auto-scroll keeps the text moving hands-free and carries on into the next chapter.
@@ -53,7 +53,7 @@ Make a Keepsake Bible: a keepsake file of your highlights and notes, with a dedi
 Private by design
 Your highlights, notes and favorites sync across your devices through your own private iCloud. There is no server and no account, and the developer never sees your data. Scripture Alone is open source under the AGPL, so anyone can read exactly what it does.
 
-Free, and it will stay free. Built to help people study God's word and grow closer to Christ.
+Built to help people study God's word and grow closer to Christ.
 
 ## keywords
 bible,scripture,kjv,asv,bsb,offline,study,commentary,devotional,sermon,notes,reformed,christian
