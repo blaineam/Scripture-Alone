@@ -46,16 +46,16 @@ targets:
         excludes:
           - "Resources/Info.plist"
           - "Resources/*.entitlements"
-          # The American Standard Version ships sealed, so its store stays out of the app; it is
-          # kept in the repository as the source the packaging tool reads.
-          - "Resources/Bibles/ASV.sqlite"
+          # No Bible database is ever an app resource. The ASV ships sealed (its store is the source
+          # the packaging tool reads); every other translation, the big-8 locales' included
+          # (docs/localization.md), is an on-demand pack. A pattern, not a list: a new translation
+          # added to Tools/build_bibles.py must not quietly add 15 MB to the app.
+          - "Resources/Bibles/*.sqlite"
           # Apple-hosted Background Assets packs (`onDemand`), not app resources (Tools/asset-packs).
           # Kept in the repository as the packs' sources, and copied into Debug builds only — see
           # below. The sealed ASV package (Resources/Packages/ASV.sabible) is NOT excluded: it ships
           # in the app. As an `essential` pack it left App Review's iPad on an endless spinner
           # (1.0.0 build 40), and the translation a fresh install opens to can't wait on delivery.
-          - "Resources/Bibles/BSB.sqlite"
-          - "Resources/Bibles/KJV.sqlite"
           - "Resources/Study/Study.sqlite"
           - "Resources/Study/Interlinear.sqlite"
     dependencies:

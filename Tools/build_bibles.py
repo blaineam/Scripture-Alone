@@ -79,6 +79,91 @@ TRANSLATIONS = [
         "license": "Public domain",
         "source": "https://ebible.org/find/details.php?id=eng-kjv2006",
     },
+    # The big-8 locales' Bibles (docs/localization.md): each the whole 66-book Protestant canon,
+    # translated from the Hebrew and Greek, and free to redistribute. Delivered as on-demand packs
+    # and chosen by the device's language at first launch. Japanese is still open: the 口語訳's
+    # CrossWire module is missing whole chapters, and its public-domain status is disputed.
+    {
+        "id": "CUVS",
+        "locale": "zh-Hans",
+        "zip": "cmn-cu89s_usfm.zip",
+        "name": "和合本（新标点）",
+        "abbreviation": "和合本",
+        "copyright": "新标点和合本（简体）。中文和合本圣经（1919），公有领域。",
+        "license": "Public domain",
+        "source": "https://ebible.org/find/details.php?id=cmn-cu89s",
+        "john_3_16": "「 神爱世人，",
+    },
+    {
+        "id": "LUT1912",
+        "locale": "de",
+        "zip": "deu1912_usfm.zip",
+        "name": "Lutherbibel 1912",
+        "abbreviation": "LUT",
+        "copyright": "Lutherbibel 1912. Gemeinfrei.",
+        "license": "Public domain",
+        "source": "https://ebible.org/find/details.php?id=deu1912",
+        "john_3_16": "Also hat Gott die Welt geliebt",
+    },
+    {
+        "id": "LSG",
+        "locale": "fr",
+        "zip": "fraLSG_usfm.zip",
+        "name": "Louis Segond 1910",
+        "abbreviation": "LSG",
+        "copyright": "La Sainte Bible, traduction Louis Segond (1910). Domaine public.",
+        "license": "Public domain",
+        "source": "https://ebible.org/find/details.php?id=fraLSG",
+        "john_3_16": "Car Dieu a tant aimé le monde",
+    },
+    {
+        "id": "RVR1909",
+        "locale": "es",
+        "zip": "spaRV1909_usfm.zip",
+        "name": "Reina-Valera 1909",
+        "abbreviation": "RV1909",
+        "copyright": "Santa Biblia, Reina-Valera 1909. Dominio público.",
+        "license": "Public domain",
+        "source": "https://ebible.org/find/details.php?id=spaRV1909",
+        "john_3_16": "Porque de tal manera amó Dios al mundo",
+    },
+    {
+        "id": "KRV",
+        "locale": "ko",
+        "zip": "kor-rv_usfm.zip",   # converted by Tools/sword_to_usfm.py from CrossWire KorRV
+        "name": "개역한글",
+        "abbreviation": "개역한글",
+        "copyright": "성경전서 개역한글판(1952/1961). 공유 저작물.",
+        "license": "Public domain",
+        "source": "https://www.crosswire.org/sword/modules/ModInfo.jsp?modName=KorRV",
+        "john_3_16": "하나님이 세상을 이처럼 사랑하사",
+    },
+    {
+        "id": "BLIVRE",
+        "locale": "pt-BR",
+        "zip": "porbr2018_usfm.zip",
+        "name": "Bíblia Livre",
+        "abbreviation": "BLIVRE",
+        # CC BY 4.0: this line is the attribution the licence requires, and it is shown wherever
+        # the text is (the reader's copyright footer, exports, share images).
+        "copyright": "Bíblia Livre (BLIVRE), Copyright © 2018 Diego Santos, Mario Sérgio e Marco Teles, "
+                     "https://sites.google.com/site/biblialivre/. Licença Creative Commons Atribuição 4.0 "
+                     "(https://creativecommons.org/licenses/by/4.0/).",
+        "license": "CC BY 4.0",
+        "source": "https://ebible.org/find/details.php?id=porbr2018",
+        "john_3_16": "Porque Deus amou ao mundo de tal maneira",
+    },
+    {
+        "id": "RIV1927",
+        "locale": "it",
+        "zip": "ita1927_usfm.zip",
+        "name": "Riveduta 1927",
+        "abbreviation": "RIV",
+        "copyright": "La Sacra Bibbia, versione Riveduta (Giovanni Luzzi, 1927). Pubblico dominio.",
+        "license": "Public domain",
+        "source": "https://ebible.org/find/details.php?id=ita1927",
+        "john_3_16": "Poiché Iddio ha tanto amato il mondo",
+    },
 ]
 
 # Markers whose text is file metadata, never shown.
@@ -105,12 +190,20 @@ class Book:
 
 
 def append_span(spans, start, length, style):
+    """Adds a styled run, extending the latest run of the same style when it ends where this one
+    starts. Looking past runs of other styles matters: text that is both red and italic appends
+    one run of each, and a red run must still merge across it. Merging only with the very last
+    run made the result depend on which style was appended first — which came from iterating a
+    set, so the same USFM built different layouts from one run to the next."""
     if length <= 0:
         return
-    if spans and spans[-1][2] == style and spans[-1][0] + spans[-1][1] == start:
-        spans[-1][1] += length
-    else:
-        spans.append([start, length, style])
+    for span in reversed(spans):
+        if span[2] == style:
+            if span[0] + span[1] == start:
+                span[1] += length
+                return
+            break
+    spans.append([start, length, style])
 
 
 class Parser:
@@ -205,7 +298,7 @@ class Parser:
         start = len(frag["t"])
         frag["t"] += text
         style = self.styles[-1] if self.styles else None
-        for s in set(self.styles):
+        for s in sorted(set(self.styles)):
             append_span(frag.setdefault("s", []), start, len(text), s)
         if self.verse and self.block["k"] != "d":
             self.add_verse_text(text, set(self.styles))
@@ -392,7 +485,7 @@ def apply_corrections(code, text, applied):
             applied.add((book, wrong))
     return text
 
-def load_books(zip_path):
+def load_books(zip_path, report_corrections=True):
     books = {}
     applied = set()
     with zipfile.ZipFile(zip_path) as z:
@@ -410,7 +503,7 @@ def load_books(zip_path):
     missing = [c for c in BOOKS if c not in books]
     if missing:
         raise SystemExit(f"{zip_path}: missing books {missing}")
-    for book, wrong, _ in USFM_CORRECTIONS:
+    for book, wrong, _ in USFM_CORRECTIONS if report_corrections else ():
         if (book, wrong) not in applied:
             print(f"  note: unused correction for {book}: {wrong!r} — upstream may have fixed it")
     return books
@@ -422,7 +515,8 @@ _BOOK_CACHE = {}
 def books_for(tid):
     if tid not in _BOOK_CACHE:
         t = next(t for t in TRANSLATIONS if t["id"] == tid)
-        _BOOK_CACHE[tid] = load_books(os.path.join(SOURCE_DIR, t["zip"]))
+        # The corrections are for the BSB's USFM; only its load says whether they still apply.
+        _BOOK_CACHE[tid] = load_books(os.path.join(SOURCE_DIR, t["zip"]), report_corrections=tid == "BSB")
     return _BOOK_CACHE[tid]
 
 
@@ -662,6 +756,23 @@ def check(paths):
     assert chapters == 1189, chapters
     leaks = asv.execute("SELECT count(*) FROM verses WHERE text LIKE '%\\%' ESCAPE '|' OR text LIKE '%|%'").fetchone()[0]
     assert leaks == 0, f"{leaks} ASV verses leak USFM markup"
+    for t in TRANSLATIONS:
+        if "locale" not in t:
+            continue
+        db = sqlite3.connect(paths[t["id"]])
+        books = db.execute("SELECT count(*), sum(chapters) FROM books").fetchone()
+        assert books == (66, 1189), (t["id"], books)
+        n = db.execute("SELECT count(*) FROM verses").fetchone()[0]
+        # Versifications differ: Segond numbers psalm titles as verse 1 and Malachi 4 as 3:19-24,
+        # so the French count runs higher. Mapping those onto the KJV keys is Phase 2's job.
+        assert 31_000 <= n <= 31_200, (t["id"], n)
+        text, _ = verse(db, "JHN", 3, 16)
+        assert text.startswith(t["john_3_16"]), (t["id"], text)
+        leaks = db.execute("SELECT count(*) FROM verses WHERE text LIKE '%\\%' ESCAPE '|' OR text LIKE '%|%' "
+                           "OR text LIKE '%<%'").fetchone()[0]
+        assert leaks == 0, f"{leaks} {t['id']} verses leak markup"
+        names = [r[0] for r in db.execute("SELECT name FROM books ORDER BY book")]
+        assert not any(name in BOOKS for name in names), (t["id"], names)   # a name, not a USFM code
     print("check: ok")
 
 
