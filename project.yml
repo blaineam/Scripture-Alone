@@ -157,6 +157,8 @@ targets:
     dependencies:
       - sdk: BackgroundAssets.framework
       - sdk: StoreKit.framework
+      # Without it the App Intents metadata step warns "no AppIntents.framework dependency".
+      - sdk: AppIntents.framework
     info:
       path: ScriptureAloneAssets/Info.plist
       properties:

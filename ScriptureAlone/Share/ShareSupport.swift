@@ -47,12 +47,10 @@ final class ShareCoordinator {
 
 extension View {
     /// Installs sharing: the designer sheet, share-link and `scripturealone://` handling.
-    /// Apply inside the `ReaderModel` environment.
     func shareSupport() -> some View { modifier(ShareSupport()) }
 }
 
 private struct ShareSupport: ViewModifier {
-    @Environment(ReaderModel.self) private var model
     @State private var coordinator = ShareCoordinator()
 
     func body(content: Content) -> some View {
@@ -64,63 +62,16 @@ private struct ShareSupport: ViewModifier {
                     .frame(minWidth: 760, idealWidth: 860, minHeight: 640, idealHeight: 720)
                     #endif
             }
-            .onOpenURL { open($0) }
+            // Links go through the same mailbox as Siri, Shortcuts and Spotlight; the reader
+            // carries them out (`ReaderView.perform`), share links' designer included.
+            .onOpenURL { AppCommandCenter.shared.open($0) }
             .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
-                if let url = activity.webpageURL { open(url) }
+                if let url = activity.webpageURL { AppCommandCenter.shared.open(url) }
             }
             #if os(macOS)
             // Open links in the frontmost window instead of spawning a new one.
             .handlesExternalEvents(preferring: ["*"], allowing: ["*"])
             #endif
-    }
-
-    private func open(_ url: URL) {
-        guard let link = AppLink(url: url) else { return }
-        switch link {
-        case .open(let ranges):
-            reveal(ranges)
-        case .share(let payload):
-            reveal(payload.ranges)
-            // Rebuild the card from the sender's translation when it's installed here, else the reader's own.
-            guard let from = model.source(for: payload.translation) ?? model.source,
-                  let source = ShareSource(source: from, ranges: payload.ranges, linkStyle: payload) else { return }
-            // A sheet presented while the scene is still activating for the URL is dropped; wait a beat.
-            Task {
-                try? await Task.sleep(for: .milliseconds(450))
-                coordinator.designer = source
-            }
-        }
-    }
-
-    /// Goes to the passage and selects it. A link carries KJV keys; the reader lands on, and
-    /// selects, the verses as the translation being read numbers them. Any source will do — the
-    /// sealed ASV has no `store`, which used to make a link open nothing.
-    private func reveal(_ ranges: [VerseRange]) {
-        guard let first = ranges.first, let source = model.source else { return }
-        if coordinator.designer != nil { coordinator.designer = nil }
-        model.go(to: first.start)
-        let native = ranges.compactMap { source.numbering.nativeRange($0) }
-        model.selection = Set(native.flatMap { Self.verseKeys(in: $0, store: source) })
-    }
-
-    static func verseKeys(in range: VerseRange, store: any ChapterTextSource) -> [Int] {
-        var keys: [Int] = []
-        var chapter = range.start.chapterKey
-        var verse = range.start.verse
-        while keys.count < 2_000 {
-            let count = store.verseCount(chapter)
-            if verse > count {
-                guard count > 0, let next = chapter.next else { break }
-                chapter = next
-                verse = 1
-                continue
-            }
-            let key = VerseRef(chapter.book, chapter.chapter, verse).key
-            if key > range.end.key { break }
-            keys.append(key)
-            verse += 1
-        }
-        return keys
     }
 }
 

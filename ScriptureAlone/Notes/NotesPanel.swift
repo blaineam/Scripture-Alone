@@ -123,6 +123,12 @@ struct NotesPanel: View {
                 await slideCapture.accept(data: data)
             }
             #endif
+            // "Show my favorites" from Siri, Shortcuts or a link picks the scope once.
+            .onChange(of: AppCommandCenter.shared.notesScope, initial: true) { _, request in
+                guard let request else { return }
+                scope = request == .favorites ? .favorites : .all
+                AppCommandCenter.shared.notesScope = nil
+            }
             .navigationDestination(for: UUID.self) { id in
                 if let note = notes.first(where: { $0.uuid == id }) {
                     NoteEditor(note: note)

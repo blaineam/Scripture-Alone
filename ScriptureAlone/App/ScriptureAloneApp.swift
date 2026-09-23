@@ -3,7 +3,7 @@ import SwiftData
 
 @main
 struct ScriptureAloneApp: App {
-    private let container = DataStore.makeContainer()
+    private let container = DataStore.shared
     // Accepts family-sharing invitations (CKShare metadata), which SwiftUI has no hook for.
     #if os(iOS)
     @UIApplicationDelegateAdaptor(FamilyShareAppDelegate.self) private var familyShareDelegate
@@ -57,6 +57,7 @@ private struct RootView: View {
             .shareSupport()
             .legacySupport()
             .widgetSnapshotSync()
+            .spotlightSync()
             .environment(model)
             .environment(library)
             .environment(onlineKeys)

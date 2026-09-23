@@ -210,11 +210,33 @@ extension ShareLinkPayload: Codable {
 }
 
 /// A URL the app knows how to open.
+///
+/// Custom scheme (`scripturealone://`):
+/// - `open?ref=<ref>` and `passage/<ref>` — a passage, where `<ref>` is stored keys
+///   (`43003016-43003017,45008028`), OSIS (`John.3.16`, `Gen.1.1-Gen.1.3`, `Ps.23`), either with a
+///   `urn:osis:` / `osis:` prefix, or a plain reference in any language the app reads ("John 3:16",
+///   "Jean 3:16", "요한복음 3:16");
+/// - `search?q=<words>`, `note/<uuid>`, `notes`, `favorites`;
+/// - a share link's `#s=` fragment on any of them.
+///
+/// Web (`https://wemiller.com/apps/scripture-alone/…`, opened as a universal link): a share link's
+/// `#s=` fragment, or a passage as `?ref=<ref>`, `#ref=<ref>` or `/apps/scripture-alone/passage/<ref>`.
 public enum AppLink: Hashable, Sendable {
     /// A share link (web or custom scheme with a `#s=` fragment): show the passage and its card.
     case share(ShareLinkPayload)
-    /// `scripturealone://open?ref=43003016-43003017`: go to the passage and select it.
+    /// Stored KJV keys, `scripturealone://open?ref=43003016-43003017`: go to the passage and select it.
     case open([VerseRange])
+    /// OSIS references — KJV numbering, like `open`. A whole chapter (`Ps.23`) has no start verse.
+    case osis([Passage])
+    /// A reference as a person writes it, in the numbering of the translation being read.
+    case passage([Passage])
+    /// Search the Bible for words.
+    case search(String)
+    /// A note, by its `uuid`.
+    case note(UUID)
+    /// The notes list, or its Favorites scope.
+    case notes
+    case favorites
 
     public init?(url: URL) {
         let scheme = url.scheme?.lowercased()
@@ -228,13 +250,66 @@ public enum AppLink: Hashable, Sendable {
             self = .share(payload)
             return
         }
-        guard isCustom,
-              let ref = URLComponents(url: url, resolvingAgainstBaseURL: false)?
-                .queryItems?.first(where: { $0.name == "ref" })?.value
-        else { return nil }
-        let ranges = ShareLinkPayload(reference: "", keys: ref, translation: "", text: "").ranges
-        guard !ranges.isEmpty else { return nil }
-        self = .open(ranges)
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        func query(_ name: String) -> String? {
+            components?.queryItems?.first(where: { $0.name == name })?.value
+        }
+        // "#ref=John.3.16" on the web: a fragment never reaches the server, like the share payload.
+        let fragmentRef = url.fragment(percentEncoded: false)?.split(separator: "&")
+            .first(where: { $0.hasPrefix("ref=") }).map { String($0.dropFirst(4)) }
+
+        if let ref = query("ref") ?? fragmentRef {
+            guard let link = Self.reference(ref) else { return nil }
+            self = link
+            return
+        }
+
+        // Path segments after the host (custom scheme) or after the web path.
+        let segments: [String]
+        if isCustom {
+            segments = ([url.host(percentEncoded: false)].compactMap { $0 } + url.pathComponents)
+                .filter { $0 != "/" && !$0.isEmpty }
+        } else {
+            let rest = url.path(percentEncoded: false).dropFirst(ShareLinkPayload.webPath.count)
+            segments = rest.split(separator: "/").map(String.init)
+        }
+        guard let head = segments.first?.lowercased() else { return nil }
+        let tail = segments.dropFirst().joined(separator: "/")
+        switch head {
+        case "passage", "open", "verse", "ref":
+            guard let link = Self.reference(tail) else { return nil }
+            self = link
+        case "search" where isCustom:
+            let words = (query("q") ?? tail).trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !words.isEmpty else { return nil }
+            self = .search(words)
+        case "note" where isCustom:
+            guard let id = UUID(uuidString: segments.dropFirst().first ?? query("id") ?? "") else { return nil }
+            self = .note(id)
+        case "notes" where isCustom:
+            self = .notes
+        case "favorites" where isCustom:
+            self = .favorites
+        default:
+            return nil
+        }
+    }
+
+    /// A passage from any form a link may carry: stored keys, OSIS (optionally `urn:osis:`), or a
+    /// plain reference in any of the app's languages. Nil when it is none of them.
+    public static func reference(_ raw: String, language: String? = BookNames.current) -> AppLink? {
+        let text = OSISReference.stripURNPrefix(raw.removingPercentEncoding ?? raw)
+        guard !text.isEmpty else { return nil }
+        // Stored keys first: digits and separators only, so a reference is never mistaken for one.
+        if text.allSatisfy({ $0.isNumber || "-, ".contains($0) }) {
+            let ranges = ShareLinkPayload(reference: "", keys: text, translation: "", text: "").ranges
+            return ranges.isEmpty ? nil : .open(ranges)
+        }
+        if let passages = OSISReference.parse(text), !passages.isEmpty {
+            return .osis(passages)
+        }
+        let passages = ReferenceParser.parseList(text, language: language)
+        return passages.isEmpty ? nil : .passage(passages)
     }
 
     /// `scripturealone://open?ref=43003016-43003017`
@@ -244,5 +319,10 @@ public enum AppLink: Hashable, Sendable {
         components.host = "open"
         components.queryItems = [URLQueryItem(name: "ref", value: ranges.map(\.storageString).joined(separator: ","))]
         return components.url
+    }
+
+    /// `scripturealone://note/<uuid>`
+    public static func noteURL(_ id: UUID) -> URL? {
+        URL(string: "\(ShareLinkPayload.scheme)://note/\(id.uuidString)")
     }
 }

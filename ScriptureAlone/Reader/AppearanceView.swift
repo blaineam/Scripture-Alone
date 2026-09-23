@@ -14,6 +14,8 @@ struct AppearanceView: View {
     @AppStorage(SettingsKey.verseNumbers) private var verseNumbers = true
     @AppStorage(SettingsKey.headings) private var headings = true
     @AppStorage(SettingsKey.footnotes) private var footnotes = true
+    @AppStorage(SpotlightSettingsKey.notes) private var notesInSpotlight = false
+    @AppStorage(SpotlightSettingsKey.favorites) private var favoritesInSpotlight = false
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -82,6 +84,16 @@ struct AppearanceView: View {
                 Toggle("Verse Numbers", isOn: $verseNumbers)
                 Toggle("Section Headings", isOn: $headings)
                 Toggle("Footnotes", isOn: $footnotes)
+            }
+
+            Section {
+                Toggle("Notes in Spotlight", isOn: $notesInSpotlight)
+                Toggle("Favorites in Spotlight", isOn: $favoritesInSpotlight)
+            } header: {
+                Text("Search", comment: "Settings section about Spotlight and Siri")
+            } footer: {
+                Text("Lets Spotlight and Siri find your notes or favorite verses, and open right to them. Off, they stay out of your device’s search.",
+                     comment: "Footer under the Spotlight toggles in Settings")
             }
 
             Section { LegacyAndExportRow() }

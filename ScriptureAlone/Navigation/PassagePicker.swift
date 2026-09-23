@@ -10,7 +10,20 @@ struct PassagePicker: View {
     @State private var path: [BookID] = []
     @FocusState private var focused: Bool
 
+    /// - Parameter initialQuery: words or a reference to start with — a search asked for by Siri,
+    ///   Shortcuts or a `scripturealone://search` link.
+    init(initialQuery: String = "") {
+        _query = State(initialValue: initialQuery)
+    }
+
     private var passage: Passage? { ReferenceParser.parse(query) }
+
+    /// Three characters before a search runs — two in Chinese, Japanese and Korean, where a
+    /// two-character word (恩典, 信心) is a whole word.
+    static func minimumSearchLength(_ text: String) -> Int {
+        text.unicodeScalars.contains { (0x3040...0x30FF).contains($0.value) || (0x3400...0x9FFF).contains($0.value)
+            || (0xAC00...0xD7AF).contains($0.value) } ? 2 : 3
+    }
     private var suggestedBooks: [BookID] {
         guard !query.isEmpty, query.rangeOfCharacter(from: .decimalDigits) == nil else { return [] }
         return Array(ReferenceParser.books(matching: query).prefix(6))
@@ -50,6 +63,12 @@ struct PassagePicker: View {
             }
         }
         .task(id: query) { await search() }
+        // A search asked for by Siri, Shortcuts or a `scripturealone://search` link.
+        .onChange(of: AppCommandCenter.shared.searchQuery, initial: true) { _, words in
+            guard let words else { return }
+            query = words
+            AppCommandCenter.shared.searchQuery = nil
+        }
         .onAppear {
             #if DEBUG
             // The jump screenshot shows the book grid, not a keyboard.
@@ -208,7 +227,7 @@ struct PassagePicker: View {
                     }
                 }
             }
-        } else if passage == nil, suggestedBooks.isEmpty, query.count >= 3 {
+        } else if passage == nil, suggestedBooks.isEmpty, query.count >= Self.minimumSearchLength(query) {
             ContentUnavailableView.search(text: query)
         }
     }
@@ -229,7 +248,7 @@ struct PassagePicker: View {
     private func search() async {
         let text = query
         // A reference ("john", "ps 23") navigates; anything else searches the text.
-        guard text.count >= 3, ReferenceParser.parse(text) == nil else {
+        guard text.count >= Self.minimumSearchLength(text), ReferenceParser.parse(text) == nil else {
             results = []
             return
         }

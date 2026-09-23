@@ -101,16 +101,22 @@ def parse_ref(ref):
 
 def ask(prompt):
     """One call through Levi; returns the parsed JSON object the prompt asked for."""
-    for attempt in range(3):
-        out = subprocess.run(["node", LEVI, "ai", prompt], capture_output=True, text=True, timeout=600)
+    last = ""
+    for attempt in range(4):
+        try:
+            out = subprocess.run(["node", LEVI, "ai", prompt], capture_output=True, text=True, timeout=420)
+        except subprocess.TimeoutExpired:
+            last = "timed out"   # a stuck call is retried like a malformed one
+            continue
         text = out.stdout
+        last = out.stderr[-400:]
         start, end = text.find("{"), text.rfind("}")
         if start >= 0 and end > start:
             try:
                 return json.loads(text[start:end + 1])
             except json.JSONDecodeError:
                 pass
-    raise RuntimeError(f"no JSON from the model after 3 attempts: {out.stderr[-400:]}")
+    raise RuntimeError(f"no JSON from the model after 4 attempts: {last}")
 
 
 def batched(items, size):
@@ -274,19 +280,27 @@ def main():
         data.setdefault("unverified", [])
         bible = Bible(LANGUAGES[lang][0])
 
+        def save():
+            # After every stage, so a failure later never costs the work already done.
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=1, sort_keys=True)
+                f.write("\n")
+
         todo = [(obid, name, keys) for obid, name, _, keys in place_rows if obid not in data["places"]]
         if todo:
             names, unverified = translate_names(lang, bible, todo, "place")
             data["places"].update(names)
             data["unverified"] = sorted(set(data["unverified"]) | set(unverified))
-            print(f"{lang}: {len(names)} place names, {len(unverified)} unverified")
+            print(f"{lang}: {len(names)} place names, {len(unverified)} unverified", flush=True)
+            save()
         if not only_places:
             todo = [(n, n, keys) for n, keys in people.items() if n not in data["people"]]
             if todo:
                 names, unverified = translate_names(lang, bible, todo, "person")
                 data["people"].update(names)
                 data["unverified"] = sorted(set(data["unverified"]) | {f"person:{k}" for k in unverified})
-                print(f"{lang}: {len(names)} people, {len(unverified)} unverified")
+                print(f"{lang}: {len(names)} people, {len(unverified)} unverified", flush=True)
+                save()
             modern = sorted({m for _, _, m, _ in place_rows if m and m not in data["modern"]})
             if modern:
                 _, language, _ = LANGUAGES[lang]
@@ -295,11 +309,12 @@ def main():
                                  "would print it) for each modern place. Return ONLY a JSON object "
                                  '{"<english>": "<name>"}.\n\n' + json.dumps(batch, ensure_ascii=False))
                     data["modern"].update({k: v for k, v in answer.items() if k in batch})
-                print(f"{lang}: {len(data['modern'])} modern names")
+                print(f"{lang}: {len(data['modern'])} modern names", flush=True)
+                save()
             todo = [s for s in prose if s not in data["strings"]]
             if todo:
                 data["strings"].update(translate_prose(lang, todo))
-                print(f"{lang}: {len(data['strings'])} prose strings")
+                print(f"{lang}: {len(data['strings'])} prose strings", flush=True)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=1, sort_keys=True)
             f.write("\n")

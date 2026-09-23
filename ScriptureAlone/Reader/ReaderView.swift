@@ -39,9 +39,7 @@ struct ReaderView: View {
     @State private var pendingNote: UUID?
     @State private var autoScrolling = false
     @State private var study = StudyModel()
-    #if DEBUG
     @Environment(ShareCoordinator.self) private var shareCoordinator
-    #endif
 
     #if os(iOS)
     @ScaledMetric(relativeTo: .body) private var dynamicTypeScale: CGFloat = 1
@@ -166,6 +164,8 @@ struct ReaderView: View {
         .tint(Color(style.palette.accent))
         .preferredColorScheme(theme.colorScheme)
         .background(keyboardShortcuts)
+        // Links, intents and Spotlight results, including any that arrived before this view did.
+        .onChange(of: AppCommandCenter.shared.pending, initial: true) { performCommands() }
         #if DEBUG
         .task { await stageScreenshotScene() }
         #endif
@@ -213,7 +213,11 @@ struct ReaderView: View {
     /// With Study up as a sheet (iPhone) the picker can't present over it; SwiftUI queued the
     /// request and showed the picker only once Study was closed some other way. Close Study
     /// first, then open Go To once it has finished dismissing.
-    private func openPassagePicker() {
+    /// - Parameter query: words to search for, from Siri, Shortcuts or a link. Handed over through
+    ///   `AppCommandCenter.searchQuery`: at a cold launch the sheet's content is built before any
+    ///   state set here would reach it.
+    private func openPassagePicker(query: String? = nil) {
+        AppCommandCenter.shared.searchQuery = query
         guard study.isOn && studyAsSheet else {
             showPicker = true
             return
@@ -436,6 +440,84 @@ struct ReaderView: View {
             return
         }
         model.next()
+    }
+
+    // MARK: Commands
+
+    /// Carries out whatever links, intents and Spotlight have asked for.
+    private func performCommands() {
+        let commands = AppCommandCenter.shared.take()
+        guard !commands.isEmpty else { return }
+        Task {
+            for command in commands { await perform(command) }
+        }
+    }
+
+    private func perform(_ command: AppCommand) async {
+        // Get the text into view: nothing modal may cover where the reader is being taken.
+        popover = nil
+        showPicker = false
+        showCompare = false
+        showTranslations = false
+        showAppearance = false
+        if shareCoordinator.designer != nil { shareCoordinator.designer = nil }
+        // Notes and favorites are the reader's own; a keepsake being read shows someone else's.
+        let ownNotes: Bool = switch command {
+        case .link(.note), .link(.notes), .link(.favorites), .newNote: true
+        default: false
+        }
+        if ownNotes, legacy.reading != nil { legacy.close(model: model) }
+
+        switch command {
+        case .link(let link):
+            switch link {
+            case .share(let payload):
+                model.open(link)
+                // Rebuild the card from the sender's translation when it's installed here, else the reader's own.
+                guard let from = model.source(for: payload.translation) ?? model.source,
+                      let source = ShareSource(source: from, ranges: payload.ranges, linkStyle: payload) else { return }
+                await settle()
+                shareCoordinator.designer = source
+            case .open, .osis, .passage:
+                model.open(link)
+            case .search(let words):
+                await settle()
+                openPassagePicker(query: words)
+            case .note(let id):
+                await settle()
+                openNote(id)
+            case .notes, .favorites:
+                AppCommandCenter.shared.notesScope = link == .favorites ? .favorites : .notes
+                study.isOn = false
+                notesPath = []
+                await settle()
+                showNotes = true
+            }
+        case .continueReading:
+            model.continueReading()
+        case .listen(let link):
+            if let link { model.open(link) }
+            model.selection.removeAll()
+            // Let the chapter lay out before reading it.
+            await settle()
+            ListenController.shared.playChapter(in: model)
+        case .newNote(let ranges):
+            let anchors = ranges.isEmpty
+                ? [model.numbering.kjvRange(VerseRange(VerseRef(model.location.book, model.location.chapter, 1),
+                                                       VerseRef(model.location.book, model.location.chapter,
+                                                                max(1, model.source?.verseCount(model.location) ?? 1))))]
+                : ranges
+            let note = Note(anchors: anchors)
+            context.insert(note)
+            await settle()
+            openNote(note.uuid)
+        }
+    }
+
+    /// A sheet presented while the scene is still activating for a link or an intent is dropped,
+    /// and so is one presented in the same update that dismisses another. Wait a beat.
+    private func settle() async {
+        try? await Task.sleep(for: .milliseconds(450))
     }
 
     private func createNoteFromSelection() {

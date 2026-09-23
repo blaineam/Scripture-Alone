@@ -1,0 +1,148 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Add a verse to my favorites in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Add a verse to my favorites in ${applicationName}",
+              "Favorite a verse in ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Continue reading in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Continue reading in ${applicationName}",
+              "Pick up where I left off in ${applicationName}",
+              "Resume ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Create a note in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Create a note in ${applicationName}",
+              "Add a Bible note in ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Find my notes in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Find my notes in ${applicationName}",
+              "Search my notes in ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Get the verse of the day from ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Get the verse of the day from ${applicationName}",
+              "What’s the verse of the day in ${applicationName}",
+              "${applicationName} verse of the day"
+            ]
+          }
+        }
+      }
+    },
+    "Listen to the Bible in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Listen to the Bible in ${applicationName}",
+              "Read the chapter aloud in ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Look up a verse in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Look up a verse in ${applicationName}",
+              "Get a Bible verse from ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Make a verse image with ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Make a verse image with ${applicationName}",
+              "Create a verse image in ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Open a passage in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Open a passage in ${applicationName}",
+              "Go to a Bible passage in ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Search the Bible in ${applicationName}" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringSet" : {
+            "state" : "new",
+            "values" : [
+              "Search the Bible in ${applicationName}",
+              "Search ${applicationName}"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
