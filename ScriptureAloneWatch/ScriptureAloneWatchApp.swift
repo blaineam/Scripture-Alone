@@ -194,6 +194,8 @@ final class WatchBible {
             translation = pick
             store = editions.first { $0.id == pick }.flatMap { open(id: $0.id, url: $0.url) }
         }
+        // Book names in the Bible's own language (a French edition from the phone reads "Jean").
+        BookNames.use(language: store?.language ?? Locale.preferredLanguages.first)
     }
 
     private func open(id: String, url: URL) -> BibleStore? {
@@ -210,8 +212,18 @@ final class WatchBible {
         static let phoneAt = "watch.translation.phoneAt"
     }
 
+    /// How the Bible on the watch numbers its verses against the KJV keys marks are stored under —
+    /// identity for the ASV, BSB and KJV; a locale Bible sent from the phone carries its `kjv_map`.
+    var numbering: VerseNumbering { store?.numbering ?? .identity }
+
+    /// Verses by **KJV key** — a favorite, a note's passage, the verse of the day.
     func verses(_ range: VerseRange) -> [VerseText] {
         (try? store?.verses(in: range)) ?? []
+    }
+
+    /// A chapter as this Bible numbers it, for reading.
+    func chapterVerses(_ chapter: ChapterRef) -> [VerseText] {
+        (try? store?.nativeVerses(in: chapterRange(chapter))) ?? []
     }
 
     func text(_ range: VerseRange) -> String {

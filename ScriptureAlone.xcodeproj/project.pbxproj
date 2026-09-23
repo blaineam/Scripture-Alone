@@ -962,8 +962,10 @@
 				en,
 				es,
 				fr,
+				it,
 				ja,
 				ko,
+				"pt-BR",
 				"zh-Hans",
 			);
 			mainGroup = A7A1463ECD8668E91BCB7F52;

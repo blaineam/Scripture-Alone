@@ -59,19 +59,21 @@ struct WatchChapterView: View {
     init(chapter: ChapterRef, focus: Int?) {
         self.chapter = chapter
         self.focus = focus
-        let low = chapter.keyRange.lowerBound
-        let high = chapter.keyRange.upperBound
+        // A chapter's marks are stored under the KJV keys its verses hold, which for a Bible that
+        // numbers its own way can reach into the neighbouring chapters; they are mapped below.
+        let low = chapter.keyRange.lowerBound - 1_000
+        let high = chapter.keyRange.upperBound + 1_000
         _highlights = Query(filter: #Predicate<Highlight> { $0.verseKey >= low && $0.verseKey <= high })
     }
 
     var body: some View {
-        let verses = bible.verses(bible.chapterRange(chapter))
+        let verses = bible.chapterVerses(chapter)
         let colors = highlightColors
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 8) {
                     ForEach(verses, id: \.ref) { verse in
-                        NavigationLink(value: WatchRoute.verse(VerseRange(verse.ref))) {
+                        NavigationLink(value: WatchRoute.verse(VerseRange(kjvRef(verse.ref)))) {
                             WatchVerseText(verse: verse, highlight: colors[verse.ref.key].map(VerseStyling.highlight))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
@@ -94,11 +96,21 @@ struct WatchChapterView: View {
                          : "\(chapter.book.abbreviation) \(chapter.chapter)")
     }
 
-    /// Newest highlight wins when two devices colored the same verse — as on the phone.
+    /// The verse's KJV key, which the verse screen reads and marks by.
+    private func kjvRef(_ ref: VerseRef) -> VerseRef {
+        VerseRef(key: bible.numbering.kjv(forNative: ref.key)) ?? ref
+    }
+
+    /// Newest highlight wins when two devices colored the same verse — as on the phone. Keyed by
+    /// the native verse the highlight's KJV key falls in.
     private var highlightColors: [Int: String] {
+        let numbering = bible.numbering
         var newest: [Int: Highlight] = [:]
-        for highlight in highlights where (newest[highlight.verseKey]?.createdAt ?? .distantPast) <= highlight.createdAt {
-            newest[highlight.verseKey] = highlight
+        for highlight in highlights {
+            guard let key = numbering.native(forKJV: highlight.verseKey),
+                  key / 1_000 == chapter.keyRange.lowerBound / 1_000,
+                  (newest[key]?.createdAt ?? .distantPast) <= highlight.createdAt else { continue }
+            newest[key] = highlight
         }
         return newest.mapValues(\.colorName)
     }

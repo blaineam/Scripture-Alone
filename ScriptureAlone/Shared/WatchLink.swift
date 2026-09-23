@@ -57,7 +57,8 @@ final class WatchLink: NSObject {
 
     private func sendEditionIfNeeded(_ entry: TranslationEntry) {
         guard let session, session.activationState == .activated,
-              let url = entry.url, Self.isImported(url), WatchLinkKeys.isSafeID(entry.id) else { return }
+              let url = entry.url, Self.isImported(url) || Self.isLocaleBible(entry.id),
+              WatchLinkKeys.isSafeID(entry.id) else { return }
         let held = session.receivedApplicationContext[WatchLinkKeys.editions] as? [String] ?? []
         guard !held.contains(entry.id) else { return }
         // Already on its way: don't queue a second copy of the same few megabytes.
@@ -82,6 +83,12 @@ final class WatchLink: NSObject {
     private func transfer(_ edition: URL, id: String) {
         guard let session, session.activationState == .activated else { return }
         _ = session.transferFile(edition, metadata: [WatchLinkKeys.translation: id])
+    }
+
+    /// The big-8 locales' Bibles (docs/localization.md) aren't bundled on the watch — it carries the
+    /// ASV, BSB and KJV — so the phone sends them as editions too, with their verse numbering.
+    private static func isLocaleBible(_ id: String) -> Bool {
+        AssetPack(translationID: id)?.locale != nil
     }
 
     /// Imported translations live in `ImportedLibrary.directory`; bundled ones are inside the app.

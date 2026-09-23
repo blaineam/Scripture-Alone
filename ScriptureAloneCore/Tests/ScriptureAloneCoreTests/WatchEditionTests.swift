@@ -62,4 +62,16 @@ import Testing
         try WatchEdition.write(from: source, to: destination)
         #expect(try BibleStore(url: destination).verseCount(ChapterRef(.john, 3)) == 36)
     }
+
+    /// A locale Bible sent to the watch keeps its own numbering: marks on the watch still land on
+    /// the right verse (docs/localization.md).
+    @Test func aLocaleEditionCarriesItsNumbering() throws {
+        let source = BibleStoreTests.biblesDirectory.appending(path: "LSG.sqlite")
+        let edition = FileManager.default.temporaryDirectory.appending(path: "LSG-\(UUID().uuidString)-Watch.sqlite")
+        defer { try? FileManager.default.removeItem(at: edition) }
+        try WatchEdition.write(from: source, to: edition)
+        let store = try BibleStore(url: edition)
+        #expect(store.numbering.kjv(forNative: VerseRef(.psalms, 51, 12).key) == VerseRef(.psalms, 51, 10).key)
+        #expect(store.language == "fr")
+    }
 }

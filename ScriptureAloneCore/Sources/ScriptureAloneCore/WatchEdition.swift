@@ -45,6 +45,7 @@ public enum WatchEdition {
                 CREATE TABLE chapters (book INTEGER NOT NULL, chapter INTEGER NOT NULL, verses INTEGER NOT NULL,
                                        PRIMARY KEY (book, chapter)) WITHOUT ROWID;
                 CREATE TABLE verses (id INTEGER PRIMARY KEY, text TEXT NOT NULL, red TEXT);
+                CREATE TABLE kjv_map (id INTEGER PRIMARY KEY, kjv INTEGER NOT NULL, kjv_last INTEGER NOT NULL);
                 """)
             // The path is bound, not interpolated: an imported translation's file name is the
             // reader's, and a quote in it must not become SQL.
@@ -57,6 +58,11 @@ public enum WatchEdition {
                 INSERT INTO chapters SELECT book, chapter, verses FROM src.chapters;
                 INSERT INTO verses SELECT id, text, red FROM src.verses;
                 COMMIT;
+                """)
+            // A Bible that numbers its own way carries its map to the KJV keys marks are stored
+            // under (VerseNumbering); imports and the English Bibles have none.
+            if Self.sourceHasTable(db, "kjv_map") { try exec(db, "INSERT INTO kjv_map SELECT id, kjv, kjv_last FROM src.kjv_map") }
+            try exec(db, """
                 DETACH DATABASE src;
                 VACUUM;
                 """)
@@ -72,6 +78,15 @@ public enum WatchEdition {
         } else {
             try FileManager.default.moveItem(at: temporary, to: destination)
         }
+    }
+
+    private static func sourceHasTable(_ db: OpaquePointer, _ name: String) -> Bool {
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, "SELECT 1 FROM src.sqlite_master WHERE type = 'table' AND name = ?1",
+                                 -1, &stmt, nil) == SQLITE_OK, let stmt else { return false }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_text(stmt, 1, name, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self))
+        return sqlite3_step(stmt) == SQLITE_ROW
     }
 
     private static func exec(_ db: OpaquePointer, _ sql: String) throws {
