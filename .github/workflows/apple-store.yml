@@ -1,0 +1,188 @@
+name: apple-store
+
+# The Apple half of "the tag decides" (docs/RELEASING.md). Ported from Haven's apple-store.yml.
+#
+#   vX.Y.Z        → find the Xcode Cloud build of THIS commit (or of an iOS-equivalent commit —
+#                   see scripts/asc-autosubmit.mjs on the nothing-to-build guard), wait for it,
+#                   create the App Store version, set What's New + promotional text from
+#                   appstore-metadata*.md, attach the build, attach every pending asset pack to
+#                   the same review submission (≤ 10), submit for review. Then move main to the
+#                   next patch version.
+#   vX.Y.Z-rc.N   → TestFlight only: make sure the tagged commit's Xcode Cloud build exists and is
+#                   VALID (testers have it). No App Store version, no review.
+#
+# Xcode Cloud (workflow "Main") does every Apple build; this workflow only talks to App Store
+# Connect. It skips cleanly (green, with a notice) until the ASC secrets exist:
+#   ASC_API_KEY_ID      App Store Connect API key id (AuthKey_<id>.p8) — App Manager role
+#   ASC_API_ISSUER_ID   the issuer id
+#   ASC_API_KEY_P8      the .p8 contents (raw PEM or base64)
+# Variable (optional):
+#   APPLE_STORE_SUBMIT  "false" → attach the build but do NOT press submit (staging a release)
+#
+# Re-running a failed/cancelled run is safe: every step is idempotent.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "X.Y.Z or X.Y.Z-rc.N (blank when dispatched at a tag ref — the tag carries it)"
+        required: false
+      commit:
+        description: "Full commit sha the release was tagged at (blank = this ref)"
+        required: false
+      dry_run:
+        description: "Read-only: find the Xcode Cloud run + builds, check notes + asset packs, write nothing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apple-store
+  cancel-in-progress: false     # a submission in flight must finish; the next tag waits
+
+jobs:
+  meta:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      is_rc: ${{ steps.v.outputs.is_rc }}
+      commit: ${{ steps.v.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          INPUT_COMMIT: ${{ github.event.inputs.commit }}
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          set -euo pipefail
+          asc="$(python3 - <<'PY'
+          import re, pathlib, sys
+          t = pathlib.Path("project.yml").read_text()
+          vs = set(re.findall(r'(?m)^\s*MARKETING_VERSION:\s*"([^"]+)"', t))
+          if not vs: sys.exit("no MARKETING_VERSION found in project.yml")
+          if len(vs) > 1: sys.exit(f"project.yml disagrees with itself: MARKETING_VERSION = {sorted(vs)}")
+          print(vs.pop())
+          PY
+          )"
+          raw="${INPUT_VERSION:-}"
+          if [ -z "$raw" ]; then
+            [ "$REF_TYPE" = "tag" ] || { echo "::error::run this from a v* tag, or pass a version"; exit 1; }
+            raw="$REF_NAME"
+          fi
+          version="${raw#v}"
+          core="${version%%-rc.*}"
+          is_rc=false; [ "$core" != "$version" ] && is_rc=true
+          if ! printf '%s' "$core" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::'$raw' is not X.Y.Z (optionally -rc.N)"; exit 1
+          fi
+          if [ "$core" != "$asc" ]; then
+            echo "::error::Version drift: tag says '$core' but project.yml MARKETING_VERSION says '$asc'."; exit 1
+          fi
+          commit="${INPUT_COMMIT:-}"
+          if [ -z "$commit" ]; then commit="$(git rev-parse "${GITHUB_SHA}^{commit}")"; fi
+          { echo "version=$core"; echo "is_rc=$is_rc"; echo "commit=$commit"; } >> "$GITHUB_OUTPUT"
+          if [ "$is_rc" = true ]; then
+            echo "Scripture Alone **$core** — release candidate ($raw): TestFlight only." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Scripture Alone **$core** @ \`${commit:0:10}\` — submitting to the App Store." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  submit:
+    needs: meta
+    permissions:
+      contents: write           # the post-submit step moves main to the next patch version
+    runs-on: ubuntu-latest
+    timeout-minutes: 240        # Xcode Cloud can take an hour; processing another
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # origin/main + history for the iOS-equivalence check
+
+      - name: Gate on the ASC API secrets
+        id: gate
+        env:
+          KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_API_ISSUER_ID }}
+          P8: ${{ secrets.ASC_API_KEY_P8 }}
+        run: |
+          if [ -z "$KEY_ID" ] || [ -z "$ISSUER" ] || [ -z "$P8" ]; then
+            echo "::notice title=apple-store skipped::ASC_API_KEY_ID / ASC_API_ISSUER_ID / ASC_API_KEY_P8 are not set — submit by hand (rocket submit \"Scripture Alone\") or add them (docs/RELEASING.md › One-time setup)"
+            echo "- ⏭️ Apple: skipped — ASC API secrets not configured" >> "$GITHUB_STEP_SUMMARY"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.ready == 'true'
+        with:
+          node-version: "22"
+
+      - name: Submit to the App Store
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          VERSION: ${{ needs.meta.outputs.version }}
+          COMMIT: ${{ needs.meta.outputs.commit }}
+          IS_RC: ${{ needs.meta.outputs.is_rc }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          SUBMIT_FLAG: ${{ vars.APPLE_STORE_SUBMIT }}
+        run: |
+          set -euo pipefail
+          extra=()
+          [ "${DRY_RUN:-false}" = "true" ] && extra+=(--dry-run)
+          [ "${SUBMIT_FLAG:-true}" = "false" ] && extra+=(--no-submit)
+          [ "${IS_RC:-false}" = "true" ] && extra+=(--testflight-only)
+          node scripts/asc-autosubmit.mjs --version "$VERSION" --commit "$COMMIT" --tag "v$VERSION" \
+            --platforms IOS --wait-build 120 --wait-process 45 --notes-dir . "${extra[@]}"
+
+      # Only now — with the tagged commit's Xcode Cloud build attached and submitted — may main
+      # move on. Bumping in cut-release (seconds after the tag) made XCC cancel the release build
+      # and leave only NEXT-version builds (Haven 1.8.3, Blip 2.0.2). Apple closes the released
+      # train on approval, and XCC builds main for TestFlight, so main moves right after submit.
+      # rc tags keep the version (the train is still open). If submit failed, main stays at the
+      # released version: fix, re-run this lane, and the bump follows.
+      #
+      # Haven skips the bump whenever main's tip is not the tagged commit. Here it skips only when
+      # main is no longer AT the released version (someone bumped it already): a docs/android
+      # commit landing on main after the tag must not strand main on a closed train.
+      # Runs with GITHUB_TOKEN, so it triggers no GitHub workflow; Xcode Cloud builds it.
+      - name: Move main to the next patch version
+        if: steps.gate.outputs.ready == 'true' && needs.meta.outputs.is_rc != 'true' && github.event.inputs.dry_run != 'true'
+        env:
+          V: ${{ needs.meta.outputs.version }}
+          COMMIT: ${{ needs.meta.outputs.commit }}
+        run: |
+          set -euo pipefail
+          git fetch -q origin main
+          git checkout -q -B main origin/main
+          ON_MAIN="$(sed -nE 's/^[[:space:]]*MARKETING_VERSION:[[:space:]]*"([^"]+)".*/\1/p' project.yml | head -1)"
+          if [ "$ON_MAIN" != "$V" ]; then
+            echo "::notice title=version bump skipped::main is at $ON_MAIN, not $V — already moved on"
+            exit 0
+          fi
+          NEXT="${V%.*}.$(( ${V##*.} + 1 ))"
+          python3 - "$NEXT" <<'PY'
+          import re, sys
+          v = sys.argv[1]
+          p = 'project.yml'; s = open(p).read()
+          s = re.sub(r'MARKETING_VERSION: "[0-9.]+"', f'MARKETING_VERSION: "{v}"', s); open(p, 'w').write(s)
+          p = 'ScriptureAlone.xcodeproj/project.pbxproj'; s = open(p).read()
+          s = re.sub(r'MARKETING_VERSION = [0-9.]+;', f'MARKETING_VERSION = {v};', s); open(p, 'w').write(s)
+          print("main ->", v)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add project.yml ScriptureAlone.xcodeproj/project.pbxproj
+          git commit -q -m "Back to development: $NEXT (the $V train closes on approval)"
+          git push origin HEAD:main
+          echo "::notice title=version bump::main is now $NEXT"
+          echo "- 🔁 main moved to $NEXT (the $V train closes on approval)" >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,333 @@
+name: android
+
+# Google Play half of "the tag decides" (docs/RELEASING.md). Ported from Haven's android.yml.
+#
+#   vX.Y.Z-rc.N → phone AAB to `internal` + closed `alpha` ("Alpha" in the Console);
+#                 Wear OS AAB to the Wear internal track + the Wear OS closed-testing track.
+#   vX.Y.Z      → phone AAB to `production`; Wear OS AAB to `wear:production`.
+#
+# ONE Play edit carries both bundles and every track assignment (scripts/play-publish.mjs), so a
+# release lands whole or not at all, and the same versionCode is never uploaded twice.
+#
+# versionCodes: the plan step asks Play for every code it has ever seen (uploaded bundles + track
+# releases) and takes max + 1 — phone below 1,000,000, Wear OS from 1,000,000 up. Codes can never
+# be reused, and a code burned by a Console draft is still counted because Play lists the bundle.
+#
+# Everything is gated on secrets and SKIPS (green, with a notice) when they are absent:
+#   ANDROID_KEYSTORE_BASE64 / ANDROID_KEYSTORE_PASSWORD / ANDROID_KEY_ALIAS / ANDROID_KEY_PASSWORD
+#       the Play UPLOAD key (fed to Gradle as the SA_UPLOAD_* properties the local build reads
+#       from ~/.gradle/gradle.properties — the local out-of-repo path is untouched)
+#   PLAY_SERVICE_ACCOUNT_JSON — Play Developer API service account with access to this app
+# Without a keystore the bundles still build (unsigned) as a compile check; nothing is uploaded.
+#
+# Variables (all optional — Settings ▸ Secrets and variables ▸ Actions ▸ Variables):
+#   PLAY_TRACK              pin every plain tag's PHONE track (rc tags ignore it — the rc guard)
+#   PLAY_USER_FRACTION      staged-rollout fraction for production (blank/1.0 = full)
+#   PLAY_RELEASE_STATUS     override the release status (e.g. "draft" while the app is a draft)
+#   PLAY_WEAR               "false" → phone only
+#   PLAY_WEAR_RC_TRACKS     default "wear:qa,wear:Wear OS closed testing"
+#   PLAY_WEAR_PROD_TRACK    default "wear:production"
+#
+# Never builds Apple anything — Xcode Cloud does that; apple-store.yml talks to App Store Connect.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      # ── Manual Play-track override. A `v*` tag never reads it — the TAG decides — and an rc
+      # tag overrides it (the rc guard). `auto` on a branch means internal: a dispatch you forget
+      # to configure can't publish anything publicly.
+      play_track:
+        description: "Phone track (auto = the tag decides; on a branch, auto = internal). Wear follows."
+        required: false
+        default: auto
+        type: choice
+        options: [auto, internal, alpha, production]
+      play_rollout:
+        description: "Staged-rollout fraction 0.0-1.0 for production (blank/1.0 = full)"
+        required: false
+        default: ""
+      build_only:
+        description: "Build + check the bundles only — never talk to Play"
+        type: boolean
+        default: false
+      plan_only:
+        description: "Read-only Play check: list tracks + next versionCodes, validate the track ids; no build, no upload"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  # Read-only: what Play has (tracks, versionCodes) and whether the configured track ids exist.
+  play-plan:
+    if: github.event_name == 'workflow_dispatch' && inputs.plan_only
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Plan (Play, read-only)
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          WEAR_RC: ${{ vars.PLAY_WEAR_RC_TRACKS || 'wear:qa,wear:Wear OS closed testing' }}
+          WEAR_PROD: ${{ vars.PLAY_WEAR_PROD_TRACK || 'wear:production' }}
+        run: |
+          if [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::notice title=Play plan skipped::PLAY_SERVICE_ACCOUNT_JSON is not set (docs/RELEASING.md › One-time setup)."
+            exit 0
+          fi
+          node scripts/play-publish.mjs plan --check-tracks "internal,alpha,production,$WEAR_RC,$WEAR_PROD"
+
+  build:
+    if: github.event_name != 'workflow_dispatch' || !inputs.plan_only
+    # Play allows ONE open edit per package that can commit — serialize every publish-capable run.
+    concurrency:
+      group: android-play-publish
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          # The action's default ("tools platform-tools") fails on current runners: cmdline-tools
+          # 16 no longer carries `tools` (Haven, 2026-09-21). AGP installs the platform it needs.
+          packages: platform-tools
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # ── Resolve version name + tracks ────────────────────────────────────────────────────────
+      # THE TAG DECIDES. Precedence for the phone track: dispatch input > PLAY_TRACK > the tag.
+      # rc GUARD: an rc goes to internal + alpha (and the Wear testing tracks) — ALWAYS, whatever
+      # the input or variable says. It is the one rule that overrides an explicit human choice.
+      - name: Resolve Play version + track
+        id: cfg
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          EVENT: ${{ github.event_name }}
+          IN_TRACK: ${{ github.event.inputs.play_track }}
+          IN_ROLLOUT: ${{ github.event.inputs.play_rollout }}
+          VAR_TRACK: ${{ vars.PLAY_TRACK }}
+          VAR_ROLLOUT: ${{ vars.PLAY_USER_FRACTION }}
+          VAR_STATUS: ${{ vars.PLAY_RELEASE_STATUS }}
+          VAR_WEAR: ${{ vars.PLAY_WEAR }}
+          VAR_WEAR_RC: ${{ vars.PLAY_WEAR_RC_TRACKS }}
+          VAR_WEAR_PROD: ${{ vars.PLAY_WEAR_PROD_TRACK }}
+        run: |
+          set -euo pipefail
+          MV="$(python3 - <<'PY'
+          import re, pathlib, sys
+          vs = set(re.findall(r'(?m)^\s*MARKETING_VERSION:\s*"([^"]+)"', pathlib.Path("project.yml").read_text()))
+          if len(vs) != 1: sys.exit(f"project.yml MARKETING_VERSION is {sorted(vs) or 'missing'}")
+          print(vs.pop())
+          PY
+          )"
+          if [ "$REF_TYPE" = "tag" ]; then
+            VN="${REF_NAME#v}"
+            case "$VN" in *-rc.*) IS_RC=1 ;; *) IS_RC=0 ;; esac
+            CORE="${VN%%-rc.*}"
+            printf '%s' "$CORE" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "::error::tag $REF_NAME is not vX.Y.Z or vX.Y.Z-rc.N"; exit 1; }
+            [ "$CORE" = "$MV" ] || { echo "::error::Version drift: tag $REF_NAME but project.yml MARKETING_VERSION is $MV"; exit 1; }
+          else
+            VN="$MV"; IS_RC=0; CORE="$MV"
+          fi
+          WEAR_RC="${VAR_WEAR_RC:-wear:qa,wear:Wear OS closed testing}"
+          WEAR_PROD="${VAR_WEAR_PROD:-wear:production}"
+          if [ "$IS_RC" = 1 ]; then
+            if [ -n "${IN_TRACK:-}" ] && [ "$IN_TRACK" != auto ] || [ -n "${VAR_TRACK:-}" ]; then
+              echo "::notice::rc tag $REF_NAME → internal + alpha; the requested track (${IN_TRACK:-$VAR_TRACK}) is ignored — an rc never goes past testers."
+            fi
+            PHONE="internal,alpha"; WEAR="$WEAR_RC"
+          else
+            if [ "$EVENT" = workflow_dispatch ] && [ -n "${IN_TRACK:-}" ] && [ "$IN_TRACK" != auto ]; then T="$IN_TRACK"
+            elif [ -n "${VAR_TRACK:-}" ]; then T="$VAR_TRACK"
+            elif [ "$REF_TYPE" = tag ]; then T=production
+            else T=internal; fi
+            case "$T" in
+              production) PHONE=production; WEAR="$WEAR_PROD" ;;
+              alpha)      PHONE=alpha;      WEAR="${WEAR_RC#*,}" ;;
+              internal)   PHONE=internal;   WEAR="${WEAR_RC%%,*}" ;;
+              *) echo "::error::unknown track '$T' (internal|alpha|production)"; exit 1 ;;
+            esac
+          fi
+          [ "${VAR_WEAR:-true}" = false ] && WEAR=""
+          FRAC=""
+          if [ "$EVENT" = workflow_dispatch ] && [ -n "${IN_ROLLOUT:-}" ]; then FRAC="$IN_ROLLOUT"; else FRAC="${VAR_ROLLOUT:-}"; fi
+          if [ "$PHONE" = production ] && [ -n "$FRAC" ] && [ "$FRAC" != 1 ] && [ "$FRAC" != 1.0 ]; then STATUS=inProgress; else STATUS=completed; FRAC=""; fi
+          [ -n "${VAR_STATUS:-}" ] && STATUS="$VAR_STATUS"
+          {
+            echo "version_name=$VN"; echo "core=$CORE"; echo "is_rc=$IS_RC"
+            echo "phone_tracks=$PHONE"; echo "wear_tracks=$WEAR"
+            echo "status=$STATUS"; echo "user_fraction=$FRAC"
+          } >> "$GITHUB_OUTPUT"
+          echo "::notice::Play target → phone: $PHONE | Wear OS: ${WEAR:-<skipped>} | $STATUS${FRAC:+ $FRAC} | versionName $VN"
+
+      - name: Check signing + Play credentials
+        id: gate
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PW: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KA: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KP: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          SA: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          BUILD_ONLY: ${{ github.event.inputs.build_only }}
+        run: |
+          keystore=false; play=false
+          if [ -n "$KS" ] && [ -n "$KS_PW" ] && [ -n "$KA" ] && [ -n "$KP" ]; then
+            keystore=true
+            echo "$KS" | base64 -d > "$RUNNER_TEMP/upload.keystore"
+          else
+            echo "::notice title=Play upload skipped::ANDROID_KEYSTORE_BASE64 / ANDROID_KEYSTORE_PASSWORD / ANDROID_KEY_ALIAS / ANDROID_KEY_PASSWORD are not all set — building UNSIGNED bundles as a compile check only (docs/RELEASING.md › One-time setup)."
+          fi
+          if [ "$keystore" = true ] && [ -n "$SA" ] && [ "${BUILD_ONLY:-false}" != true ]; then
+            play=true
+          elif [ "${BUILD_ONLY:-false}" = true ]; then
+            echo "::notice::build_only — not talking to Play."
+          elif [ -z "$SA" ]; then
+            echo "::notice title=Play upload skipped::PLAY_SERVICE_ACCOUNT_JSON is not set (docs/RELEASING.md › One-time setup)."
+          fi
+          echo "keystore=$keystore" >> "$GITHUB_OUTPUT"
+          echo "play=$play" >> "$GITHUB_OUTPUT"
+          [ "$play" = true ] || echo "- ⏭️ Play: skipped (secrets not configured or build_only) — bundles built as a compile check" >> "$GITHUB_STEP_SUMMARY"
+
+      # Read-only: next versionCodes from Play, and fail NOW (not after a 30-minute build) if a
+      # custom track id such as the Wear OS closed-testing track is wrong.
+      - name: Plan versionCodes (Play, read-only)
+        id: plan
+        if: steps.gate.outputs.play == 'true'
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          TRACKS: ${{ steps.cfg.outputs.phone_tracks }},${{ steps.cfg.outputs.wear_tracks }}
+        run: node scripts/play-publish.mjs plan --check-tracks "$TRACKS"
+
+      - name: Build release bundles (phone + Wear OS)
+        working-directory: android
+        env:
+          KEYSTORE: ${{ steps.gate.outputs.keystore }}
+          # The SA_UPLOAD_* Gradle properties, as ORG_GRADLE_PROJECT_* env — the same names the
+          # local build reads from ~/.gradle/gradle.properties.
+          SA_STORE: ${{ runner.temp }}/upload.keystore
+          SA_STORE_PW: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          SA_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          SA_KEY_PW: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          VN: ${{ steps.cfg.outputs.version_name }}
+          PHONE_CODE: ${{ steps.plan.outputs.phone_code }}
+          WEAR_CODE: ${{ steps.plan.outputs.wear_code }}
+        run: |
+          set -euo pipefail
+          if [ "$KEYSTORE" = true ]; then
+            export ORG_GRADLE_PROJECT_SA_UPLOAD_STORE_FILE="$SA_STORE"
+            export ORG_GRADLE_PROJECT_SA_UPLOAD_STORE_PASSWORD="$SA_STORE_PW"
+            export ORG_GRADLE_PROJECT_SA_UPLOAD_KEY_ALIAS="$SA_ALIAS"
+            export ORG_GRADLE_PROJECT_SA_UPLOAD_KEY_PASSWORD="$SA_KEY_PW"
+          fi
+          args=(-PsaVersionName="$VN")
+          [ -n "${PHONE_CODE:-}" ] && args+=(-PsaVersionCode="$PHONE_CODE")
+          [ -n "${WEAR_CODE:-}" ] && args+=(-PsaWearVersionCode="$WEAR_CODE")
+          ./gradlew --no-daemon :app:bundleRelease :wear:bundleRelease "${args[@]}"
+          mkdir -p ../out
+          cp app/build/outputs/bundle/release/app-release.aab "../out/scripture-alone-$VN-phone-${PHONE_CODE:-local}.aab"
+          cp wear/build/outputs/bundle/release/wear-release.aab "../out/scripture-alone-$VN-wear-${WEAR_CODE:-local}.aab"
+          ls -la ../out
+
+      # Play blocks updates whose 64-bit native libraries are not 16 KB page aligned. Check the
+      # artifact, never the dependency's release notes.
+      - name: Check 16 KB page alignment of every native library
+        run: python3 scripts/check-16kb-pages.py out/*.aab
+
+      # Keep the bundles: when the API refuses (a Console-side gate), the signed bundle is what gets
+      # uploaded by hand — and it can only be built where the upload key is.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: scripture-alone-aab
+          path: out/*.aab
+          if-no-files-found: error
+          retention-days: 7
+
+      # Play's what's-new per locale from android/play-metadata*.md `## release_notes`. Google
+      # rejects the WHOLE edit if any locale exceeds 500 CHARACTERS — counted in Python, never
+      # `wc -m` (bytes under a non-UTF-8 locale: a 253-character Japanese note measured 714).
+      # Plain tags: en-US must start with the version (stale notes fail the run); a locale whose
+      # notes don't falls back to English, loudly. No price words (App Review 2.3.7 / Play policy).
+      - name: Prepare Play what's-new (every locale)
+        id: notes
+        if: steps.gate.outputs.play == 'true'
+        env:
+          CORE: ${{ steps.cfg.outputs.core }}
+          IS_RC: ${{ steps.cfg.outputs.is_rc }}
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/whatsnew"; mkdir -p "$dir"
+          python3 - "$dir" "$CORE" "$IS_RC" <<'PY'
+          import pathlib, re, sys
+          out, core, is_rc = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3] == "1"
+          PRICE = re.compile(r'(?<![-\w])(free|price|pricing|priced|discount|sale|cheap|gratis|kostenlos|gratuit|gratuite|gratuito|grátis)(?![-\w])|\$\s?\d|無料|免费|免費|무료|価格|价格|가격', re.I)
+          def section(md, key):
+              m = re.search(rf'(?ms)^##\s+{key}\s*$\n(.*?)(?=^##\s|\Z)', md)
+              return re.sub(r'<!--.*?-->', '', m.group(1), flags=re.S).strip() if m else None
+          notes = {}
+          for f in sorted(pathlib.Path("android").glob("play-metadata*.md")):
+              m = re.fullmatch(r'play-metadata(?:\.([A-Za-z-]+))?\.md', f.name)
+              if not m: continue
+              text = section(f.read_text(encoding="utf-8"), "release_notes")
+              if text: notes[m.group(1) or "en-US"] = text
+          en = notes.get("en-US")
+          if not en: sys.exit("android/play-metadata.md has no ## release_notes")
+          if not en.startswith(core):
+              msg = f"android/play-metadata.md release_notes start with {en.splitlines()[0][:60]!r}, not {core!r}"
+              if not is_rc: sys.exit(msg + " — write the release notes first")
+              print(f"::warning::{msg} (rc: shipping them anyway)")
+          shipped, fell = [], []
+          for loc, text in sorted(notes.items()):
+              if loc != "en-US" and not is_rc and not text.startswith(core):
+                  fell.append(loc); text = en
+              hit = PRICE.search(text)
+              if hit: sys.exit(f"{loc} release_notes mention {hit.group(0)!r} — no price words in store text")
+              n = len(text)
+              if n > 500:
+                  print(f"::warning::{loc} release notes are {n} characters (>500); truncating. Trim android/play-metadata files.")
+                  text = text[:499].rstrip() + "…"
+              (out / f"whatsnew-{loc}").write_text(text + "\n", encoding="utf-8")
+              shipped.append(f"{loc}:{len(text)}")
+          if fell: print(f"::warning::no {core} release notes for {', '.join(fell)} — those locales get the English notes")
+          print("what's-new:", ", ".join(shipped))
+          PY
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to Google Play
+        if: steps.gate.outputs.play == 'true'
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          VN: ${{ steps.cfg.outputs.version_name }}
+          PHONE_CODE: ${{ steps.plan.outputs.phone_code }}
+          WEAR_CODE: ${{ steps.plan.outputs.wear_code }}
+          PHONE_TRACKS: ${{ steps.cfg.outputs.phone_tracks }}
+          WEAR_TRACKS: ${{ steps.cfg.outputs.wear_tracks }}
+          STATUS: ${{ steps.cfg.outputs.status }}
+          FRAC: ${{ steps.cfg.outputs.user_fraction }}
+          NOTES: ${{ steps.notes.outputs.dir }}
+        run: |
+          set -euo pipefail
+          args=(--version-name "$VN" --status "$STATUS" --notes-dir "$NOTES"
+                --phone-aab "out/scripture-alone-$VN-phone-$PHONE_CODE.aab" --phone-code "$PHONE_CODE" --phone-tracks "$PHONE_TRACKS")
+          if [ -n "$WEAR_TRACKS" ]; then
+            args+=(--wear-aab "out/scripture-alone-$VN-wear-$WEAR_CODE.aab" --wear-code "$WEAR_CODE" --wear-tracks "$WEAR_TRACKS")
+          fi
+          [ -n "$FRAC" ] && args+=(--user-fraction "$FRAC")
+          node scripts/play-publish.mjs publish "${args[@]}"

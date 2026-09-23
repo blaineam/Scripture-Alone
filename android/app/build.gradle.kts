@@ -12,8 +12,12 @@ android {
         applicationId = "com.blainemiller.scripturealone"
         minSdk = 29
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.0.0"
+        // Local builds use these; the release workflow (.github/workflows/android.yml) passes
+        // -PsaVersionCode (Play's highest phone code + 1) and -PsaVersionName (the tag).
+        // Phone codes stay below 1,000,000 — the Wear OS bundle counts from there.
+        versionCode = providers.gradleProperty("saVersionCode").orNull?.toInt() ?: 2
+        versionName = providers.gradleProperty("saVersionName").orNull ?: "1.0.0"
+        check(versionCode!! < 1_000_000) { "phone versionCode $versionCode collides with the Wear OS range (≥ 1,000,000)" }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

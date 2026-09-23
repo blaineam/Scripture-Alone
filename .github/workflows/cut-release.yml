@@ -1,0 +1,111 @@
+# Cut a release from the Actions dialog: validate the notes, stamp the version, tag, and fan out.
+# Ported from Haven's cut-release.yml (docs/RELEASING.md).
+#
+#   version: X.Y.Z        → vX.Y.Z: Play production (phone + Wear OS) + App Store submission
+#   rc:      N (optional) → vX.Y.Z-rc.N: testers only (Play internal + closed tracks, TestFlight)
+#
+# The tag is pushed with the default token, which deliberately does NOT trigger workflows
+# (GitHub's recursion guard) — so this workflow then dispatches each pipeline AT THE TAG REF,
+# where github.ref_type == 'tag' and every tag conditional behaves exactly as for a hand-pushed tag.
+#
+# The "back to development" bump is NOT here: it lives at the end of apple-store.yml, after the
+# tagged commit's Xcode Cloud build is submitted. Bumping seconds after the tag made Xcode Cloud
+# cancel the release build (Haven 1.8.3, Blip 2.0.2). Cut only after Xcode Cloud has finished
+# building main's tip if you can — apple-store waits up to 10 minutes for a push-triggered run.
+name: cut-release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "X.Y.Z (stamped into project.yml + project.pbxproj if not already)"
+        required: true
+      rc:
+        description: "RC number — leave empty for a full release"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  cut:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Validate + stamp + tag
+        id: cut
+        env:
+          V: ${{ inputs.version }}
+          RC: ${{ inputs.rc }}
+        run: |
+          set -euo pipefail
+          [ "$GITHUB_REF_NAME" = main ] || { echo "::error::cut releases from main (this is $GITHUB_REF_NAME)"; exit 1; }
+          [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::version must be X.Y.Z"; exit 1; }
+          [[ -z "$RC" || "$RC" =~ ^[0-9]+$ ]] || { echo "::error::rc must be a number"; exit 1; }
+          TAG="v$V"; [ -n "$RC" ] && TAG="v$V-rc.$RC"
+          git rev-parse -q --verify "refs/tags/$TAG" >/dev/null && { echo "::error::$TAG already exists"; exit 1; }
+          # Fail in seconds, not after builds. Both note sources are checked; a full release needs
+          # CURRENT notes (en-US starts with the version) and no store text may carry price words
+          # (App Review 2.3.7). The nine App Store notes: appstore-metadata[.<locale>].md
+          # `## whats_new` + `## promotional_text`; the nine Play notes: android/play-metadata[.<locale>].md
+          # `## release_notes` (≤ 500 characters, counted in Python).
+          python3 - "$V" "${RC:-}" <<'PY'
+          import pathlib, re, sys
+          v, rc = sys.argv[1], sys.argv[2]
+          PRICE = re.compile(r'(?<![-\w])(free|price|pricing|priced|discount|sale|cheap|gratis|kostenlos|gratuit|gratuite|gratuito|grátis)(?![-\w])|\$\s?\d|無料|免费|免費|무료|価格|价格|가격', re.I)
+          def section(path, key):
+              md = path.read_text(encoding="utf-8")
+              m = re.search(rf'(?ms)^##\s+{key}\s*$\n(.*?)(?=^##\s|\Z)', md)
+              return re.sub(r'<!--.*?-->', '', m.group(1), flags=re.S).strip() if m else None
+          errors, warnings = [], []
+          sources = [("App Store whats_new", sorted(pathlib.Path(".").glob("appstore-metadata*.md")), "whats_new", 4000),
+                     ("App Store promotional_text", sorted(pathlib.Path(".").glob("appstore-metadata*.md")), "promotional_text", 170),
+                     ("Play release_notes", sorted(pathlib.Path("android").glob("play-metadata*.md")), "release_notes", 500)]
+          for label, files, key, cap in sources:
+              for f in files:
+                  text = section(f, key)
+                  if text is None:
+                      (errors if f.name in ("appstore-metadata.md", "play-metadata.md") else warnings).append(f"{f}: no ## {key}")
+                      continue
+                  if len(text) > cap: errors.append(f"{f} {key} is {len(text)} characters (max {cap})")
+                  hit = PRICE.search(text)
+                  if hit: errors.append(f"{f} {key} mentions {hit.group(0)!r} — no price words in store text (2.3.7)")
+                  if key != "promotional_text" and not rc and not text.startswith(v):
+                      msg = f"{f} {key} starts with {text.splitlines()[0][:50]!r}, not {v!r}"
+                      if f.name in ("appstore-metadata.md", "play-metadata.md"): errors.append(msg)
+                      else: warnings.append(msg + " (that locale will fall back to English)")
+          for w in warnings: print(f"::warning::{w}")
+          for e in errors: print(f"::error::{e}")
+          if errors: sys.exit(f"write the {v} notes first (all nine App Store + nine Play locales)")
+          print("notes OK")
+          PY
+          python3 - "$V" <<'PY'
+          import re, sys
+          v = sys.argv[1]
+          p = 'project.yml'; s = open(p).read()
+          s = re.sub(r'MARKETING_VERSION: "[0-9.]+"', f'MARKETING_VERSION: "{v}"', s); open(p, 'w').write(s)
+          p = 'ScriptureAlone.xcodeproj/project.pbxproj'; s = open(p).read()
+          s = re.sub(r'MARKETING_VERSION = [0-9.]+;', f'MARKETING_VERSION = {v};', s); open(p, 'w').write(s)
+          print("stamped", v)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet; then
+            # No [ci skip]: this commit IS the release build Xcode Cloud must make.
+            git add project.yml ScriptureAlone.xcodeproj/project.pbxproj
+            git commit -m "Release: stamp $V (cut-release dialog)" && git push origin HEAD:main
+          fi
+          git tag "$TAG" && git push origin "$TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "::notice title=cut-release::$TAG tagged at $(git rev-parse --short HEAD)"
+      - name: Fan out pipelines at the tag ref
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.cut.outputs.tag }}
+        run: |
+          set -euo pipefail
+          gh workflow run android.yml --ref "refs/tags/$TAG"
+          gh workflow run apple-store.yml --ref "refs/tags/$TAG"
+          echo "::notice title=cut-release::pipelines dispatched at $TAG"

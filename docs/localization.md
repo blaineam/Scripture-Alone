@@ -101,6 +101,14 @@ styling coverage is character-for-character unchanged.
 
 ## Release checklist (owner, 2026-09-23)
 
+**How it ships:** tag-driven CI, as Haven does (`docs/RELEASING.md`). Actions ▸ cut-release
+version `1.1.0` tags `v1.1.0`. Then `android.yml` publishes the phone + Wear OS bundles to Play
+production, and `apple-store.yml` submits Xcode Cloud's build of that commit with every pending
+asset pack on the same submission (≤ 10; it refuses 13 while 1.0.0 is still in review). `-rc.N`
+tags go to testers only. The owner has to add the repo secrets listed in RELEASING.md's
+"One-time setup" first; until then the lanes skip, and `rocket submit "Scripture Alone"` (which
+also attaches the packs) is the by-hand path.
+
 Ship when iOS is done, with Android at **full feature parity** in the same wave. 1.0.0 (build 71)
 is in App Review; this goes out as the next version once it is approved — App Store Connect
 allows one version in review at a time.

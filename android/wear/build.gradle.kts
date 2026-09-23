@@ -17,8 +17,11 @@ android {
         // The phone and watch bundles share one package, and Play needs every uploaded bundle's
         // versionCode to be unique across the app, so the watch counts up from 1,000,000. (1,000,001
         // was consumed by a Play draft that never shipped; a code, once uploaded, can't be reused.)
-        versionCode = 1_000_004
-        versionName = "1.0.0"
+        // The release workflow passes -PsaWearVersionCode (Play's highest Wear code + 1) and
+        // -PsaVersionName (the tag); local builds use these defaults.
+        versionCode = providers.gradleProperty("saWearVersionCode").orNull?.toInt() ?: 1_000_004
+        versionName = providers.gradleProperty("saVersionName").orNull ?: "1.0.0"
+        check(versionCode!! >= 1_000_000) { "Wear OS versionCode $versionCode must be ≥ 1,000,000 (phone codes live below)" }
     }
 
     buildTypes.getByName("debug") {
