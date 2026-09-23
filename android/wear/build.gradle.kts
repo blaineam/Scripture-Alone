@@ -130,11 +130,15 @@ dependencies {
     implementation("androidx.wear.compose:compose-navigation:1.4.0")
 
     // The Verse of the Day tile and complication.
-    implementation("androidx.wear.tiles:tiles:1.4.1")
-    implementation("androidx.wear.protolayout:protolayout:1.2.1")
-    implementation("androidx.wear.protolayout:protolayout-material:1.2.1")
-    implementation("androidx.wear.protolayout:protolayout-expression:1.2.1")
+    // Tiles 1.5+: 1.4.1 can throw a SecurityException on Wear OS 5 when targeting API 35+ (Play
+    // flagged it on 1,000,002).
+    implementation("androidx.wear.tiles:tiles:1.5.0")
+    implementation("androidx.wear.protolayout:protolayout:1.3.0")
+    implementation("androidx.wear.protolayout:protolayout-material:1.3.0")
+    implementation("androidx.wear.protolayout:protolayout-expression:1.3.0")
     implementation("androidx.wear.watchface:watchface-complications-data-source-ktx:1.2.1")
+    // The complications library pulls fragment 1.1.0, which Play reports as outdated.
+    implementation("androidx.fragment:fragment:1.8.5")
     implementation("com.google.guava:guava:33.3.1-android")
 
     // Following the phone's translation and library over the Data Layer.
