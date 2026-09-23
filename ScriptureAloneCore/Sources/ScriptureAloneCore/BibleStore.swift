@@ -58,6 +58,14 @@ public final class BibleStore: @unchecked Sendable {
     private let db: OpaquePointer
     private let lock = NSLock()
     private let verseCounts: [ChapterRef: Int]
+    /// How this translation's verse numbers line up with the KJV keys marks are stored under.
+    public let numbering: VerseNumbering
+    /// The language the text is written in (a BCP 47 tag, from `meta.language`), when known.
+    public let language: String?
+    /// Book names as this translation prints them ("Genèse", "创世记"), from its `books` table.
+    public let bookNames: [BookID: String]
+    /// FTS5 `trigram` for Chinese, Japanese and Korean, which search by substring.
+    private let substringSearch: Bool
 
     /// - Parameter immutable: false for a store that is written while the app runs. Costs the
     ///   usual shared locks and gives up SQLite's indefinite page caching, in exchange for being correct.
@@ -89,6 +97,35 @@ public final class BibleStore: @unchecked Sendable {
             }
         }
         verseCounts = counts
+
+        // Tables newer than the store format's first release: absent from the English Bibles,
+        // imports and the online cache, which is exactly "same numbering, English names".
+        var rows: [VerseNumbering.Row] = []
+        if Self.hasTable(db, "kjv_map") {
+            try Self.rows(db, "SELECT id, kjv, kjv_last FROM kjv_map") { stmt in
+                rows.append(VerseNumbering.Row(native: Int(sqlite3_column_int64(stmt, 0)),
+                                               kjv: Int(sqlite3_column_int64(stmt, 1)),
+                                               kjvLast: Int(sqlite3_column_int64(stmt, 2))))
+            }
+        }
+        numbering = VerseNumbering(rows: rows)
+        var names: [BookID: String] = [:]
+        if Self.hasTable(db, "books"), meta["language"] != nil {
+            try Self.rows(db, "SELECT book, name FROM books") { stmt in
+                if let book = BookID(rawValue: Int(sqlite3_column_int(stmt, 0))) {
+                    names[book] = Self.string(stmt, 1)
+                }
+            }
+        }
+        bookNames = names
+        language = meta["language"]
+        substringSearch = meta["tokenizer"] == "trigram"
+    }
+
+    private static func hasTable(_ db: OpaquePointer, _ name: String) -> Bool {
+        var found = false
+        try? rows(db, "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?1", bind: [name]) { _ in found = true }
+        return found
     }
 
     deinit { sqlite3_close(db) }
@@ -109,8 +146,16 @@ public final class BibleStore: @unchecked Sendable {
         return try JSONDecoder().decode(ChapterLayout.self, from: Data(json.utf8))
     }
 
-    /// Plain text of each verse in the range (for copying, sharing and speech).
+    /// Plain text of each verse in a range **of KJV keys** (for copying, sharing and speech) — the
+    /// keys marks are stored under. The verses come back with this translation's own references,
+    /// so a quotation prints the numbers its reader knows. See `VerseNumbering`.
     public func verses(in range: VerseRange) throws -> [VerseText] {
+        guard let native = numbering.nativeRange(range) else { return [] }
+        return try nativeVerses(in: native)
+    }
+
+    /// Plain text of each verse in a range of this translation's own keys.
+    public func nativeVerses(in range: VerseRange) throws -> [VerseText] {
         try locked {
             var result: [VerseText] = []
             try Self.rows(db, "SELECT id, text, red FROM verses WHERE id BETWEEN ?1 AND ?2 ORDER BY id",
@@ -158,21 +203,64 @@ public final class BibleStore: @unchecked Sendable {
     }
 
     public struct SearchHit: Hashable, Sendable, Identifiable {
+        /// The verse as this translation numbers it — what the result shows.
         public let ref: VerseRef
         public let text: String
+        /// The KJV key it is stored under — where tapping the result goes (`ReaderModel.go(to:)`).
+        public let kjv: VerseRef
         public var id: Int { ref.key }
+
+        public init(ref: VerseRef, text: String, kjv: VerseRef? = nil) {
+            self.ref = ref
+            self.text = text
+            self.kjv = kjv ?? ref
+        }
     }
 
     /// Full-text search in canonical order. Words must all appear; the last word matches as a prefix
     /// so results update while typing. A query in double quotes matches as an exact phrase.
     public func search(_ query: String, limit: Int = 300) throws -> [SearchHit] {
+        if substringSearch { return try substringSearch(query, limit: limit) }
         guard let match = Self.ftsQuery(query) else { return [] }
-        return try locked {
+        return try hits("SELECT rowid, text FROM verses_fts WHERE verses_fts MATCH ?1 ORDER BY rowid LIMIT ?2",
+                        bind: [match, limit])
+    }
+
+    /// Chinese, Japanese and Korean: every term must appear as a substring. The trigram index
+    /// answers terms of three characters or more; shorter ones — 恩典, 神 — are matched with LIKE,
+    /// which scans ~31,000 verses in milliseconds. Terms are whatever the reader separated with
+    /// spaces (Korean writes them; Chinese and Japanese queries are usually one term).
+    func substringSearch(_ query: String, limit: Int) throws -> [SearchHit] {
+        let terms = query.split(whereSeparator: \.isWhitespace).map(String.init).filter { !$0.isEmpty }
+        guard !terms.isEmpty else { return [] }
+        let long = terms.filter { $0.count >= 3 }
+        let short = terms.filter { $0.count < 3 }
+        var sql: String
+        var bind: [Any] = []
+        if long.isEmpty {
+            sql = "SELECT id, text FROM verses WHERE 1"
+        } else {
+            sql = "SELECT v.id, v.text FROM verses_fts JOIN verses v ON v.id = verses_fts.rowid WHERE verses_fts MATCH ?1"
+            bind.append(long.map { "\"\($0.replacingOccurrences(of: "\"", with: "\"\""))\"" }.joined(separator: " "))
+        }
+        for term in short {
+            bind.append("%" + term.replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "%", with: "\\%").replacingOccurrences(of: "_", with: "\\_") + "%")
+            sql += " AND \(long.isEmpty ? "" : "v.")text LIKE ?\(bind.count) ESCAPE '\\'"
+        }
+        bind.append(limit)
+        sql += " ORDER BY \(long.isEmpty ? "" : "v.")id LIMIT ?\(bind.count)"
+        return try hits(sql, bind: bind)
+    }
+
+    private func hits(_ sql: String, bind: [Any]) throws -> [SearchHit] {
+        try locked {
             var hits: [SearchHit] = []
-            try Self.rows(db, "SELECT rowid, text FROM verses_fts WHERE verses_fts MATCH ?1 ORDER BY rowid LIMIT ?2",
-                          bind: [match, limit]) { stmt in
-                if let ref = VerseRef(key: Int(sqlite3_column_int64(stmt, 0))) {
-                    hits.append(SearchHit(ref: ref, text: Self.string(stmt, 1)))
+            try Self.rows(db, sql, bind: bind) { stmt in
+                let key = Int(sqlite3_column_int64(stmt, 0))
+                if let ref = VerseRef(key: key) {
+                    hits.append(SearchHit(ref: ref, text: Self.string(stmt, 1),
+                                          kjv: VerseRef(key: numbering.kjv(forNative: key))))
                 }
             }
             return hits

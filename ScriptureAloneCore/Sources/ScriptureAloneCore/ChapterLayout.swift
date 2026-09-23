@@ -61,17 +61,21 @@ public struct ChapterLayout: Decodable, Sendable {
         public let text: String
         public let spans: [Span]
         public let footnotes: [Footnote]
+        /// The last verse, when this fragment is a printed range ("12–13": the 和合本 prints a few
+        /// dozen). Nil for a single verse.
+        public let lastVerse: Int?
 
         public init(verse: Int, numbered: Bool, text: String,
-                    spans: [Span] = [], footnotes: [Footnote] = []) {
+                    spans: [Span] = [], footnotes: [Footnote] = [], lastVerse: Int? = nil) {
             self.verse = verse
+            self.lastVerse = lastVerse
             self.numbered = numbered
             self.text = text
             self.spans = spans
             self.footnotes = footnotes
         }
 
-        enum CodingKeys: String, CodingKey { case verse = "v", numbered = "n", text = "t", spans = "s", footnotes = "fn" }
+        enum CodingKeys: String, CodingKey { case verse = "v", numbered = "n", text = "t", spans = "s", footnotes = "fn", lastVerse = "e" }
 
         public init(from decoder: Decoder) throws {
             let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -80,7 +84,11 @@ public struct ChapterLayout: Decodable, Sendable {
             text = try c.decode(String.self, forKey: .text)
             spans = try c.decodeIfPresent([Span].self, forKey: .spans) ?? []
             footnotes = try c.decodeIfPresent([Footnote].self, forKey: .footnotes) ?? []
+            lastVerse = try c.decodeIfPresent(Int.self, forKey: .lastVerse)
         }
+
+        /// The number as printed: "12", or "12–13" for a range.
+        public var label: String { lastVerse.map { "\(verse)–\($0)" } ?? "\(verse)" }
     }
 
     public struct Span: Decodable, Sendable {

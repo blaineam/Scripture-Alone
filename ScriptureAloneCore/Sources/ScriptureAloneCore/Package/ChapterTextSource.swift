@@ -28,10 +28,16 @@ public protocol ChapterTextSource: Sendable {
     func layout(for chapter: ChapterRef) throws -> ChapterLayout
     func verses(in range: VerseRange) throws -> [VerseText]
     func search(_ query: String, limit: Int) throws -> [BibleStore.SearchHit]
+    /// How this source's verse numbers line up with the KJV keys marks are stored under.
+    /// `verses(in:)` takes KJV keys; `layout(for:)` and `verseCount(_:)` are in the source's own
+    /// numbering. See `VerseNumbering`.
+    var numbering: VerseNumbering { get }
 }
 
 public extension ChapterTextSource {
     func search(_ query: String) throws -> [BibleStore.SearchHit] { try search(query, limit: 300) }
+    /// Sources without a `kjv_map` — packages, imports, the online cache — number as the KJV does.
+    var numbering: VerseNumbering { .identity }
 }
 
 extension BibleStore: ChapterTextSource {
