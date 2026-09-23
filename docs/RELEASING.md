@@ -74,7 +74,7 @@ the tag, and when Xcode Cloud refuses a tag start (409 "not associated with the 
 that only touches `android/`, `docs/`, `.claude/` or `*.md`. So a **failed** Xcode Cloud run can
 be a skip, and the script never takes one as the build. Instead it accepts the run of an
 **iOS-equivalent** commit, meaning every path that differs between the two is one the guard
-ignores (or `.github/`). The commit pin holds: a run that built different iOS files is refused.
+ignores (or `.github/` / `scripts/`, which the iOS build never reads). The commit pin holds: a run that built different iOS files is refused.
 
 If no equivalent commit has a build (for example, the tag sits on a docs commit and the iOS
 build before it was cancelled), the lane fails and tells you to push an **empty commit** to

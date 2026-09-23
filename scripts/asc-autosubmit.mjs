@@ -30,7 +30,7 @@
  * THE NOTHING-TO-BUILD GUARD. ci_scripts/ci_post_clone.sh deliberately exits 1 when a commit only
  * touches android/, docs/, .claude/ or *.md — so a "FAILED" Xcode Cloud run can be a deliberate
  * skip, and its commit never gets a build. Two commits are iOS-EQUIVALENT when every path that
- * differs between them is one that guard ignores (or .github/): the binary one builds is the
+ * differs between them is one that guard ignores (or .github/, scripts/): the binary one builds is the
  * binary the other would. A tagged commit's build may therefore come from an equivalent commit;
  * a skipped run is never taken as the build. If no equivalent commit has a build, push an EMPTY
  * commit to main (an empty diff passes the guard) and re-run.
@@ -168,9 +168,10 @@ async function archiveWorkflow(productId, pinnedId) {
 }
 
 // ── the nothing-to-build guard (ci_scripts/ci_post_clone.sh) ────────────────────────────
-// Paths that guard ignores — keep in step with its RELEVANT grep — plus .github/ (workflows never
-// reach the binary). Two commits whose diff is only these build the same iOS app.
-const GUARD_IGNORED = /^android\/|(^|\/)(docs|\.claude)\/|\.md$|^\.github\//;
+// Paths that guard ignores — keep in step with its RELEVANT grep — plus .github/ and the root
+// scripts/ (release tooling; project.yml never references either, so neither reaches the binary).
+// Two commits whose diff is only these build the same iOS app.
+const GUARD_IGNORED = /^android\/|(^|\/)(docs|\.claude)\/|\.md$|^\.github\/|^scripts\//;
 const git = (...a) => execFileSync('git', a, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
 function haveCommit(sha) {
 	try { git('cat-file', '-e', `${sha}^{commit}`); return true; } catch { /* not local */ }
