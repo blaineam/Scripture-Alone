@@ -146,8 +146,9 @@ ASC submissions don't tolerate being repeated.
 
 ## One-time setup
 
-The secrets are **not set yet** (`gh secret list -R blaineam/Scripture-Alone` is empty). Add them
-yourself; nothing in this repository reads or stores their values. Paths below are placeholders.
+All eight secrets below were set on 2026-09-23 (`gh secret list -R blaineam/Scripture-Alone`), so a
+`v*` tag now **publishes**. The table is kept for rotating keys. Nothing in this repository reads
+or stores their values. Paths below are placeholders.
 
 ### Google Play (android.yml)
 
