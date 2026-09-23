@@ -11,8 +11,9 @@ typealias PlatformColor = NSColor
 typealias PlatformImage = NSImage
 #endif
 
-/// UserDefaults keys for reading preferences (per device, deliberately not synced — a
-/// phone and a Mac want different sizes).
+/// UserDefaults keys for reading preferences. Most are synced through iCloud by `SettingsSync`,
+/// so a reinstall comes back the way the reader left it; the text size is kept per kind of device
+/// (a phone and a Mac want different sizes), and the voices stay on the device that has them.
 enum SettingsKey {
     static let theme = "reader.theme"
     static let accent = "reader.accent"

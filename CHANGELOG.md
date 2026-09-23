@@ -20,6 +20,15 @@
   scripturealone://open?ref=Ps.23 — as do wemiller.com passage links. Tapping the Verse of the
   Day widget opens that verse.
 - Android has the same links, app shortcuts and system search for notes and favorites.
+- Settings come back on a reinstall or a new device: the theme, accent colour, typeface, text
+  size (kept per iPhone, iPad and Mac), spacing, layout, red letters, the translation, recent
+  chapters and searches, study, Listen, share-card and Spotlight choices, the keepsake owner and
+  dedication, and the API.Bible translations picked all sync through iCloud key-value storage,
+  and apply as soon as they arrive — launch never waits on them. API keys stay in the keychain
+  and ride iCloud Keychain; a key saved by an early build as a device-only item is moved over
+  once. Voices stay on the device that has them. On Android the same settings return through
+  Android's backup, now limited to the reader's settings and library so downloaded Bibles can
+  no longer push it over its size limit and skip it altogether; keys stay in Block Store.
 
 - A fresh install always opens to the Bible. The American Standard Version ships inside the app
   again rather than as an asset pack meant to arrive with the install: App Review's iPad launched

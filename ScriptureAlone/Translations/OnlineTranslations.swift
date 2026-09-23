@@ -85,7 +85,7 @@ final class OnlineTranslationKeys {
 
     init() {
         for provider in OnlineProvider.allCases {
-            if let key = Self.read(provider) { keys[provider] = key }
+            if let key = Self.read(provider) ?? Self.migrateDeviceOnlyItem(provider) { keys[provider] = key }
         }
     }
 
@@ -141,6 +141,25 @@ final class OnlineTranslationKeys {
         } else {
             SecItemAdd(q.merging(attributes) { _, new in new } as CFDictionary, nil)
         }
+    }
+
+    /// A key saved by a build from before keys synced (early TestFlight builds wrote a plain,
+    /// device-only item). Moved once into the synchronizable item, so it reaches iCloud Keychain
+    /// and comes back on a reinstall or a new device; the old item is removed so the two can
+    /// never disagree. Nil — at no cost beyond one lookup — when there is none.
+    private static func migrateDeviceOnlyItem(_ provider: OnlineProvider) -> String? {
+        var q = query(provider)
+        q[kSecAttrSynchronizable as String] = kCFBooleanFalse
+        var lookup = q
+        lookup[kSecReturnData as String] = true
+        lookup[kSecMatchLimit as String] = kSecMatchLimitOne
+        var item: CFTypeRef?
+        guard SecItemCopyMatching(lookup as CFDictionary, &item) == errSecSuccess,
+              let data = item as? Data, let key = String(data: data, encoding: .utf8) else { return nil }
+        write(key, provider)
+        // Only drop the old item once the synced one is readable: a failed write keeps the key.
+        if read(provider) == key { SecItemDelete(q as CFDictionary) }
+        return key
     }
 
     private static func delete(_ provider: OnlineProvider) {

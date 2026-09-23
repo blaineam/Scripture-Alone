@@ -32,6 +32,7 @@
 		2DB39BE64A22CA7256CD1D9A /* ScriptureAloneWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 2544CC6D255BC8BECC33D29C /* ScriptureAloneWatch.app */; platformFilters = (ios, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3184EE3BAD4D480DE43925EE /* KJV-Watch.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 2A1587A781119160F94D0100 /* KJV-Watch.sqlite */; };
 		31C68B8F127E821D23A383BD /* ImportedLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B428BCAE12449F8C77B44484 /* ImportedLibrary.swift */; };
+		33BFC9B2A0A699B3901E6651 /* SettingsSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60106636FA8A1302F88CEE28 /* SettingsSync.swift */; };
 		34EEE38976C8CB13024D9B34 /* ChartViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 037E94E8953976654834491D /* ChartViews.swift */; };
 		375DF89AEBFA8910FCA271AA /* MiSpeaksClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57092597A336A50B343F9912 /* MiSpeaksClient.swift */; };
 		37FEC9F94DD87B26AB164FF6 /* FavoritesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFB8603886458A9C59AFF53 /* FavoritesSection.swift */; };
@@ -296,6 +297,7 @@
 		5D9490E2C2C07074CC5136A9 /* ShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCard.swift; sourceTree = "<group>"; };
 		5DE06851FE4E25ED3FC97B0B /* WatchLinkKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchLinkKeys.swift; sourceTree = "<group>"; };
 		5F2651262AA20DD2F3B106F7 /* CompareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareView.swift; sourceTree = "<group>"; };
+		60106636FA8A1302F88CEE28 /* SettingsSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSync.swift; sourceTree = "<group>"; };
 		616925D298ADB5C4615A4DEC /* NotesPDFRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesPDFRenderer.swift; sourceTree = "<group>"; };
 		64254A487F2AB5DE14735746 /* CommentaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentaryView.swift; sourceTree = "<group>"; };
 		65F2FBAF7C3E334C863023FB /* MapGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapGeometry.swift; sourceTree = "<group>"; };
@@ -591,6 +593,7 @@
 				E79D61A66336156A65FD29F3 /* ReaderModel.swift */,
 				05B864CDB3AF771DDE8E03E6 /* ScreenshotScene.swift */,
 				DF51A40F2B56DE405EF0EDEC /* ScriptureAloneApp.swift */,
+				60106636FA8A1302F88CEE28 /* SettingsSync.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -1260,6 +1263,7 @@
 				63083E79B5532EF0BEF06CE2 /* ScriptureAloneShortcuts.swift in Sources */,
 				B38E432924E3057E44AE5BA6 /* SealedTranslations.swift in Sources */,
 				4770DFEA1BC39A2844D7DA92 /* SelectionBar.swift in Sources */,
+				33BFC9B2A0A699B3901E6651 /* SettingsSync.swift in Sources */,
 				E25B483FC4FA988EAF9D5B85 /* ShareCard.swift in Sources */,
 				68BB4D077524582DA20F7E23 /* ShareDesigner.swift in Sources */,
 				EB6E25A2A5BCF50CE7B02050 /* ShareExport.swift in Sources */,

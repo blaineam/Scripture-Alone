@@ -158,11 +158,13 @@ enum OnlineCatalog {
     /// by the keys screen. That made the picks live in a `@State` on a sheet: open the app and
     /// they were gone until you went back and opened that sheet again.
     ///
-    /// They are stored in `UserDefaults` rather than the keychain deliberately. The key is a
+    /// They are stored in `UserDefaults` rather than the keychain deliberately, and synced with the
+    /// reader's other settings (`SettingsSync`), so a reinstall offers them again once the key —
+    /// an iCloud Keychain item — is back. The key is a
     /// credential and stays in the keychain; these are not — they are public catalogue ids and the
     /// names API.Bible gave them, and without the key they open nothing. Keeping them here means a
     /// launch restores the picker with no network call and no credential read.
-    private static let storageKey = "onlineTranslations"
+    static let storageKey = "onlineTranslations"
 
     private struct Remembered: Codable {
         var id: String

@@ -12,6 +12,9 @@ struct ScriptureAloneApp: App {
     #endif
 
     init() {
+        // First, before any view or model reads a setting: puts back the reader's settings from
+        // iCloud on a reinstall or a new device. Reads the on-device cache only; never waits.
+        SettingsSync.shared.start()
         #if os(iOS)
         // Early, so the watch's report of which editions it holds is waiting by the time the
         // reader's translation is restored.
@@ -79,6 +82,19 @@ private struct RootView: View {
                 // when they are made, so they come back here without a network call and without
                 // the reader having to open the keys screen again.
                 model.setOnlineTranslations(OnlineCatalog.restored(keys: onlineKeys))
+            }
+            // Settings that arrived from iCloud after launch — on a reinstall, usually a moment
+            // after the first frame. `@AppStorage` views follow on their own; the translation list
+            // and, on the first restore only, the translation itself are the model's to pick up.
+            .onReceive(NotificationCenter.default.publisher(for: SettingsSync.restoredNotification)) { note in
+                let keys = note.userInfo?["keys"] as? [String] ?? []
+                if keys.contains(OnlineCatalog.storageKey) {
+                    model.setOnlineTranslations(OnlineCatalog.restored(keys: onlineKeys))
+                }
+                if note.userInfo?["initial"] as? Bool == true, keys.contains("translation"),
+                   let id = UserDefaults.standard.string(forKey: "translation") {
+                    model.restoreTranslation(id)
+                }
             }
             #if os(macOS)
             .frame(minWidth: 520, minHeight: 480)

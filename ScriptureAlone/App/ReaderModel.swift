@@ -334,6 +334,19 @@ final class ReaderModel {
     /// The previous translation stays on screen until it arrives, then the reader switches.
     private(set) var downloadingPack: AssetPack?
 
+    /// The reader's translation, restored from iCloud after launch onto an install that had never
+    /// synced (`SettingsSync`). Selected now if it is here; otherwise held, exactly as at launch,
+    /// until it registers — an online translation whose key hasn't come back yet simply never does,
+    /// and the reader stays on what they see.
+    func restoreTranslation(_ id: String) {
+        guard id != translationID else { return }
+        if translations.contains(where: { $0.id == id }) {
+            selectTranslation(id)
+        } else {
+            awaitedTranslation = id
+        }
+    }
+
     /// - Parameter remember: false when the app is falling back rather than the reader choosing.
     ///   A fallback must not overwrite what they asked for, or their choice is lost for good.
     func selectTranslation(_ id: String, remember: Bool = true) {

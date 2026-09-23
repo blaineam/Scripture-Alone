@@ -58,8 +58,11 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 - **Apple Watch** — Verse of the Day, favorites, read-only notes, a reader and Speak, with
   complications for the day's reference. Standalone: a compact 4.7 MB ASV ships in the watch
   app, and data syncs through the same private iCloud database.
-- **Sync** — SwiftData over the private CloudKit database; reading position through iCloud
-  key-value storage.
+- **Sync** — SwiftData over the private CloudKit database; reading position and the reader's
+  settings (theme, accent colour, typeface, the API.Bible translations picked, and the rest —
+  `SettingsSync.swift`) through iCloud key-value storage, so a reinstall or a new device opens
+  the way you left it. API keys ride iCloud Keychain. On Android, the same settings come back
+  through Android's own backup and the keys through Block Store.
 - **Share** — verse images designed on-device (eight templates, three shapes, any of the reader's
   typefaces; save to Photos or share), plain text, or a link that rebuilds the card in any browser
   from the link itself — the verse rides in the URL fragment, so no server stores it. Contract:
@@ -94,8 +97,9 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 
 - No ads, no trackers, no analytics, no account, and no server of ours holding your data — not
   now, not ever.
-- Your highlights, notes, favorites and reading position sync only through your own iCloud
-  (the app's private CloudKit database and iCloud key-value storage).
+- Your highlights, notes, favorites, reading position and settings sync only through your own
+  iCloud (the app's private CloudKit database and iCloud key-value storage); API keys you enter
+  sync through iCloud Keychain, end-to-end encrypted.
 - Keepsakes are files you hand over yourself; nothing is sent anywhere.
 - **Share with Family** only happens when you tap *Start Sharing and Invite…*. It copies your
   highlights, notes, favorites, and the name, dedication and translation you choose into a zone
