@@ -51,6 +51,16 @@ BOOKS = [
     "2PE", "1JN", "2JN", "3JN", "JUD", "REV",
 ]
 
+# Portuguese: the same footnote residue before punctuation ("de efa ."), and the space it leaves
+# inside a hyphenated pronoun ("adorá -lo", "trazei - os" for "adorá-lo", "trazei-os").
+_CLITIC = r"(?:o|a|os|as|lo|la|los|las|no|na|nos|nas|me|te|se|lhe|lhes|vos|mo|ma|to|ta|lho|lha)\b"
+STRAY_SPACES_PT = [
+    re.compile(r"(?<=\w)\s+(?=[.,;:!?])"),
+    re.compile(r"(?<=\w)\s+(?=-\s*" + _CLITIC + ")"),
+    re.compile(r"(?<=\w-)\s+(?=" + _CLITIC + ")"),
+]
+
+
 TRANSLATIONS = [
     {
         "id": "ASV",
@@ -163,6 +173,8 @@ TRANSLATIONS = [
         "id": "BLIVRE",
         "locale": "pt-BR",
         "zip": "porbr2018_usfm.zip",
+        # The source leaves a space where it stripped a footnote: "de efa .", "adorá -lo".
+        "stray_spaces": STRAY_SPACES_PT,
         "name": "Bíblia Livre",
         "abbreviation": "BLIVRE",
         # CC BY 4.0: this line is the attribution the licence requires, and it is shown wherever
@@ -907,32 +919,37 @@ def repair_missing_characters(books, source_books, table):
 
 STRAY_SPACE = re.compile(r"(?<=[\u4e00-\u9fff])\s+(?=[、，。；：！？」』）])")
 
+def _drop(text, spans, pattern):
+    """Removes what `pattern` matches from `text`, shifting styled [start, length] spans to match."""
+    gone = [m.start() + k for m in pattern.finditer(text) for k in range(m.end() - m.start())]
+    for index in sorted(gone, reverse=True):
+        for span in spans:
+            if span[0] > index:
+                span[0] -= 1
+            elif span[0] <= index < span[0] + span[1]:
+                span[1] -= 1
+    return pattern.sub("", text), bool(gone)
 
-def strip_stray_spaces(books):
-    """Removes whitespace between a Chinese character and the punctuation after it — left where the
-    source stripped a footnote ("邱坛的祭司 。"). Verse text and layout both; the layout's styled
-    spans shift to match."""
+
+def strip_stray_spaces(books, patterns=(STRAY_SPACE,)):
+    """Removes whitespace a source left where it stripped a footnote — between a Chinese character
+    and the punctuation after it ("邱坛的祭司 。"), or its Portuguese equivalents (STRAY_SPACES_PT).
+    Verse text and layout both; styled spans (red letters included) shift to match."""
     removed = 0
     for book in books.values():
         for entry in book.verses.values():
-            cleaned = STRAY_SPACE.sub("", entry["t"])
-            if cleaned != entry["t"]:
-                assert not entry["s"], "red-letter offsets would move"
-                removed += 1
-                entry["t"] = cleaned
+            changed = False
+            for pattern in patterns:
+                entry["t"], hit = _drop(entry["t"], entry.get("s") or [], pattern)
+                changed |= hit
+            if entry.get("s"):
+                entry["s"] = [span for span in entry["s"] if span[1] > 0]
+            removed += changed
         for blocks in book.chapters.values():
             for block in blocks:
                 for fragment in block.get("f", []):
-                    gone = [m.start() + k for m in STRAY_SPACE.finditer(fragment["t"]) for k in range(m.end() - m.start())]
-                    if not gone:
-                        continue
-                    for index in sorted(gone, reverse=True):
-                        for span in fragment.get("s", []):
-                            if span[0] > index:
-                                span[0] -= 1
-                            elif span[0] <= index < span[0] + span[1]:
-                                span[1] -= 1
-                    fragment["t"] = STRAY_SPACE.sub("", fragment["t"])
+                    for pattern in patterns:
+                        fragment["t"], _ = _drop(fragment["t"], fragment.get("s", []), pattern)
                     if "s" in fragment:
                         fragment["s"] = [span for span in fragment["s"] if span[1] > 0]
     return removed
@@ -945,6 +962,9 @@ def build(translation):
         count = repair_missing_characters(books, load_books(os.path.join(SOURCE_DIR, source_zip), report_corrections=False), table)
         print(f"{translation['id']}: restored lost characters in {count} verses from {source_zip}")
         print(f"{translation['id']}: removed footnote-residue spaces in {strip_stray_spaces(books)} verses")
+    if translation.get("stray_spaces"):
+        removed = strip_stray_spaces(books, translation["stray_spaces"])
+        print(f"{translation['id']}: removed footnote-residue spaces in {removed} verses")
     if translation.get("red_from"):
         source = books_for(translation["red_from"])
         counts = [borrow_red_letters(book, source[code]) for code, book in books.items()]
