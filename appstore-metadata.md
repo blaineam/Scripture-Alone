@@ -33,7 +33,7 @@ Snap the sermon slide
 Photograph the slide at church and Scripture Alone starts your note: titled with the sermon title, linked to every passage on the slide, with its points ready to fill in. The photo is read on your device and never uploaded.
 
 Listen
-Hear any chapter read aloud with the voices on your device, including Premium and Personal Voice, with the spoken verse marked as it goes. Mi Speaks subscribers can hand chapters to its Studio voices.
+Hear any chapter read aloud with the voices on your device, including Premium and Personal Voice, with the spoken verse marked as it goes. With a Mi Speaks Premium subscription (a separate app, bought in Mi Speaks), chapters can also use its Studio voices.
 
 Study mode, a toggle away
 Ranked cross-references, classic commentary from John Calvin, John Gill and Jamieson-Fausset-Brown, and the context of every chapter: its era on a timeline of the biblical periods, an offline map of the places it names, and charts of the kings of Israel and Judah, Paul's journeys, the twelve tribes and the feasts of Israel. The commentary downloads the first time you open it.
