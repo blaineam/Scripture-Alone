@@ -12,10 +12,13 @@ Private, offline Bible study
 Scripture Alone is a Bible for iPhone, iPad, Mac and Apple Watch, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. The Bible lives on your device, so it works anywhere in the world, with or without a connection.
 
 Read the whole Bible, offline
-The American Standard Version is on your device from the moment it installs. The Berean Standard Bible and the King James Version download once, the first time you choose one, and read offline from then on. All three have full-text search. The words of Christ appear in red, poetry is set as poetry, and section headings and footnotes are a tap away.
+The American Standard Version is on your device from the moment it installs; the Berean Standard Bible and the King James Version download once, when you first choose one, and read offline after that. Full-text search, the words of Christ in red, poetry set as poetry, and headings and footnotes a tap away.
 
 Add the translations you want
 Browse the openly licensed translations eBible.org publishes, in your own language first, or bring a USFM zip or a DRM-free ePub you already own. The ESV, CSB, NASB and NKJV can't be given away by anyone, so they're read over the network with your own publisher key.
+
+In your language
+Also in Chinese, Japanese, German, French, Spanish, Korean, Portuguese and Italian, each with a whole Bible of its own that keeps its own book names and verse numbers.
 
 Make it comfortable
 Seven typefaces, adjustable size and line spacing, five themes (Auto, Light, Sepia, Dark and Black), paragraphs or verse by verse, and full Dynamic Type. Auto-scroll keeps the text moving hands-free and carries on into the next chapter.
@@ -27,7 +30,7 @@ Highlight, note and favorite
 Highlight in five colors, favorite the verses you return to, and attach notes to one or more passages — a Sunday sermon on Romans 8:1–17, say. Notes appear beside the verse and in a searchable Notes panel. Export them as a PDF, Markdown or plain text.
 
 Bring your notes with you
-Years of notes in another Bible app don't have to be left behind. Import a Life Bible (formerly Tecarta) export directly, or paste notes or a CSV from anywhere else. Importing twice is safe.
+Years of notes in another Bible app don't have to be left behind. Import a Life Bible (formerly Tecarta) export directly, or paste notes or a CSV from anywhere else.
 
 Snap the sermon slide
 Photograph the slide at church and Scripture Alone starts your note: titled with the sermon title, linked to every passage on the slide, with its points ready to fill in. The photo is read on your device and never uploaded.
@@ -36,7 +39,7 @@ Listen
 Hear any chapter read aloud with the voices on your device, including Premium and Personal Voice, with the spoken verse marked as it goes. With a Mi Speaks Premium subscription (a separate app, bought in Mi Speaks), chapters can also use its Studio voices.
 
 Study mode, a toggle away
-Ranked cross-references, classic commentary from John Calvin, John Gill and Jamieson-Fausset-Brown, and the context of every chapter: its era on a timeline of the biblical periods, an offline map of the places it names, and charts of the kings of Israel and Judah, Paul's journeys, the twelve tribes and the feasts of Israel. The commentary downloads the first time you open it.
+Ranked cross-references, classic commentary from John Calvin, John Gill and Jamieson-Fausset-Brown, and the context of every chapter: its era on a timeline of the biblical periods, an offline map of the places it names, and charts of the kings of Israel and Judah, Paul's journeys, the twelve tribes and the feasts of Israel.
 
 The Hebrew and the Greek
 Open any verse word by word in the original languages, with parsing, Strong's numbers and a lexicon — in every translation, not just one. It downloads once, the first time you open it, and works offline after that.
@@ -45,7 +48,7 @@ Share beautifully
 Design a verse image right on your device from eight templates, or share a link that rebuilds it in any browser from the link itself — nothing is stored on a server.
 
 On your wrist and Home Screen
-Verse of the Day and Favorites widgets for iPhone, iPad and Mac, and an Apple Watch app with the ASV, BSB and KJV offline — following the translation you're reading on your iPhone — plus your favorites and notes, and a complication with the day's reference.
+Verse of the Day and Favorites widgets, and an Apple Watch app that reads offline, follows the translation on your iPhone, and carries your favorites and notes and a complication with the day's reference.
 
 A Bible to hand down
 Make a Keepsake Bible: a keepsake file of your highlights and notes, with a dedication, that your family can open and read as you marked it — a digital "Dad's Bible".
