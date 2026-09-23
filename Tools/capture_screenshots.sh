@@ -111,7 +111,6 @@ capture_ios() {  # capture_ios "<sim spec>" <rawKey>
     local container
     container="$(xcrun simctl get_app_container "$udid" "$BUNDLE_ID" data)"
     mkdir -p "$container/tmp"
-    cp "$SLIDE" "$container/tmp/sample-slide.jpg"
 
     local entry file scene extra locale dir
     for locale in "${LOCALES[@]}"; do
@@ -119,6 +118,10 @@ capture_ios() {  # capture_ios "<sim spec>" <rawKey>
         mkdir -p "$dir"
         rm -f "$dir"/*.png   # never rm -rf the base: the locale sets live inside it
         echo "  [$locale]"
+        # That locale's slide (Tools/make_sample_slide.py): a French church's slide in French.
+        local slide="${SLIDE%.jpg}.$locale.jpg"
+        [ -f "$slide" ] || slide="$SLIDE"
+        cp "$slide" "$container/tmp/sample-slide.jpg"
         for entry in "${SCENES[@]}"; do
             IFS='|' read -r file scene extra <<<"$entry"
             cap_terminate_foreign "$udid" "$BUNDLE_ID"
