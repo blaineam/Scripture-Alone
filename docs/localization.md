@@ -134,4 +134,14 @@ allows one version in review at a time.
 - [ ] Release to the **internal** and **closed** testing tracks (Wear OS on its own track).
 - [ ] Store listing and screenshots in all 8 locales.
 
-**Website** — Scripture Alone page: the translations each locale gets.
+**Website** (owner: "the website also needs to support the locales")
+- [ ] Scripture Alone page (already in all 9 languages): the Bible each locale gets, numbering,
+      search — through the i18n dictionaries.
+- [ ] Share-link card page (`share.js`): its messages ("This link needs a newer version…") in the
+      8 languages, and verse cards in each locale's Bible.
+- [ ] `security/` white paper: English-only **by an earlier decision** (a mistranslated security
+      claim could say something untrue) — confirm with the owner before translating.
+
+**Search** — done at build time: zh-Hans, ja and ko Bibles use FTS5's `trigram` tokenizer
+(`meta.tokenizer`); the app must send those a substring query, and `LIKE` for queries under three
+characters (二-character Chinese words are common).

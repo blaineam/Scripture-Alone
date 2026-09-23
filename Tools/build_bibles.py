@@ -854,6 +854,11 @@ def build(translation):
     fd, tmp = tempfile.mkstemp(suffix=".sqlite", dir=OUTPUT_DIR)
     os.close(fd)
     db = sqlite3.connect(tmp)
+    # Chinese and Japanese are written without spaces, and a Korean word carries its particles
+    # (하나님이, 하나님을): unicode61 would index whole clauses as single "words" and find nothing.
+    # Trigrams match any substring of three or more characters; the app falls back to a scan for
+    # shorter queries (two-character Chinese words are common). The tokenizer is recorded in meta.
+    tokenizer = "trigram" if translation.get("locale") in ("zh-Hans", "ja", "ko") else "unicode61 remove_diacritics 2"
     db.executescript(
         """
         PRAGMA page_size = 4096;
@@ -863,13 +868,16 @@ def build(translation):
                                layout TEXT NOT NULL, PRIMARY KEY (book, chapter)) WITHOUT ROWID;
         CREATE TABLE verses (id INTEGER PRIMARY KEY, text TEXT NOT NULL, red TEXT);
         CREATE VIRTUAL TABLE verses_fts USING fts5(text, content='verses', content_rowid='id',
-                                                  tokenize='unicode61 remove_diacritics 2');
+                                                  tokenize='{tokenizer}');
         CREATE TABLE kjv_map (id INTEGER PRIMARY KEY, kjv INTEGER NOT NULL, kjv_last INTEGER NOT NULL);
         CREATE INDEX kjv_map_kjv ON kjv_map (kjv);
-        """
+        """.replace("{tokenizer}", tokenizer)
     )
     for key in ("id", "name", "abbreviation", "copyright", "license", "source"):
         db.execute("INSERT INTO meta VALUES (?, ?)", (key, translation[key]))
+    db.execute("INSERT INTO meta VALUES ('tokenizer', ?)", (tokenizer.split()[0],))
+    if translation.get("locale"):
+        db.execute("INSERT INTO meta VALUES ('language', ?)", (translation["locale"],))
     total = 0
     for ordinal, code in enumerate(BOOKS, start=1):
         book = books[code]
@@ -986,6 +994,10 @@ def check(paths):
         leaks = db.execute("SELECT count(*) FROM verses WHERE text LIKE '%\\%' ESCAPE '|' OR text LIKE '%|%' "
                            "OR text LIKE '%<%'").fetchone()[0]
         assert leaks == 0, f"{leaks} {t['id']} verses leak markup"
+        if t["locale"] in ("zh-Hans", "ja", "ko"):
+            word = {"zh-Hans": "神爱世人", "ja": "獨子を賜ふ", "ko": "독생자를"}[t["locale"]]
+            hits = db.execute("SELECT count(*) FROM verses_fts WHERE verses_fts MATCH ?", (f'"{word}"',)).fetchone()[0]
+            assert hits >= 1, (t["id"], word, hits)
         names = [r[0] for r in db.execute("SELECT name FROM books ORDER BY book")]
         assert not any(name in BOOKS for name in names), (t["id"], names)   # a name, not a USFM code
     # Numbering: the English Bibles keep the KJV's (a verse they omit is a gap, not a shift) ...
