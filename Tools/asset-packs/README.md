@@ -1,11 +1,12 @@
 # Asset packs
 
-The Bibles and the study databases don't ship inside the app binary. They are **Apple-hosted
-Background Assets** packs, uploaded to App Store Connect separately from the build.
+The BSB, KJV and the study databases don't ship inside the app binary. They are **Apple-hosted
+Background Assets** packs, uploaded to App Store Connect separately from the build. The ASV does
+ship inside it — see below.
 
 | Pack ID | File | Policy | Size |
 |---|---|---|---|
-| `asv` | `Packages/ASV.sabible` | `essential`, `firstInstallation` only | ~16 MB |
+| `asv` | `Packages/ASV.sabible` | `onDemand` (v2) — legacy only, see below | ~16 MB |
 | `bsb` | `Bibles/BSB.sqlite` | `onDemand` | ~5 MB packed |
 | `kjv` | `Bibles/KJV.sqlite` | `onDemand` | ~5 MB packed |
 | `study-commentary` | `Study/Study.sqlite` | `onDemand` | ~40 MB |
@@ -21,12 +22,19 @@ cross references never wait on the commentary download), `Study/Context.sqlite`,
 `Packages/bundled-signing.pub` — the key the ASV package is verified against. A trust anchor that
 arrived by the same channel as the package it vouches for would vouch for nothing.
 
-## Why the ASV is essential on first installation only
+## Why the ASV is bundled, and why its pack still exists
 
-`AssetLibrary` copies each file out of its pack (Background Assets exposes only `Data` or a file
-descriptor; SQLite and the package reader need a path) and then releases the pack, so nothing is
-stored twice. If the ASV's policy also named `subsequentUpdate`, every app update would re-download
-the pack that was just released — the very ODR behaviour this replaced.
+Version 1 of `asv` was `essential` on first installation. App Review's iPad launched 1.0.0 build 40
+to a spinner that never ended: the essential pack was accepted in the same submission, yet the ASV
+wasn't readable at launch. The translation a fresh install opens to can't wait on delivery, so
+`ASV.sabible` is an app resource again and `SealedTranslations` opens it from the bundle.
+
+The pack is kept, as version 2 with an `onDemand` policy, for builds up to 40 (TestFlight), which
+still fetch it through `AssetLibrary.ensure(.asv)`. `onDemand` means no new install downloads it
+for nothing. **Never archive it**: archiving is permanent.
+
+Every pack is copied out of (Background Assets exposes only `Data` or a file descriptor; SQLite
+and the package reader need a path) and then released, so nothing is stored twice.
 
 ## Uploading
 

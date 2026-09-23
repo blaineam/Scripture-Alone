@@ -1,11 +1,7 @@
 {
   "assetPackID": "asv",
   "downloadPolicy": {
-    "essential": {
-      "installationEventTypes": [
-        "firstInstallation"
-      ]
-    }
+    "onDemand": {}
   },
   "fileSelectors": [
     {
