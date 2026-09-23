@@ -103,6 +103,10 @@ final class ReaderModel {
     /// `scrollTarget` are in the translation's own numbering. See `VerseNumbering`.
     var numbering: VerseNumbering { source?.numbering ?? .identity }
 
+    /// The language the text being read is in, for choosing a voice: the Bible's own (`meta.language`)
+    /// or English — the ASV, BSB, KJV, and anything that doesn't say.
+    var textLanguage: String { (source as? BibleStore)?.language ?? "en" }
+
     /// The online translation in use, when the current text comes from an API rather than a file.
     private(set) var onlineTranslation: (entry: TranslationEntry, info: TranslationInfo)?
     /// Supplied by the app so the model needn't know about keychains or providers.

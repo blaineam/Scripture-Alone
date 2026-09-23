@@ -59,6 +59,8 @@ enum MiSpeaksClient {
         case notSubscribed
         /// The text itself may not be handed to another app — see `TranslationInfo`.
         case translationNotPermitted
+        /// Studio voices read English; the text isn't.
+        case otherLanguage
 
         nonisolated var explanation: String {
             switch self {
@@ -66,6 +68,8 @@ enum MiSpeaksClient {
             case .notInstalled: String(localized: "Studio voices come from Mi Speaks, which isn’t installed.", comment: "“Mi Speaks” is an app name; do not translate it.")
             case .noSharedContainer: String(localized: "This build can’t reach Mi Speaks’s shared folder.", comment: "“Mi Speaks” is an app name; do not translate it.")
             case .notSubscribed: String(localized: "Studio voices need Mi Speaks Premium.", comment: "“Mi Speaks” is an app name; do not translate it.")
+            case .otherLanguage:
+                String(localized: "Studio voices read English. The voices on this device read this Bible.", comment: "Listen: Mi Speaks’s Studio voices are English-only.")
             case .translationNotPermitted:
                 String(localized: "Studio voices send the text to Mi Speaks to record it, which this translation’s licence doesn’t allow. The voices on this device read it as usual.", comment: "“Mi Speaks” is an app name; do not translate it.")
             }
@@ -114,8 +118,9 @@ enum MiSpeaksClient {
 
     /// `translation` is the text about to be read. Handing it to another app is a copy the
     /// publisher never licensed, so a licensed translation stays with the on-device voices.
-    static func availability(for translation: TranslationInfo?) -> Availability {
+    static func availability(for translation: TranslationInfo?, textLanguage: String = "en") -> Availability {
         if let translation, !translation.mayHandOffToOtherApps { return .translationNotPermitted }
+        if SpeechVoices.voiceLanguage(for: textLanguage) != "en" { return .otherLanguage }
         return availability
     }
 

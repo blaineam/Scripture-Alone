@@ -159,7 +159,7 @@ struct NowPlayingBar: View {
             Button {
                 Task {
                     if await SpeechVoices.requestPersonalVoice() {
-                        voices = await SpeechVoices.available()
+                        voices = await SpeechVoices.available(for: model.textLanguage)
                         if let personal = voices.first(where: { $0.kind == .personal }) { listen.voiceID = personal.id }
                     } else {
                         listen.notice = String(localized: "Personal Voice wasn’t allowed. You can change this in Settings › Accessibility › Personal Voice.", comment: "“Settings › Accessibility › Personal Voice” should match the system Settings app's menu names.")
@@ -185,7 +185,7 @@ struct NowPlayingBar: View {
             Button { openURL(MiSpeaksClient.appStoreURL) } label: {
                 Label("Get Mi Speaks on the App Store", systemImage: "arrow.down.app")
             }
-        case .notSubscribed, .noSharedContainer, .translationNotPermitted:
+        case .notSubscribed, .noSharedContainer, .translationNotPermitted, .otherLanguage:
             Text(studioAvailability.explanation)
         }
     }
@@ -196,9 +196,9 @@ struct NowPlayingBar: View {
     }
 
     private func refreshVoices() {
-        Task { voices = await SpeechVoices.available() }
+        Task { voices = await SpeechVoices.available(for: model.textLanguage) }
         #if os(iOS)
-        studioAvailability = MiSpeaksClient.availability(for: model.source?.info)
+        studioAvailability = MiSpeaksClient.availability(for: model.source?.info, textLanguage: model.textLanguage)
         studioVoices = MiSpeaksClient.publishedVoices()
         #endif
     }

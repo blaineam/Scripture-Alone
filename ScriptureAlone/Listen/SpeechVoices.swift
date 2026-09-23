@@ -93,13 +93,18 @@ private nonisolated final class Once: @unchecked Sendable {
 /// run on the main thread: on iOS 27 it blocks in an accessibility sync call that waits on the
 /// main thread — observed as a permanent hang the first time Listen was tapped in the Simulator.
 nonisolated enum SpeechVoices {
-    /// Every bundled translation is English, so the voices offered are the English ones — reading
-    /// English text in a French voice helps no one. The device's own region comes first.
-    static let textLanguage = "en"
+    /// The voice language for a text language tag: "fr" for "fr", "zh" for "zh-Hans", "pt" for
+    /// "pt-BR". The voices offered and chosen are the text's — an English voice reading Louis
+    /// Segond helps no one — with the device's own region first.
+    static func voiceLanguage(for textLanguage: String) -> String {
+        String(textLanguage.split(separator: "-").first ?? "en")
+    }
 
-    /// The installed voices, enumerated off the main thread. Empty if the lookup doesn't answer.
-    static func available() async -> [VoiceOption] {
-        await withTimeout { enumerate() } ?? []
+    /// The installed voices for a text language, enumerated off the main thread. Empty if the
+    /// lookup doesn't answer.
+    static func available(for textLanguage: String = "en") async -> [VoiceOption] {
+        let language = voiceLanguage(for: textLanguage)
+        return await withTimeout { enumerate(language) } ?? []
     }
 
     enum Resolved: Sendable {
@@ -110,12 +115,16 @@ nonisolated enum SpeechVoices {
 
     /// The saved voice if it's still installed, else the best voice for the device's region —
     /// resolved off the main thread.
-    static func voice(for identifier: String?) async -> Resolved {
+    /// A saved voice in another language (an English voice picked while reading the KJV, now
+    /// reading Segond) is passed over for this text, not forgotten.
+    static func voice(for identifier: String?, textLanguage: String = "en") async -> Resolved {
+        let language = voiceLanguage(for: textLanguage)
         let found: AVSpeechSynthesisVoice?? = await withTimeout {
-            if let identifier, let voice = AVSpeechSynthesisVoice(identifier: identifier) { return voice }
-            if let best = enumerate().first(where: { $0.kind != .personal }),
+            if let identifier, let voice = AVSpeechSynthesisVoice(identifier: identifier),
+               voice.language.hasPrefix(language) { return voice }
+            if let best = enumerate(language).first(where: { $0.kind != .personal }),
                let voice = AVSpeechSynthesisVoice(identifier: best.id) { return voice }
-            return AVSpeechSynthesisVoice(language: "en-US")
+            return AVSpeechSynthesisVoice(language: language == "en" ? "en-US" : language)
         }
         guard let found else { return .timedOut }
         return .voice(found)
@@ -139,11 +148,12 @@ nonisolated enum SpeechVoices {
         }
     }
 
-    private static func enumerate() -> [VoiceOption] {
+    private static func enumerate(_ language: String) -> [VoiceOption] {
         let region = Locale.current.region?.identifier
-        let preferred = region.map { "\(textLanguage)-\($0)" }
+        // Mainland Mandarin for the simplified-script 和合本, whatever region the device is in.
+        let preferred = language == "zh" ? "zh-CN" : region.map { "\(language)-\($0)" }
         return AVSpeechSynthesisVoice.speechVoices()
-            .filter { $0.language.hasPrefix(textLanguage) && !$0.voiceTraits.contains(.isNoveltyVoice) }
+            .filter { $0.language.hasPrefix(language) && !$0.voiceTraits.contains(.isNoveltyVoice) }
             .map { voice in
                 let kind: VoiceOption.Kind = voice.voiceTraits.contains(.isPersonalVoice) ? .personal
                     : voice.quality == .premium ? .premium

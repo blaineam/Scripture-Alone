@@ -87,7 +87,7 @@ final class ListenController {
     /// cancelled queue can't be mistaken for the new one.
     @ObservationIgnored private var tokens: [Int: Int] = [:]
     @ObservationIgnored private var nextToken = 0
-    @ObservationIgnored private var resolvedVoice: (id: String?, voice: AVSpeechSynthesisVoice?)?
+    @ObservationIgnored private var resolvedVoice: (id: String?, language: String, voice: AVSpeechSynthesisVoice?)?
 
     // Studio voice (rendered clip)
     @ObservationIgnored private var player: AVAudioPlayer?
@@ -415,7 +415,8 @@ final class ListenController {
     // MARK: System voice
 
     private func beginSystem(at index: Int) {
-        if let cached = resolvedVoice, cached.id == voiceID {
+        let language = reader?.textLanguage ?? "en"
+        if let cached = resolvedVoice, cached.id == voiceID, cached.language == language {
             speakSystem(from: index, voice: cached.voice)
             return
         }
@@ -423,12 +424,12 @@ final class ListenController {
         phase = .preparing(String(localized: "Loading voice…"))
         let wanted = voiceID
         renderTask = Task { [weak self] in
-            let resolved = await SpeechVoices.voice(for: wanted)
+            let resolved = await SpeechVoices.voice(for: wanted, textLanguage: language)
             guard let self, !Task.isCancelled else { return }
             self.renderTask = nil
             switch resolved {
             case .voice(let voice):
-                self.resolvedVoice = (wanted, voice)
+                self.resolvedVoice = (wanted, language, voice)
                 self.speakSystem(from: index, voice: voice)
             case .timedOut:
                 // Not cached, so the next start asks again.
@@ -472,7 +473,7 @@ final class ListenController {
 
     #if os(iOS)
     private func beginStudio(at index: Int) {
-        let availability = MiSpeaksClient.availability(for: translationInfo)
+        let availability = MiSpeaksClient.availability(for: translationInfo, textLanguage: reader?.textLanguage ?? "en")
         guard availability == .ready else {
             fallBackToSystem(at: index, because: availability.explanation)
             return
