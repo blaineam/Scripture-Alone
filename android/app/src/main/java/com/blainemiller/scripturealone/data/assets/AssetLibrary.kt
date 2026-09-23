@@ -106,6 +106,13 @@ object AssetLibrary {
         installedCopy(pack).exists() || BundledDatabase.hasAsset(app, pack.file) || deliveredFile(pack) != null
 
     /**
+     * Whether the reader has downloaded [pack] — delivered by Play or already copied out. Unlike
+     * [isOnDevice] this ignores a debug build's own assets, which carry every pack: it answers what
+     * the reader chose, for the translation menu.
+     */
+    fun isDownloaded(pack: AssetPack): Boolean = installedCopy(pack).exists() || deliveredFile(pack) != null
+
+    /**
      * The database's file, copying it out of the assets or a delivered pack first if need be, or null
      * when the pack isn't on the device. Blocking; call off the main thread.
      */

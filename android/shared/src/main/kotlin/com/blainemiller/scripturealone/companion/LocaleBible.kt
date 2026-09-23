@@ -32,18 +32,35 @@ object LocaleBible {
      */
     fun forPreferredLanguages(tags: List<String>): String? {
         for (tag in tags) {
-            val locale = Locale.forLanguageTag(tag.replace('_', '-'))
-            val code = locale.language.takeIf { it.isNotEmpty() } ?: continue
+            val code = Locale.forLanguageTag(tag.replace('_', '-')).language.takeIf { it.isNotEmpty() } ?: continue
             if (code == "en") return null
-            if (code == "zh") {
-                // Likely subtags: Taiwan, Hong Kong and Macao write Traditional, elsewhere Simplified.
-                val script = locale.script.takeIf { it.isNotEmpty() }
-                    ?: if (locale.country in setOf("TW", "HK", "MO")) "Hant" else "Hans"
-                if (script == "Hans") return "CUVS"
-                continue
-            }
-            LOCALES.entries.firstOrNull { it.value.substringBefore('-') == code }?.let { return it.key }
+            forLanguage(tag)?.let { return it }
         }
         return null
+    }
+
+    /** The locale Bible for one language tag, or null when that language has none. */
+    private fun forLanguage(tag: String): String? {
+        val locale = Locale.forLanguageTag(tag.replace('_', '-'))
+        val code = locale.language.takeIf { it.isNotEmpty() } ?: return null
+        if (code == "zh") {
+            // Likely subtags: Taiwan, Hong Kong and Macao write Traditional, elsewhere Simplified.
+            val script = locale.script.takeIf { it.isNotEmpty() }
+                ?: if (locale.country in setOf("TW", "HK", "MO")) "Hant" else "Hans"
+            return if (script == "Hans") "CUVS" else null
+        }
+        return LOCALES.entries.firstOrNull { it.value.substringBefore('-') == code }?.key
+    }
+
+    /**
+     * The translations of [ids] to offer a reader — iOS's `AssetPack.offeredTranslations`: everything
+     * that isn't a locale Bible, and a locale Bible only when it is in one of the reader's languages
+     * (any of them, not only the first) — a German reader is not shown the 和合本 or the 개역한글. A
+     * locale Bible already downloaded stays offered ([installed]), so changing the device's language
+     * never hides a Bible someone reads.
+     */
+    fun offered(ids: List<String>, preferred: List<String>, installed: (String) -> Boolean = { false }): List<String> {
+        val wanted = preferred.mapNotNull(::forLanguage).toSet()
+        return ids.filter { it !in LOCALES || it in wanted || installed(it) }
     }
 }

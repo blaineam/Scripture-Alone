@@ -1150,7 +1150,7 @@ private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, on
             Text(model.translationId, color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            for (id in BundledTranslations.ids) {
+            for (id in model.translationChoices()) {
                 MenuChoice(id, selected = id == model.translationId, palette) {
                     open = false
                     model.selectTranslation(id)

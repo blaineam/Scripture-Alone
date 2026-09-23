@@ -189,14 +189,18 @@ final class ReaderModel {
 
     private var importedEntries: [TranslationEntry] = []
 
-    /// The translations the app offers from the start: the ASV, the BSB and KJV, and a Bible for
-    /// each of the big-8 locales (docs/localization.md).
+    /// The translations the app offers from the start: the ASV, the BSB and KJV, and the Bible for
+    /// each of the reader's own languages (docs/localization.md) — not all eight: a Bible in a
+    /// language the reader doesn't use is clutter. See `AssetPack.offeredTranslations`.
     ///
     /// The ASV appears once its package is open. The rest appear *whether or not* they have
     /// been downloaded: they are on-demand asset packs, and choosing one is what fetches it — see
     /// `selectTranslation`. Their entries point at where the file will be once it arrives.
     private static func makeBundledEntries() -> [TranslationEntry] {
-        (["ASV"] + AssetPack.translations.compactMap(\.translationID)).compactMap { id -> TranslationEntry? in
+        let offered = AssetPack.offeredTranslations(forPreferredLanguages: Locale.preferredLanguages) {
+            FileManager.default.fileExists(atPath: AssetLibrary.installedURL(for: $0).path)
+        }
+        return (["ASV"] + offered.compactMap(\.translationID)).compactMap { id -> TranslationEntry? in
             guard let pack = AssetPack(translationID: id) else { return nil }
             if SealedTranslations.shared.package(id) != nil {
                 return TranslationEntry(id: id, name: pack.title, source: .package)

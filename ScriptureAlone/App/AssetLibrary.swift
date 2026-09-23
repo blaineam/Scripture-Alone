@@ -93,17 +93,31 @@ enum AssetPack: String, CaseIterable, Sendable {
             let language = Locale.Language(identifier: tag)
             guard let code = language.languageCode?.identifier else { continue }
             if code == "en" { return nil }
-            if code == "zh" {
-                let script = language.script?.identifier ?? Locale.Language(identifier: tag).maximalIdentifier
-                    .split(separator: "-").dropFirst().first.map(String.init)
-                if script == "Hans" { return .cuvs }
-                continue
-            }
-            if let pack = translations.first(where: { $0.locale?.split(separator: "-").first.map(String.init) == code }) {
-                return pack
-            }
+            if let pack = bible(forLanguage: tag) { return pack }
         }
         return nil
+    }
+
+    /// The locale Bible for one language tag, or nil when that language has none.
+    private static func bible(forLanguage tag: String) -> AssetPack? {
+        let language = Locale.Language(identifier: tag)
+        guard let code = language.languageCode?.identifier else { return nil }
+        if code == "zh" {
+            let script = language.script?.identifier ?? Locale.Language(identifier: tag).maximalIdentifier
+                .split(separator: "-").dropFirst().first.map(String.init)
+            return script == "Hans" ? .cuvs : nil
+        }
+        return translations.first { $0.locale?.split(separator: "-").first.map(String.init) == code }
+    }
+
+    /// The translations to offer a reader: the English ones always, and a locale Bible only when
+    /// it is in one of the reader's languages (any of them, not only the first) — a German reader
+    /// is not shown the 和合本 or the 개역한글. A locale Bible already on the device stays offered
+    /// (`installed`), so changing the device's language never hides a Bible someone reads.
+    static func offeredTranslations(forPreferredLanguages languages: [String],
+                                    installed: (AssetPack) -> Bool = { _ in false }) -> [AssetPack] {
+        let wanted = Set(languages.compactMap { bible(forLanguage: $0) })
+        return translations.filter { $0.locale == nil || wanted.contains($0) || installed($0) }
     }
 
     /// The asset-pack identifier as uploaded to App Store Connect. Must match `assetPackID` in

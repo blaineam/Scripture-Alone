@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.datastore.preferences.core.MutablePreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.blainemiller.scripturealone.companion.LocaleBible
 import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.BundledTranslations
@@ -913,6 +914,9 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    /** The translations the switcher lists — see [menuTranslations]. */
+    fun translationChoices(): List<String> = menuTranslations(translationId)
+
     private companion object {
         /** The device's languages, most preferred first, as BCP 47 tags. */
         const val SEARCH_SYNC_DELAY_MS = 2_000L
@@ -927,6 +931,15 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
          * pick one of these: silently fetching 15 MB because the reader's translation wasn't here
          * would be the app spending the reader's data on its own (iOS's `isOnDevice`).
          */
+        /**
+         * The translations the switcher lists: every translation, minus the locale Bibles in languages
+         * the reader doesn't use ([LocaleBible.offered]). The one being read always stays.
+         */
+        fun menuTranslations(current: String): List<String> =
+            LocaleBible.offered(BundledTranslations.ids, deviceLanguages()) { id ->
+                id == current || AssetPack.forTranslation(id)?.let { AssetLibrary.isAttached && AssetLibrary.isDownloaded(it) } == true
+            }
+
         fun isOnDevice(id: String): Boolean {
             val pack = AssetPack.forTranslation(id) ?: return true
             return !AssetLibrary.isAttached || AssetLibrary.isOnDevice(pack)
