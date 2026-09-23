@@ -2,6 +2,9 @@
 
 ## After 1.0.0
 
+- The commentary picker has an ⓘ that says where each commentator stands — Calvin (Reformed, infant
+  baptism, Presbyterian), Gill (Particular Baptist) and Jamieson-Fausset-Brown (Presbyterian and
+  Anglican) — so a reader knows whose tradition is speaking on baptism and church-order passages.
 - Scripture Alone speaks eight more languages — Simplified Chinese, Japanese, German, French,
   Spanish, Korean, Brazilian Portuguese and Italian — on iPhone, iPad, Apple Watch, the widgets
   and Android. Each language comes with a whole 66-book Bible of its own: the 和合本, the 文語訳,

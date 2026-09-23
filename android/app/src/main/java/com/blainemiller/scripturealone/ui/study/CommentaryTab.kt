@@ -19,11 +19,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -102,10 +104,16 @@ fun CommentaryTab(verse: VerseRef, study: StudyModel, reader: ReaderViewModel, p
 
     Column(Modifier.fillMaxSize()) {
         if (sources.size > 1) {
-            SegmentedPicker(
-                sources.map { it.shortName }, sources.indexOf(source), palette,
-                Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            ) { study.selectCommentary(sources[it].id) }
+            var showingTraditions by remember { mutableStateOf(false) }
+            Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                SegmentedPicker(
+                    sources.map { it.shortName }, sources.indexOf(source), palette, Modifier.weight(1f),
+                ) { study.selectCommentary(sources[it].id) }
+                IconButton(onClick = { showingTraditions = true }) {
+                    Icon(Icons.Outlined.Info, contentDescription = "Where these commentators stand", tint = palette.accent)
+                }
+            }
+            if (showingTraditions) CommentatorTraditionsDialog(palette) { showingTraditions = false }
         }
         when {
             commentary == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

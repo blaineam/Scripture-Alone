@@ -10,6 +10,7 @@ struct CommentaryView: View {
 
     @AppStorage("study.commentarySource") private var sourceID = "calvin"
     @State private var loaded: Loaded?
+    @State private var showingTraditions = false
 
     struct Prepared: Identifiable {
         let entry: CommentaryEntry
@@ -32,11 +33,24 @@ struct CommentaryView: View {
     var body: some View {
         VStack(spacing: 0) {
             if sources.count > 1 {
-                Picker("Commentary", selection: Binding(get: { source?.id ?? sourceID }, set: { sourceID = $0 })) {
-                    ForEach(sources) { Text($0.shortName).tag($0.id) }
+                HStack(spacing: 8) {
+                    Picker("Commentary", selection: Binding(get: { source?.id ?? sourceID }, set: { sourceID = $0 })) {
+                        ForEach(sources) { Text($0.shortName).tag($0.id) }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    Button {
+                        showingTraditions = true
+                    } label: {
+                        Image(systemName: "info.circle")
+                    }
+                    .buttonStyle(.borderless)
+                    .accessibilityLabel(Text(verbatim: "Where these commentators stand"))
+                    .popover(isPresented: $showingTraditions) {
+                        CommentatorTraditionsView()
+                            .presentationCompactAdaptation(.sheet)
+                    }
                 }
-                .pickerStyle(.segmented)
-                .labelsHidden()
                 .padding(.horizontal)
                 .padding(.vertical, 8)
             }
