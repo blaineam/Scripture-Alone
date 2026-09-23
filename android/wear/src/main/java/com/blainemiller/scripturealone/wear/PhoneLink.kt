@@ -14,7 +14,8 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The watch's end of the Data Layer — `WatchPhoneLink` on the Apple Watch: which translation the reader
- * uses on the phone, and the phone's favorites/highlights/notes snapshot.
+ * uses on the phone, the phone's favorites/highlights/notes snapshot, and the editions of the locale
+ * Bibles the watch doesn't bundle (one data item each, [WearLink.PATH_EDITION_PREFIX]).
  *
  * The phone writes each as a data item at a fixed path ([WearLink]). A data item holds only its latest
  * value and reaches the watch whenever the two can talk — WatchConnectivity's application context, in
@@ -52,6 +53,18 @@ object PhoneLink {
                     return
                 }
                 bible.receiveSnapshot(bytes.decodeToString())
+            }
+            else -> {
+                val id = WearLink.editionId(path) ?: return
+                val asset = map.getAsset(WearLink.KEY_EDITION) ?: return
+                // catchUp re-reads every item at each launch: a few megabytes only when they changed.
+                if (bible.holdsEdition(id, asset.digest)) return
+                try {
+                    Tasks.await(Wearable.getDataClient(context).getFdForAsset(asset), 120, TimeUnit.SECONDS)
+                        .inputStream.use { bible.receiveEdition(id, it, asset.digest) }
+                } catch (e: Exception) {
+                    Log.i("PhoneLink", "Edition $id not read: ${e.message}")
+                }
             }
         }
     }

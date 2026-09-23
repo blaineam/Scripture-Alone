@@ -173,8 +173,18 @@ res dir); Listen's voice follows the Bible's `meta.language`; `ContextStore` rea
 (missing table = English); commentary and lexicon English hidden outside English (`AppLanguage`); Verse of
 the Day `themes`; per-app language via `generateLocaleConfig`.
 
+Wear OS (2026-09-23), as the Apple Watch: the phone builds a locale Bible's watch edition (`WatchEditionBuilder`
+in `:shared` — meta with `language`, books, chapters, verses, `kjv_map`) once its pack is on the phone and sends
+it over the Data Layer (`/scripturealone/edition/<ID>`); the watch stores it in `files/editions`, lists it in the
+picker and follows the phone's choice. It draws native verse numbers through `VerseNumbering` while everything
+stored or routed stays KJV keys; book names follow the edition's `meta.language`; Speak uses it; Verse of the
+Day (app, tile, complication) shows the device language's Bible from `DailyVerses.json`. Emulator-verified with
+an adb-pushed LSG edition ("Lire Jean 3", "Psaumes 51:12" for KJV 51:10); the phone→watch transfer itself is
+not yet verified on devices.
+
 Next: interface strings (Levi) · Context.sqlite labels · commentary/lexicon gating · Verse of the
-Day per locale · watch + widgets (editions carry `kjv_map`; `BookNames` from the snapshot) ·
+Day per locale · watch + widgets (editions carry `kjv_map`; `BookNames` from the snapshot; Wear OS done,
+phone→watch transfer unverified on devices) ·
 Android parity for all of the above · store listings + localized screenshots · packs uploaded and
 in the submission · website per-locale Bible info.
 

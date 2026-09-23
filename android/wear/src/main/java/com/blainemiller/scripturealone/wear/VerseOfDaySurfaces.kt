@@ -37,6 +37,11 @@ import com.blainemiller.scripturealone.companion.VersePalette
 import com.blainemiller.scripturealone.data.daily.DailyVerseCatalog
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors
 import java.time.Instant
 
 /**
@@ -46,16 +51,25 @@ import java.time.Instant
  */
 class VerseOfDayTileService : TileService() {
 
-    override fun onTileRequest(requestParams: RequestBuilders.TileRequest): ListenableFuture<TileBuilders.Tile> {
-        val now = Instant.now()
-        val today = WatchVerseOfDay.at(WatchDaily.catalog(this), now, WatchBible.get(this).translation)
-        val layout = layout(this, requestParams.deviceConfiguration, today)
-        val tile = TileBuilders.Tile.Builder()
-            .setResourcesVersion(RESOURCES_VERSION)
-            .setFreshnessIntervalMillis(DailyVerseCatalog.nextMidnight(now).toEpochMilli() - now.toEpochMilli())
-            .setTileTimeline(TimelineBuilders.Timeline.fromLayoutElement(layout))
-            .build()
-        return Futures.immediateFuture(tile)
+    /** Off the main thread: the passage may be read through a received edition's verse numbering. */
+    private val worker = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
+
+    override fun onTileRequest(requestParams: RequestBuilders.TileRequest): ListenableFuture<TileBuilders.Tile> = worker.submit(
+        Callable {
+            val now = Instant.now()
+            val today = WatchBible.get(this).verseOfDay(now)
+            val layout = layout(this, requestParams.deviceConfiguration, today)
+            TileBuilders.Tile.Builder()
+                .setResourcesVersion(RESOURCES_VERSION)
+                .setFreshnessIntervalMillis(DailyVerseCatalog.nextMidnight(now).toEpochMilli() - now.toEpochMilli())
+                .setTileTimeline(TimelineBuilders.Timeline.fromLayoutElement(layout))
+                .build()
+        },
+    )
+
+    override fun onDestroy() {
+        worker.shutdown()
+        super.onDestroy()
     }
 
     override fun onTileResourcesRequest(requestParams: RequestBuilders.ResourcesRequest): ListenableFuture<ResourceBuilders.Resources> =
@@ -122,8 +136,7 @@ class VerseOfDayTileService : TileService() {
 class VerseComplicationService : SuspendingTimelineComplicationDataSourceService() {
 
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationDataTimeline? {
-        val translation = WatchBible.get(this).translation
-        val week = WatchVerseOfDay.week(WatchDaily.catalog(this), Instant.now(), translation)
+        val week = withContext(Dispatchers.IO) { WatchBible.get(this@VerseComplicationService).verseOfDayWeek(Instant.now()) }
         val first = week.firstOrNull() ?: return null
         return ComplicationDataTimeline(
             defaultComplicationData = data(request.complicationType, first.third) ?: return null,

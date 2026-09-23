@@ -12,7 +12,8 @@ import kotlinx.coroutines.launch
 
 /**
  * Scripture Alone on Wear OS — the Apple Watch app: today's verse, favorites and notes (read-only, from
- * the phone), a simple reader and the translation picker. Standalone: the editions ship in the APK.
+ * the phone), a simple reader and the translation picker. Standalone: the English editions ship in the
+ * APK; a locale Bible's edition comes from the phone ([PhoneLink]).
  */
 class MainActivity : ComponentActivity() {
 

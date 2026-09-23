@@ -1,12 +1,18 @@
 package com.blainemiller.scripturealone.ui.widget
 
 import android.content.Context
+import android.os.ParcelFileDescriptor
+import com.blainemiller.scripturealone.companion.LocaleBible
 import com.blainemiller.scripturealone.companion.VerseSnapshot
+import com.blainemiller.scripturealone.companion.WatchEditionBuilder
+import com.blainemiller.scripturealone.data.assets.AssetLibrary
+import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.companion.WearLink
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.Asset
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
@@ -14,8 +20,10 @@ import java.util.concurrent.TimeUnit
  * reader is using and sends it the favorites/highlights/notes snapshot, as data items the watch reads
  * whenever it next can (the semantics of WatchConnectivity's application context).
  *
- * The watch bundles the ASV, BSB and KJV, so only the choice travels for those. Sending an *imported*
- * translation's watch edition (`WatchEdition` + a file transfer on iOS) waits for import on Android.
+ * The watch bundles the ASV, BSB and KJV, so only the choice travels for those. For one of the big-8
+ * locales' Bibles ([LocaleBible]) the phone also writes the watch edition ([WatchEditions]) once its pack
+ * is on the phone and sends it as an asset in a data item of its own ([publishEdition]) — iOS's
+ * `transferFile`. Sending an *imported* translation's edition waits for import on Android.
  *
  * Every call is best-effort: a phone without Google Play services, or with no watch, simply has no one
  * to tell, and the Data Layer delivers to a watch paired later on its own.
@@ -46,6 +54,55 @@ object WearPublisher {
         if (put(context) { Wearable.getDataClient(context).putDataItem(request) }) {
             WidgetPrefs.setPublished(context, "snapshot", signature)
         }
+    }
+
+    /**
+     * Sends the watch the edition of [translation] if it is a locale Bible whose pack is on the phone —
+     * `WatchLink.sendEditionIfNeeded`. Blocking (it may write a few megabytes); call off the main thread.
+     *
+     * Each edition is its own data item, so it is sent once per database: the Data Layer keeps it and
+     * hands it to the watch whenever the watch can take it — after a reinstall too — and the watch skips
+     * an asset whose digest it already holds. The English Bibles are bundled on the watch; an online
+     * translation has no file (and its terms forbid storing it).
+     */
+    fun publishEdition(context: Context, translation: String) {
+        if (!LocaleBible.isLocaleBible(translation) || !WearLink.isSafeId(translation)) return
+        val pack = AssetPack.forTranslation(translation) ?: return
+        if (!AssetLibrary.isAttached) AssetLibrary.attach(context)
+        if (!AssetLibrary.isOnDevice(pack)) return
+        val source = AssetLibrary.file(context, pack) ?: return
+        val signature = "e:${WatchEditionBuilder.FORMAT}:${source.length()}:${source.lastModified()}"
+        if (WidgetPrefs.published(context, "edition.$translation") == signature) return
+        // Most phones have no watch: don't write megabytes for no one. A watch paired later gets it at
+        // the next launch or translation change.
+        if (!hasWatch(context)) return
+        val edition = File(File(context.cacheDir, "WatchEditions"), WatchEditionBuilder.fileName(translation))
+        try {
+            WatchEditions.write(source, edition)
+        } catch (e: Exception) {
+            android.util.Log.i("WearPublisher", "Watch edition of $translation not written: ${e.message}")
+            return
+        }
+        try {
+            ParcelFileDescriptor.open(edition, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                val request = PutDataMapRequest.create(WearLink.editionPath(translation)).apply {
+                    dataMap.putAsset(WearLink.KEY_EDITION, Asset.createFromFd(fd))
+                    dataMap.putString(WearLink.KEY_TRANSLATION, translation)
+                }.asPutDataRequest().setUrgent()
+                // The Data Layer has its own copy once the put completes.
+                if (put(context) { Wearable.getDataClient(context).putDataItem(request) }) {
+                    WidgetPrefs.setPublished(context, "edition.$translation", signature)
+                }
+            }
+        } finally {
+            edition.delete()
+        }
+    }
+
+    private fun hasWatch(context: Context): Boolean = try {
+        Tasks.await(Wearable.getNodeClient(context).connectedNodes, 20, TimeUnit.SECONDS).isNotEmpty()
+    } catch (e: Exception) {
+        false
     }
 
     /** Runs a Play services call to completion off the main thread; false if it could not. */

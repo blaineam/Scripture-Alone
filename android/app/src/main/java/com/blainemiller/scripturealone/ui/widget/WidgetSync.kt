@@ -10,6 +10,8 @@ import android.content.Intent
 import androidx.glance.appwidget.updateAll
 import androidx.startup.Initializer
 import com.blainemiller.scripturealone.companion.VerseSnapshot
+import com.blainemiller.scripturealone.data.assets.AssetLibrary
+import com.blainemiller.scripturealone.data.assets.AssetState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -60,6 +62,14 @@ object WidgetSync {
 
         settings.map { it.translation }.distinctUntilChanged()
             .onEach { translation -> WearPublisher.publishTranslation(app, translation, WidgetPrefs.translationChangedAt(app, translation)) }
+            .launchIn(scope)
+
+        // A locale Bible's watch edition, once its pack is on the phone — so also when the pack lands
+        // after the switch (first launch fetches it without waiting).
+        val readyBibles = AssetLibrary.states.map { states -> states.filterValues { it == AssetState.Ready }.keys }.distinctUntilChanged()
+        combine(settings.map { it.translation }.distinctUntilChanged(), readyBibles, ::Pair)
+            .map { it.first }
+            .onEach { translation -> WearPublisher.publishEdition(app, translation) }
             .launchIn(scope)
 
         val library = WidgetContent.sources(app).flatMapLatest { it.library }

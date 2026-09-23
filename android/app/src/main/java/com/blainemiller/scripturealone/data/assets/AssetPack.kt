@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.data.assets
 
 import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.companion.LocaleBible
 import com.blainemiller.scripturealone.text.AppText
 
 /**
@@ -95,22 +96,8 @@ enum class AssetPack(
          * only: the 和合本 here is the simplified-script edition, and a Traditional reader should not be
          * handed it unasked.
          */
-        fun bible(forPreferredLanguages: List<String>): AssetPack? {
-            for (tag in forPreferredLanguages) {
-                val locale = java.util.Locale.forLanguageTag(tag.replace('_', '-'))
-                val code = locale.language.takeIf { it.isNotEmpty() } ?: continue
-                if (code == "en") return null
-                if (code == "zh") {
-                    // Likely subtags: Taiwan, Hong Kong and Macao write Traditional, elsewhere Simplified.
-                    val script = locale.script.takeIf { it.isNotEmpty() }
-                        ?: if (locale.country in setOf("TW", "HK", "MO")) "Hant" else "Hans"
-                    if (script == "Hans") return CUVS
-                    continue
-                }
-                translations.firstOrNull { it.locale?.substringBefore('-') == code }?.let { return it }
-            }
-            return null
-        }
+        fun bible(forPreferredLanguages: List<String>): AssetPack? =
+            LocaleBible.forPreferredLanguages(forPreferredLanguages)?.let(::forTranslation)
 
         /** The pack for a bundled translation, or null for anything else. */
         fun forTranslation(id: String): AssetPack? = entries.firstOrNull { it.isTranslation && it.name == id }

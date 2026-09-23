@@ -15,8 +15,25 @@ object WearLink {
     /** Phone → watch: the [VerseSnapshot] JSON — favorites, highlights and notes — as an asset. */
     const val PATH_SNAPSHOT = "/scripturealone/snapshot"
 
-    /** Prefix both paths share; the watch's listener filters on it. */
+    /**
+     * Phone → watch: the watch edition ([WatchEditionBuilder]) of a Bible the watch doesn't bundle — one
+     * of the big-8 locales' ([LocaleBible]) — at `PATH_EDITION_PREFIX + id`, as an asset. One item per
+     * translation, so a watch reinstalled later still finds every edition the phone has sent; the
+     * iPhone's `transferFile` of the same file.
+     */
+    const val PATH_EDITION_PREFIX = "/scripturealone/edition/"
+
+    /** Prefix every path shares; the watch's listener filters on it. */
     const val PATH_PREFIX = "/scripturealone"
+
+    /** The edition asset. */
+    const val KEY_EDITION = "edition"
+
+    fun editionPath(id: String): String = PATH_EDITION_PREFIX + id
+
+    /** The translation an edition path carries, or null for any other path or an unsafe id. */
+    fun editionId(path: String): String? =
+        path.takeIf { it.startsWith(PATH_EDITION_PREFIX) }?.removePrefix(PATH_EDITION_PREFIX)?.takeIf(::isSafeId)
 
     /** A translation identifier. */
     const val KEY_TRANSLATION = "translation"

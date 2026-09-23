@@ -36,8 +36,10 @@ class VerseSpeaker(context: Context, private val onSpeaking: (Boolean) -> Unit) 
         })
     }
 
-    fun speak(text: String) {
+    /** Speaks [text] in [language] (the Bible's `meta.language`), or US English for the English Bibles. */
+    fun speak(text: String, language: String? = null) {
         if (!ready || text.isBlank()) return
+        tts.language = language?.let(Locale::forLanguageTag) ?: Locale.US
         tts.setSpeechRate(0.95f)
         tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "verse")
     }

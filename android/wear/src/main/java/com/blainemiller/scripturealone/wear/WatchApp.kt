@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -70,8 +71,8 @@ import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.blainemiller.scripturealone.companion.VersePalette
 import com.blainemiller.scripturealone.companion.VerseSnapshot
 import com.blainemiller.scripturealone.companion.VerseSnapshot.Kind
+import com.blainemiller.scripturealone.data.VerseNumbering
 import com.blainemiller.scripturealone.data.VerseRange
-import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookGroup
 import com.blainemiller.scripturealone.data.canon.BookID
 import kotlinx.coroutines.Dispatchers
@@ -121,10 +122,11 @@ fun WatchApp(bible: WatchBible, pendingRoute: MutableStateFlow<String?>) {
                     VerseScreen(bible, state, range) { nav.navigate(it) }
                 }
             }
-            composable(Routes.BOOKS) { BooksScreen { nav.navigate(it) } }
+            // Keyed on the language books are named in, which follows the edition being read.
+            composable(Routes.BOOKS) { key(state.edition?.language) { BooksScreen { nav.navigate(it) } } }
             composable("book/{book}") { entry ->
                 BookID.of(entry.arguments?.getString("book")?.toIntOrNull() ?: 0)?.let { book ->
-                    ChaptersScreen(book) { nav.navigate(it) }
+                    key(state.edition?.language) { ChaptersScreen(book) { nav.navigate(it) } }
                 }
             }
             composable("chapter/{book}/{chapter}/{focus}") { entry ->
@@ -199,8 +201,10 @@ private fun RowChip(
 
 @Composable
 private fun HomeScreen(bible: WatchBible, state: WatchBible.State, go: (String) -> Unit) {
-    val context = LocalContext.current
-    val today = remember(state.translation) { WatchVerseOfDay.at(WatchDaily.catalog(context), java.time.Instant.now(), state.translation) }
+    val verseOfDay by produceState<WatchVerseOfDay?>(null, state.translation, state.editions) {
+        value = withContext(Dispatchers.IO) { bible.verseOfDay() }
+    }
+    val today = verseOfDay
     val favorites = state.snapshot?.items(setOf(Kind.FAVORITE)).orEmpty().size
     val notes = state.snapshot?.items(setOf(Kind.NOTE)).orEmpty().size
     Screen {
@@ -231,18 +235,22 @@ private fun HomeScreen(bible: WatchBible, state: WatchBible.State, go: (String) 
 @Composable
 private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: VerseRange, go: (String) -> Unit) {
     val context = LocalContext.current
-    val verses by produceState<List<WatchVerse>?>(null, range, state.translation) {
-        value = withContext(Dispatchers.IO) { bible.edition(state.translation).verses(range) }
+    // [range] is in KJV keys (a favorite, a note, today's verse); drawn as the Bible numbers it.
+    val loadedPassage by produceState<Pair<List<WatchVerse>, VerseRange>?>(null, range, state.translation, state.editions) {
+        value = withContext(Dispatchers.IO) { bible.edition(state.translation).let { it.verses(range) to it.nativeRange(range) } }
     }
+    val verses = loadedPassage?.first
+    val shown = loadedPassage?.second ?: range
     var speaking by remember { mutableStateOf(false) }
     val speaker = remember { VerseSpeaker(context) { speaking = it } }
     DisposableEffect(Unit) { onDispose { speaker.shutdown() } }
     val notes = state.snapshot.notesOn(range)
-    val start = range.start
+    val start = shown.start
     val chapterName = chapterDisplay(start.book, start.chapter)
+    val language = state.edition?.language
 
     Screen {
-        item { Title(range.display, Accent) }
+        item { Title(shown.display, Accent) }
         val loaded = verses
         if (loaded != null && loaded.isEmpty()) {
             item { Text(stringResource(R.string.wear_verse_not_in_edition, state.translation), color = Secondary, textAlign = TextAlign.Center) }
@@ -251,7 +259,7 @@ private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: Verse
         if (!loaded.isNullOrEmpty()) {
             item {
                 Chip(
-                    onClick = { if (speaking) speaker.stop() else speaker.speak(loaded.joinToString(" ") { it.text }) },
+                    onClick = { if (speaking) speaker.stop() else speaker.speak(loaded.joinToString(" ") { it.text }, language) },
                     enabled = speaker.ready,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ChipDefaults.secondaryChipColors(),
@@ -269,7 +277,7 @@ private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: Verse
         item { RowChip(stringResource(R.string.wear_read_chapter, chapterName), R.drawable.ic_book) { go(Routes.chapter(start.book, start.chapter, start.verse)) } }
         item {
             Text(
-                bible.editions.firstOrNull { it.id == state.translation }?.name ?: state.translation,
+                state.edition?.name ?: state.translation,
                 style = MaterialTheme.typography.caption3, color = Secondary, textAlign = TextAlign.Center,
             )
         }
@@ -352,12 +360,18 @@ private fun ChaptersScreen(book: BookID, go: (String) -> Unit) {
 
 @Composable
 private fun ChapterScreen(bible: WatchBible, state: WatchBible.State, book: Int, chapter: Int, focus: Int, go: (String) -> Unit) {
-    val verses by produceState<List<WatchVerse>?>(null, book, chapter, state.translation) {
-        value = withContext(Dispatchers.IO) { bible.edition(state.translation).let { it.verses(it.chapterRange(book, chapter)) } }
+    // [book], [chapter] and [focus] are the Bible's own numbers; each verse is opened and marked by its
+    // KJV key.
+    val chapterLoad by produceState<Pair<List<WatchVerse>, VerseNumbering>?>(null, book, chapter, state.translation, state.editions) {
+        value = withContext(Dispatchers.IO) {
+            bible.edition(state.translation).let { it.nativeVerses(it.chapterRange(book, chapter)) to it.numbering }
+        }
     }
+    val verses = chapterLoad?.first
+    val numbering = chapterLoad?.second ?: VerseNumbering.IDENTITY
     val listState = rememberScalingLazyListState(initialCenterItemIndex = 0)
     val loaded = verses.orEmpty()
-    val colors = state.snapshot.highlightColors(VerseRange(VerseRef(book, chapter, 0), VerseRef(book, chapter, 999)))
+    val colors = state.snapshot.highlightColors(loaded, numbering)
     LaunchedEffect(verses) {
         val index = loaded.indexOfFirst { it.ref.verse == focus }
         if (focus > 1 && index >= 0) listState.scrollToItem(index + 1)
@@ -372,7 +386,7 @@ private fun ChapterScreen(bible: WatchBible, state: WatchBible.State, book: Int,
         item { Title(if (info.isSingleChapter) info.abbreviation else stringResource(R.string.wear_book_chapter, info.abbreviation, chapter)) }
         items(loaded) { verse ->
             VerseText(verse, numbered = true, highlight = colors[verse.ref.key]?.let { Color(VersePalette.highlight(it)) }) {
-                go(Routes.verse(VerseRange(verse.ref, verse.ref)))
+                go(Routes.verse(numbering.kjvRange(VerseRange(verse.ref, verse.ref))))
             }
         }
         if (next != null && loaded.isNotEmpty()) {
@@ -480,7 +494,7 @@ private fun Empty(icon: Int, title: String, message: String?) {
 private fun TranslationsScreen(bible: WatchBible, state: WatchBible.State) {
     Screen {
         item { Title(stringResource(R.string.wear_translation)) }
-        items(bible.editions) { edition ->
+        items(state.editions) { edition ->
             val selected = edition.id == state.translation
             ToggleChip(
                 checked = selected,
@@ -493,7 +507,7 @@ private fun TranslationsScreen(bible: WatchBible, state: WatchBible.State) {
         }
         item {
             val phone = state.phoneTranslation
-            val footer = if (phone != null && bible.editions.none { it.id == phone }) {
+            val footer = if (phone != null && state.editions.none { it.id == phone }) {
                 stringResource(R.string.wear_translation_phone_unavailable, phone)
             } else {
                 stringResource(R.string.wear_translation_follows_phone)
