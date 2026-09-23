@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The watch app's backup (Android 12+): only its preferences — the translation picked on the watch
+     and the one last heard from the phone. The editions the phone sent (whole Bibles) and the verse
+     snapshot are re-sent by the phone, so they stay out: an include list, well clear of the quota.
+     backup_rules.xml is the same list for older Wear OS. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="sharedpref" path="watch.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="sharedpref" path="watch.xml" />
+    </device-transfer>
+</data-extraction-rules>

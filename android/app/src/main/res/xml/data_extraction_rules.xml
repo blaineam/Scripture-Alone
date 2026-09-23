@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What Android 12+ carries to a reinstall (cloud backup) or a new phone (device transfer): the
+     reader's own settings and library, listed file by file — an include list, so anything not named
+     here (downloaded and imported Bibles, caches, widget/watch state, index fingerprints, the rating
+     prompt) never goes, and a new cache can never push the backup over its 25 MB quota. The API keys
+     live in no-backup storage and travel through Block Store instead. data/backup/SettingsBackup.kt
+     is the list in code; backup_rules.xml is the same list for Android 10–11. Keep all three in step
+     (BackupRulesTest checks). -->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="file" path="datastore/reader.preferences_pb" />
+        <include domain="sharedpref" path="study.xml" />
+        <include domain="sharedpref" path="compare.xml" />
+        <include domain="sharedpref" path="legacy.xml" />
+        <include domain="sharedpref" path="translations.xml" />
+        <include domain="file" path="userdata.sqlite" />
+        <include domain="file" path="userdata.sqlite-wal" />
+        <include domain="file" path="Keepsakes/" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="file" path="datastore/reader.preferences_pb" />
+        <include domain="sharedpref" path="study.xml" />
+        <include domain="sharedpref" path="compare.xml" />
+        <include domain="sharedpref" path="legacy.xml" />
+        <include domain="sharedpref" path="translations.xml" />
+        <include domain="file" path="userdata.sqlite" />
+        <include domain="file" path="userdata.sqlite-wal" />
+        <include domain="file" path="Keepsakes/" />
+    </device-transfer>
+</data-extraction-rules>

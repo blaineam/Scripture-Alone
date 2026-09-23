@@ -45,6 +45,7 @@ import com.blainemiller.scripturealone.data.reference.Passage
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.search.SearchHit
 import com.blainemiller.scripturealone.data.search.VerseSearch
+import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -98,6 +99,15 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
             ?: BundledTranslations.DEFAULT,
     )
         private set
+
+    /**
+     * The saved translation while it isn't on this device yet — after a reinstall or on a new phone,
+     * where Android's backup (`data/backup/`) brought the setting back but not the Bible: an on-demand
+     * pack not fetched again, or an API.Bible or ESV translation whose key Block Store hasn't handed
+     * back yet. The reader reads [translationId] meanwhile and switches when it is here, unless they
+     * have chosen a translation of their own first.
+     */
+    private var awaitedTranslation: String? = saved.translation?.takeIf { it != translationId }
 
     /**
      * How the translation being read numbers its verses against the KJV keys marks are stored under.
@@ -195,6 +205,14 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
             } else {
                 // Fetched while the ASV is read; the reader switches when it lands (or retries).
                 selectTranslation(preferred)
+            }
+        }
+        awaitedTranslation?.let { awaited ->
+            viewModelScope.launch {
+                // A pack is listed from the start (and fetched by selecting it); an online translation
+                // is listed once its key is restored.
+                TranslationLibrary.state.first { awaitedTranslation != awaited || awaited in BundledTranslations.ids }
+                if (awaitedTranslation == awaited) selectTranslation(awaited)
             }
         }
     }
@@ -302,6 +320,7 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         // opens on the same verse, whatever it calls it.
         val anchor = numbering.kjv(topVerse ?: VerseRef(location.book, location.chapter, 1).key)
         translationId = id
+        awaitedTranslation = null
         prefs.write { it[ReaderKeys.TRANSLATION] = id }
         load(anchor = anchor)
     }

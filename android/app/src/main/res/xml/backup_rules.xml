@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Auto Backup on Android 10–11 (android:fullBackupContent): the same include list as
+     data_extraction_rules.xml, which Android 12+ reads instead. See that file. -->
+<full-backup-content>
+    <include domain="file" path="datastore/reader.preferences_pb" />
+    <include domain="sharedpref" path="study.xml" />
+    <include domain="sharedpref" path="compare.xml" />
+    <include domain="sharedpref" path="legacy.xml" />
+    <include domain="sharedpref" path="translations.xml" />
+    <include domain="file" path="userdata.sqlite" />
+    <include domain="file" path="userdata.sqlite-wal" />
+    <include domain="file" path="Keepsakes/" />
+</full-backup-content>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The watch app's backup before Android 12: the same include list as data_extraction_rules.xml. -->
+<full-backup-content>
+    <include domain="sharedpref" path="watch.xml" />
+</full-backup-content>
