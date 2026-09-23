@@ -1,0 +1,70 @@
+{
+  "iphone-6.9": {
+    "reader": [
+      "La Parole,",
+      "rien d'autre"
+    ],
+    "jump": [
+      "Allez partout,",
+      "d'un seul geste"
+    ],
+    "study": [
+      "Renvois",
+      "et contexte"
+    ],
+    "maps": [
+      "Cartes, frises",
+      "et graphiques"
+    ],
+    "sermon-notes": [
+      "Le sermon,",
+      "en une photo"
+    ],
+    "listen": [
+      "Écoutez",
+      "chaque chapitre"
+    ],
+    "share": [
+      "Partagez un verset",
+      "avec style"
+    ],
+    "themes": [
+      "À votre façon,",
+      "jour et nuit"
+    ]
+  },
+  "ipad-13": {
+    "reader": [
+      "La Parole,",
+      "rien d'autre"
+    ],
+    "jump": [
+      "Allez partout,",
+      "d'un seul geste"
+    ],
+    "study": [
+      "Renvois",
+      "et contexte"
+    ],
+    "maps": [
+      "Cartes, frises",
+      "et graphiques"
+    ],
+    "sermon-notes": [
+      "Le sermon,",
+      "en une photo"
+    ],
+    "listen": [
+      "Écoutez",
+      "chaque chapitre"
+    ],
+    "share": [
+      "Partagez un verset",
+      "avec style"
+    ],
+    "themes": [
+      "À votre façon,",
+      "jour et nuit"
+    ]
+  }
+}

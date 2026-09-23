@@ -7,8 +7,12 @@
 # screens, invented content, no personal data, no taps. Status bar pinned to 9:41 on iOS
 # (watchOS simulators refuse status-bar overrides).
 #
-# Output: screenshots/<device>/NN-<scene>.png at native resolution. Framing (Monkr, with
-# captions) and upload happen in scripts/update-screenshots.sh.
+# Output: screenshots/<device>/NN-<scene>.png (English, the base set every localization gets) and
+# screenshots/<device>/<locale>/NN-<scene>.png for each big-8 locale — every scene in every locale,
+# because an uploaded locale directory REPLACES that locale's whole set. Each locale launches with
+# its language and region, so the app shows that locale's own Bible (Debug installs it from the
+# bundle), book names and interface. SHOT_LOCALES narrows the list ("en-US fr-FR").
+# Framing (Monkr, with captions) and upload happen in scripts/update-screenshots.sh.
 #
 # Usage: ./Tools/capture_screenshots.sh [all|iphone|ipad|watch]
 set -euo pipefail
@@ -23,6 +27,11 @@ WATCH_BUNDLE="com.blainemiller.ScriptureAlone.watchkitapp"
 PROJECT="ScriptureAlone.xcodeproj"
 export CAP_APP_NAME="Scripture Alone"
 ONLY="${1:-all}"
+read -r -a LOCALES <<<"${SHOT_LOCALES:-en-US zh-Hans ja de-DE fr-FR es-ES ko pt-BR it}"
+
+locale_dir() {  # locale_dir <base dir> <asc locale> -> where that locale's captures go
+    if [ "$2" = "en-US" ]; then echo "$1"; else echo "$1/$2"; fi
+}
 OUT_DIR="$PROJECT_ROOT/screenshots"
 SLIDE="$PROJECT_ROOT/docs/appstore-screenshots/sample-slide.jpg"
 
@@ -104,19 +113,23 @@ capture_ios() {  # capture_ios "<sim spec>" <rawKey>
     mkdir -p "$container/tmp"
     cp "$SLIDE" "$container/tmp/sample-slide.jpg"
 
-    rm -rf "$out"
-    mkdir -p "$out"
-    local entry file scene extra
-    for entry in "${SCENES[@]}"; do
-        IFS='|' read -r file scene extra <<<"$entry"
-        cap_terminate_foreign "$udid" "$BUNDLE_ID"
-        # shellcheck disable=SC2086
-        CAP_EXTRA_LAUNCH_ARGS="-inMemoryStore -seedDemoLibrary -AppleLanguages (en) -AppleLocale en_US $extra" \
-            cap_launch "$udid" "$BUNDLE_ID" "$scene" screenshotScene
-        # Scenes stage themselves ~0.7-3 s after launch; the listen scene needs a voice going.
-        local settle=6
-        case "$scene" in listen|sermon-notes|maps) settle=9 ;; esac
-        cap_screenshot "$udid" "$out/$file.png" "$settle"
+    local entry file scene extra locale dir
+    for locale in "${LOCALES[@]}"; do
+        dir="$(locale_dir "$out" "$locale")"
+        mkdir -p "$dir"
+        rm -f "$dir"/*.png   # never rm -rf the base: the locale sets live inside it
+        echo "  [$locale]"
+        for entry in "${SCENES[@]}"; do
+            IFS='|' read -r file scene extra <<<"$entry"
+            cap_terminate_foreign "$udid" "$BUNDLE_ID"
+            # shellcheck disable=SC2086
+            CAP_EXTRA_LAUNCH_ARGS="-inMemoryStore -seedDemoLibrary $(cap_locale_args "$locale") $extra" \
+                cap_launch "$udid" "$BUNDLE_ID" "$scene" screenshotScene
+            # Scenes stage themselves ~0.7-3 s after launch; the listen scene needs a voice going.
+            local settle=6
+            case "$scene" in listen|sermon-notes|maps) settle=9 ;; esac
+            cap_screenshot "$udid" "$dir/$file.png" "$settle"
+        done
     done
     xcrun simctl terminate "$udid" "$BUNDLE_ID" >/dev/null 2>&1 || true
     cap_teardown "$udid" "$BUNDLE_ID"
@@ -142,8 +155,6 @@ capture_watch() {
     xcrun simctl uninstall "$udid" "$WATCH_BUNDLE" >/dev/null 2>&1 || true
     xcrun simctl install "$udid" "$derived/Build/Products/Debug-watchsimulator/Scripture Alone.app"
 
-    rm -rf "$out"
-    mkdir -p "$out"
     # "<file>|<-watchRoute value or empty for home>"
     local shots=(
         "01-today|"
@@ -151,23 +162,31 @@ capture_watch() {
         "03-favorites|favorites"
         "04-notes|notes"
     )
-    local entry file route tmp
-    for entry in "${shots[@]}"; do
-        IFS='|' read -r file route <<<"$entry"
-        xcrun simctl terminate "$udid" "$WATCH_BUNDLE" >/dev/null 2>&1 || true
-        sleep 0.5
-        if [ -n "$route" ]; then
-            xcrun simctl launch "$udid" "$WATCH_BUNDLE" -inMemoryStore -seedDemoLibrary -watchRoute "$route" >/dev/null
-        else
-            xcrun simctl launch "$udid" "$WATCH_BUNDLE" -inMemoryStore -seedDemoLibrary >/dev/null
-        fi
-        sleep 6
-        # A launch that never came up captures the watch FACE and still "succeeds" — the
-        # framed set must be eyeballed (see reference_watch_screenshot_traps).
-        tmp="${TMPDIR:-/tmp}/.sa-watch-$$-$RANDOM.png"
-        xcrun simctl io "$udid" screenshot "$tmp" >/dev/null
-        mv -f "$tmp" "$out/$file.png"
-        echo "  → $file.png"
+    local entry file route tmp locale dir
+    for locale in "${LOCALES[@]}"; do
+        dir="$(locale_dir "$out" "$locale")"
+        mkdir -p "$dir"
+        rm -f "$dir"/*.png   # never rm -rf the base: the locale sets live inside it
+        echo "  [$locale]"
+        # shellcheck disable=SC2206
+        local lang=($(cap_locale_args "$locale"))
+        for entry in "${shots[@]}"; do
+            IFS='|' read -r file route <<<"$entry"
+            xcrun simctl terminate "$udid" "$WATCH_BUNDLE" >/dev/null 2>&1 || true
+            sleep 0.5
+            if [ -n "$route" ]; then
+                xcrun simctl launch "$udid" "$WATCH_BUNDLE" -inMemoryStore -seedDemoLibrary "${lang[@]}" -watchRoute "$route" >/dev/null
+            else
+                xcrun simctl launch "$udid" "$WATCH_BUNDLE" -inMemoryStore -seedDemoLibrary "${lang[@]}" >/dev/null
+            fi
+            sleep 6
+            # A launch that never came up captures the watch FACE and still "succeeds" — the
+            # framed set must be eyeballed (see reference_watch_screenshot_traps).
+            tmp="${TMPDIR:-/tmp}/.sa-watch-$$-$RANDOM.png"
+            xcrun simctl io "$udid" screenshot "$tmp" >/dev/null
+            mv -f "$tmp" "$dir/$file.png"
+            echo "  → $file.png"
+        done
     done
     xcrun simctl terminate "$udid" "$WATCH_BUNDLE" >/dev/null 2>&1 || true
 }

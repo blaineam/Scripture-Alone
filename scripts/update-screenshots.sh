@@ -79,4 +79,13 @@ for entry in "${DEVICES[@]}"; do
     [[ "$ALLOW_IN_REVIEW" = "1" ]] && args+=(--allow-in-review)
     print -u2 "ASC replace: $key ($dtype)"
     node "$SHARED/screenshots/asc-screenshots.mjs" "${args[@]}"
+    # Then each locale's own set, which replaces the English one there. Order matters: the base
+    # upload (no --locale) writes every localization, so the locales must come after it.
+    for dir in "$SCREENSHOTS_DIR/$key"/*/framed(N); do
+        locale="${dir:h:t}"
+        largs=("${args[@]}")
+        largs[${largs[(i)--images]}+1]="$dir"
+        print -u2 "ASC replace: $key ($dtype) [$locale]"
+        node "$SHARED/screenshots/asc-screenshots.mjs" "${largs[@]}" --locale "$locale"
+    done
 done
