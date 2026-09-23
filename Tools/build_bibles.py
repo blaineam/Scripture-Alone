@@ -10,6 +10,10 @@ Each database holds:
   chapters  one row per chapter: the layout JSON the reader renders
   verses    one row per verse: plain text + red-letter spans (search, TTS, sharing)
   verses_fts  FTS5 index over verses.text
+  kjv_map   native verse id -> KJV verse id (and last KJV verse of a range), only where they
+            differ. Each translation keeps its own numbering — a French reader's Psalm 51:12 is
+            Psalm 51:12 — while highlights, notes and cross-references are stored against the one
+            KJV key space, so they line up whichever translation is open. No rows = identity.
 
 Verse ids are book * 1_000_000 + chapter * 1_000 + verse, the same key the app's
 highlights and notes store, so they survive a translation switch.
@@ -19,7 +23,7 @@ Layout JSON (compact keys to keep the bundle small):
   block    {"k": kind, "t": text}                 heading kinds: s1 s2 ms r qa
            {"k": kind, "f": [fragment, ...]}      text kinds: p m pmo pc li1 li2 q1 q2 qr d
            {"k": "b"}                             stanza break
-  fragment {"v": verse, "n": 1 if the verse number starts here, "t": text,
+  fragment {"v": verse, "n": 1 if the verse number starts here, "t": text, "e": last verse of a range,
             "s": [[start, length, style], ...], "fn": [[position, note], ...]}
   styles   r = words of Christ, i = supplied words (KJV italics), c = small caps (LORD)
 Offsets count Unicode scalars, which is what Swift's String.unicodeScalars indexes.
@@ -199,6 +203,7 @@ class Book:
         self.name = code
         self.chapters = {}   # chapter -> list of blocks
         self.verses = {}     # (chapter, verse) -> {"t": str, "s": [[start, len, style]]}
+        self.ranges = {}     # (chapter, verse) -> last verse, for "\\v 12-13"
 
 
 def append_span(spans, start, length, style):
@@ -257,6 +262,8 @@ class Parser:
     def start_fragment(self, numbered):
         self.ensure_text_block()
         self.fragment = {"v": self.verse, "t": ""}
+        if (self.chapter, self.verse) in self.book.ranges and numbered:
+            self.fragment["e"] = self.book.ranges[(self.chapter, self.verse)]   # shown as "12–13"
         if numbered and self.block["k"] == "d":
             # Superscriptions ("A Psalm of David.") print as unnumbered titles.
             self.pending_number = True
@@ -396,8 +403,12 @@ class Parser:
             self.skip_text = True  # the chapter number itself
             return
         if name == "v":
-            num = re.match(r"\s*(\d+)[^\s]*\s?", self.text[after:])
+            num = re.match(r"\s*(\d+)(?:-(\d+))?[^\s]*\s?", self.text[after:])
             self.verse = int(num.group(1))
+            # "\\v 12-13": one passage for two verses (the 和合本 has dozens). The text is keyed to
+            # the first; the range is kept so both verses' keys resolve to it.
+            if num.group(2) and int(num.group(2)) > self.verse:
+                self.book.ranges[(self.chapter, self.verse)] = int(num.group(2))
             self.consumed = num.end()
             self.start_fragment(numbered=True)
             self._skip_chars = num.end()
@@ -656,6 +667,177 @@ def borrow_headings(book, source):
     return placed
 
 
+def verse_slots(book):
+    """A book's verses in order as (chapter, verse, last, length), with text only — an empty
+    "\\v 16" whose words the translation prints as the next chapter's verse 1 is not a verse."""
+    out = []
+    for (chapter, verse) in sorted(book.verses):
+        text = book.verses[(chapter, verse)]["t"].strip()
+        if text:
+            out.append((chapter, verse, book.ranges.get((chapter, verse), verse), len(text)))
+    return out
+
+
+def align(native, kjv, ratio, band=40):
+    """Pairs native verses with KJV verses by length (Gale & Church's sentence alignment, 1993):
+    a verse is about as long in any language, give or take the language's own ratio, so two
+    English verses merged into one show up as one verse twice the length. Moves: 1-1, 1-2 (a
+    merge), 2-1 (a split — a psalm title before its first verse), and 1-0 / 0-1 at a price.
+    A 1-1 pair that keeps its own number gets a token preference, so ties go to the obvious
+    reading — only a token: over a run of verses a larger one added up to more than a skipped
+    verse costs, and the alignment "resynced" French 1 Samuel 24:13-23 onto the wrong verses.
+
+    native: [(chapter, verse, last, length)]; kjv: [(chapter, verse, length)].
+    Only cells within `band` verses of the diagonal are considered — displacements between Bibles
+    are a few verses, never dozens — which keeps a whole book cheap to align.
+
+    Returns {(chapter, verse): (kjv_chapter, kjv_verse, kjv_last_chapter, kjv_last_verse)}."""
+    import math
+
+    avg = (sum(n[3] for n in native) + sum(k[2] * ratio for k in kjv)) / max(1, len(native) + len(kjv))
+    smooth = 0.15 * avg
+
+    def cost(a, b):
+        return abs(math.log((a + smooth) / (b * ratio + smooth)))
+
+    # A merge or split must cost more than length noise, so the verse counts decide how many
+    # there are and the lengths only decide where. Cheaper, and Job's evenly sized lines of poetry
+    # read as merges: Spanish Job 39:1 ("¿Cazarás tú la presa para el león?") landed on KJV 38:41
+    # instead of 38:39, where a plain chapter-break shift puts it.
+    MERGE = 2.0
+    INF = float("inf")
+    rows, cols = len(native), len(kjv)
+    best = [[INF] * (cols + 1) for _ in range(rows + 1)]
+    back = [[None] * (cols + 1) for _ in range(rows + 1)]
+    best[0][0] = 0.0
+    for i in range(rows + 1):
+        centre = i * cols // max(1, rows)
+        for j in range(max(0, centre - band), min(cols, centre + band) + 1):
+            here = best[i][j]
+            if here == INF:
+                continue
+            moves = []
+            if i < rows and j < cols:
+                same = (native[i][0], native[i][1]) == (kjv[j][0], kjv[j][1])
+                moves.append((1, 1, cost(native[i][3], kjv[j][2]) - (0.05 if same else 0)))
+            # One native verse over several KJV verses. Usually two; but a source can lose its
+            # verse markers — the Reina-Valera's Job 39:30 holds the KJV's 39:27-40:5, nine verses.
+            for width in range(2, 11):
+                if i < rows and j + width <= cols:
+                    moves.append((1, width, cost(native[i][3], sum(x[2] for x in kjv[j:j + width]))
+                                  + MERGE * (width - 1)))
+            for width in range(2, 4):
+                if i + width <= rows and j < cols:
+                    moves.append((width, 1, cost(sum(x[3] for x in native[i:i + width]), kjv[j][2])
+                                  + MERGE * (width - 1)))
+            if i < rows:
+                moves.append((1, 0, 4.0))
+            if j < cols:
+                moves.append((0, 1, 4.0))
+            for di, dj, c in moves:
+                if here + c < best[i + di][j + dj]:
+                    best[i + di][j + dj] = here + c
+                    back[i + di][j + dj] = (di, dj)
+    result, i, j = {}, rows, cols
+    pending = []
+    while i or j:
+        di, dj = back[i][j]
+        i, j = i - di, j - dj
+        pending.append((i, j, di, dj))
+    last_kjv = kjv[0] if kjv else None
+    for i, j, di, dj in reversed(pending):
+        if dj:
+            last_kjv = kjv[j]
+        for n in native[i:i + di]:
+            if dj:
+                first, final = kjv[j], kjv[j + dj - 1]
+                result[(n[0], n[1])] = (first[0], first[1], final[0], final[1])
+            elif last_kjv:
+                result[(n[0], n[1])] = (last_kjv[0], last_kjv[1], last_kjv[0], last_kjv[1])
+    return result
+
+
+def kjv_map(book, kjv_book):
+    """Maps a translation's verses onto the KJV's numbering, for one book.
+
+    Returns ({(chapter, verse): (kjv_chapter, kjv_verse, kjv_last_chapter, kjv_last_verse)},
+    [books or psalms aligned by text]).
+    Chapters are compared by their highest verse number, not their verse count, so a verse a
+    translation omits (the BSB's Matthew 17:21) is a gap, not a renumbering. In order:
+
+    1. Same numbering: every verse maps to itself (a range "12-13" to KJV 12-13).
+    2. Psalm titles numbered as verses (Louis Segond: "Psaume de David." is Psalm 3:1): one or
+       two extra verses at the start fold onto the KJV's verse 1; the rest shift down.
+    3. Anything else — chapter breaks in other places (the Hebrew numbering: French Exodus
+       7:26-29 is English 8:1-4), verses split or
+       merged without saying so (the Reina-Valera's Numbers 13) — is aligned by length (`align`)
+       over the run of chapters that brings the numbering back into step. Those runs are returned
+       for the build log. Checked against SWORD's independent Segond table: see the ledger.
+    """
+    slots = verse_slots(book)
+    kjv = [(c, v, len(kjv_book.verses[(c, v)]["t"])) for (c, v) in sorted(kjv_book.verses)
+           if kjv_book.verses[(c, v)]["t"].strip()]
+    ratio = sum(s[3] for s in slots) / max(1, sum(k[2] for k in kjv))
+    top, kjv_top = {}, {}
+    for c, v, last, _ in slots:
+        top[c] = max(top.get(c, 0), last)
+    for c, v, _ in kjv:
+        kjv_top[c] = max(kjv_top.get(c, 0), v)
+    chapters = sorted(set(top) | set(kjv_top))
+    native_in = {c: [s for s in slots if s[0] == c] for c in chapters}
+    kjv_in = {c: [k for k in kjv if k[0] == c] for c in chapters}
+    result, aligned = {}, []
+
+    def positional(run):
+        # Verse positions through the run, by number, so an omitted verse keeps its place.
+        kjv_at, offset = {}, 0
+        for ch in run:
+            for c, v, _ in kjv_in[ch]:
+                kjv_at[offset + v] = (c, v)
+            offset += kjv_top.get(ch, 0)
+        offset = 0
+        for ch in run:
+            for c, v, last, _ in native_in[ch]:
+                first = kjv_at.get(offset + v)
+                final = kjv_at.get(offset + last, first)
+                if first:
+                    result[(c, v)] = (first[0], first[1], final[0], final[1])
+            offset += top.get(ch, 0)
+
+    index = 0
+    while index < len(chapters):
+        c = chapters[index]
+        n, k = top.get(c, 0), kjv_top.get(c, 0)
+        if n == k:
+            positional([c])
+            index += 1
+            continue
+        if book.code == "PSA" and 0 < n - k <= 2:
+            titles = n - k
+            for s in native_in[c]:
+                if s[1] <= titles:
+                    result[(c, s[1])] = (c, 1, c, 1)
+                else:
+                    result[(c, s[1])] = (c, s[1] - titles, c, s[2] - titles)
+            index += 1
+            continue
+        if book.code == "PSA":
+            # Psalms is long and its differences are local: align this psalm with the next.
+            run = chapters[index:index + 2]
+            result.update(align([s for ch in run for s in native_in[ch]],
+                                [x for ch in run for x in kjv_in[ch]], ratio))
+            aligned.append(f"PSA {run[0]}")
+            index += len(run)
+            continue
+        # Any other difference: align the whole book by its text. Cutting it into runs where the
+        # numbering seems to come back into step was tried and was wrong exactly where it matters
+        # — French 1 Samuel 20-24 splits one verse and moves two chapter breaks, and a run that
+        # "balanced" at chapter 23 stole the KJV's 23:29 from French 24:1.
+        result = align(slots, kjv, ratio)
+        return result, [f"{book.code} (whole book)"]
+    return result, aligned
+
+
 def build(translation):
     books = books_for(translation["id"])
     if translation.get("red_from"):
@@ -682,6 +864,8 @@ def build(translation):
         CREATE TABLE verses (id INTEGER PRIMARY KEY, text TEXT NOT NULL, red TEXT);
         CREATE VIRTUAL TABLE verses_fts USING fts5(text, content='verses', content_rowid='id',
                                                   tokenize='unicode61 remove_diacritics 2');
+        CREATE TABLE kjv_map (id INTEGER PRIMARY KEY, kjv INTEGER NOT NULL, kjv_last INTEGER NOT NULL);
+        CREATE INDEX kjv_map_kjv ON kjv_map (kjv);
         """
     )
     for key in ("id", "name", "abbreviation", "copyright", "license", "source"):
@@ -700,6 +884,25 @@ def build(translation):
             red = json.dumps([[s, l] for s, l, _ in entry["s"]]) if entry["s"] else None
             db.execute("INSERT INTO verses VALUES (?, ?, ?)", (vid, entry["t"], red))
             total += 1
+    if translation["id"] != "KJV":
+        kjv_books = books_for("KJV")
+        mapped, unsure_all = 0, []
+        for ordinal, code in enumerate(BOOKS, start=1):
+            mapping, aligned = kjv_map(books[code], kjv_books[code])
+            unsure_all += aligned
+            for (c, v), (kc, kv, lc, lv) in mapping.items():
+                # Identity rows are left out — except a range, whose row is how a mark on the
+                # KJV's 13:13 finds the 和合本's "12-13".
+                if (c, v) == (kc, kv) == (lc, lv):
+                    continue
+                db.execute("INSERT INTO kjv_map VALUES (?, ?, ?)",
+                           (ordinal * 1_000_000 + c * 1_000 + v,
+                            ordinal * 1_000_000 + kc * 1_000 + kv,
+                            ordinal * 1_000_000 + lc * 1_000 + lv))
+                mapped += 1
+        if mapped or unsure_all:
+            print(f"{translation['id']}: {mapped} verses numbered differently from the KJV"
+                  + (f"; aligned by text in {len(unsure_all)}: {', '.join(unsure_all)}" if unsure_all else ""))
     db.execute("INSERT INTO verses_fts(verses_fts) VALUES ('rebuild')")
     db.execute("INSERT INTO verses_fts(verses_fts) VALUES ('optimize')")
     db.commit()
@@ -785,6 +988,48 @@ def check(paths):
         assert leaks == 0, f"{leaks} {t['id']} verses leak markup"
         names = [r[0] for r in db.execute("SELECT name FROM books ORDER BY book")]
         assert not any(name in BOOKS for name in names), (t["id"], names)   # a name, not a USFM code
+    # Numbering: the English Bibles keep the KJV's (a verse they omit is a gap, not a shift) ...
+    for tid in ("ASV", "BSB"):
+        rows = sqlite3.connect(paths[tid]).execute("SELECT count(*) FROM kjv_map").fetchone()[0]
+        assert rows == 0, f"{tid} renumbered {rows} verses"
+
+    # ... and the others map onto it at the places everyone who has compared them knows.
+    def maps(tid, book, chapter, v, expected, last=None):
+        db = sqlite3.connect(paths[tid])
+        vid = (BOOKS.index(book) + 1) * 1_000_000 + chapter * 1_000 + v
+        row = db.execute("SELECT kjv, kjv_last FROM kjv_map WHERE id = ?", (vid,)).fetchone() or (vid, vid)
+        got = (row[0] // 1_000 % 1_000, row[0] % 1_000)
+        assert got == expected, (tid, book, chapter, v, got, expected)
+        if last:
+            assert (row[1] // 1_000 % 1_000, row[1] % 1_000) == last, (tid, book, chapter, v, row, last)
+    maps("LSG", "EXO", 7, 26, (8, 1))          # Hebrew chapter break
+    maps("LSG", "PSA", 51, 3, (51, 1))         # two title verses
+    maps("LSG", "PSA", 51, 12, (51, 10))       # "O Dieu! crée en moi un cœur pur"
+    maps("LSG", "JOL", 2, 28, (2, 28))         # this edition keeps the KJV's chapters in Joel
+    maps("LSG", "MAL", 4, 1, (4, 1))           # ... and in Malachi, unlike some printed Segonds
+    maps("LSG", "1SA", 24, 1, (23, 29))        # En-Guédi
+    maps("LSG", "2CH", 13, 23, (14, 1))        # "Abija se coucha avec ses pères" (SWORD has this wrong)
+    maps("RVR1909", "NUM", 13, 1, (12, 16))    # an empty 12:16 whose words open chapter 13
+    maps("RVR1909", "JOB", 39, 1, (38, 39))    # "¿Cazarás tú la presa para el león?"
+    maps("RVR1909", "JOB", 39, 30, (39, 27), last=(40, 5))   # the source lost eight verse markers
+    maps("RVR1909", "JON", 2, 1, (1, 17))
+    maps("CUVS", "DEU", 13, 12, (13, 12), last=(13, 13))     # "\\v 12-13"
+    maps("KRV", "3JN", 1, 15, (1, 14))
+    for t in TRANSLATIONS:
+        if "locale" not in t:
+            continue
+        db = sqlite3.connect(paths[t["id"]])
+        # Every KJV verse a reader might have marked should land somewhere in this translation.
+        covered = set()
+        mapped = dict((i, (k, last)) for i, k, last in db.execute("SELECT id, kjv, kjv_last FROM kjv_map"))
+        kjv_ids = [r[0] for r in sqlite3.connect(paths["KJV"]).execute("SELECT id FROM verses")]
+        order = {vid: n for n, vid in enumerate(kjv_ids)}
+        for (vid,) in db.execute("SELECT id FROM verses"):
+            k, last = mapped.get(vid, (vid, vid))
+            if k in order:
+                covered.update(kjv_ids[order[k]:order.get(last, order[k]) + 1])
+        uncovered = len(kjv_ids) - len(covered)
+        assert uncovered < 40, f"{t['id']}: {uncovered} KJV verses have no verse in this translation"
     print("check: ok")
 
 

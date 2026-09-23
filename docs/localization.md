@@ -45,9 +45,25 @@ with a neighbouring verse, not missing — and its book names are the translatio
 使徒行傳, …), from Japanese Wikisource's tables of contents.
 
 **Versification.** Highlights, notes and cross-references are keyed by KJV-style verse numbers.
-Louis Segond numbers psalm titles as verse 1 and Malachi 4 as 3:19–24 (31,170 verses), and the
-Korean text follows NRSV numbering. These need a mapping to the shared keys before a reader's
-marks line up across translations (Phase 2).
+**Owner, 2026-09-23: each reader sees their own Bible's numbering** — a French pastor's
+"Psaume 51, verset 12" is Psalm 51:12 on screen — while highlights, notes and cross-references
+stay on the one KJV key space underneath. Each database carries a `kjv_map` table (only the verses
+that differ) built by `build_bibles.py`:
+
+- Same highest verse number as the KJV → identity (an omitted verse is a gap, not a shift).
+- Psalm titles numbered as verses (Segond) → fold onto the KJV's verse 1.
+- Anything else → aligned by verse length (Gale & Church), whole book, banded, with merges and
+  splits priced above length noise and up to ten verses wide.
+
+Result: LSG 1,415 verses renumbered (mostly Psalms; also Exodus 7–8, Leviticus 5–6, 1 Samuel
+20–24, 1 Kings 4–5, Job 38–41, Isaiah 8–9 and 63–64, Hosea, Jonah, Micah, Nahum, Mark 9, …);
+RVR1909 164; KRV 5; CUVS 4; BUNGO 1; the German, Portuguese and Italian none. Checked against
+SWORD's independent Segond table (GPL, used only to check, not copied): 31,149 of 31,170 agree,
+and reading the 21 that don't shows ours right in 2 Chronicles 13:23 (SWORD maps it to a verse the
+KJV lacks) and the rest single-verse edges. `--check` pins the landmarks.
+
+Source defects this surfaced: eBible's Reina-Valera lost eight verse markers in Job 39:30, which
+holds the KJV's 39:27–40:5 (printed RV 39:30–35) — mapped as one verse over nine.
 
 ## Built
 
@@ -82,3 +98,40 @@ styling coverage is character-for-character unchanged.
 4. **Study content** — Context.sqlite labels translated; commentary and lexicon definitions gated
    by language; Verse of the Day per locale.
 5. **Store and site** — listings, screenshots, website copy.
+
+## Release checklist (owner, 2026-09-23)
+
+Ship when iOS is done, with Android at **full feature parity** in the same wave. 1.0.0 (build 71)
+is in App Review; this goes out as the next version once it is approved — App Store Connect
+allows one version in review at a time.
+
+**Apple (App Store)**
+- [ ] New app version with the localized app, watch and widgets.
+- [ ] Asset packs, all `onDemand`, **in the same review submission as the version** (≤ 10 items per
+      submission; identifiers without dots; never archive one — it is permanent):
+
+      | Pack | File | Locale |
+      |---|---|---|
+      | `cuvs` | Bibles/CUVS.sqlite | zh-Hans |
+      | `bungo` | Bibles/BUNGO.sqlite | ja |
+      | `lut1912` | Bibles/LUT1912.sqlite | de |
+      | `lsg` | Bibles/LSG.sqlite | fr |
+      | `rvr1909` | Bibles/RVR1909.sqlite | es |
+      | `krv` | Bibles/KRV.sqlite | ko |
+      | `blivre` | Bibles/BLIVRE.sqlite | pt-BR |
+      | `riv1927` | Bibles/RIV1927.sqlite | it |
+
+      Plus new versions of `bsb` / `kjv` only if their databases change (e.g. a `kjv_map`
+      table) — a pack update reaches app versions already installed, so keep it readable by them.
+- [ ] Store listing (name, subtitle, promo, description, keywords, what's new) in all 8 locales —
+      **no price words** (2.3.7).
+- [ ] Screenshots and app previews **rendered in each locale** — iPhone, iPad, Apple Watch — with
+      that locale's Bible on screen.
+
+**Google Play**
+- [ ] Same features on Android and Wear OS.
+- [ ] Play Asset Delivery packs for the same 8 Bibles (`on-demand`).
+- [ ] Release to the **internal** and **closed** testing tracks (Wear OS on its own track).
+- [ ] Store listing and screenshots in all 8 locales.
+
+**Website** — Scripture Alone page: the translations each locale gets.
