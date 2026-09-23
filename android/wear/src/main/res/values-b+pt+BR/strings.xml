@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="verse_of_the_day">Versículo do dia</string>
+    <string name="complication_description">A passagem de hoje no mostrador do relógio.</string>
+    <string name="tile_description">A passagem de hoje, na tradução que você lê.</string>
+    <string name="wear_tile_open_app">Abrir %1$s</string>
+    <string name="wear_complication_content_description">Versículo do dia, %1$s</string>
+    <string name="wear_read">Ler</string>
+    <string name="wear_home_votd_accessibility">Versículo do dia, %1$s. %2$s</string>
+    <string name="wear_favorites">Favoritos</string>
+    <string name="wear_notes">Notas</string>
+    <string name="wear_translation">Tradução</string>
+    <string name="wear_verse_not_in_edition">Esta passagem não está na %1$s do relógio.</string>
+    <string name="wear_speak">Falar</string>
+    <string name="wear_stop">Parar</string>
+    <string name="wear_read_chapter">Ler %1$s</string>
+    <string name="wear_verse_accessibility">Versículo %1$d. %2$s</string>
+    <string name="wear_books">Livros</string>
+    <string name="wear_book_chapter">%1$s %2$d</string>
+    <string name="wear_chapter_accessibility">Capítulo %1$d</string>
+    <string name="wear_book_group_law">Lei</string>
+    <string name="wear_book_group_history">História</string>
+    <string name="wear_book_group_wisdom">Sabedoria &amp; Poesia</string>
+    <string name="wear_book_group_major_prophets">Profetas Maiores</string>
+    <string name="wear_book_group_minor_prophets">Profetas Menores</string>
+    <string name="wear_book_group_gospels">Evangelhos</string>
+    <string name="wear_book_group_paul">Cartas de Paulo</string>
+    <string name="wear_book_group_general">Cartas gerais</string>
+    <string name="wear_book_group_prophecy">Profecia</string>
+    <string name="wear_favorites_empty_title">Nenhum favorito</string>
+    <string name="wear_favorites_empty_message">Marque um versículo como favorito no celular e ele aparece aqui.</string>
+    <string name="wear_notes_empty_title">Nenhuma nota</string>
+    <string name="wear_notes_empty_message">As notas que você escreve no celular aparecem aqui.</string>
+    <string name="wear_note_deleted">Nota excluída</string>
+    <string name="wear_note_edit_on_phone">Edite as notas no celular.</string>
+    <string name="wear_translation_phone_unavailable">Não é possível ler %1$s do seu celular aqui. Traduções on-line não podem ser armazenadas no relógio.</string>
+    <string name="wear_translation_follows_phone">Acompanha o celular.</string>
+</resources>

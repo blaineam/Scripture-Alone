@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="verse_of_the_day">今日の聖句</string>
+    <string name="complication_description">今日の聖句を文字盤に。</string>
+    <string name="tile_description">今日の聖句を、いつもの訳で。</string>
+    <string name="wear_tile_open_app">%1$sを開く</string>
+    <string name="wear_complication_content_description">今日の聖句、%1$s</string>
+    <string name="wear_read">読む</string>
+    <string name="wear_home_votd_accessibility">今日の聖句、%1$s。%2$s</string>
+    <string name="wear_favorites">お気に入り</string>
+    <string name="wear_notes">メモ</string>
+    <string name="wear_translation">訳</string>
+    <string name="wear_verse_not_in_edition">この聖句は時計の%1$sにありません。</string>
+    <string name="wear_speak">読み上げ</string>
+    <string name="wear_stop">停止</string>
+    <string name="wear_read_chapter">%1$sを読む</string>
+    <string name="wear_verse_accessibility">%1$d節。%2$s</string>
+    <string name="wear_books">書</string>
+    <string name="wear_book_chapter">%1$s %2$d</string>
+    <string name="wear_chapter_accessibility">%1$d章</string>
+    <string name="wear_book_group_law">律法</string>
+    <string name="wear_book_group_history">歴史</string>
+    <string name="wear_book_group_wisdom">知恵と詩歌</string>
+    <string name="wear_book_group_major_prophets">大預言書</string>
+    <string name="wear_book_group_minor_prophets">小預言書</string>
+    <string name="wear_book_group_gospels">福音書</string>
+    <string name="wear_book_group_paul">パウロの手紙</string>
+    <string name="wear_book_group_general">公同書簡</string>
+    <string name="wear_book_group_prophecy">預言書</string>
+    <string name="wear_favorites_empty_title">お気に入りなし</string>
+    <string name="wear_favorites_empty_message">スマートフォンで聖句をお気に入りに追加すると、ここに表示されます。</string>
+    <string name="wear_notes_empty_title">メモなし</string>
+    <string name="wear_notes_empty_message">スマートフォンで書いたメモがここに表示されます。</string>
+    <string name="wear_note_deleted">メモを削除しました</string>
+    <string name="wear_note_edit_on_phone">メモの編集はスマートフォンで行えます。</string>
+    <string name="wear_translation_phone_unavailable">スマートフォンの%1$sはここでは読めません。オンラインの翻訳は時計に保存できません。</string>
+    <string name="wear_translation_follows_phone">スマートフォンに従います。</string>
+</resources>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="verse_of_the_day">Verset du jour</string>
+    <string name="complication_description">Le passage du jour sur votre cadran.</string>
+    <string name="tile_description">Le passage du jour, dans votre traduction.</string>
+    <string name="wear_tile_open_app">Ouvrir %1$s</string>
+    <string name="wear_complication_content_description">Verset du jour, %1$s</string>
+    <string name="wear_read">Lire</string>
+    <string name="wear_home_votd_accessibility">Verset du jour, %1$s. %2$s</string>
+    <string name="wear_favorites">Favoris</string>
+    <string name="wear_notes">Notes</string>
+    <string name="wear_translation">Traduction</string>
+    <string name="wear_verse_not_in_edition">Ce passage n\'est pas dans la %1$s de la montre.</string>
+    <string name="wear_speak">Lecture</string>
+    <string name="wear_stop">Arrêter</string>
+    <string name="wear_read_chapter">Lire %1$s</string>
+    <string name="wear_verse_accessibility">Verset %1$d. %2$s</string>
+    <string name="wear_books">Livres</string>
+    <string name="wear_book_chapter">%1$s %2$d</string>
+    <string name="wear_chapter_accessibility">Chapitre %1$d</string>
+    <string name="wear_book_group_law">Loi</string>
+    <string name="wear_book_group_history">Livres historiques</string>
+    <string name="wear_book_group_wisdom">Sagesse &amp; poésie</string>
+    <string name="wear_book_group_major_prophets">Grands prophètes</string>
+    <string name="wear_book_group_minor_prophets">Petits prophètes</string>
+    <string name="wear_book_group_gospels">Évangiles</string>
+    <string name="wear_book_group_paul">Lettres de Paul</string>
+    <string name="wear_book_group_general">Lettres générales</string>
+    <string name="wear_book_group_prophecy">Prophétie</string>
+    <string name="wear_favorites_empty_title">Aucun favori</string>
+    <string name="wear_favorites_empty_message">Ajoutez un verset aux favoris sur votre téléphone pour le voir ici.</string>
+    <string name="wear_notes_empty_title">Aucune note</string>
+    <string name="wear_notes_empty_message">Les notes écrites sur votre téléphone apparaissent ici.</string>
+    <string name="wear_note_deleted">Note supprimée</string>
+    <string name="wear_note_edit_on_phone">Modifiez vos notes sur votre téléphone.</string>
+    <string name="wear_translation_phone_unavailable">%1$s ne peut pas être lue ici depuis votre téléphone. Les traductions en ligne ne peuvent pas être stockées sur la montre.</string>
+    <string name="wear_translation_follows_phone">Suit votre téléphone.</string>
+</resources>

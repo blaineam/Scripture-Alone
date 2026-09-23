@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="verse_of_the_day">오늘의 말씀</string>
+    <string name="complication_description">오늘의 본문을 워치 페이스에서.</string>
+    <string name="tile_description">오늘의 본문을 읽는 번역본으로.</string>
+    <string name="wear_tile_open_app">%1$s 열기</string>
+    <string name="wear_complication_content_description">오늘의 말씀, %1$s</string>
+    <string name="wear_read">읽기</string>
+    <string name="wear_home_votd_accessibility">오늘의 말씀, %1$s. %2$s</string>
+    <string name="wear_favorites">즐겨찾기</string>
+    <string name="wear_notes">메모</string>
+    <string name="wear_translation">번역본</string>
+    <string name="wear_verse_not_in_edition">이 본문은 워치의 %1$s에 없습니다.</string>
+    <string name="wear_speak">읽어주기</string>
+    <string name="wear_stop">중지</string>
+    <string name="wear_read_chapter">%1$s 읽기</string>
+    <string name="wear_verse_accessibility">%1$d절. %2$s</string>
+    <string name="wear_books">성경</string>
+    <string name="wear_book_chapter">%1$s %2$d장</string>
+    <string name="wear_chapter_accessibility">%1$d장</string>
+    <string name="wear_book_group_law">율법서</string>
+    <string name="wear_book_group_history">역사서</string>
+    <string name="wear_book_group_wisdom">시가서</string>
+    <string name="wear_book_group_major_prophets">대선지서</string>
+    <string name="wear_book_group_minor_prophets">소선지서</string>
+    <string name="wear_book_group_gospels">복음서</string>
+    <string name="wear_book_group_paul">바울 서신</string>
+    <string name="wear_book_group_general">일반 서신</string>
+    <string name="wear_book_group_prophecy">예언서</string>
+    <string name="wear_favorites_empty_title">즐겨찾기 없음</string>
+    <string name="wear_favorites_empty_message">휴대폰에서 구절을 즐겨찾기하면 여기에 표시됩니다.</string>
+    <string name="wear_notes_empty_title">노트 없음</string>
+    <string name="wear_notes_empty_message">휴대폰에서 작성한 노트가 여기에 표시됩니다.</string>
+    <string name="wear_note_deleted">노트 삭제됨</string>
+    <string name="wear_note_edit_on_phone">휴대폰에서 노트를 편집하세요.</string>
+    <string name="wear_translation_phone_unavailable">휴대폰의 %1$s은(는) 여기서 읽을 수 없습니다. 온라인 번역본은 워치에 저장할 수 없습니다.</string>
+    <string name="wear_translation_follows_phone">휴대폰을 따릅니다.</string>
+</resources>

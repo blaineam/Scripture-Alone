@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="verse_of_the_day">每日经文</string>
+    <string name="complication_description">今日经文，显示在表盘上。</string>
+    <string name="tile_description">今日经文，用你所读的译本呈现。</string>
+    <string name="wear_tile_open_app">打开%1$s</string>
+    <string name="wear_complication_content_description">每日经文，%1$s</string>
+    <string name="wear_read">阅读</string>
+    <string name="wear_home_votd_accessibility">每日经文，%1$s。%2$s</string>
+    <string name="wear_favorites">收藏</string>
+    <string name="wear_notes">笔记</string>
+    <string name="wear_translation">译本</string>
+    <string name="wear_verse_not_in_edition">手表上的%1$s没有这段经文。</string>
+    <string name="wear_speak">朗读</string>
+    <string name="wear_stop">停止</string>
+    <string name="wear_read_chapter">阅读%1$s</string>
+    <string name="wear_verse_accessibility">第 %1$d 节。%2$s</string>
+    <string name="wear_books">书卷</string>
+    <string name="wear_book_chapter">%1$s %2$d</string>
+    <string name="wear_chapter_accessibility">第 %1$d 章</string>
+    <string name="wear_book_group_law">律法书</string>
+    <string name="wear_book_group_history">历史书</string>
+    <string name="wear_book_group_wisdom">智慧书与诗歌书</string>
+    <string name="wear_book_group_major_prophets">大先知书</string>
+    <string name="wear_book_group_minor_prophets">小先知书</string>
+    <string name="wear_book_group_gospels">福音书</string>
+    <string name="wear_book_group_paul">保罗书信</string>
+    <string name="wear_book_group_general">普通书信</string>
+    <string name="wear_book_group_prophecy">预言书</string>
+    <string name="wear_favorites_empty_title">暂无收藏</string>
+    <string name="wear_favorites_empty_message">在手机上收藏经文后，会显示在这里。</string>
+    <string name="wear_notes_empty_title">暂无笔记</string>
+    <string name="wear_notes_empty_message">你在手机上写的笔记会显示在这里。</string>
+    <string name="wear_note_deleted">笔记已删除</string>
+    <string name="wear_note_edit_on_phone">请在手机上编辑笔记。</string>
+    <string name="wear_translation_phone_unavailable">无法在此阅读手机上的%1$s。在线译本无法存储在手表上。</string>
+    <string name="wear_translation_follows_phone">跟随手机设置。</string>
+</resources>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="verse_of_the_day">Versetto del giorno</string>
+    <string name="complication_description">Il passo di oggi sul quadrante.</string>
+    <string name="tile_description">Il passo di oggi, nella traduzione che leggi.</string>
+    <string name="wear_tile_open_app">Apri %1$s</string>
+    <string name="wear_complication_content_description">Versetto del giorno, %1$s</string>
+    <string name="wear_read">Leggi</string>
+    <string name="wear_home_votd_accessibility">Versetto del giorno, %1$s. %2$s</string>
+    <string name="wear_favorites">Preferiti</string>
+    <string name="wear_notes">Note</string>
+    <string name="wear_translation">Traduzione</string>
+    <string name="wear_verse_not_in_edition">Questo passo non è nella %1$s dell\'orologio.</string>
+    <string name="wear_speak">Ascolta</string>
+    <string name="wear_stop">Ferma</string>
+    <string name="wear_read_chapter">Leggi %1$s</string>
+    <string name="wear_verse_accessibility">Versetto %1$d. %2$s</string>
+    <string name="wear_books">Libri</string>
+    <string name="wear_book_chapter">%1$s %2$d</string>
+    <string name="wear_chapter_accessibility">Capitolo %1$d</string>
+    <string name="wear_book_group_law">Legge</string>
+    <string name="wear_book_group_history">Storici</string>
+    <string name="wear_book_group_wisdom">Sapienziali e poetici</string>
+    <string name="wear_book_group_major_prophets">Profeti maggiori</string>
+    <string name="wear_book_group_minor_prophets">Profeti minori</string>
+    <string name="wear_book_group_gospels">Vangeli</string>
+    <string name="wear_book_group_paul">Lettere di Paolo</string>
+    <string name="wear_book_group_general">Lettere generali</string>
+    <string name="wear_book_group_prophecy">Profezia</string>
+    <string name="wear_favorites_empty_title">Nessun preferito</string>
+    <string name="wear_favorites_empty_message">Aggiungi un versetto ai preferiti sul telefono e apparirà qui.</string>
+    <string name="wear_notes_empty_title">Nessuna nota</string>
+    <string name="wear_notes_empty_message">Le note che scrivi sul telefono appaiono qui.</string>
+    <string name="wear_note_deleted">Nota eliminata</string>
+    <string name="wear_note_edit_on_phone">Modifica le note sul telefono.</string>
+    <string name="wear_translation_phone_unavailable">%1$s sul telefono non si può leggere qui. Le traduzioni online non si possono salvare sull\'orologio.</string>
+    <string name="wear_translation_follows_phone">Segue il telefono.</string>
+</resources>

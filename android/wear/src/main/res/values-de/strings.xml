@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="verse_of_the_day">Vers des Tages</string>
+    <string name="complication_description">Die heutige Stelle auf deinem Zifferblatt.</string>
+    <string name="tile_description">Die heutige Stelle, in deiner Übersetzung.</string>
+    <string name="wear_tile_open_app">%1$s öffnen</string>
+    <string name="wear_complication_content_description">Vers des Tages, %1$s</string>
+    <string name="wear_read">Lesen</string>
+    <string name="wear_home_votd_accessibility">Vers des Tages, %1$s. %2$s</string>
+    <string name="wear_favorites">Favoriten</string>
+    <string name="wear_notes">Notizen</string>
+    <string name="wear_translation">Übersetzung</string>
+    <string name="wear_verse_not_in_edition">Diese Stelle ist nicht in der %1$s auf der Uhr.</string>
+    <string name="wear_speak">Vorlesen</string>
+    <string name="wear_stop">Stopp</string>
+    <string name="wear_read_chapter">%1$s lesen</string>
+    <string name="wear_verse_accessibility">Vers %1$d. %2$s</string>
+    <string name="wear_books">Bücher</string>
+    <string name="wear_book_chapter">%1$s %2$d</string>
+    <string name="wear_chapter_accessibility">Kapitel %1$d</string>
+    <string name="wear_book_group_law">Gesetz</string>
+    <string name="wear_book_group_history">Geschichte</string>
+    <string name="wear_book_group_wisdom">Weisheit &amp; Poesie</string>
+    <string name="wear_book_group_major_prophets">Große Propheten</string>
+    <string name="wear_book_group_minor_prophets">Kleine Propheten</string>
+    <string name="wear_book_group_gospels">Evangelien</string>
+    <string name="wear_book_group_paul">Paulusbriefe</string>
+    <string name="wear_book_group_general">Allgemeine Briefe</string>
+    <string name="wear_book_group_prophecy">Prophetie</string>
+    <string name="wear_favorites_empty_title">Keine Favoriten</string>
+    <string name="wear_favorites_empty_message">Markiere einen Vers auf dem Handy als Favorit, dann erscheint er hier.</string>
+    <string name="wear_notes_empty_title">Keine Notizen</string>
+    <string name="wear_notes_empty_message">Notizen, die du auf dem Handy schreibst, erscheinen hier.</string>
+    <string name="wear_note_deleted">Notiz gelöscht</string>
+    <string name="wear_note_edit_on_phone">Notizen auf dem Handy bearbeiten.</string>
+    <string name="wear_translation_phone_unavailable">%1$s auf dem Handy kann hier nicht gelesen werden. Online-Übersetzungen lassen sich nicht auf der Uhr speichern.</string>
+    <string name="wear_translation_follows_phone">Folgt deinem Handy.</string>
+</resources>
