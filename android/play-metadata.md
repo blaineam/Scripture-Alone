@@ -12,13 +12,13 @@ Scripture Alone Bible
 A private, offline Bible with study tools, sermon notes and maps. No account.
 
 ## full_description
-Scripture Alone is a free Bible for Android phones, tablets and Wear OS, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. Two complete translations arrive with the app, and a third is a tap away, so reading, searching, highlighting and notes work anywhere in the world, with or without a connection. The large study add-ons — the commentary and the original-language data — download the first time you open them, so the app itself stays small.
+Scripture Alone is a Bible for Android phones, tablets and Wear OS, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. Two complete translations arrive with the app, and a third is a tap away, so reading, searching, highlighting and notes work anywhere in the world, with or without a connection. The large study add-ons — the commentary and the original-language data — download the first time you open them, so the app itself stays small.
 
 Read the whole Bible, offline
-The American Standard Version, the Berean Standard Bible and the King James Version live on your device, with full-text search. The words of Christ appear in red, poetry is set as poetry, and section headings and footnotes are a tap away.
+The American Standard Version and the Berean Standard Bible arrive with the app. The King James Version downloads once, the first time you choose it, and reads offline from then on. All three have full-text search. The words of Christ appear in red, poetry is set as poetry, and section headings and footnotes are a tap away.
 
 Bring your own translation
-Browse the free translations published by eBible.org — more than 1,200, in over 1,000 languages, with yours first — or import a USFM file or a DRM-free ePub you already own. Nothing downloads until you choose it, and what you add stays on your device.
+Browse the openly licensed translations eBible.org publishes, in your own language first, or import a USFM file or a DRM-free ePub you already own. Nothing downloads until you choose it, and what you add stays on your device.
 
 Make it comfortable
 Seven typefaces, adjustable size and line spacing, five themes (Auto, Light, Sepia, Dark and Black), paragraphs or verse by verse, and your phone's font size. Auto-scroll keeps the text moving hands-free and carries on into the next chapter.
@@ -50,7 +50,7 @@ Make a Keepsake Bible: a file of your highlights and notes, with a dedication, t
 Private by design
 Your highlights, notes and favorites stay on your device. There is no server and no account, and the developer never sees your data. Scripture Alone is open source under the AGPL, so anyone can read exactly what it does.
 
-Free, and it will stay free. Built to help people study God's word and grow closer to Christ.
+Built to help people study God's word and grow closer to Christ.
 
 ## category
 Books & Reference
