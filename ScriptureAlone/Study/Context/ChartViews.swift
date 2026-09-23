@@ -430,8 +430,8 @@ struct FeastsChartView: View {
 
     /// The seven appointed times of Leviticus 23 laid out across the year.
     private var seasonStrip: some View {
-        let spring = chart.feasts.filter { $0.later != true && ($0.season.hasPrefix("March") || $0.season.hasPrefix("May")) }
-        let autumn = chart.feasts.filter { $0.later != true && $0.season.hasPrefix("September") }
+        let spring = chart.feasts.filter { $0.later != true && $0.seasonGroup == "spring" }
+        let autumn = chart.feasts.filter { $0.later != true && $0.seasonGroup == "autumn" }
         return HStack(alignment: .top, spacing: 12) {
             seasonColumn(String(localized: "Spring", comment: "Season"), feasts: spring, color: Color(contextHex: "#3F8F6B"))
             seasonColumn(String(localized: "Autumn", comment: "Season"), feasts: autumn, color: Color(contextHex: "#C9862B"))
@@ -457,6 +457,16 @@ struct FeastsChartView: View {
 
 private struct FeastCard: View {
     let feast: FeastsChart.Feast
+    /// Optional: the chart can be shown where no reader is in scope, and then simply has no quotation.
+    @Environment(ReaderModel.self) private var model: ReaderModel?
+
+    /// The New Testament passage: the chart's own English quotation in English; otherwise the verse
+    /// from the reader's Bible (`ContextStore.localizedBody` drops the English quotation there).
+    private func quotation(_ range: VerseRange) -> String? {
+        if let text = feast.ntText { return text }
+        guard let verses = try? model?.source?.verses(in: range), !verses.isEmpty else { return nil }
+        return verses.map(\.text).joined(separator: " ")
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -482,7 +492,7 @@ private struct FeastCard: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(feast.interpretive == true ? "Often connected with" : "In the New Testament")
                         .font(.caption2.weight(.bold)).foregroundStyle(.secondary).textCase(.uppercase)
-                    if let text = feast.ntText { Text(text).font(.caption) }
+                    if let text = quotation(nt.range) { Text(text).font(.caption) }
                     ReferenceButton(range: nt.range)
                 }
                 .padding(8)

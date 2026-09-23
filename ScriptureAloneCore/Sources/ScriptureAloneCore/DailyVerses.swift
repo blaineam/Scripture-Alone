@@ -9,12 +9,35 @@ public struct DailyVerse: Codable, Hashable, Sendable, Identifiable {
     public let text: [String: String]
     /// Words of Christ per translation: [start, length] in Unicode scalars into `text`.
     public let red: [String: [[Int]]]?
+    /// The theme in the big-8 languages, keyed "zh-Hans", "ja", "de", "fr", "es", "ko", "pt-BR", "it"
+    /// (Tools/build_companion_data.py). Absent in an older catalog.
+    public let themes: [String: String]?
 
-    public init(ref: String, theme: String, text: [String: String], red: [String: [[Int]]]? = nil) {
+    public init(ref: String, theme: String, text: [String: String], red: [String: [[Int]]]? = nil,
+                themes: [String: String]? = nil) {
         self.ref = ref
         self.theme = theme
         self.text = text
         self.red = red
+        self.themes = themes
+    }
+
+    /// The theme in the language the app is running in, or English.
+    public var localizedTheme: String { theme(in: Bundle.main.preferredLocalizations.first ?? "en") }
+
+    /// The theme for a BCP 47 language tag: an exact match ("pt-BR"), then the language ("pt" for
+    /// "pt-PT", "zh-Hans" for "zh-Hans-CN"), then English.
+    public func theme(in tag: String) -> String {
+        guard let themes else { return theme }
+        if let exact = themes[tag] { return exact }
+        let language = Locale.Language(identifier: tag)
+        if let code = language.languageCode?.identifier {
+            if code == "zh" { return language.script?.identifier == "Hant" ? theme : themes["zh-Hans"] ?? theme }
+            if let match = themes.first(where: { $0.key.split(separator: "-").first.map(String.init) == code }) {
+                return match.value
+            }
+        }
+        return theme
     }
 
     public var id: String { ref }

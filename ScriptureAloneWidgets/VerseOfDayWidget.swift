@@ -95,7 +95,7 @@ struct HomeVerseCard: View {
                 Text("Verse of the Day")
                 if family == .systemLarge {
                     Text("·")
-                    Text(entry.verse.theme).lineLimit(1)
+                    Text(entry.verse.localizedTheme).lineLimit(1)
                 }
             }
             .font(.caption.weight(.semibold))

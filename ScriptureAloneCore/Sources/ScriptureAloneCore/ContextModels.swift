@@ -272,6 +272,9 @@ public struct FeastsChart: Hashable, Sendable, Codable {
         public let pilgrim: Bool?
         public let interpretive: Bool?
         public let later: Bool?
+        /// "spring" or "autumn" for the feasts the chart groups by season, whatever language the
+        /// season text is in (`ContextStore.localizedBody`).
+        public let seasonGroup: String?
         public var id: String { name }
     }
     public let feasts: [Feast]

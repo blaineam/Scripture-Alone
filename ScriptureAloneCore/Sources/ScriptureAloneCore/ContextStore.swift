@@ -9,8 +9,21 @@ public final class ContextStore: @unchecked Sendable {
     private let db: OpaquePointer
     private let lock = NSLock()
     private var cachedEras: [Era]?
+    /// The context in the reader's language (docs/localization.md): rows of the `translations`
+    /// table (Tools/translate_context.py) for this language, by kind, keyed by the English source —
+    /// or by OpenBible id for places. Empty in English, or for a database without the table.
+    private let translated: [String: [String: String]]
+    /// The language the context is shown in, or nil for English.
+    public let language: String?
 
-    public init(url: URL) throws {
+    /// The table's language for the app's current language: an exact match ("pt-BR"), else the
+    /// language alone ("fr" for "fr-CA"); nil for English and anything untranslated.
+    public static var appLanguage: String? {
+        let tag = Bundle.main.preferredLocalizations.first ?? "en"
+        return tag.hasPrefix("en") ? nil : tag
+    }
+
+    public init(url: URL, language: String? = ContextStore.appLanguage) throws {
         self.url = url
         var handle: OpaquePointer?
         let uri = "file:\(url.path(percentEncoded: true))?immutable=1"
@@ -21,9 +34,86 @@ public final class ContextStore: @unchecked Sendable {
             throw BibleStoreError.open(message)
         }
         db = handle
+
+        var translated: [String: [String: String]] = [:]
+        var matched: String?
+        if let language {
+            var available: [String] = []
+            var probe: OpaquePointer?
+            if sqlite3_prepare_v2(handle, "SELECT DISTINCT lang FROM translations", -1, &probe, nil) == SQLITE_OK, let probe {
+                while sqlite3_step(probe) == SQLITE_ROW { available.append(Self.string(probe, 0)) }
+                sqlite3_finalize(probe)
+            }
+            let code = language.split(separator: "-").first.map(String.init)
+            matched = available.first { $0 == language }
+                ?? available.first { $0.split(separator: "-").first.map(String.init) == code && !(code == "zh" && language.contains("Hant")) }
+            if let matched {
+                var stmt: OpaquePointer?
+                if sqlite3_prepare_v2(handle, "SELECT kind, source, text FROM translations WHERE lang = ?1", -1, &stmt, nil) == SQLITE_OK,
+                   let stmt {
+                    sqlite3_bind_text(stmt, 1, matched, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self))
+                    while sqlite3_step(stmt) == SQLITE_ROW {
+                        translated[Self.string(stmt, 0), default: [:]][Self.string(stmt, 1)] = Self.string(stmt, 2)
+                    }
+                    sqlite3_finalize(stmt)
+                }
+            }
+        }
+        self.translated = translated
+        self.language = matched
     }
 
     deinit { sqlite3_close(db) }
+
+    // MARK: Translation
+
+    /// Prose in the reader's language, or the English it was given.
+    func tr(_ english: String) -> String { translated["string"]?[english] ?? english }
+    func tr(_ english: String?) -> String? { english.map { tr($0) } }
+
+    /// A person's name as the reader's Bible spells it (chart kings, tribes, prophets…).
+    func person(_ english: String) -> String { translated["person"]?[english] ?? tr(english) }
+
+    func localized(_ place: Place) -> Place {
+        guard language != nil else { return place }
+        return Place(id: place.id, openBibleID: place.openBibleID,
+                     name: translated["place"]?[place.openBibleID] ?? place.name,
+                     modernName: place.modernName.isEmpty ? "" : translated["modern"]?[place.modernName] ?? place.modernName,
+                     kind: place.kind, type: place.type, longitude: place.longitude, latitude: place.latitude,
+                     confidence: place.confidence, precision: place.precision, alternatives: place.alternatives,
+                     mentions: place.mentions, fromOpenStreetMap: place.fromOpenStreetMap)
+    }
+
+    /// A chart's JSON body with its reader-facing text translated — the same fields the translator
+    /// takes (Tools/translate_context.py). Feasts get a language-neutral `seasonGroup` first, since
+    /// the chart sorts them by season and the season text is about to stop being English; and their
+    /// English New Testament quotation (`ntText`) is dropped, so the chart shows that verse from the
+    /// reader's own Bible instead.
+    func localizedBody(_ body: Data) -> Data {
+        guard var root = try? JSONSerialization.jsonObject(with: body) else { return body }
+        let prose: Set<String> = ["date", "dates", "debate", "meaning", "note", "reign", "season", "short", "sources",
+                                  "sub", "subtitle", "summary", "text", "title", "years", "name"]
+        let names: Set<String> = ["mother", "prophets"]
+        func walk(_ node: Any, field: String?, siblings: [String: Any]?) -> Any {
+            if var dict = node as? [String: Any] {
+                if let season = dict["season"] as? String {
+                    dict["seasonGroup"] = season.hasPrefix("March") || season.hasPrefix("May") ? "spring"
+                        : season.hasPrefix("September") ? "autumn" : nil
+                }
+                if language != nil { dict["ntText"] = nil }
+                for (key, value) in dict where key != "seasonGroup" { dict[key] = walk(value, field: key, siblings: dict) }
+                return dict
+            }
+            if let list = node as? [Any] { return list.map { walk($0, field: field, siblings: siblings) } }
+            guard let text = node as? String, let field, language != nil else { return node }
+            let isPerson = names.contains(field)
+                || (field == "name" && siblings.map { $0["reign"] != nil || $0["birth"] != nil || $0["mother"] != nil } == true)
+            if isPerson { return person(text) }
+            return prose.contains(field) ? tr(text) : text
+        }
+        root = walk(root, field: nil, siblings: nil)
+        return (try? JSONSerialization.data(withJSONObject: root)) ?? body
+    }
 
     // MARK: Places
 
@@ -39,7 +129,7 @@ public final class ContextStore: @unchecked Sendable {
                 SELECT v.verse, \(Self.placeColumns) FROM place_verses v JOIN places p ON p.id = v.place
                 WHERE v.verse BETWEEN ?1 AND ?2 ORDER BY v.verse, p.mentions DESC
                 """, bind: [chapter.keyRange.lowerBound, chapter.keyRange.upperBound]) { stmt in
-                let place = Self.place(stmt, offset: 1)
+                let place = localized(Self.place(stmt, offset: 1))
                 if places[place.id] == nil {
                     places[place.id] = place
                     order.append(place.id)
@@ -64,7 +154,7 @@ public final class ContextStore: @unchecked Sendable {
     public func place(id: Int) throws -> Place? {
         try locked {
             var result: Place?
-            try rows("SELECT \(Self.placeColumns) FROM places p WHERE p.id = ?1", bind: [id]) { result = Self.place($0, offset: 0) }
+            try rows("SELECT \(Self.placeColumns) FROM places p WHERE p.id = ?1", bind: [id]) { result = self.localized(Self.place($0, offset: 0)) }
             return result
         }
     }
@@ -74,7 +164,7 @@ public final class ContextStore: @unchecked Sendable {
         try locked {
             var result: [Place] = []
             try rows("SELECT \(Self.placeColumns) FROM places p ORDER BY p.mentions DESC, p.name LIMIT ?1", bind: [limit]) {
-                result.append(Self.place($0, offset: 0))
+                result.append(self.localized(Self.place($0, offset: 0)))
             }
             return result
         }
@@ -87,10 +177,16 @@ public final class ContextStore: @unchecked Sendable {
         let pattern = "%" + term.replacingOccurrences(of: "%", with: "").replacingOccurrences(of: "_", with: "") + "%"
         return try locked {
             var result: [Place] = []
+            // In another language, the reader types the name their Bible uses ("Jérusalem", "耶路撒冷").
+            let translatedMatch = language == nil ? "" : """
+                 OR p.obid IN (SELECT source FROM translations WHERE lang = ?4 AND kind = 'place' AND text LIKE ?1)
+                """
             try rows("""
-                SELECT \(Self.placeColumns) FROM places p WHERE p.name LIKE ?1 OR p.modern LIKE ?1
+                SELECT \(Self.placeColumns) FROM places p WHERE p.name LIKE ?1 OR p.modern LIKE ?1\(translatedMatch)
                 ORDER BY (p.name LIKE ?2) DESC, p.mentions DESC LIMIT ?3
-                """, bind: [pattern, term + "%", limit]) { result.append(Self.place($0, offset: 0)) }
+                """, bind: [pattern, term + "%", limit] + (language.map { [$0] } ?? [])) {
+                result.append(self.localized(Self.place($0, offset: 0)))
+            }
             return result
         }
     }
@@ -103,10 +199,10 @@ public final class ContextStore: @unchecked Sendable {
             var result: [Era] = []
             try rows("SELECT id, ord, name, short, start, end, dates, color, summary, debate FROM eras ORDER BY ord") { stmt in
                 result.append(Era(id: Self.string(stmt, 0), order: Int(sqlite3_column_int(stmt, 1)),
-                                  name: Self.string(stmt, 2), shortName: Self.string(stmt, 3),
+                                  name: tr(Self.string(stmt, 2)), shortName: tr(Self.string(stmt, 3)),
                                   start: Self.optionalInt(stmt, 4), end: Self.optionalInt(stmt, 5),
-                                  dates: Self.string(stmt, 6), color: Self.string(stmt, 7),
-                                  summary: Self.string(stmt, 8), debate: Self.string(stmt, 9)))
+                                  dates: tr(Self.string(stmt, 6)), color: Self.string(stmt, 7),
+                                  summary: tr(Self.string(stmt, 8)), debate: tr(Self.string(stmt, 9))))
             }
             cachedEras = result
             return result
@@ -126,7 +222,7 @@ public final class ContextStore: @unchecked Sendable {
                 if eraIDs.count == 1 {
                     year = Self.optionalInt(stmt, 1)
                     basis = ChapterTime.Basis(rawValue: Self.string(stmt, 2)) ?? .events
-                    note = Self.optionalString(stmt, 3)
+                    note = tr(Self.optionalString(stmt, 3))
                 }
             }
             let eras = eraIDs.compactMap { id in all.first { $0.id == id } }
@@ -158,8 +254,8 @@ public final class ContextStore: @unchecked Sendable {
                     range = VerseRange(start, end)
                 }
                 result.append(TimelineEvent(id: Int(sqlite3_column_int(stmt, 0)), eraID: Self.string(stmt, 1),
-                                            order: Int(sqlite3_column_int(stmt, 2)), name: Self.string(stmt, 3),
-                                            year: Self.optionalInt(stmt, 4), date: Self.optionalString(stmt, 5),
+                                            order: Int(sqlite3_column_int(stmt, 2)), name: tr(Self.string(stmt, 3)),
+                                            year: Self.optionalInt(stmt, 4), date: tr(Self.optionalString(stmt, 5)),
                                             debated: sqlite3_column_int(stmt, 6) != 0, range: range))
             }
             return result
@@ -176,9 +272,9 @@ public final class ContextStore: @unchecked Sendable {
                 guard let kind = ChartKind(rawValue: Self.string(stmt, 2)) else { return }
                 let scope = (try? JSONDecoder().decode([Int].self, from: Data(Self.string(stmt, 6).utf8))) ?? []
                 result.append(ChartInfo(id: Self.string(stmt, 0), order: Int(sqlite3_column_int(stmt, 1)), kind: kind,
-                                        title: Self.string(stmt, 3), subtitle: Self.string(stmt, 4),
-                                        sources: Self.string(stmt, 5), scope: scope.compactMap(BookID.init(rawValue:)),
-                                        body: Data(Self.string(stmt, 7).utf8)))
+                                        title: tr(Self.string(stmt, 3)), subtitle: tr(Self.string(stmt, 4)),
+                                        sources: tr(Self.string(stmt, 5)), scope: scope.compactMap(BookID.init(rawValue:)),
+                                        body: localizedBody(Data(Self.string(stmt, 7).utf8))))
             }
             return result
         }
@@ -193,7 +289,7 @@ public final class ContextStore: @unchecked Sendable {
         try locked {
             var result: [MapLabel] = []
             try rows("SELECT text, sub, lon, lat, min_scale, kind, angle FROM labels") { stmt in
-                result.append(MapLabel(text: Self.string(stmt, 0), subtitle: Self.optionalString(stmt, 1),
+                result.append(MapLabel(text: tr(Self.string(stmt, 0)), subtitle: tr(Self.optionalString(stmt, 1)),
                                        longitude: sqlite3_column_double(stmt, 2), latitude: sqlite3_column_double(stmt, 3),
                                        minimumScale: sqlite3_column_double(stmt, 4),
                                        kind: MapLabel.Kind(rawValue: Self.string(stmt, 5)) ?? .land,

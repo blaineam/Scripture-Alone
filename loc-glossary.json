@@ -1,0 +1,63 @@
+{
+  "_comment": "Scripture Alone's localization rules (docs/localization.md). Translation abbreviations and file formats stay as they are. The feature names below are pinned so the app, the store listings and the website (which already uses these) say the same thing. A book of the Bible is named by BookNames, not by the catalogs; 'Words of Christ' is the red-letter feature. Bible names in interface copy follow the reader's own Bible (the 和合本, the 文語訳, Segond…), so strings mentioning 'the Bible' stay generic.",
+  "neverTranslate": [
+    "Scripture Alone",
+    "ASV",
+    "BSB",
+    "KJV",
+    "ESV",
+    "CSB",
+    "NASB",
+    "NKJV",
+    "USFM",
+    "ePub",
+    "eBible.org",
+    "API.Bible",
+    "Strong's",
+    "Life Bible",
+    "Tecarta",
+    "Mi Speaks"
+  ],
+  "prefer": {
+    "Keepsake Bible": {
+      "zh-Hans": "珍藏圣经",
+      "ja": "思い出の聖書",
+      "de-DE": "Erinnerungs-Bibel",
+      "fr-FR": "Bible souvenir",
+      "es-ES": "Biblia de recuerdo",
+      "ko": "기념 성경",
+      "pt-BR": "Bíblia de recordação",
+      "it": "Bibbia ricordo"
+    },
+    "Verse of the Day": {
+      "zh-Hans": "每日经文",
+      "ja": "今日の聖句",
+      "de-DE": "Vers des Tages",
+      "fr-FR": "Verset du jour",
+      "es-ES": "Versículo del día",
+      "ko": "오늘의 말씀",
+      "pt-BR": "Versículo do dia",
+      "it": "Versetto del giorno"
+    },
+    "cross-references": {
+      "zh-Hans": "串珠经文",
+      "ja": "引照",
+      "de-DE": "Querverweise",
+      "fr-FR": "renvois",
+      "es-ES": "referencias cruzadas",
+      "ko": "관주",
+      "pt-BR": "referências cruzadas",
+      "it": "rimandi"
+    },
+    "Words of Christ": {
+      "zh-Hans": "基督的话",
+      "ja": "キリストの言葉",
+      "de-DE": "Worte Jesu",
+      "fr-FR": "Paroles du Christ",
+      "es-ES": "Palabras de Cristo",
+      "ko": "그리스도의 말씀",
+      "pt-BR": "Palavras de Cristo",
+      "it": "Parole di Cristo"
+    }
+  }
+}

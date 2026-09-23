@@ -7,6 +7,12 @@ enum StudyTab: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// The tabs this reader gets: the commentary is English-only, so it is offered only in
+    /// English (`StudyLanguage`).
+    static var available: [StudyTab] {
+        StudyLanguage.isEnglish ? allCases : allCases.filter { $0 != .commentary }
+    }
+
     var title: String {
         switch self {
         case .crossReferences: String(localized: "Cross References", comment: "Study panel tab")
@@ -50,7 +56,7 @@ struct StudyPanel: View {
             VStack(spacing: 0) {
                 header
                 Picker("Study", selection: $study.tab) {
-                    ForEach(StudyTab.allCases) { tab in
+                    ForEach(StudyTab.available) { tab in
                         Text(tab.shortTitle).tag(tab)
                     }
                 }

@@ -83,7 +83,7 @@ struct InterlinearView: View {
                     // Said plainly rather than left to be noticed: the English beside each Hebrew
                     // or Greek word is the Berean Standard Bible's, which is what the word-by-word
                     // data is keyed to. The Hebrew and Greek themselves are the verse's own.
-                    if glossesFromAnotherTranslation {
+                    if glossesFromAnotherTranslation, StudyLanguage.isEnglish {
                         Text("English shown word-by-word is the Berean Standard Bible's, which this data is keyed to.")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
@@ -116,15 +116,21 @@ struct InterlinearView: View {
             }
             Text(word.transliteration).font(.callout.italic()).foregroundStyle(.secondary)
             HStack(spacing: 6) {
-                if !word.english.isEmpty {
+                // The word-by-word English is the BSB's; outside English it would be English in the
+                // middle of the reader's own language, so only the Hebrew or Greek shows (`StudyLanguage`).
+                if !word.english.isEmpty, StudyLanguage.isEnglish {
                     Text(word.english).font(.callout.weight(.medium))
                 }
                 if word.isSuperscription {
                     Text("superscription").font(.caption2).foregroundStyle(.secondary)
                 }
             }
-            if !word.parsingDescription.isEmpty {
+            // The spelled-out parsing ("Verb – Qal – Perfect…") is English; the code is the
+            // standard notation, readable in any language.
+            if StudyLanguage.isEnglish, !word.parsingDescription.isEmpty {
                 Text(word.parsingDescription).font(.caption).foregroundStyle(.secondary)
+            } else if !StudyLanguage.isEnglish, let code = word.parsing?.code, !code.isEmpty {
+                Text(code).font(.caption.monospaced()).foregroundStyle(.secondary)
             }
             if expanded == word.strongs, let entry {
                 VStack(alignment: .leading, spacing: 4) {
@@ -152,7 +158,8 @@ struct InterlinearView: View {
     }
 
     private func toggle(_ word: InterlinearWord) {
-        guard let strongs = word.strongs else { return }
+        // The lexicon's glosses and definitions are English-only (`StudyLanguage`).
+        guard StudyLanguage.isEnglish, let strongs = word.strongs else { return }
         if expanded == strongs {
             expanded = nil
             entry = nil
