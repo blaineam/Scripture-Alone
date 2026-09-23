@@ -101,7 +101,13 @@ struct KeepsakeCreateView: View {
                 }
             } footer: {
                 if let made {
-                    Text("\(made.name) is ready\(made.protected ? ", protected with your passphrase" : ""). It’s a snapshot of today; make a new one whenever you like, and it will replace the older copy when your family opens it.")
+                    if made.protected {
+                        Text("\(made.name) is ready, protected with your passphrase. It’s a snapshot of today; make a new one whenever you like, and it will replace the older copy when your family opens it.",
+                             comment: "%@ is a keepsake file's name")
+                    } else {
+                        Text("\(made.name) is ready. It’s a snapshot of today; make a new one whenever you like, and it will replace the older copy when your family opens it.",
+                             comment: "%@ is a keepsake file's name")
+                    }
                 }
             }
 

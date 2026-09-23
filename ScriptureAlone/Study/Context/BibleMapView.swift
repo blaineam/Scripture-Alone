@@ -118,10 +118,13 @@ struct BibleMapView: View {
     }
 
     private var accessibilitySummary: String {
-        if content.pins.isEmpty { return "Map of the lands of the Bible." }
+        if content.pins.isEmpty { return String(localized: "Map of the lands of the Bible.", comment: "Accessibility description of the map when no places are pinned") }
         let names = content.pins.prefix(12).map(\.name).joined(separator: ", ")
-        let more = content.pins.count > 12 ? ", and \(content.pins.count - 12) more" : ""
-        return "Map showing \(names)\(more)."
+        let more = content.pins.count > 12
+            ? String(localized: "\(content.pins.count - 12) more", comment: "Accessibility: ends a list of place names on a map. %lld is how many more places are pinned.")
+            : ""
+        let list = more.isEmpty ? names : String(localized: "\(names), and \(more)", comment: "Accessibility: joins a comma-separated list of place names with “%lld more”.")
+        return String(localized: "Map showing \(list).", comment: "Accessibility description of the map. %@ is a list of place names.")
     }
 
     // MARK: Controls

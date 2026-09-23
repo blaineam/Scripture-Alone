@@ -46,7 +46,7 @@ struct TranslationEntry: Identifiable, Hashable {
 
 enum ReaderModelError: LocalizedError {
     case noOnlineLoader
-    var errorDescription: String? { "This translation needs a key. Add one in Manage Translations." }
+    var errorDescription: String? { String(localized: "This translation needs a key. Add one in Manage Translations.", comment: "“Manage Translations” is the name of a screen in the app.") }
 }
 
 @Observable
@@ -216,8 +216,8 @@ final class ReaderModel {
     }
 
     private func reportDefaultTranslationFailure() {
-        let why = SealedTranslations.shared.failure(Self.defaultTranslation) ?? "It couldn’t be opened."
-        loadError = "The American Standard Version couldn’t be opened. \(why)"
+        let why = SealedTranslations.shared.failure(Self.defaultTranslation) ?? String(localized: "It couldn’t be opened.", comment: "Reason shown after “The American Standard Version couldn’t be opened.”")
+        loadError = String(localized: "The American Standard Version couldn’t be opened. \(why)", comment: "%@ is a sentence giving the reason.")
     }
 
     /// Tries the ASV again after it failed to open at launch. The one cause a retry cures is a
@@ -354,7 +354,7 @@ final class ReaderModel {
             // more before telling the reader the translation is broken.
             if SealedTranslations.shared.package(id) == nil { SealedTranslations.shared.reopen(id) }
             guard let package = SealedTranslations.shared.package(id) else {
-                loadError = SealedTranslations.shared.failure(id) ?? "\(entry.name) couldn't be opened."
+                loadError = SealedTranslations.shared.failure(id) ?? String(localized: "\(entry.name) couldn't be opened.", comment: "%@ is a Bible translation name.")
                 setLayout(nil, for: nil)
                 return
             }
@@ -501,7 +501,7 @@ final class ReaderModel {
     /// since there is no mismatch to create.
     private func loadOnline(_ entry: TranslationEntry) {
         guard let onlineLoader else {
-            loadError = "This translation needs a key. Add one in Manage Translations."
+            loadError = String(localized: "This translation needs a key. Add one in Manage Translations.", comment: "“Manage Translations” is the name of a screen in the app.")
             setLayout(nil, for: nil)
             return
         }

@@ -448,7 +448,7 @@ enum ChapterRenderer {
             #else
             let config = NSImage.SymbolConfiguration(pointSize: side, weight: .medium)
                 .applying(NSImage.SymbolConfiguration(paletteColors: [style.palette.accent]))
-            attachment.image = NSImage(systemSymbolName: markerSymbol, accessibilityDescription: "Note")?
+            attachment.image = NSImage(systemSymbolName: markerSymbol, accessibilityDescription: String(localized: "Note", comment: "Accessibility: marker for a verse with a note"))?
                 .withSymbolConfiguration(config)
             #endif
             attachment.bounds = CGRect(x: 0, y: -side * 0.12, width: side * 1.1, height: side)

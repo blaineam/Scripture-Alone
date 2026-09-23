@@ -17,7 +17,7 @@ public enum WatchEdition {
     public enum Failure: Error, LocalizedError {
         case sqlite(String)
         public var errorDescription: String? {
-            switch self { case .sqlite(let message): "The watch edition couldn't be written: \(message)" }
+            switch self { case .sqlite(let message): String(localized: "The watch edition couldn't be written: \(message)", bundle: .module, comment: "Error. %@ is a technical error message.") }
         }
     }
 

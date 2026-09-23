@@ -38,9 +38,9 @@ public enum BibleStoreError: Error, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .open(let message): "Couldn’t open the Bible text: \(message)"
-        case .query(let message): "Couldn’t read the Bible text: \(message)"
-        case .missing(let chapter): "\(chapter.display) isn’t in this translation."
+        case .open(let message): String(localized: "Couldn’t open the Bible text: \(message)", bundle: .module, comment: "Error. %@ is a technical database error message.")
+        case .query(let message): String(localized: "Couldn’t read the Bible text: \(message)", bundle: .module, comment: "Error. %@ is a technical database error message.")
+        case .missing(let chapter): String(localized: "\(chapter.display) isn’t in this translation.", bundle: .module, comment: "Error. %@ is a chapter reference, e.g. “John 3”.")
         }
     }
 }

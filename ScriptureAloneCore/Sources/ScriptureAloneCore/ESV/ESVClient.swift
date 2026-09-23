@@ -39,15 +39,15 @@ public struct ESVClient: Sendable {
         public var errorDescription: String? {
             switch self {
             case .noKey:
-                "Add your free ESV API key to read the ESV."
+                String(localized: "Add your free ESV API key to read the ESV.", bundle: .module)
             case .unauthorized:
-                "Crossway didn't accept that API key. Check it at api.esv.org."
+                String(localized: "Crossway didn't accept that API key. Check it at api.esv.org.", bundle: .module)
             case .rateLimited:
-                "You've reached Crossway's daily limit for your key. It resets tomorrow."
+                String(localized: "You've reached Crossway's daily limit for your key. It resets tomorrow.", bundle: .module)
             case .http(let code):
-                "Crossway's API returned HTTP \(code)."
+                String(localized: "Crossway's API returned HTTP \(code).", bundle: .module, comment: "Error. %lld is an HTTP status code.")
             case .empty(let reference):
-                "Crossway returned nothing for \(reference)."
+                String(localized: "Crossway returned nothing for \(reference).", bundle: .module, comment: "Error. %@ is a passage reference, e.g. “John 3”.")
             }
         }
     }

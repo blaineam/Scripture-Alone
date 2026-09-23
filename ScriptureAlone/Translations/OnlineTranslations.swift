@@ -65,12 +65,9 @@ enum OnlineProvider: String, CaseIterable, Identifiable, Sendable {
     var explanation: String {
         switch self {
         case .crossway:
-            "Crossway's free tier allows 5,000 requests a day for non-commercial use. The key is "
-                + "yours, and the ESV is read over the network — up to 500 verses are kept on the "
-                + "device, which is Crossway's limit."
+            String(localized: "Crossway's free tier allows 5,000 requests a day for non-commercial use. The key is yours, and the ESV is read over the network — up to 500 verses are kept on the device, which is Crossway's limit.", comment: "Explains a provider of licensed Bible text. “Starter” is the name of API.Bible's free plan.")
         case .apiBible:
-            "The American Bible Society's free Starter plan is for non-commercial use and lets you "
-                + "pick three copyrighted translations. The key is yours."
+            String(localized: "The American Bible Society's free Starter plan is for non-commercial use and lets you pick three copyrighted translations. The key is yours.", comment: "Explains a provider of licensed Bible text. “Starter” is the name of API.Bible's free plan.")
         }
     }
 }

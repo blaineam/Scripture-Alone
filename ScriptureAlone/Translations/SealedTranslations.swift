@@ -59,12 +59,12 @@ final class SealedTranslations {
     private func open(_ id: String) {
         guard let keyURL = Bundle.main.url(forResource: "bundled-signing", withExtension: "pub"),
               let publisherKey = try? Data(contentsOf: keyURL) else {
-            failures[id] = "\(id) isn't in this build."
+            failures[id] = String(localized: "\(id) isn't in this build.", comment: "Error. %@ is a translation abbreviation, e.g. “ASV”.")
             return
         }
         guard let packageURL = Bundle.main.url(forResource: id, withExtension: "sabible")
                 ?? AssetPack(translationID: id).flatMap({ AssetLibrary.shared.url(of: $0) }) else {
-            failures[id] = "\(id) isn't in this build."
+            failures[id] = String(localized: "\(id) isn't in this build.", comment: "Error. %@ is a translation abbreviation, e.g. “ASV”.")
             return
         }
         do {

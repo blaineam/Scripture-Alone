@@ -60,7 +60,9 @@ struct SharedBiblesSection: View {
 
     private var removalTitle: String {
         guard let entry = pendingRemoval else { return "" }
-        return entry.isLive ? "Leave \(entry.title)?" : "Remove \(entry.title)?"
+        return entry.isLive
+            ? String(localized: "Leave \(entry.title)?", comment: "%@ is the title of a shared Bible")
+            : String(localized: "Remove \(entry.title)?", comment: "%@ is the title of a keepsake or shared Bible")
     }
 }
 

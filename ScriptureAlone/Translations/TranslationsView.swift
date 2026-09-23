@@ -29,7 +29,7 @@ struct TranslationsView: View {
                 if !online.isEmpty {
                     Section {
                         ForEach(online) { entry in
-                            row(name: entry.name, abbreviation: entry.id, note: "Read over the network")
+                            row(name: entry.name, abbreviation: entry.id, note: String(localized: "Read over the network", comment: "Note under an online translation's name"))
                         }
                     } header: {
                         Text("Online")
@@ -180,16 +180,18 @@ private struct ImportSummaryView: View {
     /// bug rather than as the truth.
     static func summary(of book: ImportCoverageReport.BookCoverage) -> String {
         if !book.missingChapters.isEmpty {
-            return "\(book.chaptersFound) of \(book.chaptersExpected) chapters"
+            return String(localized: "\(book.chaptersFound) of \(book.chaptersExpected) chapters", comment: "Import coverage for a book. Chapters found, then chapters expected.")
         }
         let refs = book.chaptersWithGaps.flatMap { chapter in
             chapter.missingVerses.map { "\(chapter.chapter):\($0)" }
         }
-        if refs.isEmpty { return "\(book.versesFound) verses" }
+        if refs.isEmpty { return String(localized: "\(book.versesFound) verses", comment: "Import coverage for a book. %lld is a number of verses.") }
         let shown = refs.prefix(4).joined(separator: ", ")
         let extra = refs.count - min(refs.count, 4)
-        let tail = extra > 0 ? " and \(extra) more" : ""
-        return "Not in this file: \(shown)\(tail)"
+        if extra > 0 {
+            return String(localized: "Not in this file: \(shown) and \(extra) more", comment: "Import coverage. %1$@ is a list of verse references like “17:36, 23:17”; %2$lld is how many more are missing.")
+        }
+        return String(localized: "Not in this file: \(shown)", comment: "Import coverage. %@ is a list of verse references like “17:36, 23:17”.")
     }
 
     var body: some View {

@@ -85,7 +85,10 @@ import Testing
 
     @Test func catalogCoversTheCanonInEveryTranslation() throws {
         let catalog = try Self.catalog()
-        #expect(catalog.translations == ["ASV", "BSB", "KJV"])
+        // The English three, then the big-8 locales' Bibles (docs/localization.md), each read
+        // through its own numbering by Tools/build_companion_data.py.
+        #expect(catalog.translations == ["ASV", "BSB", "KJV", "CUVS", "BUNGO", "LUT1912", "LSG",
+                                         "RVR1909", "KRV", "BLIVRE", "RIV1927"])
         #expect(Set(catalog.verses.map(\.ref)).count == catalog.verses.count)
         var books = Set<BookID>()
         for verse in catalog.verses {

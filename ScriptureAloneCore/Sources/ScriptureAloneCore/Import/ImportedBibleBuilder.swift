@@ -35,7 +35,7 @@ public struct ImportedTranslationIdentity: Sendable, Hashable, Codable {
     /// import flow is expected to make the user confirm the name and paste the copyright line.
     public static func suggested(from metadata: EPUBMetadata) -> ImportedTranslationIdentity {
         let title = metadata.title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        let name = title.isEmpty ? "Imported Bible" : title
+        let name = title.isEmpty ? String(localized: "Imported Bible", bundle: .module, comment: "Suggested name for an imported Bible translation that has no title") : title
         var rights = metadata.rights?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         if rights.isEmpty, let publisher = metadata.publisher, !publisher.isEmpty {
             rights = "© \(publisher)"

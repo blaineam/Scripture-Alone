@@ -81,7 +81,7 @@ final class FamilySharingOwner {
             return
         }
         guard let container = FamilyCloud.container else {
-            status = .unavailable("Family sharing needs a signed build with iCloud.")
+            status = .unavailable(String(localized: "Family sharing needs a signed build with iCloud."))
             return
         }
         do {
@@ -118,7 +118,7 @@ final class FamilySharingOwner {
         if FamilyDebug.fakeOwner { status = .on; return true }
         #endif
         guard let container = FamilyCloud.container else {
-            status = .unavailable("Family sharing needs a signed build with iCloud.")
+            status = .unavailable(String(localized: "Family sharing needs a signed build with iCloud."))
             return false
         }
         status = .working

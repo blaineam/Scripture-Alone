@@ -29,10 +29,10 @@ public struct ContentKeyVault: Sendable {
 
         public var errorDescription: String? {
             switch self {
-            case .noKeyStored: "No content key has been set up on this device."
-            case .enclaveUnavailable(let why): "The Secure Enclave isn't available: \(why)"
-            case .keychain(let status): "The keychain refused the request (\(status))."
-            case .corrupted: "The stored content key couldn't be read."
+            case .noKeyStored: String(localized: "No content key has been set up on this device.", bundle: .module)
+            case .enclaveUnavailable(let why): String(localized: "The Secure Enclave isn't available: \(why)", bundle: .module, comment: "Error. %@ is a technical detail.")
+            case .keychain(let status): String(localized: "The keychain refused the request (\(Int(status))).", bundle: .module, comment: "Error. %lld is a system error code.")
+            case .corrupted: String(localized: "The stored content key couldn't be read.", bundle: .module)
             }
         }
     }

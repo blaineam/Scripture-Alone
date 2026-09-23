@@ -67,21 +67,21 @@ public enum TranslationPackageError: Error, Equatable, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .notAPackage: "That isn’t a translation package."
-        case .unsupportedFormat(let version): "This package is version \(version); this app reads version \(TranslationPackageFormat.version)."
-        case .damagedHeader(let detail): "This package’s details are damaged: \(detail)"
-        case .unreadable(let detail): "Couldn’t read the package: \(detail)"
-        case .unknownPublisherKey(let id): "This package is signed by a key this app doesn’t know (\(id))."
-        case .signatureInvalid: "This package’s details or terms have been altered, so it can’t be opened."
-        case .expired(let date): "This translation’s licence ended \(date.formatted(date: .abbreviated, time: .omitted))."
-        case .wrongContentKey: "This translation’s key isn’t the one that opens this package."
-        case .chapterMissing(let chapter): "\(chapter.display) isn’t in this translation."
-        case .chapterTampered(let chapter): "\(chapter.display) failed its integrity check, so it can’t be shown."
-        case .truncated: "This package is incomplete."
-        case .rangeTooLarge(let chapters): "That’s \(chapters) chapters at once — more than a quotation."
-        case .notSearchable(let why): "This translation can’t be searched: \(why)"
-        case .damagedIndex(let detail): "This translation’s search index is damaged: \(detail)"
-        case .bucketTampered(let bucket): "Part of the search index (\(bucket)) failed its integrity check."
+        case .notAPackage: String(localized: "That isn’t a translation package.", bundle: .module)
+        case .unsupportedFormat(let version): String(localized: "This package is version \(version); this app reads version \(Int(TranslationPackageFormat.version)).", bundle: .module, comment: "Error. Both numbers are file-format version numbers.")
+        case .damagedHeader(let detail): String(localized: "This package’s details are damaged: \(detail)", bundle: .module, comment: "Error. %@ is a technical detail.")
+        case .unreadable(let detail): String(localized: "Couldn’t read the package: \(detail)", bundle: .module, comment: "Error. %@ is a technical detail.")
+        case .unknownPublisherKey(let id): String(localized: "This package is signed by a key this app doesn’t know (\(id)).", bundle: .module, comment: "Error. %@ is a key identifier.")
+        case .signatureInvalid: String(localized: "This package’s details or terms have been altered, so it can’t be opened.", bundle: .module)
+        case .expired(let date): String(localized: "This translation’s licence ended \(date.formatted(date: .abbreviated, time: .omitted)).", bundle: .module, comment: "Error. %@ is a date.")
+        case .wrongContentKey: String(localized: "This translation’s key isn’t the one that opens this package.", bundle: .module)
+        case .chapterMissing(let chapter): String(localized: "\(chapter.display) isn’t in this translation.", bundle: .module, comment: "Error. %@ is a chapter reference, e.g. “John 3”.")
+        case .chapterTampered(let chapter): String(localized: "\(chapter.display) failed its integrity check, so it can’t be shown.", bundle: .module, comment: "Error. %@ is a chapter reference, e.g. “John 3”.")
+        case .truncated: String(localized: "This package is incomplete.", bundle: .module)
+        case .rangeTooLarge(let chapters): String(localized: "That’s \(chapters) chapters at once — more than a quotation.", bundle: .module, comment: "Error. %lld is a number of chapters.")
+        case .notSearchable(let why): String(localized: "This translation can’t be searched: \(why)", bundle: .module, comment: "Error. %@ is a technical detail.")
+        case .damagedIndex(let detail): String(localized: "This translation’s search index is damaged: \(detail)", bundle: .module, comment: "Error. %@ is a technical detail.")
+        case .bucketTampered(let bucket): String(localized: "Part of the search index (\(bucket)) failed its integrity check.", bundle: .module, comment: "Error. %lld is an index section number.")
         }
     }
 }

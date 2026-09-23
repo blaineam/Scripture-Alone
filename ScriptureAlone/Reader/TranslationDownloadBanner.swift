@@ -55,8 +55,8 @@ struct TranslationDownloadBanner: View {
     }
 
     private func title(for pack: AssetPack) -> String {
-        if case .failed = AssetLibrary.shared.state(of: pack) { return "Couldn’t download the \(pack.title)" }
-        return "Downloading the \(pack.title)…"
+        if case .failed = AssetLibrary.shared.state(of: pack) { return String(localized: "Couldn’t download the \(pack.title)", comment: "%@ is the name of a download, e.g. a Bible translation or “Study Notes”.") }
+        return String(localized: "Downloading the \(pack.title)…", comment: "%@ is the name of a download, e.g. a Bible translation or “Study Notes”.")
     }
 
     @ViewBuilder private func detail(for pack: AssetPack) -> some View {

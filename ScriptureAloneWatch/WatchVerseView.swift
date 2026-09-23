@@ -106,6 +106,6 @@ struct WatchVerseText: View {
         .padding(.horizontal, highlight == nil ? 0 : 4)
         .background(highlight.map { $0.opacity(0.28) } ?? .clear, in: .rect(cornerRadius: 4))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(numbered ? "Verse \(verse.ref.verse). \(verse.text)" : verse.text)
+        .accessibilityLabel(numbered ? String(localized: "Verse \(verse.ref.verse). \(verse.text)", comment: "Accessibility. %1$lld is a verse number; %2$@ is the verse text.") : verse.text)
     }
 }

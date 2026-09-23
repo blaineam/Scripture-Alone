@@ -65,7 +65,7 @@ public struct USFMPackage: Sendable {
             }
             .sorted()
         guard !files.isEmpty else {
-            throw BibleImportError.unsupportedFormat("the archive holds no USFM files")
+            throw BibleImportError.unsupportedFormat(String(localized: "the archive holds no USFM files", bundle: .module, comment: "Completes “This app can’t read that file: %@”. USFM is a file format name."))
         }
         metadata = Self.readMetadata(zip)
     }
@@ -230,7 +230,7 @@ public struct USFMImporter: Sendable {
             do {
                 files.append((file, try package.source(of: file)))
             } catch let error as BibleImportError {
-                unreadable.append(ImportNote(.warning, "\(file) could not be read: \(error.localizedDescription)"))
+                unreadable.append(ImportNote(.warning, String(localized: "\(file) could not be read: \(error.localizedDescription)", bundle: .module, comment: "Import problem. %1$@ is a file name; %2$@ is an error message.")))
             }
         }
         var bible = try extract(files: files)
@@ -249,11 +249,11 @@ public struct USFMImporter: Sendable {
         var parsed: [(book: BookID, name: String, source: String)] = []
         for file in files {
             guard let code = USFMBookParser.bookCode(in: file.usfm) else {
-                notes.append(ImportNote(.warning, "\(file.name): no \\id marker, so it was skipped."))
+                notes.append(ImportNote(.warning, String(localized: "\(file.name): no \\id marker, so it was skipped.", bundle: .module, comment: "Import problem. %@ is a file name. “\\id” is a USFM marker; do not translate it.")))
                 continue
             }
             guard let book = USFMBookParser.book(forCode: code) else {
-                notes.append(ImportNote(.warning, "\(file.name): unknown book code “\(code)”, so it was skipped."))
+                notes.append(ImportNote(.warning, String(localized: "\(file.name): unknown book code “\(code)”, so it was skipped.", bundle: .module, comment: "Import problem. %1$@ is a file name; %2$@ is a three-letter book code.")))
                 continue
             }
             parsed.append((book, file.name, file.usfm))
@@ -272,10 +272,10 @@ public struct USFMImporter: Sendable {
         bible.bridgedVerses = bridged
         bible.notes.append(contentsOf: notes)
         for chapter in outOfOrder.sorted() {
-            bible.notes.append(ImportNote(.warning, "\(chapter.display): verse numbers ran out of order."))
+            bible.notes.append(ImportNote(.warning, String(localized: "\(chapter.display): verse numbers ran out of order.", bundle: .module, comment: "Import problem. %@ is a chapter reference, e.g. “John 3”.")))
         }
         if !bridged.isEmpty {
-            bible.notes.append(ImportNote(.info, "\(bridged.count) verse(s) are printed combined with the verse before them."))
+            bible.notes.append(ImportNote(.info, String(localized: "\(bridged.count) verse(s) are printed combined with the verse before them.", bundle: .module, comment: "Import note. %lld is a number of verses.")))
         }
         guard !bible.isEmpty else { throw BibleImportError.noScriptureFound }
         return bible

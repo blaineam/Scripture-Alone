@@ -76,11 +76,11 @@ nonisolated enum FamilyCloud {
     static func describe(_ error: any Error) -> String {
         guard let error = error as? CKError else { return error.localizedDescription }
         switch error.code {
-        case .notAuthenticated: return "Sign in to iCloud in Settings to use family sharing."
-        case .quotaExceeded: return "Your iCloud storage is full, so recent changes can’t reach your family. Free up space in Settings → iCloud."
-        case .networkUnavailable, .networkFailure: return "No connection right now. Changes will go out when you’re back online."
-        case .participantMayNeedVerification: return "iCloud needs to confirm this invitation. Open the link again from Messages or Mail."
-        case .permissionFailure: return "iCloud didn’t allow this. Check that you’re signed in to the Apple Account the invitation was sent to."
+        case .notAuthenticated: return String(localized: "Sign in to iCloud in Settings to use family sharing.")
+        case .quotaExceeded: return String(localized: "Your iCloud storage is full, so recent changes can’t reach your family. Free up space in Settings → iCloud.")
+        case .networkUnavailable, .networkFailure: return String(localized: "No connection right now. Changes will go out when you’re back online.")
+        case .participantMayNeedVerification: return String(localized: "iCloud needs to confirm this invitation. Open the link again from Messages or Mail.")
+        case .permissionFailure: return String(localized: "iCloud didn’t allow this. Check that you’re signed in to the Apple Account the invitation was sent to.")
         default: return error.localizedDescription
         }
     }
@@ -112,11 +112,11 @@ nonisolated struct FamilyParticipant: Identifiable, Hashable, Sendable {
 
     var statusText: String {
         switch status {
-        case .owner: "You"
-        case .accepted: "Can view"
-        case .invited: "Invited — hasn’t opened it yet"
-        case .removed: "Removed"
-        case .unknown: "Waiting for iCloud"
+        case .owner: String(localized: "You", comment: "Status of a person a Bible is shared with")
+        case .accepted: String(localized: "Can view", comment: "Status of a person a Bible is shared with")
+        case .invited: String(localized: "Invited — hasn’t opened it yet", comment: "Status of a person a Bible is shared with")
+        case .removed: String(localized: "Removed", comment: "Status of a person a Bible is shared with")
+        case .unknown: String(localized: "Waiting for iCloud", comment: "Status of a person a Bible is shared with")
         }
     }
 
@@ -132,7 +132,7 @@ nonisolated struct FamilyParticipant: Identifiable, Hashable, Sendable {
         let lookup = identity.lookupInfo
         let contact = lookup?.emailAddress ?? lookup?.phoneNumber
         let formatted = identity.nameComponents.map { $0.formatted() }
-        let name = formatted.flatMap { $0.isEmpty ? nil : $0 } ?? contact ?? "Someone"
+        let name = formatted.flatMap { $0.isEmpty ? nil : $0 } ?? contact ?? String(localized: "Someone", comment: "Stands in for a family member whose name iCloud doesn't share")
         self.id = identity.userRecordID?.recordName ?? contact ?? "participant-\(index)"
         self.name = name
         self.detail = contact == name ? nil : contact

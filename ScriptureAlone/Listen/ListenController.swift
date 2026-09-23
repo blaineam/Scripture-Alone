@@ -191,7 +191,8 @@ final class ListenController {
                                                                VerseRef(chapter.book, chapter.chapter, count)))) ?? []
         var result: [Item] = []
         if first == 1 {
-            let title = chapter.book.isSingleChapter ? chapter.book.name : "\(chapter.book.name), chapter \(chapter.chapter)."
+            let title = chapter.book.isSingleChapter ? chapter.book.name
+                : String(localized: "\(chapter.book.name), chapter \(chapter.chapter).", comment: "Spoken aloud before a chapter is read. %1$@ is a book name; %2$lld is the chapter number.")
             result.append(Item(key: 0, text: title))
         }
         result += verses.map { Item(key: $0.ref.key, text: $0.text) }
@@ -371,7 +372,7 @@ final class ListenController {
             guard !Task.isCancelled, let self else { return }
             self.pause()
             self.sleepTimer = .off
-            self.notice = "Sleep timer ended."
+            self.notice = String(localized: "Sleep timer ended.")
         }
     }
 
@@ -384,7 +385,7 @@ final class ListenController {
             #if os(iOS)
             // A Studio render needs Mi Speaks in front, which can't happen from the background.
             if engine == .miSpeaks, UIApplication.shared.applicationState != .active {
-                endPass(notice: "Finished \(chapter.display). Open Scripture Alone to continue with \(next.display).")
+                endPass(notice: String(localized: "Finished \(chapter.display). Open Scripture Alone to continue with \(next.display).", comment: "Both %@ are chapter references, e.g. “John 3”."))
                 return
             }
             #endif
@@ -419,7 +420,7 @@ final class ListenController {
             return
         }
         // Voice lookup has to happen off the main thread (see SpeechVoices).
-        phase = .preparing("Loading voice…")
+        phase = .preparing(String(localized: "Loading voice…"))
         let wanted = voiceID
         renderTask = Task { [weak self] in
             let resolved = await SpeechVoices.voice(for: wanted)
@@ -480,8 +481,8 @@ final class ListenController {
         let text = slice.map(\.text).joined(separator: " ")
         let speed = self.speed
         let voice = studioVoiceID
-        phase = .preparing("Rendering in Mi Speaks…")
-        notice = "Mi Speaks opens to record this chapter. Come back when it’s done."
+        phase = .preparing(String(localized: "Rendering in Mi Speaks…", comment: "“Mi Speaks” is an app name; do not translate it."))
+        notice = String(localized: "Mi Speaks opens to record this chapter. Come back when it’s done.", comment: "“Mi Speaks” is an app name; do not translate it.")
         renderTask = Task { [weak self] in
             do {
                 let url = try await MiSpeaksClient.render(text, voiceID: voice, speed: speed)
@@ -500,7 +501,7 @@ final class ListenController {
     }
 
     private func fallBackToSystem(at index: Int, because reason: String) {
-        notice = "\(reason) Reading with the system voice."
+        notice = String(localized: "\(reason) Reading with the system voice.", comment: "%@ is a sentence explaining why the Studio voice couldn't be used.")
         beginSystem(at: index)
     }
 
@@ -537,7 +538,7 @@ final class ListenController {
             }
         } catch {
             try? FileManager.default.removeItem(at: url)
-            fallBackToSystem(at: offset, because: "Couldn’t play the Mi Speaks audio.")
+            fallBackToSystem(at: offset, because: String(localized: "Couldn’t play the Mi Speaks audio.", comment: "“Mi Speaks” is an app name; do not translate it."))
         }
     }
 

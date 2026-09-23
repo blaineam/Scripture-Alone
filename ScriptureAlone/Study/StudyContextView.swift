@@ -65,7 +65,7 @@ struct StudyContextView: View {
         }
     }
 
-    private func section<Content: View>(_ title: String, symbol: String,
+    private func section<Content: View>(_ title: LocalizedStringKey, symbol: String,
                                         @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Label(title, systemImage: symbol)

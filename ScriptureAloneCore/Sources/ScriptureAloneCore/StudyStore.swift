@@ -47,8 +47,8 @@ public enum StudyStoreError: Error, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .open(let message): "Couldn’t open the study resources: \(message)"
-        case .query(let message): "Couldn’t read the study resources: \(message)"
+        case .open(let message): String(localized: "Couldn’t open the study resources: \(message)", bundle: .module, comment: "Error. %@ is a technical error message.")
+        case .query(let message): String(localized: "Couldn’t read the study resources: \(message)", bundle: .module, comment: "Error. %@ is a technical error message.")
         }
     }
 }

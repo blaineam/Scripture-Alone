@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "ScriptureAloneCore",
+    defaultLocalization: "en",
     platforms: [.iOS(.v26), .macOS(.v26), .watchOS(.v26)],
     products: [
         .library(name: "ScriptureAloneCore", targets: ["ScriptureAloneCore"])
@@ -10,6 +11,7 @@ let package = Package(
     targets: [
         .target(
             name: "ScriptureAloneCore",
+            resources: [.process("Resources")],
             swiftSettings: [.treatAllWarnings(as: .error)]
         ),
         .testTarget(

@@ -107,10 +107,10 @@ struct ContextViewerRequest: Codable, Hashable {
         var id: String { rawValue }
         var title: String {
             switch self {
-            case .overview: "Overview"
-            case .map: "Map"
-            case .timeline: "Timeline"
-            case .charts: "Charts"
+            case .overview: String(localized: "Overview", comment: "Tab of the Bible context viewer")
+            case .map: String(localized: "Map", comment: "Tab of the Bible context viewer")
+            case .timeline: String(localized: "Timeline", comment: "Tab of the Bible context viewer")
+            case .charts: String(localized: "Charts", comment: "Tab of the Bible context viewer")
             }
         }
         var symbol: String {

@@ -95,7 +95,7 @@ enum ExportStaging {
         let forbidden = CharacterSet(charactersIn: "/\\:*?\"<>|").union(.controlCharacters).union(.newlines)
         let cleaned = name.unicodeScalars.map { forbidden.contains($0) ? "-" : String($0) }.joined()
             .trimmingCharacters(in: .whitespaces)
-        return cleaned.isEmpty ? "Export" : cleaned
+        return cleaned.isEmpty ? String(localized: "Export", comment: "Fallback file name for an export with no title") : cleaned
     }
 }
 

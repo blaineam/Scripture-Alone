@@ -79,9 +79,7 @@ struct LifeBibleImportView: View {
             } header: {
                 Text("From Life Bible")
             } footer: {
-                Text("Life Bible — the app that used to be called Tecarta Bible — can export "
-                     + "everything you've written. Your notes, highlights and saved verses come "
-                     + "across; nothing is sent anywhere, and the file never leaves your device.")
+                Text("Life Bible — the app that used to be called Tecarta Bible — can export everything you've written. Your notes, highlights and saved verses come across; nothing is sent anywhere, and the file never leaves your device.")
             }
 
             Section {
@@ -92,9 +90,7 @@ struct LifeBibleImportView: View {
                 // Deliberately not a list of supported apps: the parser reads a reference and the
                 // text belonging to it, whatever produced them. Naming apps whose exports nobody
                 // here has seen would be a promise made from documentation rather than from files.
-                Text("Paste notes, or a CSV you exported. Each entry needs to start with a "
-                     + "reference — “John 3:16” — so it can be attached to the right verse. "
-                     + "Anything that doesn't name a verse is listed for you rather than guessed at.")
+                Text("Paste notes, or a CSV you exported. Each entry needs to start with a reference — “John 3:16” — so it can be attached to the right verse. Anything that doesn't name a verse is listed for you rather than guessed at.")
             }
 
             Section("How to get the file") {
@@ -110,7 +106,7 @@ struct LifeBibleImportView: View {
         }
     }
 
-    private func step(_ number: Int, _ text: String) -> some View {
+    private func step(_ number: Int, _ text: LocalizedStringKey) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Text("\(number)").font(.caption.monospacedDigit().weight(.semibold))
                 .foregroundStyle(.tint)
@@ -130,8 +126,7 @@ struct LifeBibleImportView: View {
         } header: {
             Text("Found in this file")
         } footer: {
-            Text("Nothing has been added yet. Importing twice is safe — anything already here is "
-                 + "left alone rather than duplicated.")
+            Text("Nothing has been added yet. Importing twice is safe — anything already here is left alone rather than duplicated.")
         }
 
         if !result.unresolved.isEmpty {
@@ -148,8 +143,7 @@ struct LifeBibleImportView: View {
             } footer: {
                 // Saying so plainly beats importing a best guess: a note filed against the wrong
                 // verse is worse than one the reader knows to copy across by hand.
-                Text("These name something this app can't find a verse for. They'll be skipped "
-                     + "rather than guessed at, so you can copy them over yourself.")
+                Text("These name something this app can't find a verse for. They'll be skipped rather than guessed at, so you can copy them over yourself.")
             }
         }
 
@@ -180,13 +174,12 @@ struct LifeBibleImportView: View {
             Text(outcome.total > 0 ? "Brought across" : "Nothing new to add")
         } footer: {
             Text(outcome.total > 0
-                 ? "They're in your notes and highlights now, and will sync to your other devices "
-                 + "through your own iCloud."
+                 ? "They're in your notes and highlights now, and will sync to your other devices through your own iCloud."
                  : "Everything in that file was already here.")
         }
     }
 
-    private func row(_ title: String, _ count: Int, _ symbol: String) -> some View {
+    private func row(_ title: LocalizedStringKey, _ count: Int, _ symbol: String) -> some View {
         LabeledContent {
             Text("\(count)").monospacedDigit().foregroundStyle(count == 0 ? .secondary : .primary)
         } label: {

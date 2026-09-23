@@ -13,7 +13,12 @@ public enum NotesTextExport {
         /// without its attribution is the thing publishers' permissions actually forbid.
         public var notice: String?
 
-        public init(title: String = "Notes", translation: String? = nil, notice: String? = nil) {
+        /// "Notes", in the reader's language.
+        public static var defaultTitle: String {
+            String(localized: "Notes", bundle: .module, comment: "Heading of an exported notes document")
+        }
+
+        public init(title: String = Options.defaultTitle, translation: String? = nil, notice: String? = nil) {
             self.title = title
             self.translation = translation
             self.notice = notice
@@ -132,13 +137,17 @@ public enum NotesTextExport {
     public static func dateLine(_ note: KeepsakeNote) -> String {
         let created = note.createdAt.formatted(date: .long, time: .omitted)
         let edited = note.updatedAt.formatted(date: .long, time: .omitted)
-        return created == edited ? "Written \(created)" : "Written \(created) · Edited \(edited)"
+        return created == edited
+            ? String(localized: "Written \(created)", bundle: .module, comment: "Date line under an exported note. %@ is a date.")
+            : String(localized: "Written \(created) · Edited \(edited)", bundle: .module, comment: "Date line under an exported note. Both %@ are dates.")
     }
 
     static func exportedLine(count: Int, options: Options) -> String {
-        let noun = count == 1 ? "note" : "notes"
-        var line = "\(count) \(noun), exported \(Date.now.formatted(date: .long, time: .omitted))"
-        if let translation = options.translation { line += " · Scripture quoted from the \(translation)" }
+        let date = Date.now.formatted(date: .long, time: .omitted)
+        var line = String(localized: "\(count) notes, exported \(date)", bundle: .module, comment: "Subtitle of an exported notes document. %lld is the number of notes; %@ is today's date.")
+        if let translation = options.translation {
+            line += String(localized: " · Scripture quoted from the \(translation)", bundle: .module, comment: "Appended to the subtitle of an exported notes document. %@ is a translation abbreviation, e.g. “KJV”.")
+        }
         return line
     }
 

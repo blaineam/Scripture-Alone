@@ -85,7 +85,7 @@ struct LegacyNotesPanel: View {
             List {
                 Section {
                     Picker("Show", selection: $scope) {
-                        ForEach(NotesPanel.Scope.allCases) { Text($0.rawValue).tag($0) }
+                        ForEach(NotesPanel.Scope.allCases) { Text($0.title).tag($0) }
                     }
                     .pickerStyle(.segmented)
                     .listRowSeparator(.hidden)
@@ -131,8 +131,10 @@ struct LegacyNotesPanel: View {
     }
 
     private var notesTitle: String {
-        guard let name = keepsake.manifest.ownerName?.trimmingCharacters(in: .whitespaces), !name.isEmpty else { return "Notes" }
-        return name.hasSuffix("s") ? "\(name)’ Notes" : "\(name)’s Notes"
+        guard let name = keepsake.manifest.ownerName?.trimmingCharacters(in: .whitespaces), !name.isEmpty else { return String(localized: "Notes", comment: "Heading of a keepsake's notes") }
+        return name.hasSuffix("s")
+            ? String(localized: "\(name)’ Notes", comment: "Heading of someone's notes, for a name ending in “s”. %@ is the owner's name.")
+            : String(localized: "\(name)’s Notes", comment: "Heading of someone's notes. %@ is the owner's name.")
     }
 }
 

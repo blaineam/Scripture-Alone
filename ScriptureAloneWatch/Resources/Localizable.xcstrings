@@ -1,30 +1,119 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "%@ %@": {},
-    "%lld": {},
-    "Add to Favorites": {},
-    "American Standard Version": {},
-    "Books": {},
-    "Chapter %lld": {},
-    "Edit notes on your iPhone, iPad or Mac.": {},
-    "Favorite a verse here or on your iPhone, iPad or Mac. It syncs through iCloud.": {},
-    "Favorites": {},
-    "No Favorites": {},
-    "No Notes": {},
-    "Note": {},
-    "Note Deleted": {},
-    "Notes": {},
-    "Notes you write on your iPhone, iPad or Mac appear here.": {},
-    "Opens the verse": {},
-    "Read": {},
-    "Read %@": {},
-    "Remove from Favorites": {},
-    "Scripture Alone": {},
-    "Speak": {},
-    "Stop": {},
-    "This passage isn’t in the watch’s ASV.": {},
-    "Verse of the Day": {}
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ %@" : {
+
+    },
+    "%@ on your iPhone can't be read here. Online translations can't be stored on the watch." : {
+
+    },
+    "%lld" : {
+
+    },
+    "Add to Favorites" : {
+
+    },
+    "American Standard Version" : {
+
+    },
+    "Books" : {
+
+    },
+    "Chapter %lld" : {
+
+    },
+    "Edit notes on your iPhone, iPad or Mac." : {
+
+    },
+    "Evening sermon: Born of the Spirit" : {
+      "comment" : "Sample note shown in App Store screenshots (demo mode)"
+    },
+    "Favorite a verse here or on your iPhone, iPad or Mac. It syncs through iCloud." : {
+
+    },
+    "Favorites" : {
+
+    },
+    "Follows your iPhone. A translation you import there appears here too." : {
+
+    },
+    "Life in the Spirit. Verse 1 is the hinge — everything after it flows from “no condemnation.”" : {
+      "comment" : "Sample note shown in App Store screenshots (demo mode)"
+    },
+    "No Favorites" : {
+
+    },
+    "No Notes" : {
+
+    },
+    "Note" : {
+
+    },
+    "Note Deleted" : {
+
+    },
+    "Notes" : {
+
+    },
+    "Notes you write on your iPhone, iPad or Mac appear here." : {
+
+    },
+    "Opens the verse" : {
+
+    },
+    "Read" : {
+
+    },
+    "Read %@" : {
+
+    },
+    "Remove" : {
+
+    },
+    "Remove from Favorites" : {
+
+    },
+    "Scripture Alone" : {
+
+    },
+    "Selected" : {
+
+    },
+    "Speak" : {
+
+    },
+    "Stop" : {
+
+    },
+    "Sunday sermon: No condemnation" : {
+      "comment" : "Sample note shown in App Store screenshots (demo mode)"
+    },
+    "This passage isn’t in the watch’s ASV." : {
+
+    },
+    "Translation" : {
+
+    },
+    "Untitled Note" : {
+
+    },
+    "Verse %lld. %@" : {
+      "comment" : "Accessibility. %1$lld is a verse number; %2$@ is the verse text.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Verse %1$lld. %2$@"
+          }
+        }
+      }
+    },
+    "Verse of the Day" : {
+
+    },
+    "• Nicodemus comes by night (v. 2)\n• “You must be born anew” — the Spirit’s work, not ours\n• The serpent in the wilderness points to the cross (Numbers 21:8–9)" : {
+      "comment" : "Sample note shown in App Store screenshots (demo mode)"
+    }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }

@@ -54,9 +54,9 @@ public struct Place: Hashable, Sendable, Identifiable {
 
         public var title: String {
             switch self {
-            case .identified: "Identified"
-            case .likely: "Likely location"
-            case .uncertain: "Uncertain location"
+            case .identified: String(localized: "Identified", bundle: .module, comment: "How confidently a biblical place's location is known")
+            case .likely: String(localized: "Likely location", bundle: .module, comment: "How confidently a biblical place's location is known")
+            case .uncertain: String(localized: "Uncertain location", bundle: .module, comment: "How confidently a biblical place's location is known")
             }
         }
     }
@@ -124,8 +124,13 @@ public struct ChapterTime: Hashable, Sendable {
 public enum ContextYear {
     /// -1446 -> "c. 1446 BC", 30 -> "c. AD 30".
     public static func label(_ year: Int, approximate: Bool = true) -> String {
-        let prefix = approximate ? "c. " : ""
-        return year < 0 ? "\(prefix)\(-year) BC" : "\(prefix)AD \(year)"
+        let bc = -year
+        switch (year < 0, approximate) {
+        case (true, true): return String(localized: "c. \(bc) BC", bundle: .module, comment: "An approximate year before Christ. %lld is the year.")
+        case (true, false): return String(localized: "\(bc) BC", bundle: .module, comment: "A year before Christ. %lld is the year.")
+        case (false, true): return String(localized: "c. AD \(year)", bundle: .module, comment: "An approximate year after Christ. %lld is the year.")
+        case (false, false): return String(localized: "AD \(year)", bundle: .module, comment: "A year after Christ. %lld is the year.")
+        }
     }
 }
 

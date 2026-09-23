@@ -37,6 +37,7 @@
 		458F54193454C89DE6F698E7 /* NowPlayingBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5588F9A87B421F8DCA9755A9 /* NowPlayingBar.swift */; };
 		46004442636C39F82714B4AA /* SlideReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39247E7AAA95CDD87B0CBD9C /* SlideReviewView.swift */; };
 		4770DFEA1BC39A2844D7DA92 /* SelectionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 293DBAA61F3889B10D77CBFE /* SelectionBar.swift */; };
+		487EFEAB1AB68A3B0EE0659B /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0A1AFE932B4592CED1A13EC4 /* Localizable.xcstrings */; };
 		48EB71121A5D4E37CA3A1CB3 /* WatchLinkKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DE06851FE4E25ED3FC97B0B /* WatchLinkKeys.swift */; };
 		4A1199AD2E4912A1A3257659 /* FavoritesWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55CDE11E8282F3CD1FF8EB74 /* FavoritesWidget.swift */; };
 		4A5EA3EFDE3C74379D47A50A /* CatalogDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FCF3BC4B64741451E8DC375 /* CatalogDownloader.swift */; };
@@ -230,6 +231,7 @@
 		060801F1607F15B63E34EFF7 /* CrossReferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossReferencesView.swift; sourceTree = "<group>"; };
 		0618262E7F0D5AFD6612363E /* PlaceViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceViews.swift; sourceTree = "<group>"; };
 		07881EA7262DD7AB438C9EB2 /* AssetLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLibrary.swift; sourceTree = "<group>"; };
+		0A1AFE932B4592CED1A13EC4 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		0B4035AD8C6AA89E5A0CE15B /* VerseSpeaker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseSpeaker.swift; sourceTree = "<group>"; };
 		0E396FC4547F0E28D153AA60 /* ContextViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextViewer.swift; sourceTree = "<group>"; };
 		0F32FA504E1D64ABEE007588 /* ContextServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextServices.swift; sourceTree = "<group>"; };
@@ -682,6 +684,7 @@
 				69099AF2A475A0F4D2A32247 /* Study */,
 				83FA6232CC192A9E359F659F /* AppIcon.icon */,
 				2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */,
+				0A1AFE932B4592CED1A13EC4 /* Localizable.xcstrings */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -973,6 +976,7 @@
 				8D1229784458488BCB724C1B /* Context.sqlite in Resources */,
 				421F1D504BC55173091F44DE /* CrossReferences.sqlite in Resources */,
 				0CF01B3F1ADEB43A40A34C2F /* DailyVerses.json in Resources */,
+				487EFEAB1AB68A3B0EE0659B /* Localizable.xcstrings in Resources */,
 				AEC5E4BE40E074C767038607 /* bundled-signing.pub in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

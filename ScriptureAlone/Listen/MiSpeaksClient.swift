@@ -62,13 +62,12 @@ enum MiSpeaksClient {
 
         nonisolated var explanation: String {
             switch self {
-            case .ready: "Mi Speaks will read in its Studio voices."
-            case .notInstalled: "Studio voices come from Mi Speaks, which isn’t installed."
-            case .noSharedContainer: "This build can’t reach Mi Speaks’s shared folder."
-            case .notSubscribed: "Studio voices need Mi Speaks Premium."
+            case .ready: String(localized: "Mi Speaks will read in its Studio voices.", comment: "“Mi Speaks” is an app name; do not translate it.")
+            case .notInstalled: String(localized: "Studio voices come from Mi Speaks, which isn’t installed.", comment: "“Mi Speaks” is an app name; do not translate it.")
+            case .noSharedContainer: String(localized: "This build can’t reach Mi Speaks’s shared folder.", comment: "“Mi Speaks” is an app name; do not translate it.")
+            case .notSubscribed: String(localized: "Studio voices need Mi Speaks Premium.", comment: "“Mi Speaks” is an app name; do not translate it.")
             case .translationNotPermitted:
-                "Studio voices send the text to Mi Speaks to record it, which this translation’s "
-                    + "licence doesn’t allow. The voices on this device read it as usual."
+                String(localized: "Studio voices send the text to Mi Speaks to record it, which this translation’s licence doesn’t allow. The voices on this device read it as usual.", comment: "“Mi Speaks” is an app name; do not translate it.")
             }
         }
     }
@@ -99,7 +98,7 @@ enum MiSpeaksClient {
             switch self {
             case .unavailable(let why): why.explanation
             case .refused(let why): why
-            case .timedOut: "Mi Speaks didn’t finish in time."
+            case .timedOut: String(localized: "Mi Speaks didn’t finish in time.", comment: "“Mi Speaks” is an app name; do not translate it.")
             }
         }
     }
@@ -173,7 +172,7 @@ enum MiSpeaksClient {
             try Task.checkCancellation()
             if let data = try? Data(contentsOf: answer), let finished = try? JSONDecoder().decode(Job.self, from: data) {
                 if let failure = finished.failure { throw Failure.refused(failure) }
-                guard let name = finished.resultFilename else { throw Failure.refused("Mi Speaks returned no audio.") }
+                guard let name = finished.resultFilename else { throw Failure.refused(String(localized: "Mi Speaks returned no audio.", comment: "“Mi Speaks” is an app name; do not translate it.")) }
                 let shared = container.appendingPathComponent(name)
                 defer { try? FileManager.default.removeItem(at: shared) }
                 let local = FileManager.default.temporaryDirectory.appendingPathComponent("\(job.id).caf")

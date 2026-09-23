@@ -70,15 +70,13 @@ public enum NoteImportError: LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .notAnArchive:
-            "That file isn't a zip archive."
+            String(localized: "That file isn't a zip archive.", bundle: .module)
         case .notALifeBibleExport:
-            "That doesn't look like a Life Bible export. Look for LifeBibleData.zip, from "
-                + "Settings → Advanced → Export your data."
+            String(localized: "That doesn't look like a Life Bible export. Look for LifeBibleData.zip, from Settings → Advanced → Export your data.", bundle: .module, comment: "Error. “Settings → Advanced → Export your data” names menus in the Life Bible app, which is in English.")
         case .nothingToImport:
-            "That export has no notes, highlights or saved verses in it."
+            String(localized: "That export has no notes, highlights or saved verses in it.", bundle: .module)
         case .nothingRecognised:
-            "Nothing in that looked like a Bible reference. Each note needs to start with one — "
-                + "“John 3:16”, say — so it can be attached to the right verse."
+            String(localized: "Nothing in that looked like a Bible reference. Each note needs to start with one — “John 3:16”, say — so it can be attached to the right verse.", bundle: .module)
         }
     }
 }

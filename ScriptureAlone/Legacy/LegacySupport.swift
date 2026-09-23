@@ -251,15 +251,15 @@ struct KeepsakeSummaryHeader: View {
     private var detail: String {
         var parts: [String] = []
         if let counts = manifest.counts {
-            parts.append("\(counts.highlights) \(counts.highlights == 1 ? "highlight" : "highlights")")
-            parts.append("\(counts.notes) \(counts.notes == 1 ? "note" : "notes")")
+            parts.append(String(localized: "\(counts.highlights) highlights", comment: "%lld is a number of highlights"))
+            parts.append(String(localized: "\(counts.notes) notes", comment: "%lld is a number of notes"))
         }
         if let range = manifest.dateRange {
             let start = range.start.formatted(.dateTime.year())
             let end = range.end.formatted(.dateTime.year())
             parts.append(start == end ? start : "\(start)–\(end)")
         }
-        if let translation = manifest.preferredTranslation { parts.append("read in the \(translation)") }
+        if let translation = manifest.preferredTranslation { parts.append(String(localized: "read in the \(translation)", comment: "Which translation a keepsake's owner read. %@ is a translation abbreviation, e.g. “KJV”.")) }
         return parts.joined(separator: " · ")
     }
 }

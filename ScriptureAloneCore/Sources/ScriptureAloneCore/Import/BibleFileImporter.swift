@@ -144,16 +144,16 @@ public struct BibleFileImporter: Sendable {
             return .usfmZip
         }
         if zip.names.contains(where: { $0.lowercased().hasSuffix(".xhtml") || $0.lowercased().hasSuffix(".html") }) {
-            throw BibleImportError.notAnEPUB("it has no META-INF/container.xml")
+            throw BibleImportError.notAnEPUB(String(localized: "it has no META-INF/container.xml", bundle: .module, comment: "Completes “That file isn’t a readable ePub: %@”. Keep META-INF/container.xml as is."))
         }
-        throw BibleImportError.unsupportedFormat("it is neither an ePub nor a set of USFM books")
+        throw BibleImportError.unsupportedFormat(String(localized: "it is neither an ePub nor a set of USFM books", bundle: .module, comment: "Completes “This app can’t read that file: %@”."))
     }
 }
 
 public extension ImportedTranslationIdentity {
     /// A starting point taken from a USFM zip's own copyright page and DBL metadata.
     static func suggested(from metadata: USFMMetadata) -> ImportedTranslationIdentity {
-        let name = metadata.title?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty ?? "Imported Bible"
+        let name = metadata.title?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty ?? String(localized: "Imported Bible", bundle: .module, comment: "Suggested name for an imported Bible translation that has no title")
         let copyright = metadata.copyright?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return ImportedTranslationIdentity(
             id: identifier(for: metadata.identifier ?? metadata.abbreviation ?? name),

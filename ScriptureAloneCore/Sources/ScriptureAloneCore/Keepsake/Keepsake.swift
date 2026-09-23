@@ -101,8 +101,10 @@ public struct KeepsakeManifest: Codable, Sendable, Equatable {
 
     /// "Dad's Bible", or "A Keepsake Bible" when unnamed.
     public var displayTitle: String {
-        guard let name = ownerName?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty else { return "A Keepsake Bible" }
-        return name.hasSuffix("s") || name.hasSuffix("S") ? "\(name)’ Bible" : "\(name)’s Bible"
+        guard let name = ownerName?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty else { return String(localized: "A Keepsake Bible", bundle: .module, comment: "Title of a keepsake Bible whose owner has no name") }
+        return name.hasSuffix("s") || name.hasSuffix("S")
+            ? String(localized: "\(name)’ Bible", bundle: .module, comment: "Title of someone's keepsake Bible, for a name ending in “s”. %@ is the owner's name.")
+            : String(localized: "\(name)’s Bible", bundle: .module, comment: "Title of someone's keepsake Bible. %@ is the owner's name.")
     }
 
     // Tolerant decoding: every field but `format` may be missing, and unknown keys are ignored.
@@ -226,7 +228,7 @@ public struct KeepsakeNote: Codable, Sendable, Equatable, Identifiable {
     public var displayTitle: String {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmed.isEmpty { return trimmed }
-        return anchors.first?.display ?? "Untitled Note"
+        return anchors.first?.display ?? String(localized: "Untitled Note", bundle: .module)
     }
 
     public var anchorSummary: String { anchors.map(\.display).joined(separator: " · ") }
@@ -244,15 +246,15 @@ public enum KeepsakeError: Error, Equatable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .notAKeepsake:
-            "This file isn’t a Keepsake Bible keepsake."
+            String(localized: "This file isn’t a Keepsake Bible keepsake.", bundle: .module)
         case .damaged(let detail):
-            "This keepsake appears to be damaged (\(detail)). If you have another copy, try that one."
+            String(localized: "This keepsake appears to be damaged (\(detail)). If you have another copy, try that one.", bundle: .module, comment: "Error. %@ is a technical detail.")
         case .newerVersion:
-            "This keepsake was made by a newer version of Scripture Alone. Update the app to open it."
+            String(localized: "This keepsake was made by a newer version of Scripture Alone. Update the app to open it.", bundle: .module)
         case .passphraseRequired:
-            "This keepsake is protected with a passphrase."
+            String(localized: "This keepsake is protected with a passphrase.", bundle: .module)
         case .wrongPassphrase:
-            "That passphrase doesn’t open this keepsake. Check for capital letters and spaces, and try again."
+            String(localized: "That passphrase doesn’t open this keepsake. Check for capital letters and spaces, and try again.", bundle: .module)
         }
     }
 }

@@ -109,7 +109,9 @@ struct PlaceRow: View {
     private var versesText: String {
         let numbers = verses.map { $0 % 1000 }
         let list = numbers.map(String.init).joined(separator: ", ")
-        return numbers.count == 1 ? "Verse \(list)" : "Verses \(list)"
+        return numbers.count == 1
+            ? String(localized: "Verse \(list)", comment: "%@ is a verse number")
+            : String(localized: "Verses \(list)", comment: "%@ is a comma-separated list of verse numbers")
     }
 }
 
@@ -124,7 +126,7 @@ struct ConfidenceBadge: View {
 
     private var text: String {
         var parts = [place.confidenceLevel.title]
-        if place.isArea && place.kind != .region { parts.append("approximate area") }
+        if place.isArea && place.kind != .region { parts.append(String(localized: "approximate area", comment: "Appended to a place's location confidence, e.g. “Likely location · approximate area”")) }
         return parts.joined(separator: " · ")
     }
 }

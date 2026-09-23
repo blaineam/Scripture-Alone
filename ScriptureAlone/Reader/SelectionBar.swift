@@ -43,7 +43,7 @@ struct SelectionBar: View {
                             .overlay(Circle().strokeBorder(.primary.opacity(0.12)))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Highlight \(color.rawValue)")
+                    .accessibilityLabel("Highlight \(color.name)")
                     .modifier(BarCell())
                 }
                 Button { removeHighlights() } label: { Image(systemName: "eraser") }
@@ -107,9 +107,9 @@ struct SelectionBar: View {
     /// Says whose limit it is and what it is, because "this doesn't work" is not an explanation.
     private var quotationLimitNotice: String {
         let limit = model.rights.maxQuotationVerses
-        let name = model.translationInfo?.abbreviation ?? "This translation"
-        guard limit > 0 else { return "\(name) can't be quoted outside the app." }
-        return "\(name) allows up to \(limit) verses in one quotation. Select fewer to copy or share."
+        let name = model.translationInfo?.abbreviation ?? String(localized: "This translation", comment: "Stands in for a translation's abbreviation in “%@ can't be quoted outside the app.”")
+        guard limit > 0 else { return String(localized: "\(name) can't be quoted outside the app.", comment: "%@ is a translation abbreviation, e.g. “ESV”, or “This translation”.") }
+        return String(localized: "\(name) allows up to \(limit) verses in one quotation. Select fewer to copy or share.", comment: "%1$@ is a translation abbreviation, e.g. “ESV”; %2$lld is a number of verses.")
     }
 
     /// The verse in the Berean Standard Bible, which the word-by-word data is keyed to. The app

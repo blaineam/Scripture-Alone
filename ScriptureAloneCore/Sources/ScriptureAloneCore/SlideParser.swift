@@ -272,6 +272,9 @@ public enum SlideParser {
         func has(_ pattern: String) -> Bool { lower.range(of: pattern, options: .regularExpression) != nil }
 
         if has(#"https?://|www\.|\.(com|org|net|church|tv|io)\b|@[a-z0-9_]{2,}|#[a-z]{3,}"#) { return .noise }
+        // TODO(l10n): the noise patterns here (copyright, welcome/announcements) and the month and
+        // weekday names in `months`/`weekdays` are English only; slides in other languages will keep
+        // those lines as content until per-language keyword lists are added.
         if has(#"\bccli\b|copyright|©|all rights reserved|license\s*#|streaming license"#) { return .noise }
         if has(#"^(welcome|welcome home|welcome to\b.*|good morning|glad you'?re here|please silence.*|let'?s worship|let us pray|announcements?|offering|giving|prayer requests?|connect card.*|wi-?fi.*|text .* to \d+)[!. ]*$"#) { return .noise }
         if isDateOrTime(lower) { return .noise }

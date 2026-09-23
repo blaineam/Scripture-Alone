@@ -1,0 +1,458 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    " · Scripture quoted from the %@" : {
+      "comment" : "Appended to the subtitle of an exported notes document. %@ is a translation abbreviation, e.g. “KJV”."
+    },
+    "%@ This app cannot open protected files." : {
+      "comment" : "Error. %@ is a sentence saying how the file is protected."
+    },
+    "%@ could not be read: %@" : {
+      "comment" : "Import problem. %1$@ is a file name; %2$@ is an error message.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ could not be read: %2$@"
+          }
+        }
+      }
+    },
+    "%@ failed its integrity check, so it can’t be shown." : {
+      "comment" : "Error. %@ is a chapter reference, e.g. “John 3”."
+    },
+    "%@ isn't one of the translations your key can read. Choose it on api.bible first." : {
+      "comment" : "Error. %@ is a Bible translation name."
+    },
+    "%@ isn’t in this translation." : {
+      "comment" : "Error. %@ is a chapter reference, e.g. “John 3”."
+    },
+    "%@ named a book but carried no verse markup." : {
+      "comment" : "Import note. %@ is a file name inside the ePub."
+    },
+    "%@: %lld of %lld chapters (missing %@)." : {
+      "comment" : "Import problem. %1$@ is a book name; then chapters found and expected; %4$@ is a list of chapter numbers like “1–3, 7”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$lld of %3$lld chapters (missing %4$@)."
+          }
+        }
+      }
+    },
+    "%@: missing verse %@." : {
+      "comment" : "Import problem. %1$@ is a chapter reference, e.g. “John 3”; %2$@ is a verse number.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: missing verse %2$@."
+          }
+        }
+      }
+    },
+    "%@: missing verses %@." : {
+      "comment" : "Import problem. %1$@ is a chapter reference, e.g. “John 3”; %2$@ is a list of verse numbers like “1–3, 7”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: missing verses %2$@."
+          }
+        }
+      }
+    },
+    "%@: no \\id marker, so it was skipped." : {
+      "comment" : "Import problem. %@ is a file name. “\\id” is a USFM marker; do not translate it."
+    },
+    "%@: unexpected chapter %@." : {
+      "comment" : "Import problem. %1$@ is a book name; %2$@ is a chapter number.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: unexpected chapter %2$@."
+          }
+        }
+      }
+    },
+    "%@: unexpected chapters %@." : {
+      "comment" : "Import problem. %1$@ is a book name; %2$@ is a list of chapter numbers like “1–3, 7”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: unexpected chapters %2$@."
+          }
+        }
+      }
+    },
+    "%@: unknown book code “%@”, so it was skipped." : {
+      "comment" : "Import problem. %1$@ is a file name; %2$@ is a three-letter book code.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: unknown book code “%2$@”, so it was skipped."
+          }
+        }
+      }
+    },
+    "%@: verse numbers ran out of order." : {
+      "comment" : "Import problem. %@ is a chapter reference, e.g. “John 3”."
+    },
+    "%@’ Bible" : {
+      "comment" : "Title of someone's keepsake Bible, for a name ending in “s”. %@ is the owner's name."
+    },
+    "%@’s Bible" : {
+      "comment" : "Title of someone's keepsake Bible. %@ is the owner's name."
+    },
+    "%lld BC" : {
+      "comment" : "A year before Christ. %lld is the year."
+    },
+    "%lld books" : {
+      "comment" : "Scope of a downloadable translation. %lld is the number of books of the Bible it contains."
+    },
+    "%lld books are missing, including %@." : {
+      "comment" : "Import problem. %lld is a number of books; %@ is a comma-separated list of book names.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld books are missing, including %2$@."
+          }
+        }
+      }
+    },
+    "%lld books, %lld chapters, %lld verses — %lld%% of the canon." : {
+      "comment" : "Import summary. The numbers are book, chapter and verse counts, then a percentage.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld books, %2$lld chapters, %3$lld verses — %4$lld%% of the canon."
+          }
+        }
+      }
+    },
+    "%lld notes, exported %@" : {
+      "comment" : "Subtitle of an exported notes document. %lld is the number of notes; %@ is today's date.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld notes, exported %2$@"
+          }
+        }
+      }
+    },
+    "%lld run(s) of text were dropped because no book or verse was in scope." : {
+      "comment" : "Import problem. %lld is a number of passages of text."
+    },
+    "%lld verse(s) are printed combined with the verse before them." : {
+      "comment" : "Import note. %lld is a number of verses."
+    },
+    "A Keepsake Bible" : {
+      "comment" : "Title of a keepsake Bible whose owner has no name"
+    },
+    "AD %lld" : {
+      "comment" : "A year after Christ. %lld is the year."
+    },
+    "API.Bible didn't accept that key. Check it on api.bible." : {
+
+    },
+    "API.Bible returned HTTP %lld." : {
+      "comment" : "Error. %lld is an HTTP status code."
+    },
+    "API.Bible returned nothing for %@." : {
+      "comment" : "Error. %@ is a passage reference, e.g. “John 3”, or “the Bible list”."
+    },
+    "Add your free ESV API key to read the ESV." : {
+
+    },
+    "All 66 books, %lld chapters, %lld verses." : {
+      "comment" : "Import summary. The numbers are chapter and verse counts.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "All 66 books, %1$lld chapters, %2$lld verses."
+          }
+        }
+      }
+    },
+    "Complete Bible" : {
+      "comment" : "Scope of a downloadable translation"
+    },
+    "Couldn’t open the Bible text: %@" : {
+      "comment" : "Error. %@ is a technical database error message."
+    },
+    "Couldn’t open the offline copy: %@" : {
+      "comment" : "Error. %@ is a technical error message."
+    },
+    "Couldn’t open the original-language data: %@" : {
+      "comment" : "Error. %@ is a technical error message."
+    },
+    "Couldn’t open the study resources: %@" : {
+      "comment" : "Error. %@ is a technical error message."
+    },
+    "Couldn’t read that file: %@" : {
+      "comment" : "Error. %@ is a technical detail."
+    },
+    "Couldn’t read the Bible text: %@" : {
+      "comment" : "Error. %@ is a technical database error message."
+    },
+    "Couldn’t read the original-language data: %@" : {
+      "comment" : "Error. %@ is a technical error message."
+    },
+    "Couldn’t read the package: %@" : {
+      "comment" : "Error. %@ is a technical detail."
+    },
+    "Couldn’t read the study resources: %@" : {
+      "comment" : "Error. %@ is a technical error message."
+    },
+    "Couldn’t save that chapter: %@" : {
+      "comment" : "Error. %@ is a technical error message."
+    },
+    "Couldn’t save the imported text: %@" : {
+      "comment" : "Error. %@ is a technical detail."
+    },
+    "Crossway didn't accept that API key. Check it at api.esv.org." : {
+
+    },
+    "Crossway returned nothing for %@." : {
+      "comment" : "Error. %@ is a passage reference, e.g. “John 3”."
+    },
+    "Crossway's API returned HTTP %lld." : {
+      "comment" : "Error. %lld is an HTTP status code."
+    },
+    "General Letters" : {
+      "comment" : "Section heading grouping books of the Bible"
+    },
+    "Gospels" : {
+      "comment" : "Section heading grouping books of the Bible"
+    },
+    "History" : {
+      "comment" : "Section heading grouping books of the Bible"
+    },
+    "Identified" : {
+      "comment" : "How confidently a biblical place's location is known"
+    },
+    "Imported Bible" : {
+      "comment" : "Suggested name for an imported Bible translation that has no title"
+    },
+    "Interlinear data is aligned to the Berean Standard Bible, not %@." : {
+      "comment" : "Error. %@ is a translation abbreviation, e.g. “KJV”."
+    },
+    "Law" : {
+      "comment" : "Section heading grouping books of the Bible"
+    },
+    "Likely location" : {
+      "comment" : "How confidently a biblical place's location is known"
+    },
+    "Major Prophets" : {
+      "comment" : "Section heading grouping books of the Bible"
+    },
+    "Minor Prophets" : {
+      "comment" : "Section heading grouping books of the Bible"
+    },
+    "Missing: %@." : {
+      "comment" : "Import problem. %@ is a comma-separated list of book names."
+    },
+    "New Testament" : {
+      "comment" : "Scope of a downloadable translation"
+    },
+    "No Bible text was found in that ePub." : {
+
+    },
+    "No content key has been set up on this device." : {
+
+    },
+    "Notes" : {
+      "comment" : "Heading of an exported notes document"
+    },
+    "Nothing in that looked like a Bible reference. Each note needs to start with one — “John 3:16”, say — so it can be attached to the right verse." : {
+
+    },
+    "Old Testament" : {
+      "comment" : "Scope of a downloadable translation"
+    },
+    "Part of the search index (%lld) failed its integrity check." : {
+      "comment" : "Error. %lld is an index section number."
+    },
+    "Paul’s Letters" : {
+      "comment" : "Section heading grouping books of the Bible"
+    },
+    "Prophecy" : {
+      "comment" : "Section heading grouping books of the Bible"
+    },
+    "That doesn't look like a Life Bible export. Look for LifeBibleData.zip, from Settings → Advanced → Export your data." : {
+      "comment" : "Error. “Settings → Advanced → Export your data” names menus in the Life Bible app, which is in English."
+    },
+    "That ePub carries no copyright line. Enter the publisher’s copyright notice to continue." : {
+
+    },
+    "That ePub contains an implausibly large file (%@)." : {
+      "comment" : "Error. %@ is a file name inside the ePub."
+    },
+    "That ePub is damaged: %@" : {
+      "comment" : "Error. %@ is a technical detail."
+    },
+    "That ePub is encrypted (it carries an encryption manifest)." : {
+
+    },
+    "That ePub is protected with Adobe DRM." : {
+
+    },
+    "That ePub is protected with Apple’s FairPlay DRM." : {
+
+    },
+    "That ePub is protected with an LCP licence." : {
+
+    },
+    "That ePub’s contents are password-encrypted." : {
+
+    },
+    "That export has no notes, highlights or saved verses in it." : {
+
+    },
+    "That file isn't a zip archive." : {
+
+    },
+    "That file isn’t a readable ePub: %@" : {
+      "comment" : "Error. %@ is a technical detail."
+    },
+    "That file isn’t an ePub — it isn’t a ZIP container." : {
+
+    },
+    "That isn’t a translation package." : {
+
+    },
+    "That passphrase doesn’t open this keepsake. Check for capital letters and spaces, and try again." : {
+
+    },
+    "That’s %lld chapters at once — more than a quotation." : {
+      "comment" : "Error. %lld is a number of chapters."
+    },
+    "The Secure Enclave isn't available: %@" : {
+      "comment" : "Error. %@ is a technical detail."
+    },
+    "The keychain refused the request (%lld)." : {
+      "comment" : "Error. %lld is a system error code."
+    },
+    "The original-language data for %@ doesn’t match this text. Interlinear data is aligned to the Berean Standard Bible." : {
+      "comment" : "Error. %@ is a verse reference, e.g. “John 3:16”."
+    },
+    "The stored content key couldn't be read." : {
+
+    },
+    "The watch edition couldn't be written: %@" : {
+      "comment" : "Error. %@ is a technical error message."
+    },
+    "This app can’t read that file: %@" : {
+      "comment" : "Error. %@ is a technical detail."
+    },
+    "This file isn’t a Keepsake Bible keepsake." : {
+
+    },
+    "This keepsake appears to be damaged (%@). If you have another copy, try that one." : {
+      "comment" : "Error. %@ is a technical detail."
+    },
+    "This keepsake is protected with a passphrase." : {
+
+    },
+    "This keepsake was made by a newer version of Scripture Alone. Update the app to open it." : {
+
+    },
+    "This package is incomplete." : {
+
+    },
+    "This package is signed by a key this app doesn’t know (%@)." : {
+      "comment" : "Error. %@ is a key identifier."
+    },
+    "This package is version %lld; this app reads version %lld." : {
+      "comment" : "Error. Both numbers are file-format version numbers.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This package is version %1$lld; this app reads version %2$lld."
+          }
+        }
+      }
+    },
+    "This package’s details are damaged: %@" : {
+      "comment" : "Error. %@ is a technical detail."
+    },
+    "This package’s details or terms have been altered, so it can’t be opened." : {
+
+    },
+    "This translation can’t be searched: %@" : {
+      "comment" : "Error. %@ is a technical detail."
+    },
+    "This translation’s key isn’t the one that opens this package." : {
+
+    },
+    "This translation’s licence ended %@." : {
+      "comment" : "Error. %@ is a date."
+    },
+    "This translation’s search index is damaged: %@" : {
+      "comment" : "Error. %@ is a technical detail."
+    },
+    "Uncertain location" : {
+      "comment" : "How confidently a biblical place's location is known"
+    },
+    "Untitled Note" : {
+
+    },
+    "Wisdom & Poetry" : {
+      "comment" : "Section heading grouping books of the Bible"
+    },
+    "Written %@" : {
+      "comment" : "Date line under an exported note. %@ is a date."
+    },
+    "Written %@ · Edited %@" : {
+      "comment" : "Date line under an exported note. Both %@ are dates.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Written %1$@ · Edited %2$@"
+          }
+        }
+      }
+    },
+    "You've reached Crossway's daily limit for your key. It resets tomorrow." : {
+
+    },
+    "You've used your API.Bible requests for this month." : {
+
+    },
+    "c. %lld BC" : {
+      "comment" : "An approximate year before Christ. %lld is the year."
+    },
+    "c. AD %lld" : {
+      "comment" : "An approximate year after Christ. %lld is the year."
+    },
+    "eBible.org couldn't be reached (HTTP %lld). Try again later." : {
+      "comment" : "Error. %lld is an HTTP status code."
+    },
+    "eBible.org's catalogue couldn't be read (%@)." : {
+      "comment" : "Error. %@ is a technical detail."
+    },
+    "it has no META-INF/container.xml" : {
+      "comment" : "Completes “That file isn’t a readable ePub: %@”. Keep META-INF/container.xml as is."
+    },
+    "it is neither an ePub nor a set of USFM books" : {
+      "comment" : "Completes “This app can’t read that file: %@”."
+    },
+    "the Bible list" : {
+      "comment" : "Fills the %@ in “API.Bible returned nothing for %@.”"
+    },
+    "the archive holds no USFM files" : {
+      "comment" : "Completes “This app can’t read that file: %@”. USFM is a file format name."
+    }
+  },
+  "version" : "1.0"
+}

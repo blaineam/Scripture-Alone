@@ -1,0 +1,2205 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    " · Scripture from the %@" : {
+      "comment" : "Appended to the subtitle of an exported PDF of notes. %@ is a translation abbreviation, e.g. “KJV”."
+    },
+    "%@  ·  %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@  ·  %2$@"
+          }
+        }
+      }
+    },
+    "%@ (%@) · %@" : {
+      "comment" : "A voice in the picker. %1$@ voice name, %2$@ quality (e.g. “Premium”), %3$@ language and region.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (%2$@) · %3$@"
+          }
+        }
+      }
+    },
+    "%@ (%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (%2$lld)"
+          }
+        }
+      }
+    },
+    "%@ Reading with the system voice." : {
+      "comment" : "%@ is a sentence explaining why the Studio voice couldn't be used."
+    },
+    "%@ accent" : {
+
+    },
+    "%@ allows up to %lld verses in one quotation. Select fewer to copy or share." : {
+      "comment" : "%1$@ is a translation abbreviation, e.g. “ESV”; %2$lld is a number of verses.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ allows up to %2$lld verses in one quotation. Select fewer to copy or share."
+          }
+        }
+      }
+    },
+    "%@ can't be quoted outside the app." : {
+      "comment" : "%@ is a translation abbreviation, e.g. “ESV”, or “This translation”."
+    },
+    "%@ can't be read yet." : {
+      "comment" : "%@ is a Bible translation name."
+    },
+    "%@ chapter %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ chapter %2$lld"
+          }
+        }
+      }
+    },
+    "%@ couldn't be downloaded. %@" : {
+      "comment" : "%1$@ is the name of a download; %2$@ is an error message.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ couldn't be downloaded. %2$@"
+          }
+        }
+      }
+    },
+    "%@ couldn't be opened." : {
+      "comment" : "%@ is a Bible translation name."
+    },
+    "%@ doesn’t allow its text to be exported. Switch to another translation to export your notes with the verses they’re about." : {
+
+    },
+    "%@ doesn’t comment on %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ doesn’t comment on %2$@."
+          }
+        }
+      }
+    },
+    "%@ is ready, protected with your passphrase. It’s a snapshot of today; make a new one whenever you like, and it will replace the older copy when your family opens it." : {
+      "comment" : "%@ is a keepsake file's name"
+    },
+    "%@ is ready. It’s a snapshot of today; make a new one whenever you like, and it will replace the older copy when your family opens it." : {
+      "comment" : "%@ is a keepsake file's name"
+    },
+    "%@ is set here" : {
+
+    },
+    "%@ isn't available for this version of the app yet." : {
+      "comment" : "%@ is the name of a download, e.g. a Bible translation or “Commentary”."
+    },
+    "%@ isn't in this build." : {
+      "comment" : "Error. %@ is a translation abbreviation, e.g. “ASV”."
+    },
+    "%@ needs a connection to download." : {
+      "comment" : "%@ is the name of a download, e.g. a Bible translation or “Commentary”."
+    },
+    "%@ theme" : {
+
+    },
+    "%@ · %@" : {
+      "comment" : "A voice in the picker. %1$@ voice name, %2$@ language and region.\nRead-aloud status. %1$@ is a voice name; %2$@ is the speed, e.g. “1×”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %lld verses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld verses"
+          }
+        }
+      }
+    },
+    "%@ · read-only" : {
+
+    },
+    "%@ — %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ — %2$@"
+          }
+        }
+      }
+    },
+    "%@, %@, %@, %@. %@." : {
+      "comment" : "Accessibility for a king. %1$@ name, %2$@ kingdom, %3$@ reign dates, %4$@ length of reign, %5$@ verdict (e.g. “Did right”).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, %3$@, %4$@. %5$@."
+          }
+        }
+      }
+    },
+    "%@, and %@" : {
+      "comment" : "Accessibility: joins a comma-separated list of place names with “%lld more”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, and %2$@"
+          }
+        }
+      }
+    },
+    "%@, chapter %lld." : {
+      "comment" : "Spoken aloud before a chapter is read. %1$@ is a book name; %2$lld is the chapter number.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, chapter %2$lld."
+          }
+        }
+      }
+    },
+    "%@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%@’ Notes" : {
+      "comment" : "Heading of someone's notes, for a name ending in “s”. %@ is the owner's name."
+    },
+    "%@’s Notes" : {
+      "comment" : "Heading of someone's notes. %@ is the owner's name."
+    },
+    "%lld" : {
+
+    },
+    "%lld couldn't be placed" : {
+
+    },
+    "%lld highlights" : {
+      "comment" : "%lld is a number of highlights"
+    },
+    "%lld highlights · %lld notes" : {
+      "comment" : "Keepsake contents. %1$lld is a number of highlights; %2$lld a number of notes.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld highlights · %2$lld notes"
+          }
+        }
+      }
+    },
+    "%lld highlights · %lld notes · %lld favorites" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld highlights · %2$lld notes · %3$lld favorites"
+          }
+        }
+      }
+    },
+    "%lld more" : {
+      "comment" : "Accessibility: ends a list of place names on a map. %lld is how many more places are pinned."
+    },
+    "%lld notes" : {
+      "comment" : "%lld is a number of notes"
+    },
+    "%lld notes · %@" : {
+      "comment" : "Subtitle of an exported PDF of notes. %lld is the number of notes; %@ is today's date.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld notes · %2$@"
+          }
+        }
+      }
+    },
+    "%lld of %lld chapters" : {
+      "comment" : "Import coverage for a book. Chapters found, then chapters expected.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld chapters"
+          }
+        }
+      }
+    },
+    "%lld other lines" : {
+
+    },
+    "%lld other locations have been proposed." : {
+
+    },
+    "%lld passages" : {
+
+    },
+    "%lld points" : {
+
+    },
+    "%lld references, ranked by how many readers found each one helpful." : {
+
+    },
+    "%lld verses" : {
+      "comment" : "Import coverage for a book. %lld is a number of verses."
+    },
+    "%lld years" : {
+      "comment" : "How long a king reigned. %lld is a number of years."
+    },
+    "1 Hour" : {
+      "comment" : "Sleep timer option"
+    },
+    "15 Minutes" : {
+      "comment" : "Sleep timer option"
+    },
+    "1st" : {
+      "comment" : "Short name of one of Paul's missionary journeys"
+    },
+    "2nd" : {
+      "comment" : "Short name of one of Paul's missionary journeys"
+    },
+    "30 Minutes" : {
+      "comment" : "Sleep timer option"
+    },
+    "300+ verses" : {
+
+    },
+    "3rd" : {
+      "comment" : "Short name of one of Paul's missionary journeys"
+    },
+    "A Keepsake Bible is a copy of your highlights and notes that your family can open in Scripture Alone and read as you marked it — the way a well-worn Bible gets passed down. It’s a single file you keep and give however you like: AirDrop, Messages, a USB drive, or with your papers." : {
+
+    },
+    "A Shared Bible" : {
+      "comment" : "Title of a Bible someone shared, when it has no name"
+    },
+    "A card holds %lld of these %lld verses, so it shows %@. Select fewer verses, or share the text for the whole passage." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A card holds %1$lld of these %2$lld verses, so it shows %3$@. Select fewer verses, or share the text for the whole passage."
+          }
+        }
+      }
+    },
+    "A few site coordinates in the OpenBible data come from OpenStreetMap. © OpenStreetMap contributors, available under the Open Database License." : {
+      "comment" : "Credit for a data source in Sources & Credits"
+    },
+    "A file for each note." : {
+      "comment" : "Describes an export format"
+    },
+    "A keepsake is a snapshot. Notes you write afterwards aren’t in it — when you’d like your family to have them, make a new keepsake. Opening a newer one replaces the older copy on their device." : {
+
+    },
+    "A keepsake is a snapshot: it won’t change as they keep reading, and it stays even if the live share ends. You’ll still have the live share too." : {
+
+    },
+    "A live share depends on your iCloud account. If the account is closed — after someone dies, for instance — the share goes with it. A keepsake is a file your family keeps forever, so make one too, and make a new one now and then." : {
+
+    },
+    "A live share lasts as long as their iCloud account. For a copy that’s yours for good, keep one as a keepsake from Keepsake & Export — or ask them to make you a keepsake too." : {
+
+    },
+    "A new note" : {
+
+    },
+    "API key" : {
+
+    },
+    "Aa" : {
+
+    },
+    "About %lld MB, downloaded once and kept for reading offline." : {
+      "comment" : "Describes a Bible download. %lld is a size in megabytes."
+    },
+    "About Study Resources" : {
+
+    },
+    "About This Translation" : {
+
+    },
+    "About these dates" : {
+
+    },
+    "Accent" : {
+
+    },
+    "Add %lld Items" : {
+
+    },
+    "Add Note" : {
+
+    },
+    "Add Selection" : {
+
+    },
+    "Add a Translation" : {
+
+    },
+    "Add a passage" : {
+
+    },
+    "Add a passage, e.g. John 10:11" : {
+
+    },
+    "Add a passage, e.g. Rom 8:1-17" : {
+
+    },
+    "Add a sermon slide’s text to this note" : {
+
+    },
+    "Add another translation first." : {
+
+    },
+    "Add from Camera" : {
+
+    },
+    "Add these lines" : {
+
+    },
+    "Add to Favorites" : {
+
+    },
+    "Add to My Library" : {
+
+    },
+    "Add to Note" : {
+
+    },
+    "Add your free API.Bible key in Manage Translations to read this translation." : {
+      "comment" : "“Manage Translations” is the name of a screen in the app."
+    },
+    "Add your free Crossway key in Manage Translations to read the ESV." : {
+      "comment" : "“Manage Translations” is the name of a screen in the app."
+    },
+    "Add your name above first, so family know whose Bible it is." : {
+
+    },
+    "Added" : {
+
+    },
+    "Added above this slide’s lines. Leave it empty to add just the lines." : {
+
+    },
+    "Added by You" : {
+
+    },
+    "Alignment" : {
+
+    },
+    "All Charts" : {
+
+    },
+    "All Notes" : {
+      "comment" : "Notes list filter"
+    },
+    "Already here" : {
+
+    },
+    "Also spans: %@" : {
+      "comment" : "%@ is a comma-separated list of historical eras"
+    },
+    "Appearance" : {
+
+    },
+    "Asking API.Bible what your key can read…" : {
+
+    },
+    "Asking eBible.org…" : {
+
+    },
+    "Auto" : {
+      "comment" : "Reader colour theme name"
+    },
+    "Auto-Scroll" : {
+
+    },
+    "Automatic" : {
+
+    },
+    "Autumn" : {
+      "comment" : "Season"
+    },
+    "Back to %@" : {
+
+    },
+    "Base map" : {
+
+    },
+    "Birth" : {
+      "comment" : "Link to the passage recording a tribe's founder's birth"
+    },
+    "Black" : {
+      "comment" : "Reader colour theme name"
+    },
+    "Books" : {
+
+    },
+    "Bring Notes From Another App…" : {
+
+    },
+    "Bring Your Notes" : {
+
+    },
+    "Brisk" : {
+      "comment" : "Auto-scroll speed"
+    },
+    "Brought across" : {
+
+    },
+    "Browse Charts" : {
+
+    },
+    "Browse Free Translations…" : {
+
+    },
+    "Calvin, Gill and Jamieson-Fausset-Brown — about %lld MB, downloaded once and kept." : {
+      "comment" : "Describes the commentary download; the names are commentators. %lld is a size in megabytes."
+    },
+    "Camera Access Is Off" : {
+
+    },
+    "Can view" : {
+      "comment" : "Status of a person a Bible is shared with"
+    },
+    "Cancel" : {
+
+    },
+    "Can’t Open This Chapter" : {
+
+    },
+    "Can’t Open This Keepsake" : {
+
+    },
+    "Centered" : {
+      "comment" : "Text alignment"
+    },
+    "Changes go out a few seconds after you make them, whenever you’re online." : {
+
+    },
+    "Charts" : {
+      "comment" : "Tab of the Bible context viewer"
+    },
+    "Check My Translations" : {
+
+    },
+    "Choose" : {
+      "comment" : "Button: choose a second translation to compare"
+    },
+    "Choose Image File…" : {
+
+    },
+    "Choose a Different File" : {
+
+    },
+    "Choose a File…" : {
+
+    },
+    "Choose from Photos" : {
+
+    },
+    "Choose from Photos…" : {
+
+    },
+    "Cities" : {
+      "comment" : "Link to the passage allotting the Levites' cities"
+    },
+    "Clear" : {
+
+    },
+    "Clear Selection" : {
+
+    },
+    "Close" : {
+
+    },
+    "Coastlines, land, lakes and rivers at 1:10 million, clipped to the lands of the Bible and simplified. Public domain. Modern reservoirs and canals are left out." : {
+      "comment" : "Credit for a data source in Sources & Credits"
+    },
+    "Colours verse numbers, links and the app’s controls." : {
+
+    },
+    "Coming From Somewhere Else" : {
+
+    },
+    "Commentary" : {
+      "comment" : "Name of a downloadable pack of Bible commentaries\nStudy panel tab\nStudy panel tab, short form for narrow screens"
+    },
+    "Compare Translations…" : {
+
+    },
+    "Compare With" : {
+
+    },
+    "Complete Bibles translated from the Hebrew and Greek. Reading in another language? Download a Bible from eBible.org and use Import a File." : {
+
+    },
+    "Confidence" : {
+
+    },
+    "Context" : {
+      "comment" : "Study panel tab\nStudy panel tab, short form for narrow screens"
+    },
+    "Context Unavailable" : {
+
+    },
+    "Continue to Next Chapter" : {
+
+    },
+    "Copied" : {
+
+    },
+    "Copy" : {
+
+    },
+    "Copy Link" : {
+
+    },
+    "Copy Note" : {
+
+    },
+    "Couldn't Download Commentary" : {
+
+    },
+    "Couldn't Load That Translation" : {
+
+    },
+    "Couldn't reach eBible.org" : {
+
+    },
+    "Couldn’t Open the Invitation" : {
+
+    },
+    "Couldn’t Use That Image" : {
+
+    },
+    "Couldn’t download the %@" : {
+      "comment" : "%@ is the name of a download, e.g. a Bible translation or “Study Notes”."
+    },
+    "Couldn’t play the Mi Speaks audio." : {
+      "comment" : "“Mi Speaks” is an app name; do not translate it."
+    },
+    "Create Keepsake" : {
+
+    },
+    "Create Note" : {
+
+    },
+    "Create a Keepsake" : {
+
+    },
+    "Created" : {
+
+    },
+    "Cross References" : {
+      "comment" : "Study panel tab"
+    },
+    "Crossway's free tier allows 5,000 requests a day for non-commercial use. The key is yours, and the ESV is read over the network — up to 500 verses are kept on the device, which is Crossway's limit." : {
+      "comment" : "Explains a provider of licensed Bible text. “Starter” is the name of API.Bible's free plan."
+    },
+    "Dad, Grandma Ruth, Pastor Jim" : {
+
+    },
+    "Dark" : {
+      "comment" : "Reader colour theme name"
+    },
+    "Date debated" : {
+
+    },
+    "Dates before the divided kingdom are approximate; ? marks dates that scholars dispute. Sources are listed under Sources & Credits." : {
+
+    },
+    "Dawn" : {
+      "comment" : "Name of a share-card design"
+    },
+    "Dedication" : {
+
+    },
+    "Dedication (optional)" : {
+
+    },
+    "Delete Note" : {
+
+    },
+    "Delete this note?" : {
+
+    },
+    "Did evil" : {
+      "comment" : "Verdict on a king of Israel or Judah"
+    },
+    "Did right" : {
+      "comment" : "Verdict on a king of Israel or Judah"
+    },
+    "Dismiss" : {
+
+    },
+    "Don't tap “Delete your account” — it sits just below Export." : {
+
+    },
+    "Done" : {
+
+    },
+    "Double-tap to %@" : {
+
+    },
+    "Double-tap to remove this passage" : {
+
+    },
+    "Download" : {
+
+    },
+    "Downloading %@…" : {
+
+    },
+    "Downloading the %@…" : {
+      "comment" : "%@ is the name of a download, e.g. a Bible translation or “Study Notes”."
+    },
+    "Each note’s passages are quoted above what was written. Very long passages are shortened to their opening verses." : {
+
+    },
+    "Edit line" : {
+
+    },
+    "Edited" : {
+
+    },
+    "Ember" : {
+      "comment" : "Accent colour name"
+    },
+    "End of Chapter" : {
+      "comment" : "Sleep timer option"
+    },
+    "Engine" : {
+
+    },
+    "English shown word-by-word is the Berean Standard Bible's, which this data is keyed to." : {
+
+    },
+    "Enhanced" : {
+      "comment" : "Quality tier of a system voice"
+    },
+    "Eras, events, and the kings, journeys, tribes and feasts charts were compiled for this app from the biblical text and standard chronologies. Many dates are approximate and some are disputed; the app notes where." : {
+      "comment" : "Credit for a data source in Sources & Credits"
+    },
+    "Evening sermon: Born of the Spirit" : {
+      "comment" : "Sample note shown in App Store screenshots (demo mode)"
+    },
+    "Every book read cleanly." : {
+
+    },
+    "Everything in that file was already here." : {
+
+    },
+    "Evidence at OpenBible.info" : {
+
+    },
+    "Export" : {
+      "comment" : "Fallback file name for an export with no title"
+    },
+    "Export %lld Notes" : {
+
+    },
+    "Export %lld Shown…" : {
+
+    },
+    "Export All Notes…" : {
+
+    },
+    "Export Notes" : {
+
+    },
+    "Export “%@”" : {
+
+    },
+    "Export…" : {
+
+    },
+    "Family" : {
+
+    },
+    "Family sharing needs a signed build with iCloud." : {
+
+    },
+    "Favorites" : {
+      "comment" : "Notes list filter"
+    },
+    "Fetching from iCloud…" : {
+
+    },
+    "Find a place" : {
+
+    },
+    "Finished %@. Open Scripture Alone to continue with %@." : {
+      "comment" : "Both %@ are chapter references, e.g. “John 3”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Finished %1$@. Open Scripture Alone to continue with %2$@."
+          }
+        }
+      }
+    },
+    "Follow the chapter you are reading" : {
+
+    },
+    "Following the Reader" : {
+
+    },
+    "Font" : {
+
+    },
+    "Footnotes" : {
+
+    },
+    "For %@" : {
+
+    },
+    "For Years to Come" : {
+
+    },
+    "Format" : {
+
+    },
+    "Found in this file" : {
+
+    },
+    "Free Translations" : {
+
+    },
+    "Free translations come from eBible.org, and nothing is downloaded until you choose one. A file can be a USFM zip or an ePub you own — anything copy-protected is refused. The ESV, CSB, NASB and NKJV can't be given away by anyone, so they're read over the network with your own free key." : {
+
+    },
+    "From" : {
+
+    },
+    "From Anywhere Else" : {
+
+    },
+    "From Life Bible" : {
+
+    },
+    "From You" : {
+
+    },
+    "From eBible.org" : {
+
+    },
+    "Gaps" : {
+
+    },
+    "Get Mi Speaks" : {
+
+    },
+    "Get Mi Speaks on the App Store" : {
+
+    },
+    "Get a free key…" : {
+
+    },
+    "Give your family a copy of your highlights and notes — a digital version of the Bible you’ve marked over the years. It’s a file you hand over yourself; nothing is sent anywhere." : {
+
+    },
+    "Go To" : {
+
+    },
+    "Go to" : {
+
+    },
+    "Go to %@" : {
+
+    },
+    "Go to passage, currently %@" : {
+
+    },
+    "Heading" : {
+
+    },
+    "Heading added to the note" : {
+
+    },
+    "Highlight %@" : {
+
+    },
+    "Highlights" : {
+
+    },
+    "Hint" : {
+
+    },
+    "Hint (optional, shown to anyone)" : {
+
+    },
+    "How This Works" : {
+
+    },
+    "How to get the file" : {
+
+    },
+    "Identified with" : {
+
+    },
+    "If you've been reading in Life Bible — the app formerly called Tecarta Bible — your notes, highlights and saved verses can come with you." : {
+      "comment" : "“Life Bible” and “Tecarta Bible” are app names."
+    },
+    "Import a File…" : {
+
+    },
+    "In the New Testament" : {
+
+    },
+    "Include Verse Text" : {
+
+    },
+    "Included" : {
+
+    },
+    "Ink" : {
+      "comment" : "Accent colour name\nName of a share-card design"
+    },
+    "Introduction to %@" : {
+
+    },
+    "Invitations are read-only and private. Removing someone stops their updates; they keep the copy they have." : {
+
+    },
+    "Invite or Remove People…" : {
+
+    },
+    "Invite or remove people from Scripture Alone on your iPhone or iPad." : {
+
+    },
+    "Invited — hasn’t opened it yet" : {
+      "comment" : "Status of a person a Bible is shared with"
+    },
+    "Israel" : {
+      "comment" : "The kingdom of Israel"
+    },
+    "Israel (north)" : {
+      "comment" : "The northern kingdom"
+    },
+    "It couldn’t be opened." : {
+      "comment" : "Reason shown after “The American Standard Version couldn’t be opened.”"
+    },
+    "It will be removed from all your devices." : {
+
+    },
+    "It’s read-only: they can’t highlight, edit, add or delete anything, and nothing of theirs comes back to you. Not shared: your reading position, your settings, and the slide photos kept with camera notes." : {
+
+    },
+    "Jacob’s blessing" : {
+
+    },
+    "John 3:16 — the whole gospel in one verse\n\nRomans 8:28 — not that all things are good" : {
+
+    },
+    "John 3:16, Rom 8, or search words" : {
+
+    },
+    "Journal entries" : {
+
+    },
+    "Journey" : {
+
+    },
+    "Judah" : {
+      "comment" : "The southern kingdom"
+    },
+    "Judah (south)" : {
+      "comment" : "The southern kingdom"
+    },
+    "Keep" : {
+
+    },
+    "Keep This Copy" : {
+
+    },
+    "Keep a Copy" : {
+
+    },
+    "Keep a Copy as a Keepsake…" : {
+
+    },
+    "Keep as a Keepsake" : {
+
+    },
+    "Keep this photo with the note" : {
+
+    },
+    "Keepsake & Export" : {
+
+    },
+    "Keepsake & Export…" : {
+
+    },
+    "Keepsake Bible" : {
+
+    },
+    "Keepsakes You’ve Been Given" : {
+
+    },
+    "Keepsakes are ordinary files: a ZIP archive of readable text. Even without this app, the words stay recoverable." : {
+
+    },
+    "Kept on this device, separate from your own highlights and notes. It’s read-only; nothing in it can be changed." : {
+
+    },
+    "Kingdom" : {
+
+    },
+    "Label positions mark the approximate center of each allotment (Joshua 13–19)." : {
+
+    },
+    "Land" : {
+      "comment" : "Link to the passage allotting a tribe's land"
+    },
+    "Language or name" : {
+
+    },
+    "Lapis" : {
+      "comment" : "Accent colour name"
+    },
+    "Larger" : {
+
+    },
+    "Larger Text" : {
+
+    },
+    "Later" : {
+
+    },
+    "Later feast" : {
+      "comment" : "A feast instituted after the Law, e.g. Purim"
+    },
+    "Layout" : {
+
+    },
+    "Leave" : {
+
+    },
+    "Leave %@?" : {
+      "comment" : "%@ is the title of a shared Bible"
+    },
+    "Leave and Remove" : {
+
+    },
+    "Leave…" : {
+
+    },
+    "Left" : {
+      "comment" : "Text alignment"
+    },
+    "Left out" : {
+
+    },
+    "Let the family members you invite see your highlights, notes and favorites as you keep reading — live and read-only, through iCloud." : {
+
+    },
+    "License" : {
+
+    },
+    "Life Bible — the app that used to be called Tecarta Bible — can export everything you've written. Your notes, highlights and saved verses come across; nothing is sent anywhere, and the file never leaves your device." : {
+
+    },
+    "Life in the Spirit. Verse 1 is the hinge — everything after it flows from “no condemnation.”" : {
+      "comment" : "Sample note shown in App Store screenshots (demo mode)"
+    },
+    "Light" : {
+      "comment" : "Reader colour theme name"
+    },
+    "Line" : {
+
+    },
+    "Line Spacing" : {
+
+    },
+    "Linen" : {
+      "comment" : "Name of a share-card design"
+    },
+    "Link copied" : {
+
+    },
+    "Links aren’t available for this translation" : {
+
+    },
+    "Links aren’t available for this translation — share the image instead." : {
+
+    },
+    "Listen" : {
+
+    },
+    "Loading voice…" : {
+
+    },
+    "Make a Keepsake Too" : {
+
+    },
+    "Manage Translations…" : {
+
+    },
+    "Map" : {
+      "comment" : "Tab of the Bible context viewer"
+    },
+    "Map of the lands of the Bible." : {
+      "comment" : "Accessibility description of the map when no places are pinned"
+    },
+    "Map showing %@." : {
+      "comment" : "Accessibility description of the map. %@ is a list of place names."
+    },
+    "Maps & Timeline" : {
+
+    },
+    "Maps, timeline and charts for this chapter" : {
+
+    },
+    "Markdown Folder" : {
+      "comment" : "Export format: a folder of Markdown files"
+    },
+    "Mi Speaks Default" : {
+
+    },
+    "Mi Speaks Studio" : {
+      "comment" : "Read-aloud engine. “Mi Speaks” is an app name; do not translate it."
+    },
+    "Mi Speaks didn’t finish in time." : {
+      "comment" : "“Mi Speaks” is an app name; do not translate it."
+    },
+    "Mi Speaks opens to record this chapter. Come back when it’s done." : {
+      "comment" : "“Mi Speaks” is an app name; do not translate it."
+    },
+    "Mi Speaks returned no audio." : {
+      "comment" : "“Mi Speaks” is an app name; do not translate it."
+    },
+    "Mi Speaks will read in its Studio voices." : {
+      "comment" : "“Mi Speaks” is an app name; do not translate it."
+    },
+    "Minimal" : {
+      "comment" : "Name of a share-card design"
+    },
+    "Mixed" : {
+      "comment" : "Verdict on a king of Israel or Judah"
+    },
+    "More" : {
+
+    },
+    "More Charts" : {
+
+    },
+    "Moses’ blessing" : {
+
+    },
+    "My Bible" : {
+
+    },
+    "New Note" : {
+
+    },
+    "New Testament" : {
+
+    },
+    "Next Chapter" : {
+
+    },
+    "Next Verse" : {
+
+    },
+    "Night" : {
+      "comment" : "Name of a share-card design"
+    },
+    "No Cross References" : {
+
+    },
+    "No Favorites" : {
+
+    },
+    "No Favorites Yet" : {
+
+    },
+    "No Matches" : {
+
+    },
+    "No Notes Here" : {
+
+    },
+    "No Notes Yet" : {
+
+    },
+    "No Original-Language Data" : {
+
+    },
+    "No connection right now. Changes will go out when you’re back online." : {
+
+    },
+    "No favorites are shared in this Bible." : {
+
+    },
+    "No one yet. Invite family to share it with them." : {
+
+    },
+    "No passages were found on the slide." : {
+
+    },
+    "No places are named in %@." : {
+
+    },
+    "No title was found — type one, or the first passage will name the note." : {
+
+    },
+    "Not in this file: %@" : {
+      "comment" : "Import coverage. %@ is a list of verse references like “17:36, 23:17”."
+    },
+    "Not in this file: %@ and %lld more" : {
+      "comment" : "Import coverage. %1$@ is a list of verse references like “17:36, 23:17”; %2$lld is how many more are missing.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not in this file: %1$@ and %2$lld more"
+          }
+        }
+      }
+    },
+    "Not in this translation" : {
+
+    },
+    "Not set" : {
+      "comment" : "No name or dedication has been entered"
+    },
+    "Note" : {
+      "comment" : "Accessibility: marker for a verse with a note"
+    },
+    "Note Deleted" : {
+
+    },
+    "Note title" : {
+
+    },
+    "Notes" : {
+      "comment" : "Heading of a keepsake's notes\nHeading of an exported notes document"
+    },
+    "Notes on verses" : {
+
+    },
+    "Nothing else was on the slide." : {
+
+    },
+    "Nothing from %@ Here" : {
+
+    },
+    "Nothing has been added yet. Importing twice is safe — anything already here is left alone rather than duplicated." : {
+
+    },
+    "Nothing is linked to %@ yet." : {
+
+    },
+    "Nothing new to add" : {
+
+    },
+    "Nothing to Compare With" : {
+
+    },
+    "OK" : {
+
+    },
+    "Off" : {
+      "comment" : "Sleep timer option"
+    },
+    "Offered by Scripture Alone" : {
+
+    },
+    "Often connected with" : {
+
+    },
+    "Old Testament" : {
+
+    },
+    "Olive" : {
+      "comment" : "Accent colour name\nName of a share-card design"
+    },
+    "On" : {
+
+    },
+    "One file, for note apps and editors." : {
+      "comment" : "Describes an export format"
+    },
+    "One other location has been proposed." : {
+
+    },
+    "Online" : {
+
+    },
+    "Online Translations" : {
+
+    },
+    "Online Translations…" : {
+
+    },
+    "Only people you invite can open it — the invitation link does nothing for anyone else. Each person needs an Apple Account and Scripture Alone. Your data goes only to your iCloud and theirs; there’s no server in between." : {
+
+    },
+    "Open" : {
+
+    },
+    "Open %@" : {
+
+    },
+    "Open Large Map" : {
+
+    },
+    "Open Life Bible, or sign in at lifebible.com." : {
+
+    },
+    "Open Note" : {
+
+    },
+    "Open Settings" : {
+
+    },
+    "Open a Keepsake File…" : {
+
+    },
+    "Open the Map" : {
+
+    },
+    "Opens %@ in the reader" : {
+
+    },
+    "Opens %@." : {
+
+    },
+    "Opens the full timeline." : {
+
+    },
+    "Opens the passage" : {
+
+    },
+    "Opens the passage in the reader." : {
+
+    },
+    "Opens this verse in the reader." : {
+
+    },
+    "Original Language" : {
+
+    },
+    "Original Languages" : {
+      "comment" : "Name of a downloadable pack of Hebrew and Greek word data"
+    },
+    "Other Languages (%@)" : {
+
+    },
+    "Overview" : {
+      "comment" : "Tab of the Bible context viewer"
+    },
+    "Paragraphs" : {
+      "comment" : "Reading layout: text set in paragraphs"
+    },
+    "Parchment" : {
+      "comment" : "Name of a share-card design"
+    },
+    "Passages" : {
+
+    },
+    "Passphrase" : {
+
+    },
+    "Paste Image" : {
+
+    },
+    "Paste Notes" : {
+
+    },
+    "Paste Notes From Any App…" : {
+
+    },
+    "Paste notes, or a CSV you exported. Each entry needs to start with a reference — “John 3:16” — so it can be attached to the right verse. Anything that doesn't name a verse is listed for you rather than guessed at." : {
+
+    },
+    "Pause" : {
+
+    },
+    "Pause Listening" : {
+
+    },
+    "Pause Scrolling" : {
+
+    },
+    "Paused" : {
+      "comment" : "Read-aloud status"
+    },
+    "Personal Voice" : {
+      "comment" : "Kind of system voice (Apple's Personal Voice feature)"
+    },
+    "Personal Voice wasn’t allowed. You can change this in Settings › Accessibility › Personal Voice." : {
+      "comment" : "“Settings › Accessibility › Personal Voice” should match the system Settings app's menu names."
+    },
+    "Photo of the sermon slide" : {
+
+    },
+    "Photo of the slide" : {
+
+    },
+    "Photograph a sermon slide and add its text and passages to this note." : {
+
+    },
+    "Photograph a sermon slide to start a note titled and linked from it." : {
+
+    },
+    "Pilgrim feast" : {
+      "comment" : "One of the three feasts every man went to Jerusalem for"
+    },
+    "Pinned to %@" : {
+
+    },
+    "Places" : {
+
+    },
+    "Places named in the Bible, their most likely locations, confidence scores and the verses that mention them. By Stephen Smith, OpenBible.info. Licensed CC BY 4.0. Used unmodified except for choosing each place’s most confident identification." : {
+      "comment" : "Credit for a data source in Sources & Credits"
+    },
+    "Plain Text" : {
+      "comment" : "Export format"
+    },
+    "Play" : {
+
+    },
+    "Plum" : {
+      "comment" : "Accent colour name"
+    },
+    "Point at the slide. Tap any highlighted text or the shutter." : {
+
+    },
+    "Premium" : {
+      "comment" : "Quality tier of a system voice"
+    },
+    "Prepare Export" : {
+
+    },
+    "Preparing" : {
+
+    },
+    "Preview: %@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Preview: %1$@, %2$@"
+          }
+        }
+      }
+    },
+    "Previous Chapter" : {
+
+    },
+    "Previous Verse" : {
+
+    },
+    "Privacy" : {
+
+    },
+    "Prophets: %@." : {
+      "comment" : "Accessibility. %@ is a comma-separated list of prophets' names."
+    },
+    "Protect with a Passphrase" : {
+
+    },
+    "Read" : {
+
+    },
+    "Read %@" : {
+
+    },
+    "Read over the network" : {
+      "comment" : "Note under an online translation's name"
+    },
+    "Read-only keepsake" : {
+
+    },
+    "Reading %@" : {
+
+    },
+    "Reading %@…" : {
+
+    },
+    "Reading the slide…" : {
+
+    },
+    "Reads the chapter aloud from the top of the screen." : {
+
+    },
+    "Ready" : {
+
+    },
+    "Recent" : {
+
+    },
+    "Recent Searches" : {
+
+    },
+    "References" : {
+      "comment" : "Study panel tab, short form for narrow screens"
+    },
+    "Refresh" : {
+
+    },
+    "Relaxed" : {
+      "comment" : "Auto-scroll speed"
+    },
+    "Remove" : {
+
+    },
+    "Remove %@" : {
+
+    },
+    "Remove %@?" : {
+      "comment" : "%@ is the title of a keepsake or shared Bible"
+    },
+    "Remove Highlight" : {
+
+    },
+    "Remove Key" : {
+
+    },
+    "Remove Photo" : {
+
+    },
+    "Remove from Favorites" : {
+
+    },
+    "Remove from This Device" : {
+
+    },
+    "Remove this keepsake?" : {
+
+    },
+    "Remove this translation?" : {
+
+    },
+    "Removed" : {
+      "comment" : "Status of a person a Bible is shared with"
+    },
+    "Remove…" : {
+
+    },
+    "Rendering in Mi Speaks…" : {
+      "comment" : "“Mi Speaks” is an app name; do not translate it."
+    },
+    "Results" : {
+
+    },
+    "Return to My Bible" : {
+
+    },
+    "Rome" : {
+      "comment" : "Short name of one of Paul's missionary journeys"
+    },
+    "Save Image…" : {
+
+    },
+    "Save LifeBibleData.zip, then choose it above." : {
+
+    },
+    "Save to" : {
+
+    },
+    "Save to Files…" : {
+
+    },
+    "Save to Photos" : {
+
+    },
+    "Saved to Photos" : {
+
+    },
+    "Saved verses" : {
+
+    },
+    "Saving…" : {
+
+    },
+    "Scan Slide" : {
+
+    },
+    "Scripture Alone" : {
+
+    },
+    "Scripture Alone can’t add to your photo library. Allow it in Settings › Privacy & Security › Photos." : {
+      "comment" : "“Settings › Privacy & Security › Photos” should match the system Settings app's menu names."
+    },
+    "Scripture Alone is free software under the GNU AGPL. The full list of sources, versions and checksums is in docs/context-sources.md in the source code." : {
+
+    },
+    "Scripture Alone reads slides on your iPhone and never uploads them. Turn on camera access in Settings, or choose a photo you’ve already taken." : {
+
+    },
+    "Scripture Alone wordmark" : {
+
+    },
+    "Scroll to Advanced and tap “Export your data”." : {
+
+    },
+    "Scrolls the chapter hands-free. Hold for speed." : {
+
+    },
+    "Sea" : {
+      "comment" : "Accent colour name"
+    },
+    "Search again for %@" : {
+
+    },
+    "Search favorites or a passage" : {
+
+    },
+    "Search notes or a passage" : {
+
+    },
+    "Search these notes" : {
+
+    },
+    "Section Headings" : {
+
+    },
+    "Sending changes…" : {
+
+    },
+    "Sepia" : {
+      "comment" : "Reader colour theme name"
+    },
+    "Shape" : {
+
+    },
+    "Share" : {
+
+    },
+    "Share Image" : {
+
+    },
+    "Share Image…" : {
+
+    },
+    "Share Link" : {
+
+    },
+    "Share Note" : {
+
+    },
+    "Share Text" : {
+
+    },
+    "Share a Copy" : {
+
+    },
+    "Share with Family" : {
+
+    },
+    "Share your Bible with family" : {
+
+    },
+    "Shared" : {
+
+    },
+    "Shared live · read-only" : {
+
+    },
+    "Shared live · updated %@" : {
+
+    },
+    "Shared live · waiting for iCloud" : {
+
+    },
+    "Shared with You" : {
+
+    },
+    "Shared with you live and read-only: their highlights and notes appear in the text as they add them, kept apart from your own. You’ll find it again under Appearance → Keepsake & Export." : {
+
+    },
+    "Share…" : {
+
+    },
+    "Sharing ended %@" : {
+
+    },
+    "Sharing ended %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Sharing ended %1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "Sharing has ended, so this is the last copy there will be. As a keepsake it stays under Keepsake & Export, and you can save it to Files or give it to others." : {
+
+    },
+    "Show" : {
+
+    },
+    "Show All %lld References" : {
+
+    },
+    "Show All Places" : {
+
+    },
+    "Shown above your Bible on their device — the same name and dedication as your keepsake." : {
+
+    },
+    "Shows cross references and commentary for the verse you tap." : {
+
+    },
+    "Shows every verse that mentions %@." : {
+
+    },
+    "Shows the verses that mention %@." : {
+
+    },
+    "Sign in to iCloud in Settings to use family sharing." : {
+
+    },
+    "Simple text that opens anywhere." : {
+      "comment" : "Describes an export format"
+    },
+    "Sleep Timer" : {
+
+    },
+    "Sleep timer ended." : {
+
+    },
+    "Slide Photo" : {
+
+    },
+    "Slide read. %@" : {
+
+    },
+    "Slow" : {
+      "comment" : "Auto-scroll speed"
+    },
+    "Smaller" : {
+
+    },
+    "Smaller Text" : {
+
+    },
+    "Some translations genuinely omit verses, and some files are simply incomplete. You can read what imported either way." : {
+
+    },
+    "Someone" : {
+      "comment" : "Stands in for a family member whose name iCloud doesn't share"
+    },
+    "Son %lld · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Son %1$lld · %2$@"
+          }
+        }
+      }
+    },
+    "Source" : {
+
+    },
+    "Sources" : {
+
+    },
+    "Sources & Credits" : {
+
+    },
+    "Speed" : {
+
+    },
+    "Speed, %@" : {
+
+    },
+    "Spring" : {
+      "comment" : "Season"
+    },
+    "Square" : {
+      "comment" : "Share-card shape"
+    },
+    "Start Sharing and Invite…" : {
+
+    },
+    "Start a note from a photo of a sermon slide" : {
+
+    },
+    "Start the note with" : {
+
+    },
+    "Steady" : {
+      "comment" : "Auto-scroll speed"
+    },
+    "Stone" : {
+      "comment" : "Name of a share-card design"
+    },
+    "Stop Listening" : {
+
+    },
+    "Stop Sharing" : {
+
+    },
+    "Stop Sharing…" : {
+
+    },
+    "Stop sharing your Bible?" : {
+
+    },
+    "Story" : {
+      "comment" : "Share-card shape"
+    },
+    "Strongest" : {
+
+    },
+    "Studio Voice" : {
+
+    },
+    "Studio voices come from Mi Speaks, which isn’t installed." : {
+      "comment" : "“Mi Speaks” is an app name; do not translate it."
+    },
+    "Studio voices need Mi Speaks Premium." : {
+      "comment" : "“Mi Speaks” is an app name; do not translate it."
+    },
+    "Studio voices send the text to Mi Speaks to record it, which this translation’s licence doesn’t allow. The voices on this device read it as usual." : {
+      "comment" : "“Mi Speaks” is an app name; do not translate it."
+    },
+    "Study" : {
+
+    },
+    "Study Resources" : {
+
+    },
+    "Study context works entirely offline. Nothing about what you read is sent anywhere; the one exception is a link you choose to open." : {
+
+    },
+    "Study mode uses only public-domain and openly licensed works. Everything is bundled with the app and works offline; nothing you look up leaves your device." : {
+
+    },
+    "Sunday sermon: No condemnation" : {
+      "comment" : "Sample note shown in App Store screenshots (demo mode)"
+    },
+    "Sunrise" : {
+      "comment" : "Accent colour name"
+    },
+    "System Voice" : {
+      "comment" : "Read-aloud engine using the device's built-in voices"
+    },
+    "Take Photo of Slide" : {
+
+    },
+    "Take photo of slide" : {
+
+    },
+    "Tap a Verse" : {
+
+    },
+    "Tap any verse to see where else Scripture speaks to it, and what the old commentators said about it." : {
+
+    },
+    "Tap one to read it. Their highlights and notes appear in the text, just as they left them." : {
+
+    },
+    "Tap the menu, then Settings." : {
+
+    },
+    "Tap verses in the text, then the heart, to keep a passage close — on your widgets and your watch too." : {
+
+    },
+    "Tap verses in the text, then the pencil, to start a note on a passage — or scan this Sunday’s sermon slide." : {
+
+    },
+    "Text" : {
+
+    },
+    "Text Size" : {
+
+    },
+    "Text sizes itself to fit. Made on this device — nothing is uploaded." : {
+
+    },
+    "That didn't work" : {
+
+    },
+    "That download arrived empty." : {
+
+    },
+    "That file couldn’t be opened." : {
+
+    },
+    "That file doesn’t look like an image." : {
+
+    },
+    "That image couldn’t be read." : {
+
+    },
+    "That photo couldn’t be opened." : {
+
+    },
+    "That translation couldn't be added" : {
+
+    },
+    "That translation isn't available." : {
+
+    },
+    "The American Bible Society's free Starter plan is for non-commercial use and lets you pick three copyrighted translations. The key is yours." : {
+      "comment" : "Explains a provider of licensed Bible text. “Starter” is the name of API.Bible's free plan."
+    },
+    "The American Standard Version couldn’t be opened. %@" : {
+      "comment" : "%@ is a sentence giving the reason."
+    },
+    "The Hebrew and Greek behind every word, with a lexicon — about %lld MB, downloaded once and kept." : {
+      "comment" : "%lld is a size in megabytes."
+    },
+    "The chapter you are reading." : {
+
+    },
+    "The dedication opens their copy — a few words to whoever reads it next. The translation is the one it opens in." : {
+
+    },
+    "The keepsake will be removed from this device. If you want it again later, you’ll need the original file." : {
+
+    },
+    "The link carries the verse itself, so the card rebuilds in any browser. No server stores it." : {
+
+    },
+    "The maps and timeline data are missing from this build." : {
+
+    },
+    "The original-language data isn't available yet." : {
+
+    },
+    "The people you invite can open your Bible in Scripture Alone and read it as you mark it. When you highlight a verse or write a note, it appears on their device too." : {
+
+    },
+    "The photo is saved with the note and syncs through your iCloud." : {
+
+    },
+    "The photo was read on this device and will be discarded — only the text below is kept." : {
+
+    },
+    "The text on this photo couldn’t be read. You can still type a title and passages." : {
+
+    },
+    "There are no notes on this chapter." : {
+
+    },
+    "There’s no image on the clipboard." : {
+
+    },
+    "These name something this app can't find a verse for. They'll be skipped rather than guessed at, so you can copy them over yourself." : {
+
+    },
+    "These need a connection. What you read is cached up to the publisher's limit, and they can't be searched offline." : {
+
+    },
+    "They're in your notes and highlights now, and will sync to your other devices through your own iCloud." : {
+
+    },
+    "This Chapter" : {
+      "comment" : "Notes list filter"
+    },
+    "This build can’t reach Mi Speaks’s shared folder." : {
+      "comment" : "“Mi Speaks” is an app name; do not translate it."
+    },
+    "This chapter: %@." : {
+      "comment" : "Accessibility. %@ is a year, e.g. “c. 1446 BC”."
+    },
+    "This keepsake is protected" : {
+
+    },
+    "This last copy will be removed from this device. Keep it as a keepsake first if you’d like to hold on to it." : {
+
+    },
+    "This passage is too long for a link — share the image or the text instead." : {
+
+    },
+    "This replaced the copy from %@." : {
+
+    },
+    "This replaces the keepsake of %@ from %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This replaces the keepsake of %1$@ from %2$@."
+          }
+        }
+      }
+    },
+    "This takes a few seconds for a whole Bible." : {
+
+    },
+    "This translation" : {
+      "comment" : "Stands in for a translation's abbreviation in “%@ can't be quoted outside the app.”\nStands in for a translation's abbreviation in “%@ doesn’t allow its text to be exported.”"
+    },
+    "This translation needs a key. Add one in Manage Translations." : {
+      "comment" : "“Manage Translations” is the name of a screen in the app."
+    },
+    "This verse has no original-language data." : {
+
+    },
+    "Timeline" : {
+      "comment" : "Tab of the Bible context viewer"
+    },
+    "Timeline and charts" : {
+
+    },
+    "Timeline. %@, %@." : {
+      "comment" : "Accessibility. %1$@ is a historical era's name; %2$@ is its dates.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Timeline. %1$@, %2$@."
+          }
+        }
+      }
+    },
+    "Title" : {
+
+    },
+    "Title: %@" : {
+
+    },
+    "To use your iPhone’s camera, choose File › Import from iPhone." : {
+
+    },
+    "Too long for a link — share the image" : {
+
+    },
+    "Translation" : {
+
+    },
+    "Translations" : {
+
+    },
+    "Try Again" : {
+
+    },
+    "Try a word or a passage like Rom 8." : {
+
+    },
+    "Try another word." : {
+
+    },
+    "Type" : {
+
+    },
+    "Typeface" : {
+
+    },
+    "Typeset for reading and printing." : {
+      "comment" : "Describes an export format"
+    },
+    "United Kingdom" : {
+      "comment" : "The united monarchy of Israel under Saul, David and Solomon"
+    },
+    "Untitled Note" : {
+
+    },
+    "Up to date · %@" : {
+
+    },
+    "Updated from their iCloud while they share it, and kept on this device so it reads offline. A live share lasts only as long as their iCloud account — keep a copy as a keepsake to have it for good." : {
+
+    },
+    "Use My Personal Voice…" : {
+
+    },
+    "Verse %@" : {
+      "comment" : "%@ is a verse number"
+    },
+    "Verse Numbers" : {
+
+    },
+    "Verse by Verse" : {
+      "comment" : "Reading layout: each verse on its own line"
+    },
+    "Verse numbers" : {
+
+    },
+    "Verses" : {
+
+    },
+    "Verses %@" : {
+      "comment" : "%@ is a comma-separated list of verse numbers"
+    },
+    "View" : {
+
+    },
+    "Voice" : {
+
+    },
+    "Voice and Options" : {
+
+    },
+    "Waiting for iCloud" : {
+      "comment" : "Status of a person a Bible is shared with"
+    },
+    "What Family Will See" : {
+
+    },
+    "What’s Included" : {
+
+    },
+    "When" : {
+
+    },
+    "When someone gives you a Keepsake Bible, open the file here — or tap it in Messages, Mail or Files. It stays on this device, apart from your own notes." : {
+
+    },
+    "Where" : {
+
+    },
+    "Whoever made it chose a passphrase so only family could open it. It may be written down with the file, or with their papers." : {
+
+    },
+    "Wide" : {
+      "comment" : "Share-card shape"
+    },
+    "Without a passphrase, anyone who has the file can read it, like a Bible on a shelf. That’s usually what you want for family. Add one if the file might travel somewhere less private." : {
+
+    },
+    "Words of Christ in Red" : {
+
+    },
+    "Words of Christ in red" : {
+
+    },
+    "Working with iCloud…" : {
+
+    },
+    "Write the passphrase down exactly as shown and keep it with the file — for example, with your will. Without it, no one can open this keepsake: not your family, and not us. There is no reset." : {
+
+    },
+    "Written %@" : {
+
+    },
+    "Written %@." : {
+      "comment" : "Accessibility. %@ is a year, e.g. “c. AD 55”."
+    },
+    "Written for Scripture Alone" : {
+      "comment" : "Credit for a data source in Sources & Credits"
+    },
+    "You" : {
+      "comment" : "Status of a person a Bible is shared with"
+    },
+    "Your Keepsake Bible" : {
+
+    },
+    "Your highlights and notes stay; they're kept by verse, not by translation." : {
+
+    },
+    "Your iCloud storage is full, so recent changes can’t reach your family. Free up space in Settings → iCloud." : {
+
+    },
+    "Your name and dedication" : {
+
+    },
+    "Your name, as family knows you" : {
+
+    },
+    "Your notes as a PDF to print or keep, as Markdown, or as plain text — with the verses they’re about." : {
+
+    },
+    "Your shared copy is deleted from iCloud and family stop receiving updates. They keep the last copy their device has, marked as ended, and can save it as a keepsake. Your own highlights and notes aren’t touched." : {
+
+    },
+    "You’ll find it again under Appearance → Keepsake & Export." : {
+
+    },
+    "You’ll stop receiving updates and this copy will be removed. They can invite you again." : {
+
+    },
+    "Zoom In" : {
+
+    },
+    "Zoom Out" : {
+
+    },
+    "approximate area" : {
+      "comment" : "Appended to a place's location confidence, e.g. “Likely location · approximate area”"
+    },
+    "blue" : {
+      "comment" : "Highlight colour, as in “Highlight blue”"
+    },
+    "eBible.org returned HTTP %lld for that translation." : {
+      "comment" : "Error. %lld is an HTTP status code."
+    },
+    "green" : {
+      "comment" : "Highlight colour, as in “Highlight green”"
+    },
+    "iCloud didn’t allow this. Check that you’re signed in to the Apple Account the invitation was sent to." : {
+
+    },
+    "iCloud needs to confirm this invitation. Open the link again from Messages or Mail." : {
+
+    },
+    "made %@" : {
+      "comment" : "When a keepsake was made. %@ is a date."
+    },
+    "pink" : {
+      "comment" : "Highlight colour, as in “Highlight pink”"
+    },
+    "purple" : {
+      "comment" : "Highlight colour, as in “Highlight purple”"
+    },
+    "read in the %@" : {
+      "comment" : "Which translation a keepsake's owner read. %@ is a translation abbreviation, e.g. “KJV”."
+    },
+    "superscription" : {
+
+    },
+    "yellow" : {
+      "comment" : "Highlight colour, as in “Highlight yellow”"
+    },
+    "· %@" : {
+
+    },
+    "—" : {
+
+    },
+    "• Nicodemus comes by night (v. 2)\n• “You must be born anew” — the Spirit’s work, not ours\n• The serpent in the wilderness points to the cross (Numbers 21:8–9)" : {
+      "comment" : "Sample note shown in App Store screenshots (demo mode)"
+    },
+    "…and %lld more" : {
+
+    }
+  },
+  "version" : "1.0"
+}

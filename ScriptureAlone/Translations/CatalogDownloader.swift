@@ -12,8 +12,8 @@ struct CatalogDownloader: Sendable {
 
         var errorDescription: String? {
             switch self {
-            case .http(let code): "eBible.org returned HTTP \(code) for that translation."
-            case .empty: "That download arrived empty."
+            case .http(let code): String(localized: "eBible.org returned HTTP \(code) for that translation.", comment: "Error. %lld is an HTTP status code.")
+            case .empty: String(localized: "That download arrived empty.")
             }
         }
     }

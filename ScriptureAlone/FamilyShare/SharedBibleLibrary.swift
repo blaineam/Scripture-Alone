@@ -24,7 +24,7 @@ final class SharedBibleLibrary {
 
         var title: String {
             if snapshot.profile != nil { return keepsakeManifest.displayTitle }
-            return shareTitle ?? "A Shared Bible"
+            return shareTitle ?? String(localized: "A Shared Bible", comment: "Title of a Bible someone shared, when it has no name")
         }
 
         var keepsakeManifest: KeepsakeManifest {

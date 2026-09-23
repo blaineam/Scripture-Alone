@@ -52,7 +52,7 @@ public struct BibleTextExtractor: Sendable {
             do {
                 source = try package.document(item)
             } catch let error as BibleImportError {
-                assembler.bible.notes.append(ImportNote(.warning, "\(item.path) could not be read: \(error.localizedDescription)"))
+                assembler.bible.notes.append(ImportNote(.warning, String(localized: "\(item.path) could not be read: \(error.localizedDescription)", bundle: .module, comment: "Import problem. %1$@ is a file name; %2$@ is an error message.")))
                 continue
             }
             let document = DocumentScanner(options: options).scan(source)
@@ -570,7 +570,7 @@ struct Assembler {
         closeBlock()
         if !documentDeclaredPlace, bible.shapesByDocument[path] == VerseMarkupShape.none, hint.book != nil {
             // A file we could not read at all, whose name promised a book, is worth saying aloud.
-            bible.notes.append(ImportNote(.info, "\(path) named a book but carried no verse markup."))
+            bible.notes.append(ImportNote(.info, String(localized: "\(path) named a book but carried no verse markup.", bundle: .module, comment: "Import note. %@ is a file name inside the ePub.")))
         }
     }
 
@@ -580,14 +580,14 @@ struct Assembler {
         bible.outOfOrderChapters = outOfOrder
         bible.bridgedVerses = bridged
         if !bridged.isEmpty {
-            bible.notes.append(ImportNote(.info, "\(bridged.count) verse(s) are printed combined with the verse before them."))
+            bible.notes.append(ImportNote(.info, String(localized: "\(bridged.count) verse(s) are printed combined with the verse before them.", bundle: .module, comment: "Import note. %lld is a number of verses.")))
         }
         for chapter in outOfOrder.sorted() {
-            bible.notes.append(ImportNote(.warning, "\(chapter.display): verse numbers ran out of order."))
+            bible.notes.append(ImportNote(.warning, String(localized: "\(chapter.display): verse numbers ran out of order.", bundle: .module, comment: "Import problem. %@ is a chapter reference, e.g. “John 3”.")))
         }
         if skippedText > 0 {
             bible.notes.append(ImportNote(.warning,
-                                          "\(skippedText) run(s) of text were dropped because no book or verse was in scope."))
+                                          String(localized: "\(skippedText) run(s) of text were dropped because no book or verse was in scope.", bundle: .module, comment: "Import problem. %lld is a number of passages of text.")))
         }
     }
 

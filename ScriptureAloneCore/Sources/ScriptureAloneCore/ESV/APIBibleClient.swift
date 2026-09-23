@@ -44,15 +44,15 @@ public struct APIBibleClient: Sendable {
         public var errorDescription: String? {
             switch self {
             case .unauthorized:
-                "API.Bible didn't accept that key. Check it on api.bible."
+                String(localized: "API.Bible didn't accept that key. Check it on api.bible.", bundle: .module)
             case .notAvailable(let name):
-                "\(name) isn't one of the translations your key can read. Choose it on api.bible first."
+                String(localized: "\(name) isn't one of the translations your key can read. Choose it on api.bible first.", bundle: .module, comment: "Error. %@ is a Bible translation name.")
             case .rateLimited:
-                "You've used your API.Bible requests for this month."
+                String(localized: "You've used your API.Bible requests for this month.", bundle: .module)
             case .http(let code):
-                "API.Bible returned HTTP \(code)."
+                String(localized: "API.Bible returned HTTP \(code).", bundle: .module, comment: "Error. %lld is an HTTP status code.")
             case .empty(let reference):
-                "API.Bible returned nothing for \(reference)."
+                String(localized: "API.Bible returned nothing for \(reference).", bundle: .module, comment: "Error. %@ is a passage reference, e.g. “John 3”, or “the Bible list”.")
             }
         }
     }
@@ -67,7 +67,7 @@ public struct APIBibleClient: Sendable {
 
     /// Every translation this key may read, so the reader picks from what they actually have.
     public func availableTranslations(session: URLSession = .shared) async throws -> [APIBibleTranslation] {
-        let data = try await get(Self.base.appending(path: "bibles"), session: session, reference: "the Bible list")
+        let data = try await get(Self.base.appending(path: "bibles"), session: session, reference: String(localized: "the Bible list", bundle: .module, comment: "Fills the %@ in “API.Bible returned nothing for %@.”"))
         let decoded = try JSONDecoder().decode(BiblesResponse.self, from: data)
         return decoded.data.map {
             APIBibleTranslation(id: $0.id, name: $0.name ?? $0.abbreviation ?? $0.id,

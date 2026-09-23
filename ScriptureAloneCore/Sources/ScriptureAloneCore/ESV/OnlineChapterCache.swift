@@ -40,8 +40,8 @@ public enum OnlineCacheError: Error, LocalizedError, Equatable {
 
     public var errorDescription: String? {
         switch self {
-        case .open(let message): "Couldn’t open the offline copy: \(message)"
-        case .write(let message): "Couldn’t save that chapter: \(message)"
+        case .open(let message): String(localized: "Couldn’t open the offline copy: \(message)", bundle: .module, comment: "Error. %@ is a technical error message.")
+        case .write(let message): String(localized: "Couldn’t save that chapter: \(message)", bundle: .module, comment: "Error. %@ is a technical error message.")
         }
     }
 }

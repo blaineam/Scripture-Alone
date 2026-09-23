@@ -69,7 +69,7 @@ struct ContextWhenSection: View {
                                 .font(.subheadline)
                         }
                         if time.eras.count > 1 {
-                            Text("Also spans: " + time.eras.dropFirst().map(\.name).joined(separator: ", "))
+                            Text("Also spans: \(time.eras.dropFirst().map(\.name).joined(separator: ", "))", comment: "%@ is a comma-separated list of historical eras")
                                 .font(.footnote).foregroundStyle(.secondary)
                         }
                         if let note = time.note {
@@ -96,10 +96,12 @@ struct ContextWhenSection: View {
     }
 
     private func accessibilityLabel(_ time: ChapterTime?) -> String {
-        guard let time else { return "Timeline" }
-        var parts = ["Timeline. \(time.era.name), \(time.era.dates)."]
+        guard let time else { return String(localized: "Timeline") }
+        var parts = [String(localized: "Timeline. \(time.era.name), \(time.era.dates).", comment: "Accessibility. %1$@ is a historical era's name; %2$@ is its dates.")]
         if let year = time.yearLabel {
-            parts.append(time.basis == .events ? "This chapter: \(year)." : "Written \(year).")
+            parts.append(time.basis == .events
+                         ? String(localized: "This chapter: \(year).", comment: "Accessibility. %@ is a year, e.g. “c. 1446 BC”.")
+                         : String(localized: "Written \(year).", comment: "Accessibility. %@ is a year, e.g. “c. AD 55”."))
         }
         return parts.joined(separator: " ")
     }

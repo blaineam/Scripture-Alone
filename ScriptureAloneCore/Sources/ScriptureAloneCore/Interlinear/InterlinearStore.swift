@@ -12,13 +12,12 @@ public enum InterlinearStoreError: Error, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .open(let message): "Couldn’t open the original-language data: \(message)"
-        case .query(let message): "Couldn’t read the original-language data: \(message)"
+        case .open(let message): String(localized: "Couldn’t open the original-language data: \(message)", bundle: .module, comment: "Error. %@ is a technical error message.")
+        case .query(let message): String(localized: "Couldn’t read the original-language data: \(message)", bundle: .module, comment: "Error. %@ is a technical error message.")
         case .textMismatch(let verse):
-            "The original-language data for \(verse.display) doesn’t match this text. "
-            + "Interlinear data is aligned to the Berean Standard Bible."
+            String(localized: "The original-language data for \(verse.display) doesn’t match this text. Interlinear data is aligned to the Berean Standard Bible.", bundle: .module, comment: "Error. %@ is a verse reference, e.g. “John 3:16”.")
         case .wrongTranslation(let abbreviation):
-            "Interlinear data is aligned to the Berean Standard Bible, not \(abbreviation)."
+            String(localized: "Interlinear data is aligned to the Berean Standard Bible, not \(abbreviation).", bundle: .module, comment: "Error. %@ is a translation abbreviation, e.g. “KJV”.")
         }
     }
 }

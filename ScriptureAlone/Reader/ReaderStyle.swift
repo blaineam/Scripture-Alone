@@ -40,11 +40,11 @@ enum ReaderTheme: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .system: "Auto"
-        case .light: "Light"
-        case .sepia: "Sepia"
-        case .dark: "Dark"
-        case .black: "Black"
+        case .system: String(localized: "Auto", comment: "Reader colour theme name")
+        case .light: String(localized: "Light", comment: "Reader colour theme name")
+        case .sepia: String(localized: "Sepia", comment: "Reader colour theme name")
+        case .dark: String(localized: "Dark", comment: "Reader colour theme name")
+        case .black: String(localized: "Black", comment: "Reader colour theme name")
         }
     }
 
@@ -87,13 +87,13 @@ enum ReaderAccent: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .sunrise: "Sunrise"
-        case .ember: "Ember"
-        case .olive: "Olive"
-        case .sea: "Sea"
-        case .lapis: "Lapis"
-        case .plum: "Plum"
-        case .ink: "Ink"
+        case .sunrise: String(localized: "Sunrise", comment: "Accent colour name")
+        case .ember: String(localized: "Ember", comment: "Accent colour name")
+        case .olive: String(localized: "Olive", comment: "Accent colour name")
+        case .sea: String(localized: "Sea", comment: "Accent colour name")
+        case .lapis: String(localized: "Lapis", comment: "Accent colour name")
+        case .plum: String(localized: "Plum", comment: "Accent colour name")
+        case .ink: String(localized: "Ink", comment: "Accent colour name")
         }
     }
 
@@ -198,7 +198,11 @@ enum FontFamily: String, CaseIterable, Identifiable {
 enum ReadingLayout: String, CaseIterable, Identifiable {
     case paragraphs, verses
     var id: String { rawValue }
-    var title: String { self == .paragraphs ? "Paragraphs" : "Verse by Verse" }
+    var title: String {
+        self == .paragraphs
+            ? String(localized: "Paragraphs", comment: "Reading layout: text set in paragraphs")
+            : String(localized: "Verse by Verse", comment: "Reading layout: each verse on its own line")
+    }
 }
 
 /// Everything the renderer needs to know about presentation, as one comparable value.
@@ -220,6 +224,16 @@ enum HighlightColor: String, CaseIterable, Identifiable {
     case yellow, green, blue, pink, purple
 
     var id: String { rawValue }
+
+    var name: String {
+        switch self {
+        case .yellow: String(localized: "yellow", comment: "Highlight colour, as in “Highlight yellow”")
+        case .green: String(localized: "green", comment: "Highlight colour, as in “Highlight green”")
+        case .blue: String(localized: "blue", comment: "Highlight colour, as in “Highlight blue”")
+        case .pink: String(localized: "pink", comment: "Highlight colour, as in “Highlight pink”")
+        case .purple: String(localized: "purple", comment: "Highlight colour, as in “Highlight purple”")
+        }
+    }
 
     var swatch: Color { Color(platformColor(isDark: false, alpha: 1)) }
 

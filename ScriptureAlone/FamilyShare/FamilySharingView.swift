@@ -77,7 +77,7 @@ struct FamilySharingView: View {
                 LabeledContent("Highlights", value: "\(Set(highlights.map(\.verseKey)).count)")
                 LabeledContent("Notes", value: "\(notes.count)")
                 LabeledContent("Favorites", value: "\(favorites.count)")
-                LabeledContent("Your name and dedication", value: trimmedName.isEmpty ? "Not set" : title)
+                LabeledContent("Your name and dedication", value: trimmedName.isEmpty ? String(localized: "Not set", comment: "No name or dedication has been entered") : title)
             } header: {
                 Text("What Family Will See")
             } footer: {

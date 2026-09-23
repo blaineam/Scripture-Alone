@@ -13,21 +13,21 @@ struct ContextAttributionView: View {
                 }
                 Section("Places") {
                     credit("OpenBible.info Bible Geocoding Data",
-                           detail: "Places named in the Bible, their most likely locations, confidence scores and the verses that mention them. By Stephen Smith, OpenBible.info. Licensed CC BY 4.0. Used unmodified except for choosing each place’s most confident identification.",
+                           detail: String(localized: "Places named in the Bible, their most likely locations, confidence scores and the verses that mention them. By Stephen Smith, OpenBible.info. Licensed CC BY 4.0. Used unmodified except for choosing each place’s most confident identification.", comment: "Credit for a data source in Sources & Credits"),
                            links: [("openbible.info/geo", "https://www.openbible.info/geo/"),
                                    ("CC BY 4.0", "https://creativecommons.org/licenses/by/4.0/")])
                     credit("OpenStreetMap",
-                           detail: "A few site coordinates in the OpenBible data come from OpenStreetMap. © OpenStreetMap contributors, available under the Open Database License.",
+                           detail: String(localized: "A few site coordinates in the OpenBible data come from OpenStreetMap. © OpenStreetMap contributors, available under the Open Database License.", comment: "Credit for a data source in Sources & Credits"),
                            links: [("openstreetmap.org/copyright", "https://www.openstreetmap.org/copyright")])
                 }
                 Section("Base map") {
                     credit("Natural Earth",
-                           detail: "Coastlines, land, lakes and rivers at 1:10 million, clipped to the lands of the Bible and simplified. Public domain. Modern reservoirs and canals are left out.",
+                           detail: String(localized: "Coastlines, land, lakes and rivers at 1:10 million, clipped to the lands of the Bible and simplified. Public domain. Modern reservoirs and canals are left out.", comment: "Credit for a data source in Sources & Credits"),
                            links: [("naturalearthdata.com", "https://www.naturalearthdata.com")])
                 }
                 Section("Timeline and charts") {
-                    credit("Written for Scripture Alone",
-                           detail: "Eras, events, and the kings, journeys, tribes and feasts charts were compiled for this app from the biblical text and standard chronologies. Many dates are approximate and some are disputed; the app notes where.",
+                    credit(String(localized: "Written for Scripture Alone", comment: "Credit for a data source in Sources & Credits"),
+                           detail: String(localized: "Eras, events, and the kings, journeys, tribes and feasts charts were compiled for this app from the biblical text and standard chronologies. Many dates are approximate and some are disputed; the app notes where.", comment: "Credit for a data source in Sources & Credits"),
                            links: [])
                     VStack(alignment: .leading, spacing: 6) {
                         ForEach(Self.chronologies, id: \.self) { Text($0).font(.footnote) }

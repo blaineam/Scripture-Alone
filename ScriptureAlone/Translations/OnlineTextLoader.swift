@@ -19,12 +19,12 @@ struct OnlineTextLoader {
             case .needsKey(let provider):
                 switch provider {
                 case .crossway:
-                    "Add your free Crossway key in Manage Translations to read the ESV."
+                    String(localized: "Add your free Crossway key in Manage Translations to read the ESV.", comment: "“Manage Translations” is the name of a screen in the app.")
                 case .apiBible:
-                    "Add your free API.Bible key in Manage Translations to read this translation."
+                    String(localized: "Add your free API.Bible key in Manage Translations to read this translation.", comment: "“Manage Translations” is the name of a screen in the app.")
                 }
             case .unsupported(let name):
-                "\(name) can't be read yet."
+                String(localized: "\(name) can't be read yet.", comment: "%@ is a Bible translation name.")
             }
         }
     }

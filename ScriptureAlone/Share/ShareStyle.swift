@@ -9,14 +9,14 @@ enum ShareTemplate: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .parchment: "Parchment"
-        case .ink: "Ink"
-        case .dawn: "Dawn"
-        case .night: "Night"
-        case .linen: "Linen"
-        case .stone: "Stone"
-        case .olive: "Olive"
-        case .minimal: "Minimal"
+        case .parchment: String(localized: "Parchment", comment: "Name of a share-card design")
+        case .ink: String(localized: "Ink", comment: "Name of a share-card design")
+        case .dawn: String(localized: "Dawn", comment: "Name of a share-card design")
+        case .night: String(localized: "Night", comment: "Name of a share-card design")
+        case .linen: String(localized: "Linen", comment: "Name of a share-card design")
+        case .stone: String(localized: "Stone", comment: "Name of a share-card design")
+        case .olive: String(localized: "Olive", comment: "Name of a share-card design")
+        case .minimal: String(localized: "Minimal", comment: "Name of a share-card design")
         }
     }
 
@@ -93,9 +93,9 @@ enum ShareAspect: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .square: "Square"
-        case .story: "Story"
-        case .wide: "Wide"
+        case .square: String(localized: "Square", comment: "Share-card shape")
+        case .story: String(localized: "Story", comment: "Share-card shape")
+        case .wide: String(localized: "Wide", comment: "Share-card shape")
         }
     }
 
@@ -113,7 +113,9 @@ enum ShareAlignment: String, CaseIterable, Identifiable {
     case leading, center
 
     var id: String { rawValue }
-    var title: String { self == .leading ? "Left" : "Centered" }
+    var title: String {
+        self == .leading ? String(localized: "Left", comment: "Text alignment") : String(localized: "Centered", comment: "Text alignment")
+    }
     var textAlignment: TextAlignment { self == .leading ? .leading : .center }
     var horizontal: HorizontalAlignment { self == .leading ? .leading : .center }
     var frameAlignment: Alignment { self == .leading ? .leading : .center }

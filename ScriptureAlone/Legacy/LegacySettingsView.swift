@@ -100,8 +100,8 @@ struct LegacySettingsView: View {
                 } header: {
                     Text("Coming From Somewhere Else")
                 } footer: {
-                    Text("If you've been reading in Life Bible — the app formerly called Tecarta "
-                         + "Bible — your notes, highlights and saved verses can come with you.")
+                    Text("If you've been reading in Life Bible — the app formerly called Tecarta Bible — your notes, highlights and saved verses can come with you.",
+                         comment: "“Life Bible” and “Tecarta Bible” are app names.")
                 }
 
                 Section {
@@ -118,7 +118,7 @@ struct LegacySettingsView: View {
                 } footer: {
                     Text(model.rights.allowNotesExport
                          ? "Your notes as a PDF to print or keep, as Markdown, or as plain text — with the verses they’re about."
-                         : "\(model.translationInfo?.abbreviation ?? "This translation") doesn’t allow its text to be exported. Switch to another translation to export your notes with the verses they’re about.")
+                         : "\(model.translationInfo?.abbreviation ?? String(localized: "This translation", comment: "Stands in for a translation's abbreviation in “%@ doesn’t allow its text to be exported.”")) doesn’t allow its text to be exported. Switch to another translation to export your notes with the verses they’re about.")
                 }
 
                 Section("How This Works") {
@@ -145,9 +145,10 @@ struct LegacySettingsView: View {
             }
             .sheet(isPresented: $importingLifeBible) { LifeBibleImportView() }
             .sheet(isPresented: $exportingNotes) {
-                NotesExportSheet(notes: notes.map(\.exportValue).canonicallySorted, title: "Notes")
+                NotesExportSheet(notes: notes.map(\.exportValue).canonicallySorted, title: String(localized: "Notes", comment: "Heading of an exported notes document"))
             }
-            .confirmationDialog("Remove \(pendingRemoval?.title ?? "this keepsake")?",
+            .confirmationDialog(pendingRemoval.map { String(localized: "Remove \($0.title)?", comment: "%@ is the title of a keepsake or shared Bible") }
+                                ?? String(localized: "Remove this keepsake?"),
                                 isPresented: Binding(get: { pendingRemoval != nil }, set: { if !$0 { pendingRemoval = nil } }),
                                 titleVisibility: .visible, presenting: pendingRemoval) { entry in
                 Button("Remove from This Device", role: .destructive) {
@@ -196,9 +197,10 @@ private struct KeepsakeRow: View {
     private var detail: String {
         var parts: [String] = []
         if let counts = entry.manifest.counts {
-            parts.append("\(counts.highlights) highlights · \(counts.notes) notes")
+            parts.append(String(localized: "\(counts.highlights) highlights · \(counts.notes) notes", comment: "Keepsake contents. %1$lld is a number of highlights; %2$lld a number of notes."))
         }
-        parts.append("made \(entry.manifest.createdAt.formatted(date: .abbreviated, time: .omitted))")
+        let made = entry.manifest.createdAt.formatted(date: .abbreviated, time: .omitted)
+        parts.append(String(localized: "made \(made)", comment: "When a keepsake was made. %@ is a date."))
         return parts.joined(separator: " · ")
     }
 }

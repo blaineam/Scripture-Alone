@@ -61,7 +61,7 @@ final class Note {
     var displayTitle: String {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmed.isEmpty { return trimmed }
-        return anchors.first?.display ?? "Untitled Note"
+        return anchors.first?.display ?? String(localized: "Untitled Note")
     }
 
     var anchorSummary: String { anchors.map(\.display).joined(separator: " · ") }

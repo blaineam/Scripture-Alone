@@ -100,6 +100,14 @@ struct KingsChartView: View {
     enum Kingdom: String, CaseIterable, Identifiable {
         case united = "United", israel = "Israel (north)", judah = "Judah (south)"
         var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .united: String(localized: "United Kingdom", comment: "The united monarchy of Israel under Saul, David and Solomon")
+            case .israel: String(localized: "Israel (north)", comment: "The northern kingdom")
+            case .judah: String(localized: "Judah (south)", comment: "The southern kingdom")
+            }
+        }
     }
 
     var body: some View {
@@ -150,11 +158,11 @@ struct KingsChartView: View {
         }
         let here = current(in: kings)
         return VStack(alignment: .leading, spacing: 8) {
-            Text(kingdom == .united ? "United Kingdom" : kingdom.rawValue)
+            Text(kingdom.title)
                 .font(.headline)
                 .accessibilityAddTraits(.isHeader)
             ForEach(kings) { king in
-                KingRow(king: king, kingdom: kingdom == .united ? "Israel" : kingdom == .israel ? "Israel" : "Judah",
+                KingRow(king: king, kingdom: kingdom == .judah ? String(localized: "Judah", comment: "The southern kingdom") : String(localized: "Israel", comment: "The kingdom of Israel"),
                         isCurrent: king.id == here?.id)
             }
         }
@@ -173,9 +181,9 @@ struct KingsChartView: View {
 
     static func title(_ verdict: KingsChart.King.Verdict) -> String {
         switch verdict {
-        case .good: "Did right"
-        case .evil: "Did evil"
-        case .mixed: "Mixed"
+        case .good: String(localized: "Did right", comment: "Verdict on a king of Israel or Judah")
+        case .evil: String(localized: "Did evil", comment: "Verdict on a king of Israel or Judah")
+        case .mixed: String(localized: "Mixed", comment: "Verdict on a king of Israel or Judah")
         }
     }
 
@@ -243,14 +251,17 @@ private struct KingRow: View {
     }
 
     private var yearsText: String {
-        Int(king.years) != nil ? "\(king.years) years" : king.years
+        Int(king.years).map { String(localized: "\($0) years", comment: "How long a king reigned. %lld is a number of years.") } ?? king.years
     }
 
     private var accessibilityText: String {
-        var parts = ["\(king.name), \(kingdom), \(king.reign), \(yearsText). \(KingsChartView.title(king.verdict))."]
-        if let prophets = king.prophets, !prophets.isEmpty { parts.append("Prophets: \(prophets.joined(separator: ", ")).") }
+        var parts = [String(localized: "\(king.name), \(kingdom), \(king.reign), \(yearsText). \(KingsChartView.title(king.verdict)).", comment: "Accessibility for a king. %1$@ name, %2$@ kingdom, %3$@ reign dates, %4$@ length of reign, %5$@ verdict (e.g. “Did right”).")]
+        if let prophets = king.prophets, !prophets.isEmpty {
+            let names = prophets.joined(separator: ", ")
+            parts.append(String(localized: "Prophets: \(names).", comment: "Accessibility. %@ is a comma-separated list of prophets' names."))
+        }
         if let note = king.note { parts.append(note) }
-        if isCurrent { parts.append("The chapter you are reading.") }
+        if isCurrent { parts.append(String(localized: "The chapter you are reading.")) }
         return parts.joined(separator: " ")
     }
 }
@@ -314,10 +325,10 @@ struct JourneysChartView: View {
 
     private func short(_ journey: JourneysChart.Journey) -> String {
         switch journey.id {
-        case "first": "1st"
-        case "second": "2nd"
-        case "third": "3rd"
-        default: "Rome"
+        case "first": String(localized: "1st", comment: "Short name of one of Paul's missionary journeys")
+        case "second": String(localized: "2nd", comment: "Short name of one of Paul's missionary journeys")
+        case "third": String(localized: "3rd", comment: "Short name of one of Paul's missionary journeys")
+        default: String(localized: "Rome", comment: "Short name of one of Paul's missionary journeys")
         }
     }
 
@@ -395,10 +406,10 @@ private struct TribeCard: View {
     }
 
     @ViewBuilder private var links: some View {
-        ReferenceButton(range: tribe.birth.range, label: "Birth")
-        ReferenceButton(range: tribe.jacob.range, label: "Jacob’s blessing")
-        if let moses = tribe.moses { ReferenceButton(range: moses.range, label: "Moses’ blessing") }
-        ReferenceButton(range: tribe.allotment.range, label: tribe.name == "Levi" ? "Cities" : "Land")
+        ReferenceButton(range: tribe.birth.range, label: String(localized: "Birth", comment: "Link to the passage recording a tribe's founder's birth"))
+        ReferenceButton(range: tribe.jacob.range, label: String(localized: "Jacob’s blessing"))
+        if let moses = tribe.moses { ReferenceButton(range: moses.range, label: String(localized: "Moses’ blessing")) }
+        ReferenceButton(range: tribe.allotment.range, label: tribe.name == "Levi" ? String(localized: "Cities", comment: "Link to the passage allotting the Levites' cities") : String(localized: "Land", comment: "Link to the passage allotting a tribe's land"))
     }
 }
 
@@ -422,8 +433,8 @@ struct FeastsChartView: View {
         let spring = chart.feasts.filter { $0.later != true && ($0.season.hasPrefix("March") || $0.season.hasPrefix("May")) }
         let autumn = chart.feasts.filter { $0.later != true && $0.season.hasPrefix("September") }
         return HStack(alignment: .top, spacing: 12) {
-            seasonColumn("Spring", feasts: spring, color: Color(contextHex: "#3F8F6B"))
-            seasonColumn("Autumn", feasts: autumn, color: Color(contextHex: "#C9862B"))
+            seasonColumn(String(localized: "Spring", comment: "Season"), feasts: spring, color: Color(contextHex: "#3F8F6B"))
+            seasonColumn(String(localized: "Autumn", comment: "Season"), feasts: autumn, color: Color(contextHex: "#C9862B"))
         }
     }
 
@@ -459,8 +470,8 @@ private struct FeastCard: View {
                 Text("· \(feast.season)").font(.caption).foregroundStyle(.secondary)
             }
             HStack(spacing: 6) {
-                if feast.pilgrim == true { Tag(text: "Pilgrim feast") }
-                if feast.later == true { Tag(text: "Later feast") }
+                if feast.pilgrim == true { Tag(text: String(localized: "Pilgrim feast", comment: "One of the three feasts every man went to Jerusalem for")) }
+                if feast.later == true { Tag(text: String(localized: "Later feast", comment: "A feast instituted after the Law, e.g. Purim")) }
             }
             Text(feast.meaning).font(.subheadline)
             HStack(spacing: 10) {

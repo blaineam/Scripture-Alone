@@ -56,10 +56,10 @@ struct NowPlayingBar: View {
     private var status: String {
         switch listen.phase {
         case .preparing(let message): return message
-        case .paused: return "Paused"
+        case .paused: return String(localized: "Paused", comment: "Read-aloud status")
         case .playing, .idle:
-            let voice = listen.engine == .miSpeaks ? "Mi Speaks" : (voices.first { $0.id == listen.voiceID }?.name ?? "System Voice")
-            return "\(voice) · \(Self.speedLabel(listen.speed))"
+            let voice = listen.engine == .miSpeaks ? "Mi Speaks" : (voices.first { $0.id == listen.voiceID }?.name ?? String(localized: "System Voice", comment: "Read-aloud engine using the device's built-in voices"))
+            return String(localized: "\(voice) · \(Self.speedLabel(listen.speed))", comment: "Read-aloud status. %1$@ is a voice name; %2$@ is the speed, e.g. “1×”.")
         }
     }
 
@@ -162,7 +162,7 @@ struct NowPlayingBar: View {
                         voices = await SpeechVoices.available()
                         if let personal = voices.first(where: { $0.kind == .personal }) { listen.voiceID = personal.id }
                     } else {
-                        listen.notice = "Personal Voice wasn’t allowed. You can change this in Settings › Accessibility › Personal Voice."
+                        listen.notice = String(localized: "Personal Voice wasn’t allowed. You can change this in Settings › Accessibility › Personal Voice.", comment: "“Settings › Accessibility › Personal Voice” should match the system Settings app's menu names.")
                     }
                 }
             } label: {

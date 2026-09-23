@@ -145,7 +145,7 @@ struct PassagePicker: View {
         }
     }
 
-    private func booksSection(title: String, books: [BookID]) -> some View {
+    private func booksSection(title: LocalizedStringKey, books: [BookID]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title).font(.headline)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 86), spacing: 8)], spacing: 8) {
@@ -185,7 +185,7 @@ struct PassagePicker: View {
         }
         if !results.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
-                Text(results.count >= 300 ? "300+ verses" : "\(results.count) verse\(results.count == 1 ? "" : "s")")
+                Text(results.count >= 300 ? "300+ verses" : "\(results.count) verses")
                     .font(.headline)
                     .padding(.bottom, 8)
                 LazyVStack(alignment: .leading, spacing: 0) {

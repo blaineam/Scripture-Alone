@@ -146,8 +146,8 @@ enum AssetPack: String, CaseIterable, Sendable {
         case .asv: "American Standard Version"
         case .bsb: "Berean Standard Bible"
         case .kjv: "King James Version"
-        case .commentary: "Commentary"
-        case .interlinear: "Original Languages"
+        case .commentary: String(localized: "Commentary", comment: "Name of a downloadable pack of Bible commentaries")
+        case .interlinear: String(localized: "Original Languages", comment: "Name of a downloadable pack of Hebrew and Greek word data")
         // A Bible's own name, in its own language, as its readers know it.
         case .cuvs: "和合本（新标点）"
         case .bungo: "文語訳聖書"
@@ -183,12 +183,11 @@ enum AssetPack: String, CaseIterable, Sendable {
     var explanation: String {
         switch self {
         case .commentary:
-            "Calvin, Gill and Jamieson-Fausset-Brown — about \(megabytes) MB, downloaded once and kept."
+            String(localized: "Calvin, Gill and Jamieson-Fausset-Brown — about \(megabytes) MB, downloaded once and kept.", comment: "Describes the commentary download; the names are commentators. %lld is a size in megabytes.")
         case .interlinear:
-            "The Hebrew and Greek behind every word, with a lexicon — about \(megabytes) MB, "
-                + "downloaded once and kept."
+            String(localized: "The Hebrew and Greek behind every word, with a lexicon — about \(megabytes) MB, downloaded once and kept.", comment: "%lld is a size in megabytes.")
         default:
-            "About \(megabytes) MB, downloaded once and kept for reading offline."
+            String(localized: "About \(megabytes) MB, downloaded once and kept for reading offline.", comment: "Describes a Bible download. %lld is a size in megabytes.")
         }
     }
 }
@@ -342,7 +341,7 @@ final class AssetLibrary {
         // The pack isn't on App Store Connect for this build — the one failure a reader can do
         // nothing about, so it says so rather than offering a retry that cannot succeed.
         if case ManagedBackgroundAssetsError.assetPackNotFound = error {
-            return "\(pack.title) isn't available for this version of the app yet."
+            return String(localized: "\(pack.title) isn't available for this version of the app yet.", comment: "%@ is the name of a download, e.g. a Bible translation or “Commentary”.")
         }
         // Reachability comes through as a URL error, not a Background Assets one; `BAError`'s own
         // codes are all about scheduling and allowances, none of which a reader can act on.
@@ -350,8 +349,8 @@ final class AssetLibrary {
         if nsError.domain == NSURLErrorDomain,
            [NSURLErrorNotConnectedToInternet, NSURLErrorNetworkConnectionLost,
             NSURLErrorTimedOut].contains(nsError.code) {
-            return "\(pack.title) needs a connection to download."
+            return String(localized: "\(pack.title) needs a connection to download.", comment: "%@ is the name of a download, e.g. a Bible translation or “Commentary”.")
         }
-        return "\(pack.title) couldn't be downloaded. \(error.localizedDescription)"
+        return String(localized: "\(pack.title) couldn't be downloaded. \(error.localizedDescription)", comment: "%1$@ is the name of a download; %2$@ is an error message.")
     }
 }

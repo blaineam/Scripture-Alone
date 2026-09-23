@@ -37,10 +37,10 @@ public struct CatalogTranslation: Identifiable, Hashable, Sendable {
     /// Whole-Bible translations say so; the rest are mostly New Testaments.
     public var scope: String {
         switch (otBooks, ntBooks) {
-        case (39..., 27...): "Complete Bible"
-        case (0, 1...): "New Testament"
-        case (1..., 0): "Old Testament"
-        default: "\(bookCount) book\(bookCount == 1 ? "" : "s")"
+        case (39..., 27...): String(localized: "Complete Bible", bundle: .module, comment: "Scope of a downloadable translation")
+        case (0, 1...): String(localized: "New Testament", bundle: .module, comment: "Scope of a downloadable translation")
+        case (1..., 0): String(localized: "Old Testament", bundle: .module, comment: "Scope of a downloadable translation")
+        default: String(localized: "\(bookCount) books", bundle: .module, comment: "Scope of a downloadable translation. %lld is the number of books of the Bible it contains.")
         }
     }
 
@@ -63,9 +63,9 @@ public struct EBibleCatalog: Sendable {
         public var errorDescription: String? {
             switch self {
             case .http(let code):
-                "eBible.org couldn't be reached (HTTP \(code)). Try again later."
+                String(localized: "eBible.org couldn't be reached (HTTP \(code)). Try again later.", bundle: .module, comment: "Error. %lld is an HTTP status code.")
             case .malformed(let what):
-                "eBible.org's catalogue couldn't be read (\(what))."
+                String(localized: "eBible.org's catalogue couldn't be read (\(what)).", bundle: .module, comment: "Error. %@ is a technical detail.")
             }
         }
     }

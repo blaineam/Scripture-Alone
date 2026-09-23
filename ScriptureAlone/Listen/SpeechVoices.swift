@@ -12,8 +12,8 @@ enum ListenEngine: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .system: "System Voice"
-        case .miSpeaks: "Mi Speaks Studio"
+        case .system: String(localized: "System Voice", comment: "Read-aloud engine using the device's built-in voices")
+        case .miSpeaks: String(localized: "Mi Speaks Studio", comment: "Read-aloud engine. “Mi Speaks” is an app name; do not translate it.")
         }
     }
 }
@@ -26,11 +26,11 @@ enum SleepTimer: Hashable, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .off: "Off"
-        case .minutes15: "15 Minutes"
-        case .minutes30: "30 Minutes"
-        case .minutes60: "1 Hour"
-        case .endOfChapter: "End of Chapter"
+        case .off: String(localized: "Off", comment: "Sleep timer option")
+        case .minutes15: String(localized: "15 Minutes", comment: "Sleep timer option")
+        case .minutes30: String(localized: "30 Minutes", comment: "Sleep timer option")
+        case .minutes60: String(localized: "1 Hour", comment: "Sleep timer option")
+        case .endOfChapter: String(localized: "End of Chapter", comment: "Sleep timer option")
         }
     }
 
@@ -58,9 +58,9 @@ nonisolated struct VoiceOption: Identifiable, Hashable, Sendable {
 
     var badge: String? {
         switch kind {
-        case .personal: "Personal Voice"
-        case .premium: "Premium"
-        case .enhanced: "Enhanced"
+        case .personal: String(localized: "Personal Voice", comment: "Kind of system voice (Apple's Personal Voice feature)")
+        case .premium: String(localized: "Premium", comment: "Quality tier of a system voice")
+        case .enhanced: String(localized: "Enhanced", comment: "Quality tier of a system voice")
         case .standard: nil
         }
     }
@@ -68,8 +68,10 @@ nonisolated struct VoiceOption: Identifiable, Hashable, Sendable {
     /// "Ava (Premium) · United States"
     var title: String {
         let region = Locale.current.localizedString(forIdentifier: language) ?? language
-        if let badge { return "\(name) (\(badge)) · \(region)" }
-        return "\(name) · \(region)"
+        if let badge {
+            return String(localized: "\(name) (\(badge)) · \(region)", comment: "A voice in the picker. %1$@ voice name, %2$@ quality (e.g. “Premium”), %3$@ language and region.")
+        }
+        return String(localized: "\(name) · \(region)", comment: "A voice in the picker. %1$@ voice name, %2$@ language and region.")
     }
 }
 

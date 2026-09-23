@@ -71,7 +71,7 @@ struct CompareView: View {
             HStack(spacing: 4) {
                 Text(model.translationID).font(.subheadline.weight(.semibold))
                 Image(systemName: "arrow.left.arrow.right").font(.caption)
-                Text(otherID.isEmpty ? "Choose" : otherID).font(.subheadline.weight(.semibold))
+                Text(otherID.isEmpty ? String(localized: "Choose", comment: "Button: choose a second translation to compare") : otherID).font(.subheadline.weight(.semibold))
             }
         }
     }
@@ -133,7 +133,7 @@ struct CompareView: View {
         } else {
             right = model.source(for: otherID)
         }
-        guard let right else { failure = "That translation isn't available."; rows = []; return }
+        guard let right else { failure = String(localized: "That translation isn't available."); rows = []; return }
 
         // The chapter on screen by its own numbers; the other side by the KJV keys those verses hold,
         // which for a translation that numbers differently can reach into a neighbouring chapter.

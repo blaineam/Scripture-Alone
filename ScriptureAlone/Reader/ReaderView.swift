@@ -331,7 +331,8 @@ struct ReaderView: View {
     private var autoScrollControl: some View {
         Menu {
             Section("Speed") {
-                ForEach([("Slow", 16.0), ("Relaxed", 28.0), ("Steady", 44.0), ("Brisk", 64.0)], id: \.1) { name, speed in
+                ForEach([(String(localized: "Slow", comment: "Auto-scroll speed"), 16.0), (String(localized: "Relaxed", comment: "Auto-scroll speed"), 28.0),
+                         (String(localized: "Steady", comment: "Auto-scroll speed"), 44.0), (String(localized: "Brisk", comment: "Auto-scroll speed"), 64.0)], id: \.1) { name, speed in
                     Button {
                         autoScrollSpeed = speed
                         autoScrolling = true

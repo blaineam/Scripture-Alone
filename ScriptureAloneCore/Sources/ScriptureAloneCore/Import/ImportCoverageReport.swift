@@ -61,8 +61,10 @@ public struct ImportCoverageReport: Sendable, Hashable, Codable {
     public var summary: String {
         let books = booksFound.count
         let percent = Int((completeness * 100).rounded())
-        if isWholeBible { return "All 66 books, \(totalChapters) chapters, \(totalVerses) verses." }
-        return "\(books) book\(books == 1 ? "" : "s"), \(totalChapters) chapters, \(totalVerses) verses — \(percent)% of the canon."
+        if isWholeBible {
+            return String(localized: "All 66 books, \(totalChapters) chapters, \(totalVerses) verses.", bundle: .module, comment: "Import summary. The numbers are chapter and verse counts.")
+        }
+        return String(localized: "\(books) books, \(totalChapters) chapters, \(totalVerses) verses — \(percent)% of the canon.", bundle: .module, comment: "Import summary. The numbers are book, chapter and verse counts, then a percentage.")
     }
 
     /// Short lines describing everything incomplete, worst first.
@@ -72,25 +74,31 @@ public struct ImportCoverageReport: Sendable, Hashable, Codable {
             let names = booksMissing.map(\.name)
             let shown = names.prefix(6).joined(separator: ", ")
             lines.append(booksMissing.count > 6
-                         ? "\(booksMissing.count) books are missing, including \(shown)."
-                         : "Missing: \(shown).")
+                         ? String(localized: "\(booksMissing.count) books are missing, including \(shown).", bundle: .module, comment: "Import problem. %lld is a number of books; %@ is a comma-separated list of book names.")
+                         : String(localized: "Missing: \(shown).", bundle: .module, comment: "Import problem. %@ is a comma-separated list of book names."))
         }
         for book in books where !book.isComplete {
             if !book.missingChapters.isEmpty {
-                lines.append("\(book.name): \(book.chaptersFound) of \(book.chaptersExpected) chapters "
-                             + "(missing \(Self.condense(book.missingChapters))).")
+                let missing = Self.condense(book.missingChapters)
+                lines.append(String(localized: "\(book.name): \(book.chaptersFound) of \(book.chaptersExpected) chapters (missing \(missing)).", bundle: .module, comment: "Import problem. %1$@ is a book name; then chapters found and expected; %4$@ is a list of chapter numbers like “1–3, 7”."))
             }
             if !book.unexpectedChapters.isEmpty {
-                lines.append("\(book.name): unexpected chapter\(book.unexpectedChapters.count == 1 ? "" : "s") "
-                             + Self.condense(book.unexpectedChapters) + ".")
+                let unexpected = Self.condense(book.unexpectedChapters)
+                lines.append(book.unexpectedChapters.count == 1
+                             ? String(localized: "\(book.name): unexpected chapter \(unexpected).", bundle: .module, comment: "Import problem. %1$@ is a book name; %2$@ is a chapter number.")
+                             : String(localized: "\(book.name): unexpected chapters \(unexpected).", bundle: .module, comment: "Import problem. %1$@ is a book name; %2$@ is a list of chapter numbers like “1–3, 7”."))
             }
             for chapter in book.chaptersWithGaps {
                 if !chapter.missingVerses.isEmpty {
-                    lines.append("\(book.book.name) \(chapter.chapter): missing verse\(chapter.missingVerses.count == 1 ? "" : "s") "
-                                 + Self.condense(chapter.missingVerses) + ".")
+                    let place = "\(book.book.name) \(chapter.chapter)"
+                    let missing = Self.condense(chapter.missingVerses)
+                    lines.append(chapter.missingVerses.count == 1
+                                 ? String(localized: "\(place): missing verse \(missing).", bundle: .module, comment: "Import problem. %1$@ is a chapter reference, e.g. “John 3”; %2$@ is a verse number.")
+                                 : String(localized: "\(place): missing verses \(missing).", bundle: .module, comment: "Import problem. %1$@ is a chapter reference, e.g. “John 3”; %2$@ is a list of verse numbers like “1–3, 7”."))
                 }
                 if chapter.outOfOrder {
-                    lines.append("\(book.book.name) \(chapter.chapter): verse numbers ran out of order.")
+                    let place = "\(book.book.name) \(chapter.chapter)"
+                    lines.append(String(localized: "\(place): verse numbers ran out of order.", bundle: .module, comment: "Import problem. %@ is a chapter reference, e.g. “John 3”."))
                 }
             }
         }

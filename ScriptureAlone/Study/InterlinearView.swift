@@ -187,7 +187,7 @@ struct InterlinearView: View {
             if case .failed(let message) = AssetLibrary.shared.state(of: .interlinear) {
                 failure = message
             } else {
-                failure = "The original-language data isn't available yet."
+                failure = String(localized: "The original-language data isn't available yet.")
             }
             return
         }
@@ -197,7 +197,7 @@ struct InterlinearView: View {
             // not change with the English in front of them — only the word-by-word alignment
             // does, and that is what `glossText` supplies.
             words = try store.words(for: verse, in: glossText ?? verseText)
-            if words.isEmpty { failure = "This verse has no original-language data." }
+            if words.isEmpty { failure = String(localized: "This verse has no original-language data.") }
         } catch {
             failure = error.localizedDescription
         }

@@ -61,7 +61,7 @@ enum PhotoSaver {
     enum Failure: LocalizedError {
         case denied
         var errorDescription: String? {
-            "Scripture Alone can’t add to your photo library. Allow it in Settings › Privacy & Security › Photos."
+            String(localized: "Scripture Alone can’t add to your photo library. Allow it in Settings › Privacy & Security › Photos.", comment: "“Settings › Privacy & Security › Photos” should match the system Settings app's menu names.")
         }
     }
 

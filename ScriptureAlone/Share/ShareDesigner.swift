@@ -226,7 +226,7 @@ struct ShareDesigner: View {
                         .buttonStyle(.glass)
                     Button {
                         SharePasteboard.copy(link)
-                        flash("Link copied")
+                        flash(String(localized: "Link copied"))
                     } label: {
                         Label("Copy Link", systemImage: "doc.on.doc").frame(maxWidth: .infinity)
                     }
@@ -284,7 +284,7 @@ struct ShareDesigner: View {
         Task {
             do {
                 try await PhotoSaver.save(png)
-                flash("Saved to Photos")
+                flash(String(localized: "Saved to Photos"))
             } catch {
                 flash(error.localizedDescription)
             }

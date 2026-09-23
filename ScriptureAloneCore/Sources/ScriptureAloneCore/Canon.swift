@@ -126,15 +126,15 @@ public enum BookGroup: String, Sendable, CaseIterable {
 
     public var title: String {
         switch self {
-        case .law: "Law"
-        case .history: "History"
-        case .wisdom: "Wisdom & Poetry"
-        case .majorProphets: "Major Prophets"
-        case .minorProphets: "Minor Prophets"
-        case .gospels: "Gospels"
-        case .paul: "Paul’s Letters"
-        case .general: "General Letters"
-        case .prophecy: "Prophecy"
+        case .law: String(localized: "Law", bundle: .module, comment: "Section heading grouping books of the Bible")
+        case .history: String(localized: "History", bundle: .module, comment: "Section heading grouping books of the Bible")
+        case .wisdom: String(localized: "Wisdom & Poetry", bundle: .module, comment: "Section heading grouping books of the Bible")
+        case .majorProphets: String(localized: "Major Prophets", bundle: .module, comment: "Section heading grouping books of the Bible")
+        case .minorProphets: String(localized: "Minor Prophets", bundle: .module, comment: "Section heading grouping books of the Bible")
+        case .gospels: String(localized: "Gospels", bundle: .module, comment: "Section heading grouping books of the Bible")
+        case .paul: String(localized: "Paul’s Letters", bundle: .module, comment: "Section heading grouping books of the Bible")
+        case .general: String(localized: "General Letters", bundle: .module, comment: "Section heading grouping books of the Bible")
+        case .prophecy: String(localized: "Prophecy", bundle: .module, comment: "Section heading grouping books of the Bible")
         }
     }
 }

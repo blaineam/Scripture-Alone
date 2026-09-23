@@ -18,6 +18,14 @@ struct NotesPanel: View {
     enum Scope: String, CaseIterable, Identifiable {
         case all = "All Notes", chapter = "This Chapter", favorites = "Favorites"
         var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .all: String(localized: "All Notes", comment: "Notes list filter")
+            case .chapter: String(localized: "This Chapter", comment: "Notes list filter")
+            case .favorites: String(localized: "Favorites", comment: "Notes list filter")
+            }
+        }
     }
 
     private var filtered: [Note] {
@@ -42,7 +50,7 @@ struct NotesPanel: View {
         NavigationStack(path: $path) {
             List {
                 Picker("Show", selection: $scope) {
-                    ForEach(Scope.allCases) { Text($0.rawValue).tag($0) }
+                    ForEach(Scope.allCases) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.segmented)
                 .listRowSeparator(.hidden)
@@ -98,7 +106,7 @@ struct NotesPanel: View {
                 }
             }
             .sheet(item: $exportSelection) { selection in
-                NotesExportSheet(notes: selection.notes, title: selection.notes.count == 1 ? selection.notes[0].displayTitle : "Notes")
+                NotesExportSheet(notes: selection.notes, title: selection.notes.count == 1 ? selection.notes[0].displayTitle : String(localized: "Notes", comment: "Heading of an exported notes document"))
             }
             .sheet(isPresented: $showLegacy) {
                 LegacySettingsView()

@@ -30,13 +30,13 @@ enum DemoLibrary {
         context.insert(Highlight(verseKey: VerseRef(.philippians, 4, 13).key, color: .blue))
         context.insert(Highlight(verseKey: VerseRef(.psalms, 23, 1).key, color: .green))
         context.insert(Highlight(verseKey: VerseRef(.john, 14, 6).key, color: .purple))
-        let romans = Note(title: "Sunday sermon: No condemnation",
-                          body: "Life in the Spirit. Verse 1 is the hinge — everything after it flows from “no condemnation.”",
+        let romans = Note(title: String(localized: "Sunday sermon: No condemnation", comment: "Sample note shown in App Store screenshots (demo mode)"),
+                          body: String(localized: "Life in the Spirit. Verse 1 is the hinge — everything after it flows from “no condemnation.”", comment: "Sample note shown in App Store screenshots (demo mode)"),
                           anchors: [VerseRange(VerseRef(.romans, 8, 1), VerseRef(.romans, 8, 17))])
         romans.updatedAt = now.addingTimeInterval(-86_400 * 7)
         context.insert(romans)
-        let nicodemus = Note(title: "Evening sermon: Born of the Spirit",
-                             body: "• Nicodemus comes by night (v. 2)\n• “You must be born anew” — the Spirit’s work, not ours\n• The serpent in the wilderness points to the cross (Numbers 21:8–9)",
+        let nicodemus = Note(title: String(localized: "Evening sermon: Born of the Spirit", comment: "Sample note shown in App Store screenshots (demo mode)"),
+                             body: String(localized: "• Nicodemus comes by night (v. 2)\n• “You must be born anew” — the Spirit’s work, not ours\n• The serpent in the wilderness points to the cross (Numbers 21:8–9)", comment: "Sample note shown in App Store screenshots (demo mode)"),
                              anchors: [VerseRange(VerseRef(.john, 3, 1), VerseRef(.john, 3, 21)),
                                        VerseRange(VerseRef(.numbers, 21, 4), VerseRef(.numbers, 21, 9))],
                              origin: "camera")

@@ -9,17 +9,17 @@ enum StudyTab: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .crossReferences: "Cross References"
-        case .commentary: "Commentary"
-        case .context: "Context"
+        case .crossReferences: String(localized: "Cross References", comment: "Study panel tab")
+        case .commentary: String(localized: "Commentary", comment: "Study panel tab")
+        case .context: String(localized: "Context", comment: "Study panel tab")
         }
     }
 
     var shortTitle: String {
         switch self {
-        case .crossReferences: "References"
-        case .commentary: "Commentary"
-        case .context: "Context"
+        case .crossReferences: String(localized: "References", comment: "Study panel tab, short form for narrow screens")
+        case .commentary: String(localized: "Commentary", comment: "Study panel tab, short form for narrow screens")
+        case .context: String(localized: "Context", comment: "Study panel tab, short form for narrow screens")
         }
     }
 

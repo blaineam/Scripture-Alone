@@ -30,16 +30,16 @@ public enum BibleImportError: Error, LocalizedError, Equatable, Sendable {
 
     public var errorDescription: String? {
         switch self {
-        case .unreadableFile(let message): "Couldn’t read that file: \(message)"
-        case .notAZipArchive: "That file isn’t an ePub — it isn’t a ZIP container."
-        case .damagedArchive(let message): "That ePub is damaged: \(message)"
-        case .entryTooLarge(let name): "That ePub contains an implausibly large file (\(name))."
-        case .notAnEPUB(let message): "That file isn’t a readable ePub: \(message)"
-        case .unsupportedFormat(let message): "This app can’t read that file: \(message)"
-        case .protectedByDRM(let evidence): "\(evidence.explanation) This app cannot open protected files."
-        case .noScriptureFound: "No Bible text was found in that ePub."
-        case .missingCopyright: "That ePub carries no copyright line. Enter the publisher’s copyright notice to continue."
-        case .databaseWrite(let message): "Couldn’t save the imported text: \(message)"
+        case .unreadableFile(let message): String(localized: "Couldn’t read that file: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
+        case .notAZipArchive: String(localized: "That file isn’t an ePub — it isn’t a ZIP container.", bundle: .module)
+        case .damagedArchive(let message): String(localized: "That ePub is damaged: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
+        case .entryTooLarge(let name): String(localized: "That ePub contains an implausibly large file (\(name)).", bundle: .module, comment: "Error. %@ is a file name inside the ePub.")
+        case .notAnEPUB(let message): String(localized: "That file isn’t a readable ePub: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
+        case .unsupportedFormat(let message): String(localized: "This app can’t read that file: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
+        case .protectedByDRM(let evidence): String(localized: "\(evidence.explanation) This app cannot open protected files.", bundle: .module, comment: "Error. %@ is a sentence saying how the file is protected.")
+        case .noScriptureFound: String(localized: "No Bible text was found in that ePub.", bundle: .module)
+        case .missingCopyright: String(localized: "That ePub carries no copyright line. Enter the publisher’s copyright notice to continue.", bundle: .module)
+        case .databaseWrite(let message): String(localized: "Couldn’t save the imported text: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
         }
     }
 }
@@ -65,11 +65,11 @@ public enum DRMEvidence: String, Sendable, Equatable, Hashable, Codable {
 
     public var explanation: String {
         switch self {
-        case .encryptionManifest: "That ePub is encrypted (it carries an encryption manifest)."
-        case .adobeADEPT: "That ePub is protected with Adobe DRM."
-        case .readiumLCP: "That ePub is protected with an LCP licence."
-        case .appleFairPlay: "That ePub is protected with Apple’s FairPlay DRM."
-        case .zipEntryEncryption: "That ePub’s contents are password-encrypted."
+        case .encryptionManifest: String(localized: "That ePub is encrypted (it carries an encryption manifest).", bundle: .module)
+        case .adobeADEPT: String(localized: "That ePub is protected with Adobe DRM.", bundle: .module)
+        case .readiumLCP: String(localized: "That ePub is protected with an LCP licence.", bundle: .module)
+        case .appleFairPlay: String(localized: "That ePub is protected with Apple’s FairPlay DRM.", bundle: .module)
+        case .zipEntryEncryption: String(localized: "That ePub’s contents are password-encrypted.", bundle: .module)
         }
     }
 }

@@ -58,8 +58,11 @@ enum NotesPDFRenderer {
         if let subtitle = options.subtitle {
             out.append(line(subtitle, font: serif(11, .italic), color: Palette.secondary, spacingAfter: 6))
         }
-        var summary = "\(notes.count) \(notes.count == 1 ? "note" : "notes") · \(Date.now.formatted(date: .long, time: .omitted))"
-        if let translation = options.translation { summary += " · Scripture from the \(translation)" }
+        let date = Date.now.formatted(date: .long, time: .omitted)
+        var summary = String(localized: "\(notes.count) notes · \(date)", comment: "Subtitle of an exported PDF of notes. %lld is the number of notes; %@ is today's date.")
+        if let translation = options.translation {
+            summary += String(localized: " · Scripture from the \(translation)", comment: "Appended to the subtitle of an exported PDF of notes. %@ is a translation abbreviation, e.g. “KJV”.")
+        }
         out.append(line(summary, font: sans(9.5), color: Palette.secondary, spacingAfter: 26))
 
         for (index, note) in notes.enumerated() {

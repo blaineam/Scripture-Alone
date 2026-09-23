@@ -21,17 +21,17 @@ struct NotesExportSheet: View {
             switch self {
             case .pdf: "PDF"
             case .markdown: "Markdown"
-            case .markdownFolder: "Markdown Folder"
-            case .plainText: "Plain Text"
+            case .markdownFolder: String(localized: "Markdown Folder", comment: "Export format: a folder of Markdown files")
+            case .plainText: String(localized: "Plain Text", comment: "Export format")
             }
         }
 
         var detail: String {
             switch self {
-            case .pdf: "Typeset for reading and printing."
-            case .markdown: "One file, for note apps and editors."
-            case .markdownFolder: "A file for each note."
-            case .plainText: "Simple text that opens anywhere."
+            case .pdf: String(localized: "Typeset for reading and printing.", comment: "Describes an export format")
+            case .markdown: String(localized: "One file, for note apps and editors.", comment: "Describes an export format")
+            case .markdownFolder: String(localized: "A file for each note.", comment: "Describes an export format")
+            case .plainText: String(localized: "Simple text that opens anywhere.", comment: "Describes an export format")
             }
         }
     }
