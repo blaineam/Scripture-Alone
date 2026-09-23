@@ -106,7 +106,10 @@ is in App Review; this goes out as the next version once it is approved — App 
 allows one version in review at a time.
 
 **Apple (App Store)**
-- [ ] New app version with the localized app, watch and widgets.
+- [ ] **1.1.0** with the localized app, watch and widgets — submitted the moment 1.0.0 is approved.
+      Not a 1.0.0 resubmission: Apple allows at most **10 asset packs per review submission**
+      (100 active per app), and before the first approval every pack rides with the version —
+      1.0.0's own 5 plus these 8 would be 13.
 - [ ] Asset packs, all `onDemand`, **in the same review submission as the version** (≤ 10 items per
       submission; identifiers without dots; never archive one — it is permanent):
 
