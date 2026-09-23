@@ -137,8 +137,12 @@ allows one version in review at a time.
 **Google Play**
 - [ ] Same features on Android and Wear OS.
 - [ ] Play Asset Delivery packs for the same 8 Bibles (`on-demand`).
-- [ ] Release to the **internal** and **closed** testing tracks (Wear OS on its own track).
-- [ ] Store listing and screenshots in all 8 locales.
+- [x] **Closed** testing sent for review 2026-09-23: phone versionCode 2 on Alpha, Wear 1,000,004 on
+      the Wear OS closed-testing track, with release notes in all nine languages. Phone build 2 may
+      predate the phone→watch edition transfer (396d773); versionCode 3 carries it for certain.
+- [ ] **Internal** testing: never set up — needs an email tester list (Groups aren't accepted).
+- [x] Store listing in all 8 locales — sent for review 2026-09-23.
+- [ ] Android screenshots per locale (listing currently shows the English set).
 
 **Website** (owner: "the website also needs to support the locales")
 - [ ] Scripture Alone page (already in all 9 languages): the Bible each locale gets, numbering,
