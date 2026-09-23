@@ -2,6 +2,13 @@
 
 ## After 1.0.0
 
+- A fresh install always opens to the Bible. The American Standard Version ships inside the app
+  again rather than as an asset pack meant to arrive with the install: App Review's iPad launched
+  to a spinner that never ended when it didn't. If the ASV ever can't be opened, the reader now
+  says why and offers Try Again instead of spinning forever, and a device key that can't be read
+  is re-sealed rather than locking the translation away. The app is about 16 MB larger; the BSB,
+  KJV, commentary and original languages still download the first time they're chosen.
+
 - Scripture Alone for Android is in closed beta on Google Play: phones, tablets and a Wear OS
   app, built from the same bundled Bibles and study data as the iPhone app. Join the
   scripture-alone-android-beta Google Group, then opt in on Google Play.

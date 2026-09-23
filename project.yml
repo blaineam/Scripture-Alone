@@ -49,10 +49,11 @@ targets:
           # The American Standard Version ships sealed, so its store stays out of the app; it is
           # kept in the repository as the source the packaging tool reads.
           - "Resources/Bibles/ASV.sqlite"
-          # Apple-hosted Background Assets packs, not app resources (Tools/asset-packs): the ASV
-          # package is `essential` (arrives with the install), the rest `onDemand`. Kept in the
-          # repository as the packs' sources, and copied into Debug builds only — see below.
-          - "Resources/Packages/ASV.sabible"
+          # Apple-hosted Background Assets packs (`onDemand`), not app resources (Tools/asset-packs).
+          # Kept in the repository as the packs' sources, and copied into Debug builds only — see
+          # below. The sealed ASV package (Resources/Packages/ASV.sabible) is NOT excluded: it ships
+          # in the app. As an `essential` pack it left App Review's iPad on an endless spinner
+          # (1.0.0 build 40), and the translation a fresh install opens to can't wait on delivery.
           - "Resources/Bibles/BSB.sqlite"
           - "Resources/Bibles/KJV.sqlite"
           - "Resources/Study/Study.sqlite"
@@ -112,7 +113,7 @@ targets:
           [ "$CONFIGURATION" = "Debug" ] || exit 0
           DEST="$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH"
           R="$SRCROOT/ScriptureAlone/Resources"
-          for f in Packages/ASV.sabible Bibles/BSB.sqlite Bibles/KJV.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do
+          for f in Bibles/BSB.sqlite Bibles/KJV.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do
             cp -f "$R/$f" "$DEST/"
           done
       - name: Strip xattrs (codesign workaround)

@@ -155,12 +155,10 @@ final class ReaderModel {
             // reader the moment it arrives, rather than leaving them at a blank page meanwhile.
             if preferredEntry != nil { selectTranslation(preferred) }
         }
-        // The ASV is an essential asset pack, so after an App Store install it is already local and
-        // `SealedTranslations` opened it synchronously above. If it wasn't — a build whose pack is
-        // still processing — fetch it, and the awaited choice is granted when it lands.
-        if SealedTranslations.shared.package(Self.defaultTranslation) == nil {
-            Task { [weak self] in await self?.fetchDefaultTranslation() }
-        }
+        // The ASV ships inside the app, so `SealedTranslations` has opened it by now. If it could
+        // not — and nothing else is on the device to read — say so. A spinner with nothing behind
+        // it is what App Review saw on 1.0.0 build 40, and it never ends.
+        if source == nil, onlineTranslation == nil { reportDefaultTranslationFailure() }
         if let saved, saved.verse > 1 { scrollTarget = saved.key }
     }
 
@@ -197,12 +195,27 @@ final class ReaderModel {
         return FileManager.default.fileExists(atPath: url.path)
     }
 
-    /// Fetches the ASV when the launch found it missing, then offers it.
-    private func fetchDefaultTranslation() async {
-        guard await AssetLibrary.shared.ensure(.asv),
-              SealedTranslations.shared.reopen(Self.defaultTranslation) else { return }
+    /// Whether the ASV failed to open, which is what the reader's "Try Again" retries.
+    var defaultTranslationMissing: Bool {
+        SealedTranslations.shared.package(Self.defaultTranslation) == nil
+    }
+
+    private func reportDefaultTranslationFailure() {
+        let why = SealedTranslations.shared.failure(Self.defaultTranslation) ?? "It couldn’t be opened."
+        loadError = "The American Standard Version couldn’t be opened. \(why)"
+    }
+
+    /// Tries the ASV again after it failed to open at launch. The one cause a retry cures is a
+    /// device that was still locked, so the keychain was unreadable.
+    func retryDefaultTranslation() {
+        guard SealedTranslations.shared.reopen(Self.defaultTranslation) else {
+            reportDefaultTranslationFailure()
+            return
+        }
+        loadError = nil
         bundledTranslations = Self.makeBundledEntries()
         rebuildTranslations()
+        if source == nil { selectTranslation(Self.defaultTranslation, remember: false) }
     }
 
     private func rebuildTranslations() {

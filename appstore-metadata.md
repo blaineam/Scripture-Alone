@@ -6,7 +6,7 @@
 Scripture Alone Bible
 
 ## subtitle
-Private, offline, free forever
+Private, offline Bible study
 
 ## description
 Scripture Alone is a free Bible for iPhone, iPad, Mac and Apple Watch, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. Three complete translations are on your device from the moment you install it, so reading, searching, highlighting and notes work anywhere in the world, with or without a connection. The two large study add-ons — the commentary and the original-language data — download the first time you open them, so the app itself stays small.

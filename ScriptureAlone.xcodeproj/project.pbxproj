@@ -55,6 +55,7 @@
 		625B5A8637D4AFCECAA069F8 /* DailyVerses.json in Resources */ = {isa = PBXBuildFile; fileRef = 7FB470D843314F7FBBD87D39 /* DailyVerses.json */; };
 		62BD2D064122DB8F773F8574 /* FamilyShareAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 232427C8C504837E7BD697D0 /* FamilyShareAppDelegate.swift */; };
 		641EE58025A97914D0C7F88A /* ContextViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E396FC4547F0E28D153AA60 /* ContextViewer.swift */; };
+		6464C6CF9873157603BF863E /* ASV.sabible in Resources */ = {isa = PBXBuildFile; fileRef = E89B7FA335AFEC30772AF2F1 /* ASV.sabible */; };
 		6649DB5B898B27EAF081D381 /* ScriptureAloneWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 884CF1E5F4E1531A640DE22A /* ScriptureAloneWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		68BB4D077524582DA20F7E23 /* ShareDesigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A77A69689012AD28F9EB76A /* ShareDesigner.swift */; };
 		69AAD5A7F70928E7C1AB8800 /* SharedBibleViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE212F8A5D6BAA5EE89EF732 /* SharedBibleViews.swift */; };
@@ -330,6 +331,7 @@
 		E4A2B7F7FABABD02EED02944 /* ASV-Watch.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ASV-Watch.sqlite"; sourceTree = "<group>"; };
 		E7888AAC43ECF30A87D1EBA8 /* ExportSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSupport.swift; sourceTree = "<group>"; };
 		E79D61A66336156A65FD29F3 /* ReaderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderModel.swift; sourceTree = "<group>"; };
+		E89B7FA335AFEC30772AF2F1 /* ASV.sabible */ = {isa = PBXFileReference; path = ASV.sabible; sourceTree = "<group>"; };
 		EB6A1A0C6A57B6779BD9E5D1 /* KeepsakeCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeepsakeCreateView.swift; sourceTree = "<group>"; };
 		EDFB8603886458A9C59AFF53 /* FavoritesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesSection.swift; sourceTree = "<group>"; };
 		EE510A41385BD38538A93FBF /* LifeBibleImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeBibleImportView.swift; sourceTree = "<group>"; };
@@ -537,6 +539,7 @@
 		8906FE93054F3E855802A471 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
+				E89B7FA335AFEC30772AF2F1 /* ASV.sabible */,
 				AC8378E99998755AEE18ECB0 /* bundled-signing.pub */,
 			);
 			path = Packages;
@@ -963,6 +966,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6464C6CF9873157603BF863E /* ASV.sabible in Resources */,
 				CCCF48093DC2772BE6794DAE /* AppIcon.icon in Resources */,
 				6F5236F8B372562A114682EB /* Assets.xcassets in Resources */,
 				2D67D62C9CA59B847EA766CA /* Basemap.bin in Resources */,
@@ -1050,7 +1054,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "[ \"$CONFIGURATION\" = \"Debug\" ] || exit 0\nDEST=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nR=\"$SRCROOT/ScriptureAlone/Resources\"\nfor f in Packages/ASV.sabible Bibles/BSB.sqlite Bibles/KJV.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do\n  cp -f \"$R/$f\" \"$DEST/\"\ndone\n";
+			shellScript = "[ \"$CONFIGURATION\" = \"Debug\" ] || exit 0\nDEST=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nR=\"$SRCROOT/ScriptureAlone/Resources\"\nfor f in Bibles/BSB.sqlite Bibles/KJV.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do\n  cp -f \"$R/$f\" \"$DEST/\"\ndone\n";
 		};
 		A7E8A4B1EA53B0B00CE405D9 /* Strip xattrs (codesign workaround) */ = {
 			isa = PBXShellScriptBuildPhase;

@@ -514,7 +514,15 @@ private struct ChapterPane: View {
                 revealVerse: ListenController.shared.speakingVerse(in: model)
             ))
         } else if let error = model.loadError {
-            ContentUnavailableView("Can’t Open This Chapter", systemImage: "book.closed", description: Text(error))
+            ContentUnavailableView {
+                Label("Can’t Open This Chapter", systemImage: "book.closed")
+            } description: {
+                Text(error)
+            } actions: {
+                if model.source == nil, model.defaultTranslationMissing {
+                    Button("Try Again") { model.retryDefaultTranslation() }
+                }
+            }
         } else {
             ProgressView()
         }

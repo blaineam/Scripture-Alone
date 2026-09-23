@@ -7,13 +7,14 @@ import ScriptureAloneCore
 /// Content delivered as Apple-hosted Background Assets packs rather than inside the app.
 ///
 /// **What ships where.** The app binary carries the code, the maps and timeline data, the cross
-/// reference index's neighbours and the pinned signing key — nothing else heavy. The Bibles and
-/// the study databases are packs:
+/// reference index's neighbours, the pinned signing key and the sealed ASV — the translation a
+/// fresh install opens to, so it reads offline before it has ever reached a network. The other
+/// Bibles and the study databases are packs:
 ///
 /// | Pack | Policy | Why |
 /// |---|---|---|
-/// | ASV | `essential`, first installation | The default translation. It arrives with the install, so a
-///   fresh install reads offline before it has ever reached a network. |
+/// | ASV | none — in the app | It was `essential`, and App Review's iPad launched to a spinner that
+///   never ended (1.0.0 build 40). `.asv` stays so a copy an earlier build left behind still opens. |
 /// | BSB, KJV | `onDemand` | Fetched the first time the reader chooses one. |
 /// | Commentary, Original Languages | `onDemand` | 55 MB many readers never open. |
 ///
@@ -185,30 +186,6 @@ final class AssetLibrary {
             states[pack] = .failed(Self.message(for: error, pack: pack))
             return false
         }
-    }
-
-    /// Copies a pack's file out *synchronously* when the pack is already on the device.
-    ///
-    /// For the ASV at launch. It is an `essential` pack, so after installation it is local and no
-    /// network is involved — which is what lets a fresh install read offline on its very first
-    /// launch without the reader waiting on an asynchronous download. The copy is about 16 MB and
-    /// happens once; every later launch finds the file and returns at once. Returns false when the
-    /// pack is not local, and the caller falls back to `ensure`.
-    @discardableResult
-    func installIfLocal(_ pack: AssetPack) -> Bool {
-        if url(of: pack) != nil { states[pack] = .ready; return true }
-        do {
-            try install(pack)
-        } catch {
-            #if DEBUG
-            return installFromBundle(pack)
-            #else
-            return false
-            #endif
-        }
-        states[pack] = .ready
-        Task { try? await AssetPackManager.shared.remove(assetPackWithID: pack.id) }
-        return true
     }
 
     #if DEBUG
