@@ -10,11 +10,21 @@ nonisolated struct VerseEntry: TimelineEntry {
     let date: Date
     let verse: DailyVerse
     let translation: String
+    /// The translation's label ("CSB"); its id can be an import's file name.
+    var label: String = ""
+    /// Today's passage in a translation the daily list doesn't carry, from the app (`VerseSnapshot.daily`).
+    var own: VerseSnapshot.DailyText?
 
     var range: VerseRange? { verse.range }
     var reference: String { range?.display ?? "" }
     var shortReference: String { range?.abbreviatedDisplay ?? "" }
-    var text: String { verse.text(in: translation) }
+    var text: String { own?.text ?? verse.text(in: translation) }
+    var redRanges: [Range<Int>] { own?.redRanges ?? verse.redRanges(in: translation) }
+    /// The label shown: the reader's translation when the text is in it, else the one it fell back to.
+    var shownTranslation: String {
+        if own != nil || verse.text[translation] != nil { return label.isEmpty ? translation : label }
+        return DailyVerseCatalog.fallbackTranslation
+    }
     var url: URL? { range.map(ScriptureLink.url(for:)) }
 
     static var placeholder: VerseEntry {
@@ -28,22 +38,24 @@ nonisolated struct VerseEntry: TimelineEntry {
 nonisolated struct VerseOfDayProvider: TimelineProvider {
     static let days = 7
 
-    private var translation: String {
+    private var snapshot: VerseSnapshot? {
         #if os(watchOS)
         // The watch bundles the ASV only.
-        DailyVerseCatalog.fallbackTranslation
+        nil
         #else
-        AppGroup.readSnapshot()?.translation ?? DailyVerseCatalog.fallbackTranslation
+        AppGroup.readSnapshot()
         #endif
     }
 
     func entries(from now: Date, calendar: Calendar = .current) -> [VerseEntry] {
-        let translation = translation
+        let snapshot = snapshot
+        let translation = snapshot?.translation ?? DailyVerseCatalog.fallbackTranslation
         var entries: [VerseEntry] = []
         var date = now
         for _ in 0..<Self.days {
             let verse = DailyVerseLibrary.verse(on: date, calendar: calendar) ?? DailyVerseLibrary.placeholder
-            entries.append(VerseEntry(date: date, verse: verse, translation: translation))
+            entries.append(VerseEntry(date: date, verse: verse, translation: translation,
+                                      label: snapshot?.abbreviation ?? translation, own: snapshot?.daily?[verse.ref]))
             date = DailyVerseCatalog.nextMidnight(after: date, calendar: calendar)
         }
         return entries

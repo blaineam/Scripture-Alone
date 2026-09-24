@@ -13,12 +13,36 @@ public struct VerseSnapshot: Codable, Hashable, Sendable {
     public var translation: String
     /// Newest first within each kind.
     public var items: [Item]
+    /// How the translation is labelled ("CSB") — its id can be an import's file name.
+    public var abbreviation: String?
+    /// The coming days' Verse of the Day in the reader's translation, by stored range
+    /// ("43003016-43003016"), for one the widget doesn't carry itself (an import). Nil when the
+    /// translation may not be stored, or the widget has it already.
+    public var daily: [String: DailyText]?
 
-    public init(version: Int = VerseSnapshot.currentVersion, generatedAt: Date, translation: String, items: [Item]) {
+    public struct DailyText: Codable, Hashable, Sendable {
+        public var text: String
+        /// Words of Christ, as [start, length] in Unicode scalars — the form `DailyVerse` uses.
+        public var red: [[Int]]
+
+        public init(text: String, red: [[Int]]) {
+            self.text = text
+            self.red = red
+        }
+
+        public var redRanges: [Range<Int>] {
+            red.compactMap { $0.count == 2 && $0[0] >= 0 && $0[1] > 0 ? $0[0]..<($0[0] + $0[1]) : nil }
+        }
+    }
+
+    public init(version: Int = VerseSnapshot.currentVersion, generatedAt: Date, translation: String, items: [Item],
+                abbreviation: String? = nil, daily: [String: DailyText]? = nil) {
         self.version = version
         self.generatedAt = generatedAt
         self.translation = translation
         self.items = items
+        self.abbreviation = abbreviation
+        self.daily = daily
     }
 
     public struct Item: Codable, Hashable, Sendable, Identifiable {

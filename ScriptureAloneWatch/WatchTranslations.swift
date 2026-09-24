@@ -48,6 +48,16 @@ final class WatchPhoneLink: NSObject {
         context[WatchLinkKeys.imports] as? [String]
     }
 
+    /// The phone's accent colour, when its context carries one.
+    fileprivate nonisolated static func phoneAccent(in context: [String: Any]) -> Int? {
+        context[WatchLinkKeys.accent] as? Int
+    }
+
+    fileprivate func applyAccent(_ accent: Int?) {
+        guard let accent else { return }
+        UserDefaults.standard.set(accent, forKey: WatchAccent.key)
+    }
+
     fileprivate func applyImports(_ imports: [String]?) {
         guard let imports, let bible else { return }
         if bible.removeImports(notIn: Set(imports)) { reportEditions() }
@@ -68,9 +78,11 @@ extension WatchPhoneLink: WCSessionDelegate {
         // Whatever the phone set while the watch app wasn't running is waiting here.
         let choice = Self.phoneChoice(in: session.receivedApplicationContext)
         let imports = Self.phoneImports(in: session.receivedApplicationContext)
+        let accent = Self.phoneAccent(in: session.receivedApplicationContext)
         Task { @MainActor in
             self.apply(choice)
             self.applyImports(imports)
+            self.applyAccent(accent)
             self.reportEditions()
         }
     }
@@ -78,9 +90,11 @@ extension WatchPhoneLink: WCSessionDelegate {
     nonisolated func session(_ session: WCSession, didReceiveApplicationContext context: [String: Any]) {
         let choice = Self.phoneChoice(in: context)
         let imports = Self.phoneImports(in: context)
+        let accent = Self.phoneAccent(in: context)
         Task { @MainActor in
             self.apply(choice)
             self.applyImports(imports)
+            self.applyAccent(accent)
         }
     }
 

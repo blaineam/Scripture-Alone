@@ -18,6 +18,9 @@ enum WatchLinkKeys {
     /// Phone → watch, application context: every imported translation the phone offers the watch.
     /// A received import missing from it was removed on the phone, and the watch removes it too.
     nonisolated static let imports = "imports"
+    /// Phone → watch, application context: the reader's accent colour, as 0xRRGGBB (its dark-page
+    /// value, the watch's face being always dark).
+    nonisolated static let accent = "accent"
     /// Phone → watch, file metadata: a fingerprint of the store the edition was made from.
     nonisolated static let version = "version"
     /// Phone → watch, file metadata: "import" for a translation the reader imported, otherwise absent.

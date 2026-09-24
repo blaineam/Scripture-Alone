@@ -118,6 +118,9 @@ enum ReaderAccent: String, CaseIterable, Identifiable {
         PlatformColor(hex: isDark ? pair.dark : pair.light)
     }
 
+    /// The value the watch uses: its face is always dark.
+    var watchHex: Int { Int(pair.dark) }
+
     /// The swatch in the picker, always shown on its light-page value.
     var swatch: Color { Color(PlatformColor(hex: pair.light)) }
 }

@@ -2,6 +2,10 @@
 
 ## After 1.0.0
 
+- Apple Watch wears the accent colour you chose on your iPhone, and has a Highlights list beside
+  Favorites and Notes: every highlighted verse in Bible order, in its colour, a tap from reading.
+- The Verse of the Day widget reads in the translation you're reading even when it's one you
+  imported (the next two weeks are written for it ahead), and is labelled with its abbreviation.
 - Words of Christ carried over to an import are read by its own quotation marks: each quotation
   is His or not as a whole, so a parable turns red from its first word to its last however
   differently it is worded, the narration around a saying stays black, and His words quoted by

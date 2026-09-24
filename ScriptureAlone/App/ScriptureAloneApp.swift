@@ -54,6 +54,9 @@ private struct RootView: View {
     @State private var model = ReaderModel()
     @State private var library = ImportedLibrary()
     @State private var onlineKeys = OnlineTranslationKeys()
+    #if os(iOS)
+    @AppStorage(SettingsKey.accent) private var accent = ReaderAccent.sunrise
+    #endif
 
     var body: some View {
         ReaderView()
@@ -106,6 +109,10 @@ private struct RootView: View {
                     model.restoreTranslation(id)
                 }
             }
+            #if os(iOS)
+            // The watch wears the reader's accent too.
+            .onChange(of: accent, initial: true) { WatchLink.shared.accentChanged(accent.watchHex) }
+            #endif
             #if os(macOS)
             .frame(minWidth: 520, minHeight: 480)
             #endif

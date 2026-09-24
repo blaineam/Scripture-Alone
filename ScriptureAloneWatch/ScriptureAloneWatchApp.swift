@@ -14,6 +14,7 @@ struct ScriptureAloneWatchApp: App {
     var body: some Scene {
         WindowGroup {
             WatchRootView()
+                .modifier(WatchAccent())
                 .environment(bible)
                 .task { WatchPhoneLink.shared.activate(bible: bible) }
         }
@@ -44,7 +45,7 @@ struct WatchRootView: View {
         if let range = ScriptureLink.range(from: url) { path = [.verse(range)] }
     }
 
-    /// DEBUG: `-watchRoute favorites|notes|books|<scripturealone:// URL>` opens a screen at
+    /// DEBUG: `-watchRoute favorites|notes|highlights|books|<scripturealone:// URL>` opens a screen at
     /// launch, for simulator checks and screenshots (simctl can't open custom URLs on watchOS).
     private func openLaunchRoute() {
         #if DEBUG
@@ -53,6 +54,7 @@ struct WatchRootView: View {
         switch arguments[flag + 1] {
         case "favorites": path = [.favorites]
         case "notes": path = [.notes]
+        case "highlights": path = [.highlights]
         case "books": path = [.books]
         case let value: if let url = URL(string: value) { open(url) }
         }
@@ -67,6 +69,7 @@ enum WatchRoute: Hashable {
     case books
     case favorites
     case notes
+    case highlights
     case note(UUID)
     case translations
 
@@ -78,6 +81,7 @@ enum WatchRoute: Hashable {
         case .books: WatchBooksView()
         case .favorites: WatchFavoritesView()
         case .notes: WatchNotesView()
+        case .highlights: WatchHighlightsView()
         case .note(let id): WatchNoteView(id: id)
         case .translations: WatchTranslationsView()
         }
@@ -304,4 +308,22 @@ enum HighlightColor: String, CaseIterable, Identifiable {
 
 extension VerseRange {
     func intersects(_ other: VerseRange) -> Bool { start <= other.end && other.start <= end }
+}
+
+/// The reader's accent colour from the phone (`WatchLinkKeys.accent`), as the app's tint; the
+/// asset catalog's accent until the phone has said.
+struct WatchAccent: ViewModifier {
+    nonisolated static let key = "watch.accent"
+    @AppStorage(WatchAccent.key) private var hex = 0
+
+    func body(content: Content) -> some View {
+        if hex > 0 {
+            let color = Color(red: Double((hex >> 16) & 0xFF) / 255, green: Double((hex >> 8) & 0xFF) / 255,
+                              blue: Double(hex & 0xFF) / 255)
+            // Navigation titles keep the asset catalog's accent: watchOS draws them from it alone.
+            content.tint(color)
+        } else {
+            content
+        }
+    }
 }

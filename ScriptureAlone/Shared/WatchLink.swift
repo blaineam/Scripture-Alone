@@ -28,6 +28,8 @@ final class WatchLink: NSObject {
     /// The session can come up before the library reports, and an empty list sent then would tell
     /// the watch to delete every import it holds, only to be sent them all again.
     private var imports: [TranslationEntry]?
+    /// The reader's accent colour for the watch (`WatchLinkKeys.accent`), once known.
+    private var accent: Int?
 
     func activate() {
         guard let session, session.delegate == nil else { return }
@@ -65,6 +67,13 @@ final class WatchLink: NSObject {
         for entry in safe { sendEditionIfNeeded(entry) }
     }
 
+    /// The reader picked another accent colour; the watch follows.
+    func accentChanged(_ hex: Int) {
+        guard hex != accent else { return }
+        accent = hex
+        updateContext()
+    }
+
     /// Application context holds one dictionary, replaced whole on every update, so every key the
     /// watch reads is written every time.
     private func updateContext() {
@@ -73,6 +82,7 @@ final class WatchLink: NSObject {
         // No list at all until the library has reported: the watch then keeps what it holds.
         var context: [String: Any] = [:]
         if let imports { context[WatchLinkKeys.imports] = imports.map(\.id) }
+        if let accent { context[WatchLinkKeys.accent] = accent }
         if let pending {
             context[WatchLinkKeys.translation] = pending.id
             context[WatchLinkKeys.changedAt] = defaults.double(forKey: Self.changedAtKey)

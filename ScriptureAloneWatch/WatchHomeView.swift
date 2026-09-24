@@ -6,6 +6,7 @@ struct WatchHomeView: View {
     @Environment(WatchBible.self) private var bible
     @Query private var favorites: [Favorite]
     @Query private var notes: [Note]
+    @Query private var highlights: [Highlight]
 
     var body: some View {
         List {
@@ -18,13 +19,17 @@ struct WatchHomeView: View {
             }
             Section {
                 NavigationLink(value: WatchRoute.favorites) {
-                    row("Favorites", systemImage: "heart.fill", tint: .red, count: favorites.count)
+                    row("Favorites", systemImage: "heart.fill", tint: AnyShapeStyle(.red), count: favorites.count)
                 }
                 NavigationLink(value: WatchRoute.notes) {
-                    row("Notes", systemImage: "note.text", tint: .orange, count: notes.count)
+                    row("Notes", systemImage: "note.text", tint: AnyShapeStyle(.orange), count: notes.count)
+                }
+                NavigationLink(value: WatchRoute.highlights) {
+                    row("Highlights", systemImage: "highlighter", tint: AnyShapeStyle(.yellow),
+                        count: Set(highlights.map(\.verseKey)).count)
                 }
                 NavigationLink(value: WatchRoute.books) {
-                    row("Read", systemImage: "book.fill", tint: .accentColor, count: nil)
+                    row("Read", systemImage: "book.fill", tint: AnyShapeStyle(.tint), count: nil)
                 }
                 NavigationLink(value: WatchRoute.translations) {
                     HStack {
@@ -38,7 +43,7 @@ struct WatchHomeView: View {
         .navigationTitle("Scripture Alone")
     }
 
-    private func row(_ title: LocalizedStringKey, systemImage: String, tint: Color, count: Int?) -> some View {
+    private func row(_ title: LocalizedStringKey, systemImage: String, tint: AnyShapeStyle, count: Int?) -> some View {
         HStack {
             Label {
                 Text(title)

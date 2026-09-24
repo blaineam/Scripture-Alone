@@ -58,7 +58,7 @@ struct HomeVerseCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: family == .systemSmall ? 6 : 10) {
             header
-            Text(VerseStyling.attributed(entry.text, red: entry.verse.redRanges(in: entry.translation),
+            Text(VerseStyling.attributed(entry.text, red: entry.redRanges,
                                          redColor: fullColor && redLetters ? palette.wordsOfChrist : nil))
                 .font(.system(textStyle, design: .serif))
                 .foregroundStyle(fullColor ? palette.ink : .primary)
@@ -113,7 +113,7 @@ struct HomeVerseCard: View {
                     .foregroundStyle(fullColor ? palette.accent : .primary)
                     .widgetAccentable()
                 Spacer()
-                Text(entry.translation)
+                Text(entry.shownTranslation)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(fullColor ? palette.secondaryInk : .secondary)
             }
