@@ -65,7 +65,20 @@ struct LegacyNotesPanel: View {
     @Environment(ReaderModel.self) private var model
     @Environment(LegacySession.self) private var session
     @State private var search = ""
-    @State private var scope = NotesPanel.Scope.all
+    @State private var scope = Scope.all
+
+    enum Scope: String, CaseIterable, Identifiable {
+        case all, chapter, favorites
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .all: String(localized: "All Notes", comment: "Notes list filter")
+            case .chapter: String(localized: "This Chapter", comment: "Notes list filter")
+            case .favorites: String(localized: "Favorites", comment: "Notes list filter")
+            }
+        }
+    }
     @State private var exporting = false
 
     private var notes: [KeepsakeNote] {
@@ -85,7 +98,7 @@ struct LegacyNotesPanel: View {
             List {
                 Section {
                     Picker("Show", selection: $scope) {
-                        ForEach(NotesPanel.Scope.allCases) { Text($0.title).tag($0) }
+                        ForEach(Scope.allCases) { Text($0.title).tag($0) }
                     }
                     .pickerStyle(.segmented)
                     .listRowSeparator(.hidden)

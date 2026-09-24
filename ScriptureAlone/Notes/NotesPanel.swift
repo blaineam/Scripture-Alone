@@ -2,35 +2,68 @@ import SwiftUI
 import SwiftData
 import ScriptureAloneCore
 
-/// Every note, searchable, filterable to the chapter on screen. Sits beside the text on
-/// iPad and Mac, and as a sheet on iPhone.
+/// Every note, highlight and favorite, searchable, and narrowed to the book or chapter on screen.
+/// Sits beside the text on iPad and Mac, and as a sheet on iPhone.
 struct NotesPanel: View {
     @Environment(ReaderModel.self) private var model
     @Environment(\.modelContext) private var context
     @Binding var path: [UUID]
     @Query(sort: \Note.updatedAt, order: .reverse) private var notes: [Note]
     @State private var search = ""
-    @State private var scope = Scope.all
+    @State private var scope = Scope.notes
+    @State private var place = Place.all
     @State private var slideCapture = SlideCapture()
     @State private var exportSelection: ExportSelection?
     @State private var showLegacy = false
 
+    /// What the panel lists.
     enum Scope: String, CaseIterable, Identifiable {
-        case all = "All Notes", chapter = "This Chapter", favorites = "Favorites"
+        case notes, highlights, favorites
         var id: String { rawValue }
 
         var title: String {
             switch self {
-            case .all: String(localized: "All Notes", comment: "Notes list filter")
-            case .chapter: String(localized: "This Chapter", comment: "Notes list filter")
+            case .notes: String(localized: "Notes", comment: "Notes panel: list the reader's notes")
+            case .highlights: String(localized: "Highlights", comment: "Notes panel: list the reader's highlighted verses")
             case .favorites: String(localized: "Favorites", comment: "Notes list filter")
             }
         }
     }
 
+    /// Where in the Bible: everywhere, the book on screen, or its chapter.
+    enum Place: String, CaseIterable, Identifiable {
+        case all, book, chapter
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .all: String(localized: "All Books", comment: "Notes panel filter: notes, highlights or favorites anywhere in the Bible")
+            case .book: String(localized: "This Book", comment: "Notes panel filter: only the book on screen")
+            case .chapter: String(localized: "This Chapter", comment: "Notes list filter")
+            }
+        }
+
+        /// Whether a passage (KJV keys, as marks are stored) falls in this place, for the chapter on screen.
+        func contains(_ range: VerseRange, location: ChapterRef) -> Bool {
+            switch self {
+            case .all: true
+            case .book: range.start.book == location.book || range.end.book == location.book
+            case .chapter: range.overlaps(location)
+            }
+        }
+    }
+
+    private var searchPrompt: LocalizedStringKey {
+        switch scope {
+        case .notes: "Search notes or a passage"
+        case .highlights: "Search highlights or a passage"
+        case .favorites: "Search favorites or a passage"
+        }
+    }
+
     private var filtered: [Note] {
         notes.filter { note in
-            (scope == .all || note.touches(model.location)) && matches(note)
+            (place == .all || note.anchors.contains { place.contains($0, location: model.location) }) && matches(note)
         }
     }
 
@@ -49,14 +82,22 @@ struct NotesPanel: View {
     var body: some View {
         NavigationStack(path: $path) {
             List {
-                Picker("Show", selection: $scope) {
-                    ForEach(Scope.allCases) { Text($0.title).tag($0) }
+                VStack(spacing: 8) {
+                    Picker("Show", selection: $scope) {
+                        ForEach(Scope.allCases) { Text($0.title).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    Picker("Where", selection: $place) {
+                        ForEach(Place.allCases) { Text($0.title).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
                 }
-                .pickerStyle(.segmented)
                 .listRowSeparator(.hidden)
 
                 if scope == .favorites {
-                    FavoritesSection(search: search)
+                    FavoritesSection(search: search, place: place)
+                } else if scope == .highlights {
+                    HighlightsSection(search: search, place: place)
                 } else {
                     ForEach(filtered) { note in
                         NavigationLink(value: note.uuid) { NoteRow(note: note) }
@@ -67,7 +108,7 @@ struct NotesPanel: View {
                 }
             }
             .overlay {
-                if scope != .favorites, filtered.isEmpty {
+                if scope == .notes, filtered.isEmpty {
                     ContentUnavailableView {
                         Label(search.isEmpty ? "No Notes Yet" : "No Matches", systemImage: "note.text")
                     } description: {
@@ -77,7 +118,7 @@ struct NotesPanel: View {
                     }
                 }
             }
-            .searchable(text: $search, prompt: scope == .favorites ? "Search favorites or a passage" : "Search notes or a passage")
+            .searchable(text: $search, prompt: searchPrompt)
             .navigationTitle("Notes")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -126,7 +167,8 @@ struct NotesPanel: View {
             // "Show my favorites" from Siri, Shortcuts or a link picks the scope once.
             .onChange(of: AppCommandCenter.shared.notesScope, initial: true) { _, request in
                 guard let request else { return }
-                scope = request == .favorites ? .favorites : .all
+                scope = request == .favorites ? .favorites : .notes
+                place = .all
                 AppCommandCenter.shared.notesScope = nil
             }
             .navigationDestination(for: UUID.self) { id in

@@ -2,6 +2,12 @@
 
 ## After 1.0.0
 
+- Notes has a Highlights list beside Notes and Favorites: every highlighted verse in Bible
+  order, neighbouring verses in one colour read as one passage, tap to go there, swipe to remove.
+  All three narrow to All Books, This Book or This Chapter.
+- With more than three commentaries (a library of imported study Bibles), Commentary picks one
+  from a menu instead of a row of segments.
+- A topic opened from Go To's search is kept in Recent Searches, like a verse opened from it.
 - A search that sounds like someone thinking of suicide — "want to die", "suicide", "quiero
   morir", "死にたい" and the like, in all nine languages — shows a crisis card first: a crisis
   line for your country to call (or text, where it takes messages), a directory of lines

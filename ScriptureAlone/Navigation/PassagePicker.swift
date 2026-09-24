@@ -86,6 +86,13 @@ struct PassagePicker: View {
             }
         }
         .task(id: query) { await search() }
+        // A topic opened from the words typed ("anxious" → Anxiety & Worry) is a search worth
+        // keeping, like a verse opened from them. A crisis search is never kept on show.
+        .onChange(of: path) { old, new in
+            guard new.count > old.count, !CrisisSupport.isCrisis(query),
+                  !matchingThemes.isEmpty || matchingIndexTopic != nil else { return }
+            model.rememberSearch(query)
+        }
         // A search asked for by Siri, Shortcuts or a `scripturealone://search` link.
         .onChange(of: AppCommandCenter.shared.searchQuery, initial: true) { _, words in
             guard let words else { return }

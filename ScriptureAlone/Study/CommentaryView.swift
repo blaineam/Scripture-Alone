@@ -39,11 +39,23 @@ struct CommentaryView: View {
         VStack(spacing: 0) {
             if sources.count > 1 {
                 HStack(spacing: 8) {
-                    Picker("Commentary", selection: Binding(get: { source?.id ?? sourceID }, set: { sourceID = $0 })) {
-                        ForEach(sources) { Text($0.shortName).tag($0.id) }
+                    let selection = Binding(get: { source?.id ?? sourceID }, set: { sourceID = $0 })
+                    // Side by side while they fit; a menu once imported study Bibles make a library
+                    // of them.
+                    if sources.count <= 3 {
+                        Picker("Commentary", selection: selection) {
+                            ForEach(sources) { Text($0.shortName).tag($0.id) }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                    } else {
+                        Picker("Commentary", selection: selection) {
+                            ForEach(sources) { Text($0.name).tag($0.id) }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
                     Button {
                         showingTraditions = true
                     } label: {
