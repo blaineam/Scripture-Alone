@@ -228,19 +228,37 @@ struct PDFBibleReader {
     /// bands; each band is read left column first, top to bottom, then the right. Every line ends
     /// in "\n", for `Lexicon` to decide whether the break fell between words or inside one.
     static func runs(on page: PDFPage?) -> [Run] {
-        guard let page, let all = page.selection(for: page.bounds(for: .cropBox)) else { return [] }
-        struct Piece { var rect: CGRect; var text: NSAttributedString }
-        var pieces = all.selectionsByLine().compactMap { line -> Piece? in
-            guard let text = line.attributedString, text.length > 0,
-                  !text.string.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
-            return Piece(rect: line.bounds(for: page), text: text)
+        // The text and its fonts come from the page's own attributed string, which is the same on
+        // every platform; PDFKit's selections are asked only where each line and glyph sits, and
+        // are checked against the text they should cover (`selection(on:covering:)`), because one
+        // platform's selections start a character early and repeat line ends.
+        guard let page, let attributed = page.attributedString, attributed.length > 0 else { return [] }
+        let string = attributed.string as NSString
+        struct Piece { var rect: CGRect; var text: NSAttributedString; var range: NSRange }
+        var pieces: [Piece] = []
+        var location = 0
+        while location < string.length {
+            let line = string.lineRange(for: NSRange(location: location, length: 0))
+            location = line.location + line.length
+            var trimmed = line
+            while trimmed.length > 0, let last = UnicodeScalar(string.character(at: trimmed.location + trimmed.length - 1)),
+                  CharacterSet.newlines.contains(last) {
+                trimmed.length -= 1
+            }
+            // A line of text can run on over two rows of print (a word hyphenated at the end of a
+            // row stays on its line); each row is placed on its own.
+            for row in rows(of: trimmed, in: attributed, on: page) {
+                guard !string.substring(with: row).replacingOccurrences(of: "\u{AD}", with: "").trimmingCharacters(in: .whitespaces).isEmpty,
+                      let rect = bounds(on: page, covering: row, in: string), !rect.isEmpty else { continue }
+                pieces.append(Piece(rect: rect, text: normalizedLine(attributed.attributedSubstring(from: row)), range: row))
+            }
         }
         guard !pieces.isEmpty else { return [] }
         let smallCaps = smallCapitalNames(on: page)
         if !smallCaps.isEmpty {
-            pieces = pieces.map { Piece(rect: $0.rect, text: restoringSmallCapitals($0.text, in: $0.rect, occurrences: smallCaps)) }
+            pieces = pieces.map { Piece(rect: $0.rect, text: restoringSmallCapitals($0.text, in: $0.rect, occurrences: smallCaps), range: $0.range) }
         }
-        pieces = mergedStackedDigits(pieces.map { ($0.rect, $0.text) }).map { Piece(rect: $0.0, text: $0.1) }
+        pieces = mergedStackedDigits(pieces.map { ($0.rect, $0.text, $0.range) }).map { Piece(rect: $0.0, text: $0.1, range: $0.2) }
         let left = pieces.map(\.rect.minX).min() ?? 0
         let right = pieces.map(\.rect.maxX).max() ?? 0
         // The gutter is where the fewest lines cross, near the middle — not the middle itself: a
@@ -288,12 +306,19 @@ struct PDFBibleReader {
                     split.append(piece)
                     continue
                 }
+                // Cut at the first character that sits right of the gutter.
                 let r = piece.rect
-                if let l = text(in: CGRect(x: r.minX - 1, y: r.minY, width: middle - r.minX + 1, height: r.height)) {
-                    split.append(Piece(rect: CGRect(x: r.minX, y: r.minY, width: middle - r.minX, height: r.height), text: l))
+                let cut = firstIndex(in: piece.range, of: string, on: page) { $0.minX >= middle }
+                let leftLength = cut - piece.range.location
+                if leftLength > 0 {
+                    split.append(Piece(rect: CGRect(x: r.minX, y: r.minY, width: middle - r.minX, height: r.height),
+                                       text: piece.text.attributedSubstring(from: NSRange(location: 0, length: min(leftLength, piece.text.length))),
+                                       range: NSRange(location: piece.range.location, length: leftLength)))
                 }
-                if let rt = text(in: CGRect(x: middle, y: r.minY, width: r.maxX - middle + 1, height: r.height)) {
-                    split.append(Piece(rect: CGRect(x: middle, y: r.minY, width: r.maxX - middle, height: r.height), text: rt))
+                if leftLength < piece.text.length {
+                    split.append(Piece(rect: CGRect(x: middle, y: r.minY, width: r.maxX - middle, height: r.height),
+                                       text: piece.text.attributedSubstring(from: NSRange(location: leftLength, length: piece.text.length - leftLength)),
+                                       range: NSRange(location: cut, length: piece.range.length - leftLength)))
                 }
             }
             pieces = split
@@ -354,7 +379,14 @@ struct PDFBibleReader {
             if let previous, abs(previous.rect.midY - piece.rect.midY) <= 2, piece.rect.minX >= previous.rect.maxX - 1,
                var last = runs.popLast() {
                 if last.text.hasSuffix("\n") { last.text.removeLast() }
-                if piece.rect.minX - previous.rect.maxX > 1.5 { last.text += " " }
+                // Two pieces of one row come from different lines of text, so they never continue
+                // one word: a space between them, unless punctuation closes up to what came before
+                // ("Elijah?" + "”") or opens onto what follows.
+                let before = last.text.replacingOccurrences(of: "\u{AD}", with: "").last
+                let after = piece.text.string.replacingOccurrences(of: "\u{AD}", with: "").first
+                let closes = after.map { "”’),.;:!?]".contains($0) } ?? true
+                let opens = before.map { "“‘([ ".contains($0) || $0.isWhitespace } ?? true
+                if !closes && !opens { last.text += " " }
                 runs.append(last)
             }
             let string = piece.text.string as NSString
@@ -377,6 +409,107 @@ struct PDFBibleReader {
         return runs
     }
 
+    /// Where the text in `range` sits, checked against the text itself. PDFKit's selections don't
+    /// always cover the range asked for, differently on different platforms: one runs on past the
+    /// end of a line into the next, another starts a character early. So the range and its near
+    /// neighbours are tried, and a selection that spills onto the next row is cut back to its
+    /// first row, keeping whichever covers exactly the text wanted.
+    static func bounds(on page: PDFPage, covering range: NSRange, in string: NSString) -> CGRect? {
+        // Spaces and soft hyphens differ between platforms and don't move anything; a newline
+        // does, so it has to match.
+        let squash = { (text: String) in text.filter { ($0.isNewline || !$0.isWhitespace) && $0 != "\u{AD}" } }
+        let expected = squash(string.substring(with: range))
+        // A selection touching either end of a line can spill onto the row before or after it.
+        // Two characters in from each end never does, and the box moves by no more than those.
+        if range.length > 6, let inner = page.selection(for: NSRange(location: range.location + 2, length: range.length - 4)) {
+            let got = squash(inner.string ?? "")
+            if !got.isEmpty, !got.contains(where: \.isNewline), expected.contains(got) {
+                return inner.bounds(for: page)
+            }
+        }
+        let candidates = [range,
+                          NSRange(location: range.location + 1, length: range.length),
+                          NSRange(location: range.location, length: range.length - 1)]
+        var fallback: CGRect?
+        for candidate in candidates where candidate.length > 0 && candidate.location + candidate.length <= string.length {
+            guard let selection = page.selection(for: candidate) else { continue }
+            let got = squash(selection.string ?? "")
+            if got == expected { return selection.bounds(for: page) }
+            // Ran on into the next row: its first row is the text wanted.
+            if got.hasPrefix(expected), got.dropFirst(expected.count).first?.isNewline == true,
+               let row = selection.selectionsByLine().first, squash(row.string ?? "") == expected {
+                return row.bounds(for: page)
+            }
+            // One character short and not spilling: the right place.
+            if fallback == nil, !got.isEmpty, !got.contains(where: \.isNewline), expected.hasPrefix(got),
+               expected.count - got.count <= 1 {
+                fallback = selection.bounds(for: page)
+            }
+        }
+        return fallback ?? page.selection(for: range)?.bounds(for: page)
+    }
+
+    /// Where one character sits.
+    static func glyphBox(at index: Int, in string: NSString, on page: PDFPage) -> CGRect? {
+        bounds(on: page, covering: NSRange(location: index, length: 1), in: string)
+    }
+
+    /// Splits a line of text into the rows of print it covers: while its box is taller than its
+    /// type, cut at the first character that sits a row lower than the line's first.
+    static func rows(of range: NSRange, in attributed: NSAttributedString, on page: PDFPage) -> [NSRange] {
+        let string = attributed.string as NSString
+        var rows: [NSRange] = []
+        var rest = range
+        for _ in 0..<4 {
+            guard rest.length > 1, let rect = bounds(on: page, covering: rest, in: string) else { break }
+            var size: CGFloat = 0
+            attributed.enumerateAttribute(.font, in: rest) { value, _, _ in
+                size = max(size, (value as? PlatformFont)?.pointSize ?? 0)
+            }
+            guard size > 0, rect.height > size * 1.7,
+                  let firstBox = glyphBox(at: rest.location, in: string, on: page) else { break }
+            // Up or down: a line of text can join print from anywhere on the page (a printer's
+            // slug at the foot, run together with a verse at the top of a column).
+            let cut = firstIndex(in: rest, of: string, on: page) { abs($0.midY - firstBox.midY) > size * 0.6 }
+            guard cut > rest.location, cut < rest.location + rest.length else { break }
+            rows.append(NSRange(location: rest.location, length: cut - rest.location))
+            rest = NSRange(location: cut, length: rest.location + rest.length - cut)
+        }
+        rows.append(rest)
+        return rows
+    }
+
+
+    /// The first index in `range` whose glyph satisfies `test`, by binary search along the line
+    /// (characters on one line run left to right). Blank characters take their neighbour's place.
+    static func firstIndex(in range: NSRange, of string: NSString, on page: PDFPage, where test: (CGRect) -> Bool) -> Int {
+        var low = range.location, high = range.location + range.length
+        while low < high {
+            let mid = (low + high) / 2
+            var probe = mid
+            var box: CGRect?
+            while probe < range.location + range.length {
+                if let found = glyphBox(at: probe, in: string, on: page), !found.isEmpty, found.width > 0 { box = found; break }
+                probe += 1
+            }
+            if let box, !test(box) { low = probe + 1 } else { high = mid }
+        }
+        return low
+    }
+
+    /// One platform's text puts a space after every soft hyphen ("be\u{AD} gin\u{AD} ning"); a soft
+    /// hyphen inside a word is followed by the rest of the word, not a space.
+    static func normalizedLine(_ text: NSAttributedString) -> NSAttributedString {
+        let string = text.string as NSString
+        guard string.range(of: "\u{AD} ").location != NSNotFound,
+              let pattern = try? NSRegularExpression(pattern: #"(?<=\p{L})\x{00AD} (?=\p{L})"#) else { return text }
+        let result = NSMutableAttributedString(attributedString: text)
+        for match in pattern.matches(in: text.string, range: NSRange(location: 0, length: string.length)).reversed() {
+            result.replaceCharacters(in: NSRange(location: match.range.location + 1, length: 1), with: "")
+        }
+        return result
+    }
+
     /// Where "Lord" sits on the page, and whether it is set in small capitals — LORD, the way a
     /// Bible prints the divine name. Extraction gives small capitals back as lowercase, but their
     /// widths give them away: a lowercase r is narrow beside its o (about three quarters of its
@@ -389,7 +522,7 @@ struct PDFBibleReader {
         for match in pattern.matches(in: string as String, range: NSRange(location: 0, length: string.length)) {
             let range = match.range
             let letters = (range.location..<(range.location + range.length)).filter { string.character(at: $0) != 0xAD }
-            let boxes = letters.map { page.selection(for: NSRange(location: $0, length: 1))?.bounds(for: page) ?? .zero }
+            let boxes = letters.map { glyphBox(at: $0, in: string, on: page) ?? .zero }
             guard boxes.count == 4, boxes[1].width > 0 else { continue }
             let rect = boxes.reduce(CGRect.null) { $0.union($1) }
             found.append((rect, boxes[2].width / boxes[1].width > 0.88))
@@ -417,7 +550,7 @@ struct PDFBibleReader {
 
     /// A drop cap of two digits is sometimes set as two glyphs, one above the other ("1" over
     /// "0"). Large digit-only pieces in the same place, one just below the other, are one number.
-    static func mergedStackedDigits(_ pieces: [(CGRect, NSAttributedString)]) -> [(CGRect, NSAttributedString)] {
+    static func mergedStackedDigits(_ pieces: [(CGRect, NSAttributedString, NSRange)]) -> [(CGRect, NSAttributedString, NSRange)] {
         func size(_ text: NSAttributedString) -> Double {
             (text.attribute(.font, at: 0, effectiveRange: nil) as? PlatformFont).map { Double($0.pointSize) } ?? 0
         }
@@ -426,7 +559,7 @@ struct PDFBibleReader {
         var result = pieces
         var index = 0
         while index < result.count {
-            let (rect, text) = result[index]
+            let (rect, text, range) = result[index]
             let digits = text.string.trimmingCharacters(in: .whitespacesAndNewlines)
             let big = size(text)
             guard !digits.isEmpty, digits.count <= 2, digits.allSatisfy(\.isNumber), big > typical * 1.8 else {
@@ -441,7 +574,7 @@ struct PDFBibleReader {
             }) {
                 let merged = NSMutableAttributedString(attributedString: text)
                 merged.mutableString.setString(digits + result[below].1.string.trimmingCharacters(in: .whitespacesAndNewlines))
-                result[index] = (rect.union(result[below].0), merged)
+                result[index] = (rect.union(result[below].0), merged, range)
                 result.remove(at: below)
                 continue
             }
