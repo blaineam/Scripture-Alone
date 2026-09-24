@@ -123,7 +123,7 @@ struct ReaderView: View {
         .inspector(isPresented: inspectorShown) {
             Group {
                 if study.isOn && !studyAsSheet {
-                    StudyPanel(onNote: createNoteFromSelection)
+                    StudyPanel()
                 } else if let keepsake = legacy.reading {
                     LegacyNotesPanel(keepsake: keepsake, path: $notesPath)
                 } else {
@@ -138,7 +138,7 @@ struct ReaderView: View {
             .inspectorColumnWidth(min: 300, ideal: 360, max: 480)
         }
         .sheet(isPresented: studySheetShown) {
-            StudyPanel(isSheet: true, onNote: createNoteFromSelection)
+            StudyPanel(isSheet: true)
                 .environment(model)
                 .environment(study)
         }

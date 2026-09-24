@@ -24,8 +24,8 @@
   translation.
 - On iPhone, a verse you tap with Study open stays above the Study sheet (and the maps and
   places it opens): the page scrolls it into the part of the screen still showing, and the end of
-  a chapter can be scrolled clear of the sheet. In the sheet, references and commentary scroll
-  clear of the highlighter bar instead of ending under it.
+  a chapter can be scrolled clear of the sheet. The highlighter bar stays with the page,
+  beneath the Study sheet, and never floats over the commentary or the maps.
 - In Go To, Return opens the topic when the words you typed name one and no verse uses them.
 - Topics: a way to find what the Bible says about what you're going through. In Go To there is
   now a Topics row — Anxiety & Worry, Fear, Grief & Loss, Loneliness and more — and See All opens
