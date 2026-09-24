@@ -58,14 +58,16 @@ enum class StudyTab(@StringRes private val titleRes: Int, @StringRes private val
 /** Where the panel has navigated within itself — iOS's `NavigationStack` destinations. */
 sealed interface StudyRoute {
     data object Sources : StudyRoute
-    data class Viewer(val tab: ViewerTab, val chartId: String? = null) : StudyRoute
     data class Chart(val id: String) : StudyRoute
     data class PlaceDetail(val place: Place) : StudyRoute
     data object Credits : StudyRoute
 
-    /** `ContextViewerRequest.Tab`. */
+    /**
+     * `ContextViewerRequest.Tab`: the Context tab's four views — the chapter's overview, the map to
+     * explore, the whole timeline and the charts — switched in place (`StudyContextBrowser`).
+     */
     enum class ViewerTab(@StringRes private val titleRes: Int) {
-        MAP(R.string.study_viewer_map), TIMELINE(R.string.study_viewer_timeline), CHARTS(R.string.study_viewer_charts);
+        OVERVIEW(R.string.study_viewer_overview), MAP(R.string.study_viewer_map), TIMELINE(R.string.study_viewer_timeline), CHARTS(R.string.study_viewer_charts);
 
         val title: String get() = AppText.get(titleRes)
     }
@@ -97,6 +99,9 @@ class StudyModel(context: Context) {
     /** Pushed destinations inside the panel. */
     val routes = mutableStateListOf<StudyRoute>()
 
+    /** Which of the Context tab's views is showing; back to the overview whenever the Study tab changes. */
+    var contextView by mutableStateOf(StudyRoute.ViewerTab.OVERVIEW)
+
     /** `study.commentarySource`, as iOS stores it. */
     var commentarySource by mutableStateOf(prefs.getString("commentarySource", "calvin") ?: "calvin")
         private set
@@ -104,6 +109,7 @@ class StudyModel(context: Context) {
     fun select(tab: StudyTab) {
         // Not a tab this reader has (the commentary outside English): stays where it is.
         if (tab !in StudyTab.available) return
+        if (tab != this.tab) contextView = StudyRoute.ViewerTab.OVERVIEW
         this.tab = tab
         routes.clear()
         prefs.edit().putString("tab", tab.name).apply()

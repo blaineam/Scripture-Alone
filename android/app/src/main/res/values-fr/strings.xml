@@ -388,6 +388,7 @@
     <string name="study_tab_original_short">Original</string>
     <string name="study_tab_context">Contexte</string>
     <string name="study_tab_context_short">Contexte</string>
+    <string name="study_viewer_overview">Aperçu</string>
     <string name="study_viewer_map">Carte</string>
     <string name="study_viewer_timeline">Chronologie</string>
     <string name="study_viewer_charts">Tableaux</string>

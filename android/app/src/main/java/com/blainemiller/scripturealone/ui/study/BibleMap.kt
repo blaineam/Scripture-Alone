@@ -260,6 +260,11 @@ fun BibleMap(
     modifier: Modifier = Modifier,
     fitToken: Any? = null,
     showsControls: Boolean = true,
+    /**
+     * False for a map shown as a picture in a scrolling page: no pan or zoom to catch the reader's
+     * scroll, no controls, no pin taps — touches pass to whatever holds it.
+     */
+    interactive: Boolean = true,
     onSelect: ((Int) -> Unit)? = null,
 ) {
     val colors = remember(palette.isDark) { MapPalette.of(palette.isDark) }
@@ -317,7 +322,7 @@ fun BibleMap(
             .semantics { contentDescription = summary },
     ) {
         Canvas(
-            Modifier.fillMaxSize()
+            Modifier.fillMaxSize().then(if (!interactive) Modifier else Modifier
                 .pointerInput(Unit) {
                     detectTransformGestures { centroid, pan, zoom, _ ->
                         val c = camera ?: return@detectTransformGestures
@@ -338,7 +343,7 @@ fun BibleMap(
                             .minWithOrNull(compareBy({ if (it.first.emphasized) 0 else 1 }, { it.second }))
                             ?.let { select?.invoke(it.first.id) }
                     }
-                },
+                }),
         ) {
             val c = camera
             if (c == null) {
@@ -350,7 +355,7 @@ fun BibleMap(
                 }
             }
         }
-        if (showsControls) {
+        if (showsControls && interactive) {
             Column(Modifier.align(Alignment.BottomEnd).padding(10.dp)) {
                 MapControl(Icons.Rounded.Add, stringResource(R.string.map_zoom_in), palette) {
                     camera?.let { userMoved = true; camera = it.zoomed(1.8f, sizeDp.center, sizeDp) }

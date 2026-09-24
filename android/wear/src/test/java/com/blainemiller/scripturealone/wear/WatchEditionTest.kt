@@ -127,6 +127,26 @@ class WatchContentTest {
         assertEquals("ASV", esv.translation)
     }
 
+    /** `VerseOfDayCard.text` (iOS 3d560f9): an import the phone sent reads from the watch's own edition. */
+    @Test fun anImportTheWatchHoldsReadsFromItsOwnEdition() {
+        val at = Instant.parse("2026-09-21T12:00:00Z")
+        val today = catalog.verse(at, zone)!!
+        val own = WatchVerseOfDay.at(catalog, at, "ESV", zone, ownText = { "¶ Own words for ${it.display}." })!!
+        assertEquals("ESV", own.translation)
+        assertEquals("Own words for ${today.range!!.display}.", own.text)
+        assertEquals(own.text, WatchVerseOfDay.week(catalog, at, "ESV", zone = zone, ownText = { "¶ Own words for ${it.display}." })[0].third.text)
+        // No text for it on the watch: the list's ASV.
+        val none = WatchVerseOfDay.at(catalog, at, "ESV", zone, ownText = { "" })!!
+        assertEquals("ASV", none.translation)
+        assertEquals(today.text("ASV"), none.text)
+        // A translation the list carries still reads from the list.
+        val bsb = WatchVerseOfDay.at(catalog, at, "BSB", zone, ownText = { "edition" })!!
+        assertEquals(today.text("BSB"), bsb.text)
+        // Being read, it is shown even where the device's language has a Bible of its own.
+        assertEquals("ESV", WatchVerseOfDay.translation("ESV", catalog.translations, listOf("fr-FR"), hasOwnText = true))
+        assertEquals("LSG", WatchVerseOfDay.translation("ESV", catalog.translations, listOf("fr-FR")))
+    }
+
     private val now = Instant.ofEpochSecond(1_790_000_000)
     private fun item(kind: VerseSnapshot.Kind, a: Int, b: Int, color: String? = null, date: Instant = now) =
         VerseSnapshot.Item(kind, "$a-$b", a, b, "", "", color, if (kind == VerseSnapshot.Kind.NOTE) "Note" else null, date)

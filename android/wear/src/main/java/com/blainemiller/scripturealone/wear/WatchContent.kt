@@ -14,7 +14,8 @@ import java.time.ZoneId
 /**
  * Today's passage as the watch shows it — in the app, the tile and the complication. In the translation
  * [translation] picks when the list has it (the Apple Watch's complication shows only the reference;
- * here all three follow the translation the reader reads on the watch), else the ASV.
+ * here all three follow the translation the reader reads on the watch); a translation the list lacks —
+ * an import the phone sent — reads from its own edition ([ownText]); the list's ASV only failing that.
  *
  * [range] is in KJV keys, as the list stores it and routes carry it; the reference is drawn in
  * [numbering] — the shown Bible's own verse numbers when the watch holds its edition.
@@ -23,12 +24,14 @@ data class WatchVerseOfDay(
     val verse: DailyVerse,
     val translation: String,
     val numbering: VerseNumbering = VerseNumbering.IDENTITY,
+    /** The passage from the watch's own edition of [translation], when the list doesn't carry it. */
+    val ownText: String? = null,
 ) {
     val range: VerseRange? get() = verse.range
     private val nativeRange: VerseRange? get() = range?.let { numbering.nativeRange(it) ?: it }
     val reference: String get() = nativeRange?.display.orEmpty()
     val shortReference: String get() = nativeRange?.abbreviatedDisplay.orEmpty()
-    val text: String get() = verse.text(translation)
+    val text: String get() = ownText ?: verse.text(translation)
 
     /** The circular complication's two lines: "Ps" over "23:1" — `VerseAccessoryView.circular`. */
     val shortTextLines: Pair<String, String> get() = VerseText.split(shortReference)
@@ -40,10 +43,14 @@ data class WatchVerseOfDay(
         fun at(
             catalog: DailyVerseCatalog?, instant: Instant, translation: String, zone: ZoneId = ZoneId.systemDefault(),
             numbering: VerseNumbering = VerseNumbering.IDENTITY,
+            ownText: ((VerseRange) -> String?)? = null,
         ): WatchVerseOfDay? {
             val verse = catalog?.verse(instant, zone) ?: return null
-            val shown = if (verse.text.containsKey(translation)) translation else DailyVerseCatalog.FALLBACK_TRANSLATION
-            return WatchVerseOfDay(verse, shown, if (shown == translation) numbering else VerseNumbering.IDENTITY)
+            if (verse.text.containsKey(translation)) return WatchVerseOfDay(verse, translation, numbering)
+            // `VerseOfDayCard.text` on the Apple Watch: the watch's own edition, paragraph marks dropped.
+            val own = verse.range?.let { ownText?.invoke(it) }?.replace("¶ ", "")?.trim()?.takeIf { it.isNotEmpty() }
+            if (own != null) return WatchVerseOfDay(verse, translation, numbering, own)
+            return WatchVerseOfDay(verse, DailyVerseCatalog.FALLBACK_TRANSLATION)
         }
 
         /**
@@ -53,8 +60,10 @@ data class WatchVerseOfDay(
          * otherwise that Bible ([LocaleBible]), which the list carries for all eight even before the phone
          * has sent its edition; otherwise [current].
          */
-        fun translation(current: String, available: List<String>, languages: List<String>): String {
+        fun translation(current: String, available: List<String>, languages: List<String>, hasOwnText: Boolean = false): String {
             if (current in available && LocaleBible.isLocaleBible(current)) return current
+            // One the list lacks but the watch holds (an import the phone sent) is the reader's own choice.
+            if (current !in available && hasOwnText) return current
             val local = LocaleBible.forPreferredLanguages(languages)?.takeIf { it in available }
             return local ?: current
         }
@@ -66,12 +75,13 @@ data class WatchVerseOfDay(
         fun week(
             catalog: DailyVerseCatalog?, from: Instant, translation: String, days: Int = 7, zone: ZoneId = ZoneId.systemDefault(),
             numbering: VerseNumbering = VerseNumbering.IDENTITY,
+            ownText: ((VerseRange) -> String?)? = null,
         ): List<Triple<Instant, Instant, WatchVerseOfDay>> {
             val result = mutableListOf<Triple<Instant, Instant, WatchVerseOfDay>>()
             var start = from
             repeat(days) {
                 val end = DailyVerseCatalog.nextMidnight(start, zone)
-                at(catalog, start, translation, zone, numbering)?.let { result += Triple(start, end, it) }
+                at(catalog, start, translation, zone, numbering, ownText)?.let { result += Triple(start, end, it) }
                 start = end
             }
             return result

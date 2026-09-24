@@ -388,6 +388,7 @@
     <string name="study_tab_original_short">원어</string>
     <string name="study_tab_context">배경</string>
     <string name="study_tab_context_short">배경</string>
+    <string name="study_viewer_overview">개요</string>
     <string name="study_viewer_map">지도</string>
     <string name="study_viewer_timeline">연대표</string>
     <string name="study_viewer_charts">도표</string>

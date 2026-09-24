@@ -166,13 +166,13 @@ fun ContextTab(chapter: ChapterRef, verse: Int?, study: StudyModel, reader: Read
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SymbolHeading(Icons.Rounded.Timeline, stringResource(R.string.context_when), palette)
             WhenSection(chapter, loaded.data.eras, loaded.time, loaded.events, palette, reader) {
-                study.push(StudyRoute.Viewer(StudyRoute.ViewerTab.TIMELINE))
+                study.contextView = StudyRoute.ViewerTab.TIMELINE
             }
         }
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SymbolHeading(Icons.Rounded.Map, stringResource(R.string.context_where), palette)
             WhereSection(chapter, verse, loaded.places, library, palette,
-                openMap = { study.push(StudyRoute.Viewer(StudyRoute.ViewerTab.MAP)) },
+                openMap = { study.contextView = StudyRoute.ViewerTab.MAP },
                 openPlace = { study.push(StudyRoute.PlaceDetail(it)) })
         }
         val suggested = loaded.data.charts.filter { chapter.book in it.scope }
@@ -181,7 +181,7 @@ fun ContextTab(chapter: ChapterRef, verse: Int?, study: StudyModel, reader: Read
             Spacer(Modifier.height(4.dp))
             for (chart in suggested) ChartCard(chart, palette, framed = true) { study.push(StudyRoute.Chart(chart.id)) }
             AccentButton(stringResource(if (suggested.isEmpty()) R.string.context_browse_charts else R.string.context_all_charts), palette, icon = Icons.Rounded.GridView) {
-                study.push(StudyRoute.Viewer(StudyRoute.ViewerTab.CHARTS))
+                study.contextView = StudyRoute.ViewerTab.CHARTS
             }
         }
         ImportedImagesSection(chapter, palette)
@@ -334,18 +334,19 @@ private fun WhereSection(
     // The reader's verse's places first, so they win label space.
     val sorted = mentions.sortedByDescending { m -> verse != null && m.verses.any { it % 1000 == verse } }
     val pins = sorted.map { MapPin.of(it.place) }
-    var selected by remember(chapter) { mutableStateOf<Int?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         val openLargeMap = stringResource(R.string.context_open_large_map)
-        Box(Modifier.fillMaxWidth().height(260.dp).clip(RoundedCornerShape(14.dp))) {
+        // A picture of the chapter's places, so the page scrolls straight past it; the Map view is the
+        // one to pan and zoom, and a tap anywhere opens it.
+        Box(
+            Modifier.fillMaxWidth().height(260.dp).clip(RoundedCornerShape(14.dp))
+                .clickable(role = Role.Button, onClickLabel = openLargeMap, onClick = openMap),
+        ) {
             if (library != null) {
                 BibleMap(
-                    MapContent(pins, selectedId = selected, fitRect = MapContent.fitRect(pins.filter { !it.isArea || pins.size < 3 })),
-                    library, palette, Modifier.fillMaxSize(), fitToken = chapter,
-                ) { id ->
-                    selected = id
-                    mentions.firstOrNull { it.place.id == id }?.place?.let(openPlace)
-                }
+                    MapContent(pins, fitRect = MapContent.fitRect(pins.filter { !it.isArea || pins.size < 3 })),
+                    library, palette, Modifier.fillMaxSize(), fitToken = chapter, interactive = false,
+                )
             }
             Box(
                 Modifier.align(Alignment.TopEnd).padding(10.dp).size(34.dp).glass(palette, CircleShape, palette.page, lifted = true)
@@ -443,14 +444,29 @@ private fun ChartCard(chart: ChartInfo, palette: ReaderPalette, framed: Boolean,
     }
 }
 
-// ---- The viewer: map, timeline, charts -----------------------------------------------------------
+// ---- The browser: overview, map, timeline, charts ------------------------------------------------
 
+/**
+ * Study's Context tab — `StudyContextBrowser`: the chapter's overview, the map to explore, the whole
+ * timeline and the charts, switched in place, so the Study sheet holds all of it and the reader needs
+ * no map button of its own.
+ */
 @Composable
-fun ContextViewer(tab: StudyRoute.ViewerTab, chapter: ChapterRef, study: StudyModel, reader: ReaderViewModel, palette: ReaderPalette) {
-    when (tab) {
-        StudyRoute.ViewerTab.MAP -> MapExplorer(chapter, study, palette)
-        StudyRoute.ViewerTab.TIMELINE -> FullTimeline(chapter, reader, palette)
-        StudyRoute.ViewerTab.CHARTS -> ChartsList(chapter, study, palette)
+fun ContextBrowser(chapter: ChapterRef, verse: Int?, study: StudyModel, reader: ReaderViewModel, palette: ReaderPalette) {
+    Column(Modifier.fillMaxSize()) {
+        val views = StudyRoute.ViewerTab.entries
+        SegmentedPicker(
+            views.map { it.title }, study.contextView.ordinal, palette,
+            Modifier.padding(horizontal = 16.dp).padding(vertical = 8.dp),
+        ) { study.contextView = views[it] }
+        Box(Modifier.fillMaxWidth().weight(1f)) {
+            when (study.contextView) {
+                StudyRoute.ViewerTab.OVERVIEW -> ContextTab(chapter, verse, study, reader, palette)
+                StudyRoute.ViewerTab.MAP -> MapExplorer(chapter, study, palette)
+                StudyRoute.ViewerTab.TIMELINE -> FullTimeline(chapter, reader, palette)
+                StudyRoute.ViewerTab.CHARTS -> ChartsList(chapter, study, palette)
+            }
+        }
     }
 }
 

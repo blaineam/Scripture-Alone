@@ -92,14 +92,6 @@ fun StudyPanel(
                     tabs.map { it.shortTitle }, tabs.indexOf(study.tab).coerceAtLeast(0), palette,
                     Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
                 ) { study.select(tabs[it]) }
-            } else if (route is StudyRoute.Viewer) {
-                SegmentedPicker(
-                    StudyRoute.ViewerTab.entries.map { it.title }, route.tab.ordinal, palette,
-                    Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
-                ) {
-                    study.pop()
-                    study.push(StudyRoute.Viewer(StudyRoute.ViewerTab.entries[it]))
-                }
             }
             Box(Modifier.fillMaxWidth().height(0.5.dp).background(SheetColors.separator(palette)))
         }
@@ -109,7 +101,6 @@ fun StudyPanel(
                 null -> TabContent(study, reader, palette, chapter)
                 StudyRoute.Sources -> StudySourcesScreen(palette)
                 StudyRoute.Credits -> ContextCredits(palette)
-                is StudyRoute.Viewer -> ContextViewer(route.tab, chapter, study, reader, palette)
                 is StudyRoute.Chart -> ChartScreen(route.id, chapter, reader, palette)
                 is StudyRoute.PlaceDetail -> PlaceDetailScreen(route.place, reader, palette)
             }
@@ -121,9 +112,6 @@ fun StudyPanel(
 private fun routeTitle(route: StudyRoute, study: StudyModel, reader: ReaderViewModel): String = when (route) {
     StudyRoute.Sources -> stringResource(R.string.study_resources_title)
     StudyRoute.Credits -> stringResource(R.string.study_sources_credits)
-    is StudyRoute.Viewer -> com.blainemiller.scripturealone.data.Canon.display(
-        study.verse?.let { ChapterRef(it.book, it.chapter) } ?: reader.location,
-    )
     is StudyRoute.Chart -> StudyLibrary.contextDataOrNull()?.charts?.firstOrNull { it.id == route.id }?.title ?: stringResource(R.string.study_chart_fallback)
     is StudyRoute.PlaceDetail -> route.place.name
 }
@@ -162,7 +150,7 @@ private fun VerseHeader(study: StudyModel, reader: ReaderViewModel, palette: Rea
 private fun TabContent(study: StudyModel, reader: ReaderViewModel, palette: ReaderPalette, chapter: ChapterRef) {
     val verse = study.verse
     when {
-        study.tab == StudyTab.CONTEXT -> ContextTab(chapter, verse?.verse, study, reader, palette)
+        study.tab == StudyTab.CONTEXT -> ContextBrowser(chapter, verse?.verse, study, reader, palette)
         verse == null -> ContentUnavailable(
             Icons.Rounded.TouchApp, stringResource(R.string.study_tap_verse_title),
             stringResource(R.string.study_tap_verse_body),

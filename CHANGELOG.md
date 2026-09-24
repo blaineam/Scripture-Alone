@@ -7,6 +7,12 @@
   and Charts — so the reader's bottom bar loses its map button and sits balanced. The overview
   map is a still picture (scrolling passes over it; a tap opens the Map view to explore). Study's
   button is an open book.
+- On Android too, Study's Context tab switches in place between Overview, Map, Timeline and
+  Charts, and its overview map is a still picture — no pan, zoom or zoom buttons, so scrolling
+  passes over it — that opens the Map view with a tap anywhere.
+- The Wear OS Verse of the Day — home card, tile and complication — reads in the translation the
+  watch is reading, from the watch's own copy when the daily list doesn't carry it (the ASV only
+  failing that).
 - Apple Watch wears the accent colour you chose on your iPhone, and has a Highlights list beside
   Favorites and Notes: every highlighted verse in Bible order, in its colour, a tap from reading.
 - The Verse of the Day widget reads in the translation you're reading even when it's one you

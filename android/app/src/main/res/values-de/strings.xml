@@ -388,6 +388,7 @@
     <string name="study_tab_original_short">Urtext</string>
     <string name="study_tab_context">Kontext</string>
     <string name="study_tab_context_short">Kontext</string>
+    <string name="study_viewer_overview">Überblick</string>
     <string name="study_viewer_map">Karte</string>
     <string name="study_viewer_timeline">Zeitleiste</string>
     <string name="study_viewer_charts">Diagramme</string>

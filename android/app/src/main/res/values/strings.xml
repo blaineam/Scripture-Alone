@@ -700,6 +700,8 @@
     <string name="study_tab_context">Context</string>
     <!-- Study panel tab, short form for the segmented control on narrow screens. Keep it short. -->
     <string name="study_tab_context_short">Context</string>
+    <!-- Tab of the Bible context viewer: the chapter's summary page. Keep it short. -->
+    <string name="study_viewer_overview">Overview</string>
     <!-- Tab of the Bible context viewer. Keep it short. -->
     <string name="study_viewer_map">Map</string>
     <!-- Tab of the Bible context viewer. Keep it short. -->

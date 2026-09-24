@@ -388,6 +388,7 @@
     <string name="study_tab_original_short">原語</string>
     <string name="study_tab_context">背景</string>
     <string name="study_tab_context_short">背景</string>
+    <string name="study_viewer_overview">概要</string>
     <string name="study_viewer_map">地図</string>
     <string name="study_viewer_timeline">年表</string>
     <string name="study_viewer_charts">図表</string>

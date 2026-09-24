@@ -10,6 +10,7 @@ import com.blainemiller.scripturealone.companion.VerseSnapshot
 import com.blainemiller.scripturealone.companion.WatchEditionBuilder
 import com.blainemiller.scripturealone.companion.WearLink
 import com.blainemiller.scripturealone.data.VerseNumbering
+import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.canon.BookNames
 import com.blainemiller.scripturealone.data.daily.DailyVerse
 import com.blainemiller.scripturealone.data.daily.DailyVerseCatalog
@@ -266,26 +267,37 @@ class WatchBible private constructor(private val app: Context) {
 
     /**
      * The translation Verse of the Day shows ([WatchVerseOfDay.translation]): the one being read, unless
-     * that is English on a device whose language has a Bible of its own — the reader sees no English.
+     * that is English on a device whose language has a Bible of its own — the reader sees no English. One
+     * the daily list lacks but the watch holds (an import the phone sent) is shown from its own edition.
      */
     fun dailyTranslation(catalog: DailyVerseCatalog?): String = WatchVerseOfDay.translation(
         current = translation,
         available = catalog?.translations.orEmpty(),
         languages = LocaleList.getDefault().toLanguageTags().split(','),
+        hasOwnText = editions.any { it.id == translation },
     )
 
     /** Today's passage as the app, the tile and the complication show it. Call off the main thread. */
     fun verseOfDay(at: Instant = Instant.now()): WatchVerseOfDay? {
         val catalog = WatchDaily.catalog(app)
         val shown = dailyTranslation(catalog)
-        return WatchVerseOfDay.at(catalog, at, shown, numbering = numbering(shown))
+        return WatchVerseOfDay.at(catalog, at, shown, numbering = numbering(shown), ownText = ownText(shown))
     }
 
     /** Today and the next days, for the complication's timeline. Call off the main thread. */
     fun verseOfDayWeek(from: Instant = Instant.now()): List<Triple<Instant, Instant, WatchVerseOfDay>> {
         val catalog = WatchDaily.catalog(app)
         val shown = dailyTranslation(catalog)
-        return WatchVerseOfDay.week(catalog, from, shown, numbering = numbering(shown))
+        return WatchVerseOfDay.week(catalog, from, shown, numbering = numbering(shown), ownText = ownText(shown))
+    }
+
+    /** The passage (KJV keys) from the watch's edition of [id], for a translation the daily list lacks. */
+    private fun ownText(id: String): (VerseRange) -> String? = { range ->
+        try {
+            editionIfPresent(id)?.text(range)
+        } catch (e: RuntimeException) {
+            null
+        }
     }
 
     /** [id]'s numbering if the watch holds a locale edition of it; the English Bibles number as the KJV. */
