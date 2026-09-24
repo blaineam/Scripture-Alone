@@ -2,6 +2,7 @@
 
 ## After 1.0.0
 
+- The Verse of the Day on the watch reads in the translation the watch is reading, an imported one included.
 - On iPhone, Study's Context tab holds everything Maps & Timeline did — Overview, Map, Timeline
   and Charts — so the reader's bottom bar loses its map button and sits balanced. The overview
   map is a still picture (scrolling passes over it; a tap opens the Map view to explore). Study's
@@ -19,6 +20,19 @@
   word as before. Re-import a translation to get it.
 - Android reads an import's quotation marks for the words of Christ the same way, with the same
   results: the ESV 2,045 of the BSB's 2,047 red verses, the PDF 2,028, none marked wrongly.
+- Android's Notes panel has the Highlights list too — every highlighted verse in Bible order,
+  neighbouring verses in one colour as one passage with its colour's dot, tap to go there, long
+  press to remove — and Notes, Highlights and Favorites all narrow to All Books, This Book or This
+  Chapter.
+- On Android, Commentary picks from a menu of full names once there are more than three
+  commentaries; a topic opened from Go To's search is kept in Recent Searches (a crisis search
+  never is), and Return opens the topic when no verse uses the words typed.
+- On an Android phone, a verse you tap with Study open stays above the Study sheet, and the end of
+  a chapter can be scrolled clear of it. The highlighter bar stays beneath the sheet.
+- The Wear OS app wears the accent colour chosen on the phone and has a Highlights list beside
+  Favorites and Notes. Android's Verse of the Day widget reads in an imported translation too (the
+  next two weeks are written for it ahead, when its terms allow keeping the text) and is labelled
+  with its abbreviation.
 - Compare names an imported translation by its abbreviation, not its internal file name.
 - "Find my notes", "Show my notes" or "Pull up my notes in Scripture Alone" makes Siri show the
   notes it found, each opening in the app with a tap, instead of only saying how many.

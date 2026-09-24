@@ -65,6 +65,14 @@ private struct VerseOfDayCard: View {
     let verse: DailyVerse
     let range: VerseRange
 
+    /// In the translation the watch is reading: the daily list carries the bundled Bibles; any
+    /// other (an import the phone sent) reads from its own edition, the list's ASV only failing that.
+    private var text: String {
+        if verse.text[bible.translation] != nil { return verse.text(in: bible.translation) }
+        let own = bible.text(range).replacingOccurrences(of: "¶ ", with: "")
+        return own.isEmpty ? verse.text(in: bible.translation) : own
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Label("Verse of the Day", systemImage: "sun.horizon.fill")
@@ -74,7 +82,7 @@ private struct VerseOfDayCard: View {
             Text(range.display)
                 .font(.headline)
                 .foregroundStyle(.tint)
-            Text(verse.text(in: bible.translation))
+            Text(text)
                 .font(.body)
                 .lineLimit(4)
         }
