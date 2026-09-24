@@ -1,6 +1,7 @@
 import AppIntents
 import Foundation
 import ScriptureAloneCore
+import SwiftUI
 
 // MARK: Notes
 
@@ -66,12 +67,47 @@ struct FindNotesIntent: AppIntent {
 
     init() {}
 
+    /// Siri shows the notes it found, not just how many: the first few, each opening in the app.
     @MainActor
-    func perform() async throws -> some ReturnsValue<[NoteEntity]> & ProvidesDialog {
+    func perform() async throws -> some ReturnsValue<[NoteEntity]> & ProvidesDialog & ShowsSnippetView {
         let found = NotesSearch.matching(query ?? "").map { NoteEntity($0) }
         return .result(value: found,
                        dialog: IntentDialog(LocalizedStringResource("Found \(found.count) notes.",
-                                                                    comment: "Siri reports how many notes matched. %lld is the count.")))
+                                                                    comment: "Siri reports how many notes matched. %lld is the count.")),
+                       view: NotesSnippet(notes: Array(found.prefix(5)), more: max(0, found.count - 5)))
+    }
+}
+
+/// The notes a Find Notes request turned up, as Siri and Shortcuts show them.
+struct NotesSnippet: View {
+    let notes: [NoteEntity]
+    let more: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(notes, id: \.id) { note in
+                Button(intent: OpenNoteIntent(target: note)) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(note.title).font(.headline).lineLimit(1)
+                        if !note.passages.isEmpty {
+                            Text(note.passages).font(.footnote.weight(.semibold)).foregroundStyle(.tint).lineLimit(1)
+                        }
+                        if !note.excerpt.isEmpty {
+                            Text(note.excerpt).font(.footnote).foregroundStyle(.secondary).lineLimit(2)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .buttonStyle(.plain)
+            }
+            if more > 0 {
+                Text("And \(more) more in the Notes panel.",
+                     comment: "Under the notes Siri shows: how many more matched. %lld is the count.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding()
     }
 }
 
@@ -88,6 +124,10 @@ struct OpenNoteIntent: OpenIntent {
     var target: NoteEntity
 
     init() {}
+
+    init(target: NoteEntity) {
+        self.target = target
+    }
 
     @MainActor
     func perform() async throws -> some IntentResult {

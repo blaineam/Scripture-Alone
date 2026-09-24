@@ -6156,6 +6156,66 @@
         }
       }
     },
+    "And %lld more in the Notes panel." : {
+      "comment" : "Under the notes Siri shows: how many more matched. %lld is the count.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Und %lld weitere im Notizenbereich."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "And %lld more in the Notes panel."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Y %lld más en el panel de notas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Et %lld de plus dans le panneau Notes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E altre %lld nel pannello Note."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ほかに %lld 件がノートパネルにあります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노트 패널에 %lld개가 더 있습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E mais %lld no painel de notas."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "笔记面板中还有 %lld 条。"
+          }
+        }
+      }
+    },
     "Appearance" : {
       "localizations" : {
         "de" : {

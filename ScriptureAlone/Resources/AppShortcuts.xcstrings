@@ -192,9 +192,12 @@
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
-          "stringUnit" : {
+          "stringSet" : {
             "state" : "translated",
-            "value" : "Meine Notizen in ${applicationName} finden"
+            "values" : [
+              "Meine Notizen in ${applicationName} finden",
+              "Meine Notizen in ${applicationName} zeigen"
+            ]
           }
         },
         "en" : {
@@ -202,50 +205,74 @@
             "state" : "new",
             "values" : [
               "Find my notes in ${applicationName}",
-              "Search my notes in ${applicationName}"
+              "Search my notes in ${applicationName}",
+              "Show my notes in ${applicationName}",
+              "Pull up my notes in ${applicationName}",
+              "Open my notes in ${applicationName}"
             ]
           }
         },
         "es" : {
-          "stringUnit" : {
+          "stringSet" : {
             "state" : "translated",
-            "value" : "Buscar mis notas en ${applicationName}"
+            "values" : [
+              "Buscar mis notas en ${applicationName}",
+              "Mostrar mis notas en ${applicationName}"
+            ]
           }
         },
         "fr" : {
-          "stringUnit" : {
+          "stringSet" : {
             "state" : "translated",
-            "value" : "Trouver mes notes dans ${applicationName}"
+            "values" : [
+              "Trouver mes notes dans ${applicationName}",
+              "Afficher mes notes dans ${applicationName}"
+            ]
           }
         },
         "it" : {
-          "stringUnit" : {
+          "stringSet" : {
             "state" : "translated",
-            "value" : "Trova le mie note in ${applicationName}"
+            "values" : [
+              "Trova le mie note in ${applicationName}",
+              "Mostra le mie note in ${applicationName}"
+            ]
           }
         },
         "ja" : {
-          "stringUnit" : {
+          "stringSet" : {
             "state" : "translated",
-            "value" : "${applicationName}でノートを検索"
+            "values" : [
+              "${applicationName}でノートを検索",
+              "${applicationName}でノートを表示"
+            ]
           }
         },
         "ko" : {
-          "stringUnit" : {
+          "stringSet" : {
             "state" : "translated",
-            "value" : "${applicationName}에서 내 노트 찾기"
+            "values" : [
+              "${applicationName}에서 내 노트 찾기",
+              "${applicationName}에서 내 노트 보기"
+            ]
           }
         },
         "pt-BR" : {
-          "stringUnit" : {
+          "stringSet" : {
             "state" : "translated",
-            "value" : "Encontrar minhas notas no ${applicationName}"
+            "values" : [
+              "Encontrar minhas notas no ${applicationName}",
+              "Mostrar minhas notas no ${applicationName}"
+            ]
           }
         },
         "zh-Hans" : {
-          "stringUnit" : {
+          "stringSet" : {
             "state" : "translated",
-            "value" : "在 ${applicationName} 中查找我的笔记"
+            "values" : [
+              "在 ${applicationName} 中查找我的笔记",
+              "在 ${applicationName} 中显示我的笔记"
+            ]
           }
         }
       }

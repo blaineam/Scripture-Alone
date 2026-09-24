@@ -89,6 +89,9 @@ nonisolated struct ScriptureAloneShortcuts: AppShortcutsProvider {
             phrases: [
                 "Find my notes in \(.applicationName)",
                 "Search my notes in \(.applicationName)",
+                "Show my notes in \(.applicationName)",
+                "Pull up my notes in \(.applicationName)",
+                "Open my notes in \(.applicationName)",
             ],
             shortTitle: LocalizedStringResource("Find Notes", comment: "App Shortcut tile title"),
             systemImageName: "note.text"

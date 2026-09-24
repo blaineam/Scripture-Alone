@@ -2,6 +2,8 @@
 
 ## After 1.0.0
 
+- "Find my notes", "Show my notes" or "Pull up my notes in Scripture Alone" makes Siri show the
+  notes it found, each opening in the app with a tap, instead of only saying how many.
 - Notes has a Highlights list beside Notes and Favorites: every highlighted verse in Bible
   order, neighbouring verses in one colour read as one passage, tap to go there, swipe to remove.
   All three narrow to All Books, This Book or This Chapter.
