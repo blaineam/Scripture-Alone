@@ -179,6 +179,10 @@ public struct ExtractedBible: Sendable {
         return chapterOrder.compactMap { seen.insert($0.book).inserted ? $0.book : nil }.sorted()
     }
 
+    func hasVerses(in book: BookID) -> Bool {
+        chapterOrder.contains { $0.book == book }
+    }
+
     public var verseCount: Int { verses.count }
     public var isEmpty: Bool { verses.isEmpty }
 
@@ -323,6 +327,9 @@ public enum VerseMarkupShape: String, Sendable, Hashable, Codable, CaseIterable 
     case numberClass
     /// `<sup>3</sup>` — a superscript holding nothing but digits.
     case superscript
+    /// `<b>3</b>`, `<span class="b">3</span>` — a bold number. The weakest evidence of all, so it
+    /// wins only in a file with nothing better.
+    case boldNumber
     /// USFM `\c` / `\v` markers — unambiguous, so no detection is needed.
     case usfmMarkers
     /// Nothing recognisable.
@@ -334,6 +341,7 @@ public enum VerseMarkupShape: String, Sendable, Hashable, Codable, CaseIterable 
         case .verseAnchor: "verse anchors"
         case .numberClass: "numbered classes"
         case .superscript: "superscript numbers"
+        case .boldNumber: "bold numbers"
         case .usfmMarkers: "USFM markers"
         case .none: "no verse markup"
         }

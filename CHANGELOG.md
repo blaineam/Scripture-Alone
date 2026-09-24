@@ -2,6 +2,14 @@
 
 ## After 1.0.0
 
+- Importing a study-Bible ePub brings in the whole Bible and nothing but the Bible. Chapters set
+  as drop caps keep their first verse; each file's own title says which book it is; psalm titles,
+  acrostic letters and section headings land above the verse they introduce; indented poetry
+  keeps its indent. Study notes, cross-reference letters, boxed essays, map captions,
+  concordances, footnote and cross-reference pages, and "next book" links no longer run into
+  the text, and the translation's own footnotes keep only their note. Red letters are kept
+  wherever the file colors them, under any class name its stylesheet makes red or an inline
+  color.
 - The commentary picker has an ⓘ that says where each commentator stands — Calvin (Reformed, infant
   baptism, Presbyterian), Gill (Particular Baptist) and Jamieson-Fausset-Brown (Presbyterian and
   Anglican) — so a reader knows whose tradition is speaking on baptism and church-order passages.

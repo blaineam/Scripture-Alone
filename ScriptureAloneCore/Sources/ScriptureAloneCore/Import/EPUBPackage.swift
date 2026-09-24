@@ -116,6 +116,11 @@ public struct EPUBPackage: Sendable {
         Self.text(try zip.data(for: item.path))
     }
 
+    /// Every stylesheet the manifest lists, decoded. Unreadable ones are skipped: styling is a hint.
+    public var stylesheets: [String] {
+        manifest.filter { $0.mediaType == "text/css" }.compactMap { try? document($0) }
+    }
+
     /// Every file name in the archive, for diagnostics. Reading a name decompresses nothing.
     public var entryNames: [String] { zip.names }
 
