@@ -226,6 +226,22 @@ public struct ExtractedBible: Sendable {
     /// A study Bible's own material, kept apart from the text: its notes, introductions, essays
     /// and pictures.
     public internal(set) var study = ExtractedStudy()
+    /// The words of Christ were carried over from another translation, not marked by the file.
+    public internal(set) var redLettersInferred = false
+
+    mutating func setRed(_ red: [ScalarSpan], for ref: VerseRef) {
+        verses[ref]?.red = red
+    }
+
+    mutating func updateFragments(in chapter: ChapterRef, _ change: (inout ExtractedFragment) -> Void) {
+        guard var chapterBlocks = blocks[chapter] else { return }
+        for blockIndex in chapterBlocks.indices {
+            for fragmentIndex in chapterBlocks[blockIndex].fragments.indices {
+                change(&chapterBlocks[blockIndex].fragments[fragmentIndex])
+            }
+        }
+        blocks[chapter] = chapterBlocks
+    }
 
     public var books: [BookID] {
         var seen: Set<BookID> = []

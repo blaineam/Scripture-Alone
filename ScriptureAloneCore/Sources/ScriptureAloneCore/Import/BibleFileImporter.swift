@@ -107,10 +107,20 @@ public struct BibleFileImporter: Sendable {
 
     /// Reads the file and writes the store. `identity` overrides what the file said about itself —
     /// the import sheet is expected to pass the name and copyright line the user confirmed.
+    ///
+    /// - Parameter redLetters: a translation that marks the words of Christ, to carry them over
+    ///   from when the file marks none of its own (`inferRedLetters`). Verses that don't align
+    ///   with it are left as they are.
     @discardableResult
     public func importBible(at url: URL, as identity: ImportedTranslationIdentity? = nil,
-                            into directory: URL) throws -> BibleImportResult {
-        let (bible, preview) = try read(url)
+                            into directory: URL, redLetters: BibleStore? = nil) throws -> BibleImportResult {
+        var (bible, preview) = try read(url)
+        if let redLetters, options.redLetters {
+            bible.inferRedLetters { ref in
+                guard let verse = (try? redLetters.verses(in: VerseRange(ref, ref)))?.first else { return nil }
+                return (verse.text, RedLetterInference.scalarSpans(verse.red, in: verse.text))
+            }
+        }
         let chosen = identity ?? preview.identity
         let storeURL = directory.appending(path: Self.storeFilename(for: chosen))
         let report = try ImportedBibleBuilder.write(bible, identity: chosen, to: storeURL)

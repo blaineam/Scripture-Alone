@@ -116,6 +116,7 @@ public enum ImportedBibleBuilder {
             try writeChapters(db, bible: bible)
             try writeVerses(db, bible: bible)
             if !bible.study.isEmpty { try writeStudy(db, study: bible.study, name: identity.name) }
+            if bible.redLettersInferred { try exec(db, "INSERT OR REPLACE INTO meta VALUES ('red_letters', 'inferred')") }
             try exec(db, "COMMIT")
             try exec(db, "INSERT INTO verses_fts(verses_fts) VALUES ('rebuild')")
             try exec(db, "INSERT INTO verses_fts(verses_fts) VALUES ('optimize')")

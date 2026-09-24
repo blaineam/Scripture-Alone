@@ -67,8 +67,14 @@ final class ImportedLibrary {
         // Files handed over by the document picker are outside our sandbox until asked.
         let scoped = url.startAccessingSecurityScopedResource()
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        // A file that marks no words of Christ can take them from a translation that does, when
+        // one is on the device (only verses that align closely are marked).
+        let redLetters = [AssetPack.bsb, .kjv].lazy
+            .map(AssetLibrary.installedURL(for:))
+            .first { FileManager.default.fileExists(atPath: $0.path) }
         let result = try await Task.detached(priority: .userInitiated) {
-            try BibleFileImporter().importBible(at: url, as: identity, into: directory)
+            try BibleFileImporter().importBible(at: url, as: identity, into: directory,
+                                                redLetters: redLetters.flatMap { try? BibleStore(url: $0) })
         }.value
         reload()
         await ImportedBibleSync.shared.storeWritten(at: result.storeURL)

@@ -2,6 +2,11 @@
 
 ## After 1.0.0
 
+- An imported English translation whose file doesn't mark the words of Christ gets them from
+  the BSB (or KJV) on the device: each verse is matched word for word, and only the words that
+  line up with red ones turn red — "Jesus said to him" stays black, "I am the way" turns red. A
+  verse that doesn't line up closely, or a translation in another language, is left as it is,
+  and a file that marks its own red letters keeps them.
 - A study Bible you import brings its study material with it, kept apart from the text: its
   notes appear as a source in the Commentary picker (each note on every verse it covers), book
   introductions and outlines open with each book's first chapter, essays sit at the verse they

@@ -46,7 +46,18 @@ import Testing
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         var id = preview.identity
         if id.copyright.isEmpty { id.copyright = "probe" }
-        let result = try BibleFileImporter().importBible(at: url, as: id, into: dir)
+        let reference = env["SA_IMPORT_PROBE_RED"].flatMap { try? BibleStore(url: URL(filePath: $0)) }
+        let result = try BibleFileImporter().importBible(at: url, as: id, into: dir, redLetters: reference)
+        if reference != nil {
+            let written = try BibleStore(url: result.storeURL)
+            var redLines: [String] = []
+            for ref in [VerseRef(.john, 3, 16), VerseRef(.john, 14, 6), VerseRef(.matthew, 5, 3), VerseRef(.mark, 1, 15), VerseRef(.john, 3, 1)] {
+                guard let verse = try written.verses(in: VerseRange(ref, ref)).first else { continue }
+                let ns = verse.text as NSString
+                redLines.append("\(ref.display): \(verse.text) || RED: " + verse.red.map { ns.substring(with: $0) }.joined(separator: " | "))
+            }
+            try redLines.joined(separator: "\n").write(to: out.appending(path: "red.txt"), atomically: true, encoding: .utf8)
+        }
         if let studyStore = ImportedStudyStore(url: result.storeURL, info: try BibleStore(url: result.storeURL).info) {
             var studyLines = ["source: \(studyStore.source.name) (\(studyStore.source.shortName))"]
             for entry in studyStore.commentary(on: VerseRef(.john, 3, 16)) { studyLines.append("JOHN 3:16 [\(entry.range?.display ?? "-")] \(entry.text.prefix(160))") }
