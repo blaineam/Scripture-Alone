@@ -31,7 +31,12 @@ data class ShareSource(
      * Psalm 51:12 is the KJV's 51:10; see `VerseNumbering`).
      */
     val displayRanges: List<VerseRange> = ranges,
+    /** The abbreviated notice the publisher accepts in non-salable media ("(ESV)"), when it has one. */
+    val shortNotice: String? = null,
 ) {
+    /** What the card prints: nothing for a public-domain text, else the short notice where the publisher accepts one. */
+    val cardNotice: String? get() = notice?.let { shortNotice ?: it }
+
     val reference: String get() = displayRanges.joinToString(", ") { it.display }
 
     val hasRed: Boolean get() = verses.any { it.red.isNotEmpty() }

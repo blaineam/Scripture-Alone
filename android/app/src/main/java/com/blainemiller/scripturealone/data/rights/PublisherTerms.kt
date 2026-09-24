@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.data.rights
 
+import com.blainemiller.scripturealone.data.TranslationInfo
 import com.blainemiller.scripturealone.data.canon.BookID
 import java.text.Normalizer
 
@@ -196,6 +197,31 @@ data class PublisherTerms(
             ),
         )
     }
+}
+
+/**
+ * Whether these verses (keys) may leave the app together under this translation's terms, and if not,
+ * why not — `TranslationInfo.quotationRefusal` in `PublisherTerms.swift`.
+ *
+ * [bookVerses] is how many verses a book has in this translation, for the whole-book and
+ * share-of-a-book rules; a book whose size can't be learned (0) is held to the verse limit alone.
+ */
+fun TranslationInfo.quotationRefusal(verseKeys: Collection<Int>, bookVerses: (BookID) -> Int): QuotationRefusal? {
+    val rights = rights
+    if (rights.hasExpired() || rights.maxQuotationVerses <= 0) return QuotationRefusal.NotPermitted
+    val unique = verseKeys.toSet()
+    if (unique.size > rights.maxQuotationVerses) return QuotationRefusal.TooManyVerses(rights.maxQuotationVerses)
+    val terms = publisherTerms ?: return null
+    if (terms.allowsCompleteBook && terms.maxShareOfBook == null) return null
+    for ((number, selected) in unique.groupBy { it / 1_000_000 }.toSortedMap()) {
+        val book = BookID.of(number) ?: continue
+        val total = bookVerses(book)
+        if (total <= 0) continue
+        if (!terms.allowsCompleteBook && selected.size >= total) return QuotationRefusal.WholeBook(book)
+        val share = terms.maxShareOfBook
+        if (share != null && selected.size > total * share) return QuotationRefusal.TooMuchOfBook(book, Math.round(share * 100).toInt())
+    }
+    return null
 }
 
 /** Why a selection may not leave the app as a quotation. */

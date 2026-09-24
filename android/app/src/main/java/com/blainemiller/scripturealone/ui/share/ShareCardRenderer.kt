@@ -45,7 +45,7 @@ class ShareCardRenderer(private val context: Context) {
 
     /** Fits [source] to [style]: the largest size that holds it, trimming whole verses if none does. */
     fun fit(source: ShareSource, style: ShareStyle): ShareCardFitter.Result = ShareCardFitter.fit(
-        verses = source.verses, translation = source.translation, notice = source.notice, style = style,
+        verses = source.verses, translation = source.translation, notice = source.cardNotice, style = style,
         rangesOf = source::rangesOf, measure = { passage, size -> passageHeight(passage, size, style) },
     )
 

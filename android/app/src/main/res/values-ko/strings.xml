@@ -864,4 +864,13 @@
     <string name="data_import_poor_quality">이 파일은 사용할 수 있을 만큼 깔끔하게 읽히지 않았습니다(100점 중 %1$d점). 아무것도 추가되지 않았습니다.</string>
     <string name="context_imported_images">지도와 이미지</string>
     <string name="context_image_untitled">그림</string>
+    <string name="reader_quote_whole_book">%1$s은(는) 한 권 전체를 한 번에 인용할 수 없습니다. 복사하거나 공유하려면 %2$s에서 더 적게 선택하세요.</string>
+    <string name="reader_quote_share_of_book">%1$s은(는) 한 번의 인용에 %3$s의 %2$d%%까지 허용합니다. 복사하거나 공유하려면 절을 더 적게 선택하세요.</string>
+    <string name="reader_share_no_images">%1$s의 출판사는 구절 이미지를 허용하지 않습니다</string>
+    <string name="reader_share_not_allowed">%1$s의 출판사는 앱에서의 공유를 허용하지 않습니다</string>
+    <string name="translations_summary_quoting">인용</string>
+    <string name="translations_quoting_public_domain">퍼블릭 도메인 — 제한 없음</string>
+    <string name="translations_quoting_unrecognised">인식되지 않음 — 최대 %1$d절</string>
+    <string name="translations_quoting_terms_limit">%1$s 조건 — 최대 %2$d절</string>
+    <string name="translations_quoting_terms_unlimited">%1$s 조건 — 절 수 제한 없음</string>
 </resources>

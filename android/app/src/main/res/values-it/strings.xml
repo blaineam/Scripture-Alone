@@ -864,4 +864,13 @@
     <string name="data_import_poor_quality">Quel file non è stato letto in modo abbastanza pulito da poterlo usare (ha ottenuto %1$d su 100). Non è stato aggiunto nulla.</string>
     <string name="context_imported_images">Mappe e immagini</string>
     <string name="context_image_untitled">Immagine</string>
+    <string name="reader_quote_whole_book">%1$s non può essere citata un libro intero alla volta. Seleziona meno di %2$s per copiare o condividere.</string>
+    <string name="reader_quote_share_of_book">%1$s consente fino al %2$d%% di %3$s in una citazione. Seleziona meno versetti per copiare o condividere.</string>
+    <string name="reader_share_no_images">L’editore di %1$s non consente immagini dei versetti</string>
+    <string name="reader_share_not_allowed">L’editore di %1$s non consente la condivisione da un’app</string>
+    <string name="translations_summary_quoting">Citazioni</string>
+    <string name="translations_quoting_public_domain">Pubblico dominio — nessun limite</string>
+    <string name="translations_quoting_unrecognised">Non riconosciuta — fino a %1$d versetti</string>
+    <string name="translations_quoting_terms_limit">Condizioni di %1$s — fino a %2$d versetti</string>
+    <string name="translations_quoting_terms_unlimited">Condizioni di %1$s — nessun limite di versetti</string>
 </resources>

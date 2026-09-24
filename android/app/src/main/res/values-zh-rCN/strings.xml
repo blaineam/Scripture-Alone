@@ -864,4 +864,13 @@
     <string name="data_import_poor_quality">该文件无法被足够清晰地读取以供使用（得分 %1$d/100）。未添加任何内容。</string>
     <string name="context_imported_images">地图与图片</string>
     <string name="context_image_untitled">图片</string>
+    <string name="reader_quote_whole_book">%1$s 不能一次引用整卷书。请少选一些%2$s的经文再复制或分享。</string>
+    <string name="reader_quote_share_of_book">%1$s 每次引用最多允许%3$s的 %2$d%%。请少选一些经文再复制或分享。</string>
+    <string name="reader_share_no_images">%1$s 的出版方不允许制作经文图片</string>
+    <string name="reader_share_not_allowed">%1$s 的出版方不允许从应用中分享</string>
+    <string name="translations_summary_quoting">引用</string>
+    <string name="translations_quoting_public_domain">公有领域 — 无限制</string>
+    <string name="translations_quoting_unrecognised">未识别 — 最多 %1$d 节</string>
+    <string name="translations_quoting_terms_limit">%1$s 条款 — 最多 %2$d 节</string>
+    <string name="translations_quoting_terms_unlimited">%1$s 条款 — 无经节数限制</string>
 </resources>

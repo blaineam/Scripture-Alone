@@ -100,6 +100,8 @@ fun CrossReferencesTab(verse: VerseRef, study: StudyModel, reader: ReaderViewMod
             val maxVotes = maxOf(1, rows.first().reference.votes)
             val rights = reader.chapter?.translation?.rights ?: TranslationRights.PUBLIC_DOMAIN
             val abbreviation = reader.chapter?.translation?.abbreviation ?: translation
+            // The notice the publisher requires travels with every quotation.
+            val notice = reader.chapter?.translation?.attributionNotice
             LazyColumn(Modifier.fillMaxSize().background(StudyStyle.groupedBackground(palette))) {
                 item("strongest") {
                     GroupedSection(
@@ -112,7 +114,7 @@ fun CrossReferencesTab(verse: VerseRef, study: StudyModel, reader: ReaderViewMod
                     ) {
                         top.forEachIndexed { i, row ->
                             if (i > 0) CellDivider(palette)
-                            ReferenceRow(row, maxVotes, palette, rights, abbreviation) { study.jump(row.range, reader) }
+                            ReferenceRow(row, maxVotes, palette, rights, abbreviation, notice) { study.jump(row.range, reader) }
                         }
                     }
                 }
@@ -120,7 +122,7 @@ fun CrossReferencesTab(verse: VerseRef, study: StudyModel, reader: ReaderViewMod
                     GroupedSection(palette, header = stringResource(R.string.study_xref_old_testament)) {
                         old.forEachIndexed { i, row ->
                             if (i > 0) CellDivider(palette)
-                            ReferenceRow(row, maxVotes, palette, rights, abbreviation) { study.jump(row.range, reader) }
+                            ReferenceRow(row, maxVotes, palette, rights, abbreviation, notice) { study.jump(row.range, reader) }
                         }
                     }
                 }
@@ -128,7 +130,7 @@ fun CrossReferencesTab(verse: VerseRef, study: StudyModel, reader: ReaderViewMod
                     GroupedSection(palette, header = stringResource(R.string.study_xref_new_testament)) {
                         new.forEachIndexed { i, row ->
                             if (i > 0) CellDivider(palette)
-                            ReferenceRow(row, maxVotes, palette, rights, abbreviation) { study.jump(row.range, reader) }
+                            ReferenceRow(row, maxVotes, palette, rights, abbreviation, notice) { study.jump(row.range, reader) }
                         }
                     }
                 }
@@ -161,6 +163,7 @@ private fun ReferenceRow(
     palette: ReaderPalette,
     rights: TranslationRights,
     abbreviation: String,
+    notice: String?,
     onOpen: () -> Unit,
 ) {
     var menu by remember { mutableStateOf(false) }
@@ -202,7 +205,7 @@ private fun ReferenceRow(
                     // The translation's own terms decide whether its text may leave the device, and
                     // how much of it — the same gate the reader's selection uses.
                     if (row.text.isNotEmpty() && rights.permits(TranslationRights.Permission.COPY) && rights.mayQuote(row.verseCount)) {
-                        clipboard.setText(AnnotatedString("${row.text}\n— $display ($abbreviation)"))
+                        clipboard.setText(AnnotatedString("${row.text}\n— $display ($abbreviation)" + notice?.let { "\n\n$it" }.orEmpty()))
                     } else {
                         Toast.makeText(context, context.getString(R.string.study_xref_copy_refused), Toast.LENGTH_SHORT).show()
                     }

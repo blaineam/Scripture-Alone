@@ -1599,4 +1599,13 @@
     <string name="data_import_poor_quality">That file couldn’t be read cleanly enough to use (it scored %1$d of 100). Nothing was added.</string>
     <string name="context_imported_images">Maps &amp; Images</string>
     <string name="context_image_untitled">Picture</string>
+    <string name="reader_quote_whole_book">%1$s can’t be quoted a whole book at a time. Select less of %2$s to copy or share.</string>
+    <string name="reader_quote_share_of_book">%1$s allows up to %2$d%% of %3$s in one quotation. Select fewer verses to copy or share.</string>
+    <string name="reader_share_no_images">%1$s’s publisher doesn’t allow verse images</string>
+    <string name="reader_share_not_allowed">%1$s’s publisher doesn’t allow sharing from an app</string>
+    <string name="translations_summary_quoting">Quoting</string>
+    <string name="translations_quoting_public_domain">Public domain — no limit</string>
+    <string name="translations_quoting_unrecognised">Not recognised — up to %1$d verses</string>
+    <string name="translations_quoting_terms_limit">%1$s terms — up to %2$d verses</string>
+    <string name="translations_quoting_terms_unlimited">%1$s terms — no verse limit</string>
 </resources>

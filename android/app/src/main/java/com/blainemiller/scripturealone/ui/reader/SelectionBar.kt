@@ -62,6 +62,7 @@ import androidx.compose.ui.res.stringResource
 import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.data.rights.QuotationRefusal
 import com.blainemiller.scripturealone.data.rights.TranslationRights
 import com.blainemiller.scripturealone.data.userdata.HighlightColor
 import com.blainemiller.scripturealone.text.AppText
@@ -181,7 +182,7 @@ fun SelectionBar(
         }
         if (!mayQuote) {
             Text(
-                quotationLimitNotice(rights, model.translationAbbreviation), color = palette.secondary, fontSize = 12.sp,
+                quotationLimitNotice(model.quotationRefusal(), model.translationAbbreviation), color = palette.secondary, fontSize = 12.sp,
                 textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -189,13 +190,17 @@ fun SelectionBar(
 }
 
 /** Says whose limit it is and what it is, because "this doesn't work" is not an explanation. */
-internal fun quotationLimitNotice(rights: TranslationRights, abbreviation: String): String {
-    val limit = rights.maxQuotationVerses
+internal fun quotationLimitNotice(refusal: QuotationRefusal?, abbreviation: String): String {
     val name = abbreviation.ifEmpty { AppText.get(R.string.reader_quote_this_translation) }
-    if (limit <= 0) return AppText.get(R.string.reader_quote_not_allowed, name)
-    return AppText.plural(
-        R.string.reader_quote_limit_one, R.string.reader_quote_limit_other, limit.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), name, limit,
-    )
+    return when (refusal) {
+        is QuotationRefusal.TooManyVerses -> AppText.plural(
+            R.string.reader_quote_limit_one, R.string.reader_quote_limit_other,
+            refusal.limit.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(), name, refusal.limit,
+        )
+        is QuotationRefusal.WholeBook -> AppText.get(R.string.reader_quote_whole_book, name, refusal.book.displayName)
+        is QuotationRefusal.TooMuchOfBook -> AppText.get(R.string.reader_quote_share_of_book, name, refusal.percent, refusal.book.displayName)
+        QuotationRefusal.NotPermitted, null -> AppText.get(R.string.reader_quote_not_allowed, name)
+    }
 }
 
 /** The Highlight button's label for [color] — "Highlight Yellow". */
@@ -310,6 +315,19 @@ private fun RowScope.ShareMenu(model: ReaderViewModel, palette: ReaderPalette, r
             MenuItem(stringResource(R.string.reader_share_link), palette, enabled = url != null) {
                 open = false
                 url?.let(::send)
+            }
+            // Each kind of sharing asks the translation's terms: some publishers license verse art
+            // separately, and some allow no sharing from an app at all (`PublisherTerms`).
+            val imagesPermitted = model.rights.permits(TranslationRights.Permission.VERSE_IMAGES)
+            if (!shareAllowed || !imagesPermitted) {
+                Text(
+                    stringResource(
+                        if (shareAllowed) R.string.reader_share_no_images else R.string.reader_share_not_allowed,
+                        model.translationAbbreviation,
+                    ),
+                    color = palette.secondary, fontSize = 12.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp).widthIn(max = 240.dp),
+                )
             }
             if (url == null) {
                 Text(

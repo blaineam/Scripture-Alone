@@ -864,4 +864,13 @@
     <string name="data_import_poor_quality">Diese Datei ließ sich nicht sauber genug lesen, um sie zu verwenden (sie erreichte %1$d von 100). Es wurde nichts hinzugefügt.</string>
     <string name="context_imported_images">Karten &amp; Bilder</string>
     <string name="context_image_untitled">Bild</string>
+    <string name="reader_quote_whole_book">%1$s darf nicht als ganzes Buch zitiert werden. Wähle weniger aus %2$s aus, um zu kopieren oder zu teilen.</string>
+    <string name="reader_quote_share_of_book">%1$s erlaubt bis zu %2$d %% von %3$s in einem Zitat. Wähle weniger Verse aus, um zu kopieren oder zu teilen.</string>
+    <string name="reader_share_no_images">Der Verlag von %1$s erlaubt keine Versbilder</string>
+    <string name="reader_share_not_allowed">Der Verlag von %1$s erlaubt kein Teilen aus einer App</string>
+    <string name="translations_summary_quoting">Zitieren</string>
+    <string name="translations_quoting_public_domain">Gemeinfrei – keine Begrenzung</string>
+    <string name="translations_quoting_unrecognised">Nicht erkannt – bis zu %1$d Verse</string>
+    <string name="translations_quoting_terms_limit">Bedingungen von %1$s – bis zu %2$d Verse</string>
+    <string name="translations_quoting_terms_unlimited">Bedingungen von %1$s – keine Versbegrenzung</string>
 </resources>

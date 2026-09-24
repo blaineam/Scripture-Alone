@@ -14,6 +14,11 @@
   Images in the Context tab, full size on a tap. They go when the translation is removed.
 - On Android, an imported translation whose file doesn't mark the words of Christ takes them,
   verse by verse, from the BSB (or KJV) on the device, marking only words that line up closely.
+- Android copies and shares by each publisher's own terms too: the verse limit, the whole-book
+  and share-of-a-book rules, no verse images where the publisher licenses them separately, no
+  sharing where it allows none from an app, and the exact notice with every copy (the short form
+  on a verse image, where the publisher accepts one). The import summary says which terms apply,
+  and imported translations show their abbreviation, not an internal id, in the pickers.
 - An imported English translation whose file doesn't mark the words of Christ gets them from
   the BSB (or KJV) on the device: each verse is matched word for word, and only the words that
   line up with red ones turn red — "Jesus said to him" stays black, "I am the way" turns red. A

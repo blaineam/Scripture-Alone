@@ -642,6 +642,8 @@ private fun ImportSummary(result: BibleImportResult, palette: ReaderPalette, onD
                 LabeledCell(palette, stringResource(R.string.translations_summary_books), NumberFormat.getIntegerInstance().format(report.books.size))
                 CellDivider(palette)
                 LabeledCell(palette, stringResource(R.string.translations_summary_verses), NumberFormat.getIntegerInstance().format(report.totalVerses))
+                CellDivider(palette)
+                LabeledCell(palette, stringResource(R.string.translations_summary_quoting), quotingTerms(result))
             }
             if (gaps.isEmpty() && report.booksMissing.isEmpty()) {
                 GroupedSection(palette) {
@@ -694,6 +696,21 @@ internal fun gapSummary(book: ImportCoverageReport.BookCoverage): String {
     val shown = refs.take(4).joinToString(", ")
     return if (extra > 0) AppText.get(R.string.translations_summary_missing_more, shown, extra)
     else AppText.get(R.string.translations_summary_missing, shown)
+}
+
+/**
+ * Which publisher's terms copying and sharing will follow, so a reader can see the importer recognised
+ * the translation — or that it didn't, and the cautious default applies.
+ */
+internal fun quotingTerms(result: BibleImportResult): String {
+    val identity = result.identity
+    val license = identity.license
+    val copyright = identity.copyright
+    if (TranslationRights.isPublicDomain(license, copyright)) return AppText.get(R.string.translations_quoting_public_domain)
+    val terms = TranslationRights.publisherTerms(license, copyright, identity.abbreviation, identity.name)
+        ?: return AppText.get(R.string.translations_quoting_unrecognised, TranslationRights.QUOTATION_VERSE_LIMIT.toInt())
+    val limit = terms.maxVerses ?: return AppText.get(R.string.translations_quoting_terms_unlimited, terms.abbreviation)
+    return AppText.get(R.string.translations_quoting_terms_limit, terms.abbreviation, limit)
 }
 
 // ---- Overlays ---------------------------------------------------------------------------------------

@@ -277,6 +277,8 @@ class FileChapterSource(
 
     override fun chapter(ref: ChapterRef): Chapter = StoreChapters.chapter(source, info, ref)
 
+    override fun verseCount(ref: ChapterRef): Int = StoreChapters.verseCount(source, ref)
+
     /** The FTS5 index the importer wrote (`BundledStoreWriter`), the same one a bundled store carries. */
     override fun search(query: String, limit: Int): List<SearchHit> =
         synchronized(connection) { VerseSearch(source).search(query, limit) }

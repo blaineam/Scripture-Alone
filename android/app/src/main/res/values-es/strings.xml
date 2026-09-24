@@ -864,4 +864,13 @@
     <string name="data_import_poor_quality">Ese archivo no se pudo leer con la limpieza suficiente para usarlo (obtuvo %1$d de 100). No se añadió nada.</string>
     <string name="context_imported_images">Mapas e imágenes</string>
     <string name="context_image_untitled">Imagen</string>
+    <string name="reader_quote_whole_book">%1$s no se puede citar un libro entero a la vez. Selecciona menos de %2$s para copiar o compartir.</string>
+    <string name="reader_quote_share_of_book">%1$s permite hasta el %2$d %% de %3$s en una cita. Selecciona menos versículos para copiar o compartir.</string>
+    <string name="reader_share_no_images">La editorial de %1$s no permite imágenes de versículos</string>
+    <string name="reader_share_not_allowed">La editorial de %1$s no permite compartir desde una app</string>
+    <string name="translations_summary_quoting">Citas</string>
+    <string name="translations_quoting_public_domain">Dominio público: sin límite</string>
+    <string name="translations_quoting_unrecognised">No reconocida: hasta %1$d versículos</string>
+    <string name="translations_quoting_terms_limit">Condiciones de %1$s: hasta %2$d versículos</string>
+    <string name="translations_quoting_terms_unlimited">Condiciones de %1$s: sin límite de versículos</string>
 </resources>

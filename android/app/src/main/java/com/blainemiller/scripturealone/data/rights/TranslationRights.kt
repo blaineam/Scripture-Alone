@@ -90,12 +90,35 @@ data class TranslationRights(
                 // No copyright line at all means the bundled texts, which are all public domain.
                 copyright.isBlank()
 
-        /** The one value every gate asks: a signed package's grant if there is one, else the licence line. */
-        fun of(license: String, copyright: String, granted: TranslationRights? = null): TranslationRights =
-            granted ?: if (isPublicDomain(license, copyright)) PUBLIC_DOMAIN else LICENSED_DEFAULT
+        /**
+         * The publisher's own published terms, for a copyrighted translation the app recognises by its
+         * abbreviation, name or copyright line ([PublisherTerms]); null for public-domain texts and
+         * for translations it doesn't know.
+         */
+        fun publisherTerms(license: String, copyright: String, abbreviation: String = "", name: String = ""): PublisherTerms? =
+            if (isPublicDomain(license, copyright)) null else PublisherTerms.matching(abbreviation, name, copyright)
 
-        /** The line that must travel with a quotation, or null when none is required. */
-        fun attributionNotice(license: String, copyright: String): String? =
-            if (isPublicDomain(license, copyright)) null else copyright.trim()
+        /**
+         * The one value every gate asks: a signed package's grant if there is one; then the publisher's
+         * own published terms, for a translation the app recognises; otherwise the licence line.
+         */
+        fun of(
+            license: String,
+            copyright: String,
+            granted: TranslationRights? = null,
+            abbreviation: String = "",
+            name: String = "",
+        ): TranslationRights = granted ?: when {
+            isPublicDomain(license, copyright) -> PUBLIC_DOMAIN
+            else -> publisherTerms(license, copyright, abbreviation, name)?.rights ?: LICENSED_DEFAULT
+        }
+
+        /**
+         * The line that must travel with a quotation, or null when none is required: the publisher's
+         * own notice when the app knows it, the file's copyright line otherwise.
+         */
+        fun attributionNotice(license: String, copyright: String, abbreviation: String = "", name: String = ""): String? =
+            if (isPublicDomain(license, copyright)) null
+            else publisherTerms(license, copyright, abbreviation, name)?.notice ?: copyright.trim()
     }
 }

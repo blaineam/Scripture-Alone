@@ -864,4 +864,13 @@
     <string name="data_import_poor_quality">このファイルは十分に正確に読み取れなかったため使用できません（100点中%1$d点）。何も追加されていません。</string>
     <string name="context_imported_images">地図と画像</string>
     <string name="context_image_untitled">画像</string>
+    <string name="reader_quote_whole_book">%1$sは書全体を一度に引用することはできません。コピーまたは共有するには%2$sの選択を減らしてください。</string>
+    <string name="reader_quote_share_of_book">%1$sは1回の引用で%3$sの%2$d%%までです。コピーまたは共有するには節を減らしてください。</string>
+    <string name="reader_share_no_images">%1$sの発行元は聖句画像を許可していません</string>
+    <string name="reader_share_not_allowed">%1$sの発行元はアプリからの共有を許可していません</string>
+    <string name="translations_summary_quoting">引用</string>
+    <string name="translations_quoting_public_domain">パブリックドメイン — 制限なし</string>
+    <string name="translations_quoting_unrecognised">不明 — 最大%1$d節</string>
+    <string name="translations_quoting_terms_limit">%1$sの規定 — 最大%2$d節</string>
+    <string name="translations_quoting_terms_unlimited">%1$sの規定 — 節数の制限なし</string>
 </resources>
