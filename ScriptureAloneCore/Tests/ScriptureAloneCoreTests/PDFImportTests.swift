@@ -32,6 +32,52 @@ import Testing
         #expect(lexicon.repairingLigatures("take it off the altar") == "take it off the altar")
     }
 
+    @Test func aTypesettersHyphenIsDroppedAndAWordsOwnKept() {
+        let lexicon = Lexicon([run("the Pharisees came and a three-year-old cow\n")])
+        #expect(lexicon.resolveLineBreaks(in: [run("sent from the Phari-\n"), run("sees to ask\n")]).map(\.text).joined()
+            .hasPrefix("sent from the Pharisees to ask"))
+        // The hyphen can come in a font of its own, the word's first half in the run before it.
+        #expect(lexicon.resolveLineBreaks(in: [run("sent from the Phari"), run("-\n"), run("sees to ask\n")]).map(\.text).joined()
+            .hasPrefix("sent from the Pharisees to ask"))
+        #expect(lexicon.resolveLineBreaks(in: [run("a three-\n"), run("year-old ram\n")]).map(\.text).joined()
+            .hasPrefix("a three-year-old ram"))
+    }
+
+    @Test func otherLigaturesAreRejoinedButNotRareWordsAfterOf() {
+        let lexicon = Lexicon([run("the price of grinding was high for them\n")])
+        #expect(lexicon.repairingLigatures("their hope of profi t was gone") == "their hope of profit was gone")
+        #expect(lexicon.repairingLigatures("out of selfi sh ambition") == "out of selfish ambition")
+        #expect(lexicon.repairingLigatures("the price of grinding") == "the price of grinding")
+    }
+
+    @Test func aChapterNumbersItsFirstVerseAndAMeasureIsNotAVerse() {
+        let reader = PDFBibleReader(options: .init())
+        var lastVerse = 0
+        var chapterOpen = false
+        // A psalm: its number, its title, then a "1" the number already began.
+        let psalm = [run("3", 30), run("A psalm of David.\n", 9), run("1", 10), run(" Lord, how my foes increase!\n")]
+        let (first, _) = reader.scan(psalm, page: 0, body: 10, rare: [], outside: false, lastVerse: &lastVerse, chapterOpen: &chapterOpen)
+        #expect(!first.flow.contains { if case .text(let text, _) = $0 { text.contains("1") } else { false } })
+        #expect(!first.flow.contains { if case .marker(let marker) = $0 { marker.verse == 1 } else { false } })
+        // "10 1/2 feet": the fraction's font sets the whole number apart.
+        let measure = [run("2", 10), run(" it was "), run("10 "), run("1/2", 10.1), run(" feet deep.\n")]
+        let (second, _) = reader.scan(measure, page: 1, body: 10, rare: [], outside: false, lastVerse: &lastVerse, chapterOpen: &chapterOpen)
+        #expect(!second.flow.contains { if case .marker(let marker) = $0 { marker.verse == 10 } else { false } })
+        #expect(lastVerse == 2)
+    }
+
+    @Test func twoCallersOnOneWordAreTwoNotes() {
+        let reader = PDFBibleReader(options: .init())
+        var lastVerse = 4
+        var chapterOpen = false
+        let runs = [run("it is called Babylon,"), run(" l,m", 6), run("for there\n")]
+        let (document, _) = reader.scan(runs, page: 0, body: 10, rare: [], outside: false, lastVerse: &lastVerse, chapterOpen: &chapterOpen)
+        let labels = document.flow.compactMap { if case .noteMarker(_, let label) = $0 { label } else { nil } }
+        #expect(labels == ["l", "m"])
+        let text = document.flow.compactMap { if case .text(let text, _) = $0 { text } else { nil } }.joined()
+        #expect(text.contains("Babylon, for"))
+    }
+
     @Test func versesMustFollowOn() {
         #expect(PDFBibleReader.followsOn(8, after: 7))
         #expect(PDFBibleReader.followsOn(10, after: 7))   // a translation omits a verse
@@ -43,8 +89,11 @@ import Testing
     @Test func runningHeadsAndSlugsAreFurniture() {
         #expect(PDFBibleReader.isRunningHead("GENESIS 2-3 2"))
         #expect(PDFBibleReader.isRunningHead("NUMbERS 2-3 114"))   // small capitals, extracted
+        #expect(PDFBibleReader.isRunningHead("235 1 SAMUEL 2-3"))
+        #expect(PDFBibleReader.isRunningHead("1 CORINTHIANS 14-15 1020"))
         #expect(!PDFBibleReader.isRunningHead("THE CREATION"))
         #expect(PDFBibleReader.isPrinterSlug("Bible.indb 11 10/26/17 8:59 PM"))
+        #expect(PDFBibleReader.isPrinterSlug("10/26/17 9:00 PM"))   // the time stamp come apart
         #expect(!PDFBibleReader.isPrinterSlug("In the beginning"))
     }
 

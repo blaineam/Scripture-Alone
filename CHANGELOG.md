@@ -55,6 +55,14 @@
   glyph sits; words broken across lines are joined (or keep their hyphen) from the book's own
   vocabulary; small capitals come back as LORD; and each footnote finds its verse. Locked and
   copy-protected PDFs are refused, and a PDF meets the same quality gate as any import.
+- Importing a Bible PDF on iPhone, iPad and Mac no longer drops or scrambles verses: the gap
+  between the columns is found from the text itself, so a short last line or a verse number
+  beside the gutter stays in its own column; lines set beside a chapter's large number read in
+  order; a verse number stacked in a list or run onto the page's printer mark is found; measures
+  like "10 1/2 feet" and a psalm's printed "1" after its title are no longer taken for verse
+  numbers; words split by the type ("profi t", "diff icult") or broken across lines are joined,
+  while a compound keeps its hyphen; and running heads, headings in two type sizes and double
+  footnote marks are recognised.
 - An imported English translation whose file doesn't mark the words of Christ gets them from
   the BSB (or KJV) on the device: each verse is matched word for word, and only the words that
   line up with red ones turn red — "Jesus said to him" stays black, "I am the way" turns red. A
