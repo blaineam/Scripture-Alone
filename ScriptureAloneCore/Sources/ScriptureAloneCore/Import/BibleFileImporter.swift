@@ -3,6 +3,7 @@
 // fit in an Int at all — so this code is not merely unused there, it cannot compile.
 #if !os(watchOS)
 import Foundation
+import PDFKit
 
 /// The kinds of file the engine reads. Both are ZIP containers, and both are refused outright if
 /// they carry any protection artifact.
@@ -11,11 +12,14 @@ public enum ImportedFileFormat: String, Sendable, Hashable, Codable {
     case epub
     /// A zip of USFM books — the shape eBible.org publishes.
     case usfmZip
+    /// A typeset PDF with a text layer, read by its type sizes (`PDFBibleReader`).
+    case pdf
 
     public var label: String {
         switch self {
         case .epub: "ePub"
         case .usfmZip: "USFM"
+        case .pdf: "PDF"
         }
     }
 }
@@ -63,12 +67,23 @@ public struct BibleFileImporter: Sendable {
 
     /// Looks at the file and says what it is. Refuses protected files before reading any content.
     public func preview(_ url: URL) throws -> BibleImportPreview {
-        try preview(zip: try open(url))
+        if Self.isPDF(url) {
+            let document = try Self.openPDF(url)
+            return BibleImportPreview(format: .pdf, identity: Self.suggestedIdentity(for: document, url: url),
+                                      documentCount: document.pageCount)
+        }
+        return try preview(zip: try open(url))
     }
 
     /// Reads the file's scripture without writing anything — for callers that want to show the
     /// coverage report before committing.
     public func read(_ url: URL) throws -> (bible: ExtractedBible, preview: BibleImportPreview) {
+        if Self.isPDF(url) {
+            let document = try Self.openPDF(url)
+            let bible = try PDFBibleReader(options: options).extract(from: document)
+            return (bible, BibleImportPreview(format: .pdf, identity: Self.suggestedIdentity(for: document, url: url),
+                                              documentCount: document.pageCount))
+        }
         let zip = try open(url)
         switch try Self.format(of: zip) {
         case .epub:
@@ -77,6 +92,9 @@ public struct BibleFileImporter: Sendable {
             return (bible, BibleImportPreview(format: .epub,
                                               identity: Self.suggestedIdentity(for: package),
                                               documentCount: package.spine.count))
+        case .pdf:
+            // `format(of:)` reads ZIP containers only; a PDF is caught before a ZIP is opened.
+            throw BibleImportError.notAZipArchive
         case .usfmZip:
             let package = try USFMPackage(zip: zip)
             let bible = try USFMImporter(options: options).extract(from: package)
@@ -98,7 +116,7 @@ public struct BibleFileImporter: Sendable {
         return BibleImportResult(storeURL: storeURL, format: preview.format, identity: chosen, report: report)
     }
 
-    /// `IMPORT-XXXX.sqlite`, beside the bundled `ASV.sqlite` naming but never colliding with it.
+    /// `IMPORT-XXXX.sqlite`, named like the bundled stores but never colliding with one.
     public static func storeFilename(for identity: ImportedTranslationIdentity) -> String {
         let safe = identity.id.filter { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" }
         return (safe.isEmpty ? "IMPORT" : safe) + ".sqlite"
@@ -108,7 +126,7 @@ public struct BibleFileImporter: Sendable {
 
     /// What the file says about itself, plus the translation its copyright page names.
     ///
-    /// A study Bible is titled for the study Bible ("The Reformation Study Bible") and its metadata
+    /// A study Bible is titled for the study Bible rather than the translation, and its metadata
     /// often says only "All rights reserved"; the translation — and so the terms a quotation from
     /// it is held to — is named on the copyright page. The name is kept; the abbreviation becomes
     /// the translation's, and a generic rights line gives way to the publisher's own notice.
@@ -139,6 +157,48 @@ public struct BibleFileImporter: Sendable {
         return nil
     }
 
+    // MARK: - PDF
+
+    /// By content, not extension: a PDF starts with "%PDF-".
+    static func isPDF(_ url: URL) -> Bool {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return false }
+        defer { try? handle.close() }
+        return (try? handle.read(upToCount: 5)).map { $0 == Data("%PDF-".utf8) } ?? false
+    }
+
+    /// Opens a PDF, refusing one that is password-locked or whose owner forbids copying its text —
+    /// the PDF's own form of protection, honoured as the ePub kinds are.
+    static func openPDF(_ url: URL) throws -> PDFDocument {
+        guard let document = PDFDocument(url: url) else {
+            throw BibleImportError.unsupportedFormat(String(localized: "the PDF could not be opened", bundle: .module, comment: "Completes “This app can’t read that file: %@”."))
+        }
+        if document.isLocked { throw BibleImportError.protectedByDRM(.pdfPassword) }
+        if !document.allowsCopying { throw BibleImportError.protectedByDRM(.pdfCopyProtected) }
+        return document
+    }
+
+    /// A PDF rarely names itself usefully (its title is often the layout file's). The translation
+    /// its copyright page names is the better name; the document title, then the file name, follow.
+    static func suggestedIdentity(for document: PDFDocument, url: URL) -> ImportedTranslationIdentity {
+        let front = PDFBibleReader.frontMatter(of: document)
+        let attributes = document.documentAttributes ?? [:]
+        let title = (attributes[PDFDocumentAttribute.titleAttribute] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let terms = PublisherTerms.matching(text: front)
+        let name = terms?.markers.first ?? title.flatMap { $0.isEmpty ? nil : $0 }
+            ?? url.deletingPathExtension().lastPathComponent.replacingOccurrences(of: "_", with: " ")
+        let copyrightLine = front.components(separatedBy: .newlines)
+            .map { $0.replacingOccurrences(of: "\u{AD}", with: "").trimmingCharacters(in: .whitespaces) }
+            .first { $0.contains("©") || $0.localizedCaseInsensitiveContains("copyright ") }
+        let copyright = terms?.notice ?? copyrightLine ?? ""
+        return ImportedTranslationIdentity(
+            id: ImportedTranslationIdentity.identifier(for: (title ?? "") + name + (terms?.abbreviation ?? "")),
+            name: name,
+            abbreviation: terms?.abbreviation ?? ImportedTranslationIdentity.abbreviation(for: name),
+            copyright: copyright,
+            license: ImportedTranslationIdentity.unknownLicense,
+            source: "Imported PDF")
+    }
+
     // MARK: - Sniffing
 
     private func open(_ url: URL) throws -> ZipReader {
@@ -157,6 +217,9 @@ public struct BibleFileImporter: Sendable {
             let package = try EPUBPackage(zip: zip)
             return BibleImportPreview(format: .epub, identity: Self.suggestedIdentity(for: package),
                                       documentCount: package.spine.count)
+        case .pdf:
+            // `format(of:)` reads ZIP containers only; a PDF is caught before a ZIP is opened.
+            throw BibleImportError.notAZipArchive
         case .usfmZip:
             let package = try USFMPackage(zip: zip)
             return BibleImportPreview(format: .usfmZip, identity: .suggested(from: package.metadata),

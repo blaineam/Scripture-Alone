@@ -16,7 +16,7 @@ public struct ScalarSpan: Sendable, Hashable, Codable {
 }
 
 /// A styled run inside a fragment. The three styles are the ones the reader already draws:
-/// words of Christ, supplied words (the KJV's italics) and small caps (LORD).
+/// words of Christ, supplied words (set in italics by some translations) and small caps (LORD).
 public struct StyledSpan: Sendable, Hashable, Codable {
     public enum Style: String, Sendable, Hashable, Codable {
         case wordsOfChrist = "r"
@@ -319,7 +319,7 @@ public struct ExtractedBible: Sendable {
 /// How one spine document numbered its verses. Detected per file, never assumed for the book:
 /// publishers mix shapes between front matter, the Gospels and the Psalms in one product.
 public enum VerseMarkupShape: String, Sendable, Hashable, Codable, CaseIterable {
-    /// `id="ESV_Gen.1.1"`, `id="csb-Gen-1-1"`, `id="MAT.5.3"` — a full reference on the element.
+    /// `id="ABC_Gen.1.1"`, `id="xyz-Gen-1-1"`, `id="MAT.5.3"` — a full reference on the element.
     case referenceIdentifier
     /// `id="v1"`, `id="verse-3"` — a chapter-relative verse anchor.
     case verseAnchor

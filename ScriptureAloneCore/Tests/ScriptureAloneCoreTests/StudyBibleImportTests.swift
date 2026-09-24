@@ -3,8 +3,8 @@ import Testing
 @testable import ScriptureAloneCore
 
 /// Study-Bible ePub shapes: files split into scripture, study notes, footnotes and cross
-/// references; chapter numbers set as drop caps; essays boxed into the text. Text is ASV (public
-/// domain) or invented.
+/// references; chapter numbers set as drop caps; essays boxed into the text. Text is public domain
+/// or invented.
 @Suite struct StudyBibleImportTests {
     private func extract(_ documents: [(String, String)]) throws -> ExtractedBible {
         try BibleTextExtractor().extract(documents: documents.map { (path: $0.0, xhtml: page($0.1)) })

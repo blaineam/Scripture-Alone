@@ -25,6 +25,8 @@ public enum BibleImportError: Error, LocalizedError, Equatable, Sendable {
     case noScriptureFound
     /// An import must carry a copyright line forward; the ePub had none and the caller supplied none.
     case missingCopyright
+    /// The text came out too damaged to store (`ImportQuality`); the score says how far.
+    case poorQuality(Int)
     /// Writing the SQLite store failed.
     case databaseWrite(String)
 
@@ -37,8 +39,9 @@ public enum BibleImportError: Error, LocalizedError, Equatable, Sendable {
         case .notAnEPUB(let message): String(localized: "That file isn’t a readable ePub: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
         case .unsupportedFormat(let message): String(localized: "This app can’t read that file: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
         case .protectedByDRM(let evidence): String(localized: "\(evidence.explanation) This app cannot open protected files.", bundle: .module, comment: "Error. %@ is a sentence saying how the file is protected.")
-        case .noScriptureFound: String(localized: "No Bible text was found in that ePub.", bundle: .module)
+        case .noScriptureFound: String(localized: "No Bible text was found in that file.", bundle: .module)
         case .missingCopyright: String(localized: "That ePub carries no copyright line. Enter the publisher’s copyright notice to continue.", bundle: .module)
+        case .poorQuality(let score): String(localized: "That file couldn’t be read cleanly enough to use (it scored \(score) of 100). Nothing was added.", bundle: .module, comment: "Import refused. %lld is a quality score out of 100.")
         case .databaseWrite(let message): String(localized: "Couldn’t save the imported text: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
         }
     }
@@ -62,6 +65,10 @@ public enum DRMEvidence: String, Sendable, Equatable, Hashable, Codable {
     case appleFairPlay
     /// The ZIP's own entry-encryption bit is set.
     case zipEntryEncryption
+    /// A PDF that needs a password to open.
+    case pdfPassword
+    /// A PDF whose owner forbids copying its text.
+    case pdfCopyProtected
 
     public var explanation: String {
         switch self {
@@ -70,6 +77,8 @@ public enum DRMEvidence: String, Sendable, Equatable, Hashable, Codable {
         case .readiumLCP: String(localized: "That ePub is protected with an LCP licence.", bundle: .module)
         case .appleFairPlay: String(localized: "That ePub is protected with Apple’s FairPlay DRM.", bundle: .module)
         case .zipEntryEncryption: String(localized: "That ePub’s contents are password-encrypted.", bundle: .module)
+        case .pdfPassword: String(localized: "That PDF is locked with a password.", bundle: .module)
+        case .pdfCopyProtected: String(localized: "That PDF’s owner doesn’t allow its text to be copied.", bundle: .module)
         }
     }
 }

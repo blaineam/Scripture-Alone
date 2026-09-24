@@ -17,11 +17,11 @@ import Testing
     /// The separator really is U+00A0. Splitting on a normal space finds nothing, which would make
     /// every reference in the file unresolvable — so this is asserted first and on its own.
     @Test func theBookAndChapterAreSeparatedByANonBreakingSpace() throws {
-        let reference = try #require(LifeBibleImport.reference(in: "Genesis\u{00A0}3:1 NKJV"))
+        let reference = try #require(LifeBibleImport.reference(in: "Genesis\u{00A0}3:1 ABCD"))
         #expect(reference.range?.start == VerseRef(.genesis, 3, 1))
-        #expect(reference.translation == "NKJV")
+        #expect(reference.translation == "ABCD")
         // And the same string with an ordinary space still works, in case they ever change it.
-        #expect(LifeBibleImport.reference(in: "Genesis 3:1 NKJV")?.range?.start == VerseRef(.genesis, 3, 1))
+        #expect(LifeBibleImport.reference(in: "Genesis 3:1 ABCD")?.range?.start == VerseRef(.genesis, 3, 1))
     }
 
     @Test func numberedBooksAndVersionsWithDigitsSurvive() throws {
@@ -29,9 +29,9 @@ import Testing
         #expect(chronicles.range?.start == VerseRef(.firstChronicles, 29, 14))
         #expect(chronicles.translation == nil)   // saves carry no translation
 
-        let nasb = try #require(LifeBibleImport.reference(in: "Genesis\u{00A0}28:1 NASB95"))
-        #expect(nasb.range?.start == VerseRef(.genesis, 28, 1))
-        #expect(nasb.translation == "NASB95")
+        let abc95 = try #require(LifeBibleImport.reference(in: "Genesis\u{00A0}28:1 ABC95"))
+        #expect(abc95.range?.start == VerseRef(.genesis, 28, 1))
+        #expect(abc95.translation == "ABC95")
     }
 
     /// A reference this app cannot place must not be approximated into one it can.
@@ -42,9 +42,9 @@ import Testing
 
     @Test func highlightsCarryTheirVerseAndNearestColor() throws {
         let file = Self.html("""
-        Genesis\u{00A0}3:1 NKJV  #ffc9e4<br>Genesis\u{00A0}17:16 CSB  #fff193<br>\
-        Genesis\u{00A0}22:1 CSB  #b3e487<br>John\u{00A0}3:16 CSB  #cae1fe<br>\
-        underline Psalms\u{00A0}23:1 CSB  #999999  words: 2-5<br>
+        Genesis\u{00A0}3:1 ABCD  #ffc9e4<br>Genesis\u{00A0}17:16 ABC  #fff193<br>\
+        Genesis\u{00A0}22:1 ABC  #b3e487<br>John\u{00A0}3:16 ABC  #cae1fe<br>\
+        underline Psalms\u{00A0}23:1 ABC  #999999  words: 2-5<br>
         """)
         var result = ImportedNotes()
         LifeBibleImport.readHighlights(file, into: &result)
@@ -77,8 +77,8 @@ import Testing
 
     @Test func verseNotesKeepTheirReferenceAndTheirText() throws {
         let file = Self.html("""
-        <p>Genesis\u{00A0}2:18 CSB<br>God's design for marriage <br>Line two</p>\
-        <p>Genesis\u{00A0}22:1 CSB<br>How to pass a test:<br>Will you trust God's will.<br><br>\
+        <p>Genesis\u{00A0}2:18 ABC<br>God's design for marriage <br>Line two</p>\
+        <p>Genesis\u{00A0}22:1 ABC<br>How to pass a test:<br>Will you trust God's will.<br><br>\
         Abraham obeyed God</p>
         """)
         var result = ImportedNotes()
@@ -86,7 +86,7 @@ import Testing
 
         #expect(result.verseNotes.count == 2)
         #expect(result.verseNotes[0].range?.start == VerseRef(.genesis, 2, 18))
-        #expect(result.verseNotes[0].translation == "CSB")
+        #expect(result.verseNotes[0].translation == "ABC")
         #expect(result.verseNotes[0].body == "God's design for marriage\nLine two")
         // The author's own paragraph break survives: `<br><br>` is how they separated two
         // thoughts, and flattening it would rewrite their note.
@@ -162,7 +162,7 @@ import Testing
     /// Genesis 1 has 31 verses. Walking integer keys from 1:30 to 2:2 would pass 1:31…1:999 and 2:0
     /// — nearly a thousand phantom highlights. It must be exactly the five real verses.
     @Test func aHighlightAcrossAChapterBreakCoversOnlyRealVerses() {
-        let file = Self.html("Genesis\u{00A0}1:30-2:2 CSB  #b3e487<br>")
+        let file = Self.html("Genesis\u{00A0}1:30-2:2 ABC  #b3e487<br>")
         var result = ImportedNotes()
         LifeBibleImport.readHighlights(file, verseCount: { $0 == ChapterRef(.genesis, 1) ? 31 : 25 },
                                        into: &result)

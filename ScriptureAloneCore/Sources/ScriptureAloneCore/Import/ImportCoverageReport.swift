@@ -16,7 +16,7 @@ public struct ImportCoverageReport: Sendable, Hashable, Codable {
         public let highestVerse: Int
         public let versesFound: Int
         /// Numbers missing from 1...highestVerse. A translation that genuinely omits a verse
-        /// (the ASV omits sixteen) shows up here too, which is the honest answer.
+        /// (some omit a handful) shows up here too, which is the honest answer.
         public let missingVerses: [Int]
         public let outOfOrder: Bool
     }
@@ -44,6 +44,8 @@ public struct ImportCoverageReport: Sendable, Hashable, Codable {
     /// How each spine document's (or USFM file's) verse markup was recognised.
     public let markupShapes: [String: VerseMarkupShape]
     public let notes: [ImportNote]
+    /// How well the file read, whatever it was — see `ImportQuality`.
+    public let quality: ImportQuality
 
     public var booksFound: [BookID] { books.map(\.book) }
     public var isWholeBible: Bool { booksMissing.isEmpty && books.allSatisfy(\.isComplete) }
@@ -171,6 +173,66 @@ public struct ImportCoverageReport: Sendable, Hashable, Codable {
         totalChapters = chapterTotal
         markupShapes = bible.shapesByDocument
         notes = bible.notes
+        quality = ImportQuality(bible, books: coverage)
+    }
+}
+
+/// One number for whether an import is fit to read, from the verses themselves.
+///
+/// Every format and every file is judged the same way. Half the score is continuity — chapters
+/// whose verses run in order without gaps, and no chapter missing between two that arrived — and
+/// half is clean text: verses of a plausible length, free of the debris a bad read leaves
+/// (soft hyphens, replacement characters, doubled spaces, words run together across a lost
+/// space). A file that holds only part of the Bible isn't marked down for that: completeness is
+/// `ImportCoverageReport`'s to say, and a New Testament on its own is a perfectly good import.
+public struct ImportQuality: Sendable, Hashable, Codable {
+    /// 0–100.
+    public let score: Int
+    /// Share of chapters that are whole and in order.
+    public let continuity: Double
+    /// Share of verses that look like clean text.
+    public let cleanliness: Double
+
+    /// Below this, an import is refused rather than stored.
+    public static let minimum = 80
+
+    /// Too few verses to judge by share: a short excerpt missing a verse would score badly for
+    /// reasons that say nothing about the file. Its gaps are still listed by the report.
+    public static let judgedFrom = 200
+    public let verseCount: Int
+
+    public var isAcceptable: Bool { verseCount < Self.judgedFrom || score >= Self.minimum }
+
+    init(_ bible: ExtractedBible, books: [ImportCoverageReport.BookCoverage]) {
+        var chapters = 0
+        var broken = 0
+        for book in books {
+            chapters += book.chaptersFound
+            broken += book.chaptersWithGaps.count
+            // Chapters missing between the first and last that arrived: a hole, not a portion.
+            let found = bible.chapterOrder.filter { $0.book == book.book }.map(\.chapter)
+            if let first = found.min(), let last = found.max() {
+                let present = Set(found)
+                let holes = (first...last).filter { !present.contains($0) }.count
+                chapters += holes
+                broken += holes
+            }
+        }
+        continuity = chapters == 0 ? 0 : Double(chapters - broken) / Double(chapters)
+        let verses = bible.verses.values
+        let clean = verses.filter { Self.looksClean($0.text) }.count
+        cleanliness = verses.isEmpty ? 0 : Double(clean) / Double(verses.count)
+        verseCount = verses.count
+        score = Int((continuity * 50 + cleanliness * 50).rounded())
+    }
+
+    static func looksClean(_ text: String) -> Bool {
+        guard !text.isEmpty, text.count <= 1500 else { return false }
+        if text.contains("\u{AD}") || text.contains("\u{FFFD}") || text.contains("  ") { return false }
+        if text.unicodeScalars.contains(where: { $0.properties.generalCategory == .control }) { return false }
+        // "gavehis" can't be seen, but "earth.The" and "wordThe" can.
+        if text.firstMatch(of: /\p{Ll}[.,;:!?]\p{Lu}\p{Ll}|\p{Ll}{2}\p{Lu}\p{Ll}{2}/) != nil { return false }
+        return true
     }
 }
 

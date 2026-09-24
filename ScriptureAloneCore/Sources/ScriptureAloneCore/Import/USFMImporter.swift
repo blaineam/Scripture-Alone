@@ -204,7 +204,7 @@ public struct USFMPackage: Sendable {
 /// Reads a zip of USFM books — the shape eBible.org publishes — into the same rows the ePub path
 /// produces, so both front-ends feed one `ImportedBibleBuilder`.
 ///
-/// This is a port of `Tools/build_bibles.py`, which is what compiles the bundled ASV, BSB and KJV,
+/// This is a port of `Tools/build_bibles.py`, which is what compiles the bundled translations,
 /// so an imported translation renders identically to a bundled one: the same heading and paragraph
 /// kinds, the same poetry levels, the same footnote placement, the same red-letter spans, and the
 /// same rule for joining a verse that runs across two paragraphs.

@@ -48,6 +48,13 @@ struct TranslationsView: View {
                                         pendingRemoval = entry
                                     }
                                 }
+                                // Swiping isn't discoverable, and a Mac has no swipe without a
+                                // trackpad: the same action on a long press or right-click.
+                                .contextMenu {
+                                    Button("Remove", systemImage: "trash", role: .destructive) {
+                                        pendingRemoval = entry
+                                    }
+                                }
                         }
                     }
                 }
@@ -59,7 +66,7 @@ struct TranslationsView: View {
                 } header: {
                     Text("Add a Translation")
                 } footer: {
-                    Text("Free translations come from eBible.org, and nothing is downloaded until you choose one. A file can be a USFM zip or an ePub you own — anything copy-protected is refused. The ESV, CSB, NASB and NKJV can't be given away by anyone, so they're read over the network with your own free key.")
+                    Text("Free translations come from eBible.org, and nothing is downloaded until you choose one. A file can be a USFM zip, an ePub or a PDF you own — anything copy-protected is refused. Translations that can't be given away are read over the network with your own free key.")
                 }
             }
             .formStyle(.grouped)
@@ -85,7 +92,7 @@ struct TranslationsView: View {
             }
         }
         .fileImporter(isPresented: $showFileImporter,
-                      allowedContentTypes: [.zip, .epub, UTType(filenameExtension: "usfm") ?? .data]) { result in
+                      allowedContentTypes: [.zip, .epub, .pdf, UTType(filenameExtension: "usfm") ?? .data]) { result in
             switch result {
             case .success(let url): Task { await runImport(url: url, name: url.lastPathComponent) }
             case .failure(let error): failure = error.localizedDescription
@@ -175,8 +182,8 @@ private struct ImportSummaryView: View {
     }
 
 
-    /// Says what is actually absent. A book can be flagged with every chapter present — the WEB
-    /// omits verses like Luke 17:36 — and "24 of 24 chapters" under a "Gaps" heading reads as a
+    /// Says what is actually absent. A book can be flagged with every chapter present — a translation
+    /// may omit a verse like Luke 17:36 — and "24 of 24 chapters" under a "Gaps" heading reads as a
     /// bug rather than as the truth.
     static func summary(of book: ImportCoverageReport.BookCoverage) -> String {
         if !book.missingChapters.isEmpty {
@@ -205,9 +212,10 @@ private struct ImportSummaryView: View {
             return String(localized: "Not recognised — up to \(info.rights.maxQuotationVerses) verses", comment: "Import summary: the translation's publisher terms weren't recognised, so a cautious verse limit applies. %lld is a number of verses.")
         }
         if let limit = terms.maxVerses {
-            return String(localized: "\(terms.abbreviation) terms — up to \(limit) verses", comment: "Import summary: quoting follows this publisher's terms. %1$@ is a translation abbreviation like “ESV”; %2$lld is a number of verses.")
+            return String(localized: "Publisher’s terms — up to \(limit) verses", comment: "Import summary: quoting follows the publisher's own published terms. %lld is a number of verses.")
         }
-        return String(localized: "\(terms.abbreviation) terms — no verse limit", comment: "Import summary: quoting follows this publisher's terms, which set no verse count. %@ is a translation abbreviation like “NET”.")
+        _ = terms
+        return String(localized: "Publisher’s terms — no verse limit", comment: "Import summary: quoting follows the publisher's own published terms, which set no verse count.")
     }
 
     var body: some View {

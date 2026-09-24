@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import ScriptureAloneCore
 
-/// The ePub front-end. Fixtures are ASV (public domain) or invented — no copyrighted text.
+/// The ePub front-end. Fixtures are public-domain text or invented — no copyrighted text.
 @Suite struct EPUBImportTests {
     // MARK: - Package
 
@@ -184,7 +184,7 @@ import Testing
         #expect(bible.verses[VerseRef(.john, 3, 2)]?.text == "The same came unto him by night.")
     }
 
-    @Test(arguments: ["ESV_Rom.8.1", "csb-Rom-8-1", "ROM.8.1", "Rom_8_1"])
+    @Test(arguments: ["ABC_Rom.8.1", "xyz-Rom-8-1", "ROM.8.1", "Rom_8_1"])
     func readsReferenceIdentifiers(identifier: String) throws {
         let bible = try extract("book.xhtml", """
             <p><span id="\(identifier)">There is therefore now no condemnation.</span></p>
@@ -195,7 +195,7 @@ import Testing
 
     @Test func readsOrdinalReferenceIdentifiers() throws {
         let bible = try extract("cor.xhtml", """
-            <p><span id="ESV_1Cor.13.4">Love suffereth long, and is kind.</span></p>
+            <p><span id="ABC_1Cor.13.4">Love suffereth long, and is kind.</span></p>
             """)
         #expect(bible.verses[VerseRef(.firstCorinthians, 13, 4)]?.text == "Love suffereth long, and is kind.")
     }

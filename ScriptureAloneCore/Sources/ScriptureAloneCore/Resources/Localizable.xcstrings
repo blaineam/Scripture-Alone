@@ -3138,54 +3138,61 @@
         }
       }
     },
-    "No Bible text was found in that ePub." : {
+    "No Bible text was found in that file." : {
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In diesem ePub wurde kein Bibeltext gefunden."
+            "value" : "In dieser Datei wurde kein Bibeltext gefunden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No Bible text was found in that file."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se encontró texto bíblico en ese ePub."
+            "value" : "No se encontró texto bíblico en ese archivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aucun texte biblique n’a été trouvé dans cet ePub."
+            "value" : "Aucun texte biblique n’a été trouvé dans ce fichier."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nessun testo biblico trovato in quell'ePub."
+            "value" : "In questo file non è stato trovato alcun testo biblico."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "そのePubに聖書本文が見つかりませんでした。"
+            "value" : "このファイルに聖書本文が見つかりませんでした。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "해당 ePub에서 성경 본문을 찾을 수 없습니다."
+            "value" : "이 파일에서 성경 본문을 찾을 수 없습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nenhum texto bíblico foi encontrado nesse ePub."
+            "value" : "Nenhum texto bíblico foi encontrado nesse arquivo."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "该 ePub 中未找到圣经经文。"
+            "value" : "未在此文件中找到圣经文本。"
           }
         }
       }
@@ -3555,6 +3562,124 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "预言书"
+          }
+        }
+      }
+    },
+    "That PDF is locked with a password." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses PDF ist mit einem Passwort gesperrt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "That PDF is locked with a password."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ese PDF está bloqueado con contraseña."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce PDF est verrouillé par un mot de passe."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo PDF è protetto da password."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この PDF はパスワードでロックされています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 PDF는 암호로 잠겨 있습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esse PDF está bloqueado por senha."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 PDF 已用密码锁定。"
+          }
+        }
+      }
+    },
+    "That PDF’s owner doesn’t allow its text to be copied." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Inhaber dieses PDFs erlaubt nicht, den Text zu kopieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "That PDF’s owner doesn’t allow its text to be copied."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El propietario de ese PDF no permite copiar su texto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le propriétaire de ce PDF n’autorise pas la copie de son texte."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il proprietario di questo PDF non consente di copiarne il testo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この PDF の所有者はテキストのコピーを許可していません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 PDF의 소유자가 텍스트 복사를 허용하지 않습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O proprietário desse PDF não permite copiar o texto."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 PDF 的所有者不允许复制其文本。"
           }
         }
       }
@@ -4078,6 +4203,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "该导出文件中没有笔记、标注或已保存的经文。"
+          }
+        }
+      }
+    },
+    "That file couldn’t be read cleanly enough to use (it scored %lld of 100). Nothing was added." : {
+      "comment" : "Import refused. %lld is a quality score out of 100.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Datei ließ sich nicht sauber genug lesen (Bewertung %lld von 100). Es wurde nichts hinzugefügt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "That file couldn’t be read cleanly enough to use (it scored %lld of 100). Nothing was added."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ese archivo no se pudo leer con la calidad suficiente (obtuvo %lld de 100). No se añadió nada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce fichier n’a pas pu être lu assez proprement pour être utilisé (score de %lld sur 100). Rien n’a été ajouté."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile leggere il file in modo abbastanza pulito (punteggio %lld su 100). Non è stato aggiunto nulla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このファイルは十分に読み取れませんでした（100 点中 %lld 点）。何も追加されていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 파일을 제대로 읽을 수 없어 사용할 수 없습니다(100점 중 %lld점). 아무것도 추가되지 않았습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível ler o arquivo com qualidade suficiente (pontuação %lld de 100). Nada foi adicionado."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法足够清晰地读取此文件（得分 %lld/100）。未添加任何内容。"
           }
         }
       }
@@ -6143,6 +6328,65 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "圣经列表"
+          }
+        }
+      }
+    },
+    "the PDF could not be opened" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "das PDF konnte nicht geöffnet werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "the PDF could not be opened"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no se pudo abrir el PDF"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "le PDF n’a pas pu être ouvert"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "non è stato possibile aprire il PDF"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PDF を開けませんでした"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PDF를 열 수 없습니다"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "não foi possível abrir o PDF"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法打开该 PDF"
           }
         }
       }

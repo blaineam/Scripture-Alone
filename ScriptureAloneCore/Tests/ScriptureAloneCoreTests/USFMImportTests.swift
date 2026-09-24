@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import ScriptureAloneCore
 
-/// The USFM front-end — the shape eBible.org publishes. Every fixture is ASV (1901, public domain)
+/// The USFM front-end — the shape eBible.org publishes. Every fixture is public-domain text
 /// or invented for the test.
 @Suite struct USFMImportTests {
     static let genesis = """

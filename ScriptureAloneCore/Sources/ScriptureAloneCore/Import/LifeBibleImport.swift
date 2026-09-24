@@ -17,7 +17,7 @@ import Foundation
 /// - every other `.html` — a journal entry, whose title is its file name and whose body is the page.
 /// - Folders in the app become directories in the archive, so a journal file may sit at any depth.
 ///
-/// **References are display strings, not identifiers.** They read `Genesis 3:1 NKJV`, and three
+/// **References are display strings, not identifiers.** They read `Genesis 3:1 ABC`, and three
 /// things about that matter. The space between the book and the chapter is a **non-breaking**
 /// space (U+00A0), so splitting on `" "` finds nothing. The trailing token is the translation the
 /// note was written against, which is information about the note rather than part of the
@@ -202,7 +202,7 @@ public enum LifeBibleImport {
         var translation: String?
     }
 
-    /// Pulls `Genesis 3:1 NKJV` apart, tolerating the non-breaking space and the trailing
+    /// Pulls `Genesis 3:1 ABC` apart, tolerating the non-breaking space and the trailing
     /// translation, and resolves it with the same parser the reader's own passage field uses.
     static func reference(in raw: String) -> Reference? {
         var text = text(of: raw)
@@ -214,7 +214,7 @@ public enum LifeBibleImport {
         if text.range(of: #",\s*para\.\s*\d+"#, options: .regularExpression) != nil { return nil }
 
         // The translation is the last token when it looks like an abbreviation — all caps and
-        // digits, two or more characters: CSB, NKJV, NASB95, NIV84. A book name never does.
+        // digits, two or more characters, sometimes with a year: ABC, ABCD, ABC95. A book name never does.
         var translation: String?
         if let space = text.lastIndex(of: " ") {
             let tail = String(text[text.index(after: space)...])

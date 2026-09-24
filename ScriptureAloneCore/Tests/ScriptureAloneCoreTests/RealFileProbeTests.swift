@@ -14,11 +14,13 @@ import Testing
         let report = ImportCoverageReport(bible)
         var lines = ["format: \(preview.format) docs: \(preview.documentCount)",
                      "identity: \(preview.identity)",
-                     report.summary, "--- problems"] + report.problems
+                     report.summary, "quality: \(report.quality.score) continuity \(report.quality.continuity) clean \(report.quality.cleanliness)",
+                     "--- problems"] + report.problems
         lines.append("--- shapes")
-        let package = try EPUBPackage(url: url)
-        for item in package.spine {
-            let scanned = DocumentScanner(options: .init()).scan(try package.document(item))
+        let spine = preview.format == .epub ? try EPUBPackage(url: url).spine : []
+        let package = preview.format == .epub ? try EPUBPackage(url: url) : nil
+        for item in spine {
+            let scanned = DocumentScanner(options: .init()).scan(try package!.document(item))
             let shape = report.markupShapes[item.path] ?? .none
             lines.append("\(item.path)\t\(shape)\tverses=\(scanned.shapeCounts[shape] ?? 0)\tchapters=\(scanned.chapterMarkers)\tbacklinks=\(scanned.backLinks)")
         }

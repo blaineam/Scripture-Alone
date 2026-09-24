@@ -247,10 +247,22 @@ final class ReaderModel {
     }
 
     private func rebuildTranslations() {
-        let added = (importedEntries + onlineEntries).sorted {
+        // A translation the reader imported is theirs, on the device, with nothing to fetch: the
+        // same translation behind an online key isn't offered beside it.
+        let local = importedEntries
+        let replaced = onlineEntries.filter { online in local.contains { Self.sameTranslation($0, online) } }
+        let online = onlineEntries.filter { entry in !replaced.contains(entry) }
+        let added = (local + online).sorted {
             $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
         translations = bundledTranslations + added
+
+        // Reading the online copy of what is now imported: carry on in the imported one.
+        if let current = replaced.first(where: { $0.id == translationID }),
+           let own = local.first(where: { Self.sameTranslation($0, current) }) {
+            selectTranslation(own.id)
+            return
+        }
 
         // The reader's own choice, now that it can be honoured. This is the other half of the
         // fallback in `init`: imports and online keys register after the first frame, so the
@@ -271,6 +283,13 @@ final class ReaderModel {
             // must not become their new preference.
             if let fallback { selectTranslation(fallback, remember: awaitedTranslation == nil) }
         }
+    }
+
+    /// Two entries for one translation: the same abbreviation, or the same name.
+    static func sameTranslation(_ a: TranslationEntry, _ b: TranslationEntry) -> Bool {
+        let key = { (text: String) in text.uppercased().filter { $0.isLetter || $0.isNumber } }
+        return (!key(a.abbreviation).isEmpty && key(a.abbreviation) == key(b.abbreviation))
+            || a.name.localizedCaseInsensitiveCompare(b.name) == .orderedSame
     }
 
     /// A translation the reader chose that the app could not offer yet.

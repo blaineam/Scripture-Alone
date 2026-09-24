@@ -2,6 +2,18 @@
 
 ## After 1.0.0
 
+- A Bible PDF with a text layer can be imported, read from how it is typeset rather than how
+  any one publisher lays it out: the size of its text against its own body type tells book
+  titles, chapter drop caps, verse numbers, headings, footnotes and page furniture apart; its
+  columns are read in order, whatever side of the sheet; words broken across lines or at
+  ligatures are joined from the book's own vocabulary; small capitals come back as LORD; and
+  each footnote finds its verse. Locked and copy-protected PDFs are refused.
+- Every import is judged before it is kept: chapters whole and in order, and text free of the
+  debris a bad read leaves. A file that reads too poorly is refused with its score, and nothing
+  is added.
+- A translation you've imported is used in place of the same translation behind an online key,
+  which no longer shows beside it. Imports can be removed from a long-press or right-click menu
+  as well as by swiping.
 - Translations you import follow you: each one is kept in your own private iCloud and appears on
   your other iPhone, iPad and Mac when it arrives — nothing is shared with anyone else, launch
   never waits on it, and removing one removes it everywhere.

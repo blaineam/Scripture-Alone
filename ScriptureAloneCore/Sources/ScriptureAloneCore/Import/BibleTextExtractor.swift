@@ -14,7 +14,7 @@ import Foundation
 /// is not mistaken for a file whose `<sup>`s hold verse numbers.
 ///
 /// Shapes handled (`VerseMarkupShape`):
-/// - `referenceIdentifier` — `id="ESV_Gen.1.1"`, `id="csb-Gen-1-1"`, `id="MAT.5.3"`, `id="1Cor.13.4"`
+/// - `referenceIdentifier` — `id="ABC_Gen.1.1"`, `id="xyz-Gen-1-1"`, `id="MAT.5.3"`, `id="1Cor.13.4"`
 /// - `verseAnchor` — `id="v1"`, `id="verse-3"`
 /// - `numberClass` — `class="verse-num"`, `class="vnum"`, `class="v-num"`, `class="verse"`
 /// - `superscript` — `<sup>3</sup>` holding nothing but a number
@@ -671,6 +671,10 @@ struct Assembler {
     /// publisher sets "8" before John 7:53). That verse is filed under its own chapter, and the
     /// new chapter resumes at its verse 1.
     private var deferredChapter: Int?
+    /// The file has stated its chapter numbers, so none are inferred.
+    private var chaptersAreMarked = false
+    /// The file names its books by title, so headings don't.
+    private var booksArePlaced = false
 
     init(options: BibleTextExtractor.Options) {
         self.options = options
@@ -726,6 +730,7 @@ struct Assembler {
             switch item {
             case .place(let newBook, let newChapter):
                 titledBook = newBook
+                booksArePlaced = true
                 // A file's title is a label someone typed; a title naming a book already read is
                 // a copy-paste slip (one publisher's Exodus 28–40 is titled "Genesis"), not a return.
                 if newBook != book, !bible.hasVerses(in: newBook) {
@@ -739,7 +744,12 @@ struct Assembler {
             case .blockEnd:
                 closeBlock()
             case .heading(let text):
-                if let place = ScriptureLabels.heading(text), place.book != nil || place.chapter != nil {
+                // A heading may say where the text is — but not in a file that states its books by
+                // title or its chapters by number, where a heading naming a book is a section
+                // heading ("…Prophetic Revelation").
+                if let place = ScriptureLabels.heading(text), place.book != nil || place.chapter != nil,
+                   place.book == nil || !booksArePlaced, place.chapter == nil || place.book != nil || !chaptersAreMarked,
+                   place.chapter.map({ $0 <= (place.book ?? book ?? .psalms).chapterCount }) ?? true {
                     move(to: place.book, chapter: place.chapter)
                     documentDeclaredPlace = true
                 } else if options.headings, book != nil {
@@ -753,6 +763,12 @@ struct Assembler {
                 }
                 let accepted = marker.isChapter || marker.shapes.contains(shape)
                 if marker.isChapter {
+                    // A chapter the book doesn't have is a number set large for another reason.
+                    if let number = marker.chapter, let current = marker.book ?? book, number > current.chapterCount { continue }
+                    // Chapters don't run backwards within a book: a smaller number is a stray.
+                    if chaptersAreMarked, let number = marker.chapter, let chapter, marker.book == nil || marker.book == book,
+                       number < chapter { continue }
+                    chaptersAreMarked = true
                     move(to: marker.book, chapter: marker.chapter)
                     documentDeclaredPlace = true
                     awaitingFirstVerse = book != nil && chapter != nil && verse == nil
@@ -930,7 +946,10 @@ struct Assembler {
         }
         // A verse number we already have means the file moved on to the next chapter without
         // saying so — the common shape when chapter numbers are drop-caps we did not recognise.
-        if let current = chapterRef, bible.verses[VerseRef(book, current.chapter, number)] != nil {
+        // Not in a file that has been marking its chapters: there it is one number read out of
+        // place (a list set in a table), and inventing a chapter would misfile everything after it.
+        if let current = chapterRef, bible.verses[VerseRef(book, current.chapter, number)] != nil,
+           !chaptersAreMarked {
             closeBlock()
             chapter = (chapter ?? 1) + 1
             lastVerseNumber = 0

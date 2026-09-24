@@ -1483,126 +1483,6 @@
         }
       }
     },
-    "%@ terms — no verse limit" : {
-      "comment" : "Import summary: quoting follows this publisher's terms, which set no verse count. %@ is a translation abbreviation like “NET”.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bedingungen der %@ – ohne Versbegrenzung"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%@ terms — no verse limit"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Condiciones de la %@: sin límite de versículos"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conditions de la %@ — sans limite de versets"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Condizioni della %@ — nessun limite di versetti"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ の規定 — 節数の制限なし"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 이용 조건 — 구절 수 제한 없음"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Termos da %@ — sem limite de versículos"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 条款 — 无节数限制"
-          }
-        }
-      }
-    },
-    "%@ terms — up to %lld verses" : {
-      "comment" : "Import summary: quoting follows this publisher's terms. %1$@ is a translation abbreviation like “ESV”; %2$lld is a number of verses.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bedingungen der %1$@ – höchstens %2$lld Verse"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ terms — up to %2$lld verses"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Condiciones de la %1$@: hasta %2$lld versículos"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conditions de la %1$@ — au maximum %2$lld versets"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Condizioni della %1$@ — fino a %2$lld versetti"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ の規定 — 最大 %2$lld 節"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ 이용 조건 — 최대 %2$lld개 구절"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Termos da %1$@ — até %2$lld versículos"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ 条款 — 最多 %2$lld 节"
-          }
-        }
-      }
-    },
     "%@ theme" : {
       "localizations" : {
         "de" : {
@@ -13538,54 +13418,62 @@
         }
       }
     },
-    "Free translations come from eBible.org, and nothing is downloaded until you choose one. A file can be a USFM zip or an ePub you own — anything copy-protected is refused. The ESV, CSB, NASB and NKJV can't be given away by anyone, so they're read over the network with your own free key." : {
+    "Free translations come from eBible.org, and nothing is downloaded until you choose one. A file can be a USFM zip, an ePub or a PDF you own — anything copy-protected is refused. Translations that can't be given away are read over the network with your own free key." : {
+      "comment" : "Translations screen footer.",
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kostenlose Übersetzungen kommen von eBible.org, und nichts wird geladen, bevor du eine auswählst. Eine Datei kann ein USFM-ZIP oder ein ePub sein, das dir gehört – alles Kopiergeschützte wird abgelehnt. ESV, CSB, NASB und NKJV darf niemand weitergeben, deshalb werden sie mit deinem eigenen kostenlosen Schlüssel über das Netzwerk gelesen."
+            "value" : "Kostenlose Übersetzungen kommen von eBible.org, und nichts wird heruntergeladen, bevor du eine auswählst. Eine Datei kann ein USFM-ZIP, ein ePub oder ein PDF sein, das dir gehört – alles Kopiergeschützte wird abgelehnt. Übersetzungen, die niemand weitergeben darf, werden mit deinem eigenen kostenlosen Schlüssel über das Netz gelesen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Free translations come from eBible.org, and nothing is downloaded until you choose one. A file can be a USFM zip, an ePub or a PDF you own — anything copy-protected is refused. Translations that can't be given away are read over the network with your own free key."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las traducciones gratuitas proceden de eBible.org y no se descarga nada hasta que eliges una. El archivo puede ser un zip USFM o un ePub de tu propiedad; se rechaza cualquier archivo con protección anticopia. Nadie puede regalar la ESV, la CSB, la NASB ni la NKJV, así que se leen por red con tu propia clave gratuita."
+            "value" : "Las traducciones gratuitas proceden de eBible.org y no se descarga nada hasta que eliges una. Un archivo puede ser un zip USFM, un ePub o un PDF de tu propiedad; se rechaza todo lo que tenga protección anticopia. Las traducciones que nadie puede regalar se leen por la red con tu propia clave gratuita."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les traductions gratuites proviennent d’eBible.org, et rien n’est téléchargé tant que vous n’en choisissez pas une. Un fichier peut être un zip USFM ou un ePub qui vous appartient — tout contenu protégé contre la copie est refusé. Les versions ESV, CSB, NASB et NKJV ne peuvent être cédées par personne : elles sont donc lues en ligne avec votre propre clé gratuite."
+            "value" : "Les traductions gratuites proviennent d’eBible.org, et rien n’est téléchargé avant que vous en choisissiez une. Un fichier peut être un zip USFM, un ePub ou un PDF qui vous appartient — tout ce qui est protégé contre la copie est refusé. Les traductions que personne ne peut distribuer sont lues par le réseau avec votre propre clé gratuite."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le traduzioni gratuite provengono da eBible.org e non viene scaricato nulla finché non ne scegli una. Un file può essere uno zip USFM o un ePub di tua proprietà: tutto ciò che è protetto da copia viene rifiutato. ESV, CSB, NASB e NKJV non possono essere ceduti da nessuno, quindi si leggono in rete con la tua chiave gratuita."
+            "value" : "Le traduzioni gratuite provengono da eBible.org e non viene scaricato nulla finché non ne scegli una. Un file può essere uno zip USFM, un ePub o un PDF di tua proprietà: tutto ciò che è protetto da copia viene rifiutato. Le traduzioni che nessuno può distribuire si leggono dalla rete con la tua chiave gratuita."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無料の翻訳は eBible.org から提供され、選ぶまで何もダウンロードされません。ファイルは USFM の zip か、お持ちの ePub が使えます。コピー保護されたものは利用できません。ESV、CSB、NASB、NKJV は誰も配布できないため、ご自身の無料キーでネットワーク経由で読みます。"
+            "value" : "無料の翻訳は eBible.org から提供され、選ぶまで何もダウンロードされません。ファイルは USFM の zip、ePub、または PDF で、あなたが所有するものです。コピー保護されたものは受け付けません。誰も配布できない翻訳は、あなた自身の無料キーを使ってネットワーク経由で読み込みます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "무료 번역본은 eBible.org에서 제공되며, 선택하기 전에는 아무것도 다운로드되지 않습니다. 파일은 USFM zip이거나 직접 소유한 ePub이면 되며, 복사 방지된 파일은 사용할 수 없습니다. ESV, CSB, NASB, NKJV는 누구도 배포할 수 없으므로 직접 발급받은 무료 키로 네트워크를 통해 읽습니다."
+            "value" : "무료 번역본은 eBible.org에서 제공되며, 선택하기 전에는 아무것도 다운로드되지 않습니다. 파일은 직접 소유한 USFM zip, ePub 또는 PDF일 수 있으며, 복사 방지된 파일은 거부됩니다. 누구도 배포할 수 없는 번역본은 본인의 무료 키로 네트워크를 통해 읽습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "As traduções gratuitas vêm do eBible.org, e nada é baixado até você escolher uma. O arquivo pode ser um zip USFM ou um ePub que você tenha — qualquer coisa com proteção contra cópia é recusada. A ESV, a CSB, a NASB e a NKJV não podem ser distribuídas por ninguém, então são lidas pela rede com sua própria chave gratuita."
+            "value" : "As traduções gratuitas vêm do eBible.org, e nada é baixado até você escolher uma. Um arquivo pode ser um zip USFM, um ePub ou um PDF seu — qualquer coisa protegida contra cópia é recusada. Traduções que ninguém pode distribuir são lidas pela rede com a sua própria chave gratuita."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "免费译本来自 eBible.org，在你选择之前不会下载任何内容。文件可以是 USFM 压缩包或你自有的 ePub——有版权保护的文件会被拒绝。ESV、CSB、NASB 和 NKJV 无法由任何人赠予，因此需用你自己的免费密钥联网阅读。"
+            "value" : "免费译本来自 eBible.org，在你选择之前不会下载任何内容。文件可以是你拥有的 USFM 压缩包、ePub 或 PDF——任何有复制保护的文件都会被拒绝。任何人都不能分发的译本，会用你自己的免费密钥通过网络读取。"
           }
         }
       }
@@ -26067,6 +25955,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "公有领域 — 无限制"
+          }
+        }
+      }
+    },
+    "Publisher’s terms — no verse limit" : {
+      "comment" : "Import summary: quoting follows the publisher's own published terms, which set no verse count.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bedingungen des Verlags – ohne Versbegrenzung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Publisher’s terms — no verse limit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condiciones de la editorial: sin límite de versículos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions de l’éditeur — sans limite de versets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condizioni dell’editore — nessun limite di versetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出版社の規定 — 節数の制限なし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출판사 이용 조건 — 구절 수 제한 없음"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termos da editora — sem limite de versículos"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出版方条款 — 无节数限制"
+          }
+        }
+      }
+    },
+    "Publisher’s terms — up to %lld verses" : {
+      "comment" : "Import summary: quoting follows the publisher's own published terms. %lld is a number of verses.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bedingungen des Verlags – höchstens %lld Verse"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Publisher’s terms — up to %lld verses"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condiciones de la editorial: hasta %lld versículos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions de l’éditeur — au maximum %lld versets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condizioni dell’editore — fino a %lld versetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出版社の規定 — 最大 %lld 節"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출판사 이용 조건 — 최대 %lld개 구절"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termos da editora — até %lld versículos"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出版方条款 — 最多 %lld 节"
           }
         }
       }

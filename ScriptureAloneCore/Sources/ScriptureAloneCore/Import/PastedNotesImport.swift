@@ -275,7 +275,7 @@ public enum PastedNotesImport {
     typealias Reference = LifeBibleImport.Reference
 
     /// The same reference reader the Life Bible import uses, so both sources treat "1 Chronicles
-    /// 29:14 NKJV" identically and there is one place to fix when one of them is wrong.
+    /// 29:14 ABC" identically and there is one place to fix when one of them is wrong.
     static func reference(in raw: String) -> Reference? {
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         // A bare number is not a reference, however willing a parser might be to read it as one.

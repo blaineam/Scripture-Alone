@@ -47,9 +47,9 @@ public struct ImportedTranslationIdentity: Sendable, Hashable, Codable {
                                            source: metadata.publisher.map { "Imported ePub — \($0)" } ?? "Imported ePub")
     }
 
-    /// Letters of the significant words, so "Holman Christian Standard Bible" suggests "HCSB".
+    /// Letters of the significant words, so "New Example Standard Bible" suggests "NESB".
     public static func abbreviation(for name: String) -> String {
-        // "Bible" is kept: the B in CSB, BSB and ESV comes from it.
+        // "Bible" is kept: the B at the end of most abbreviations comes from it.
         let skip: Set<String> = ["the", "of", "a", "an", "and", "holy", "version", "edition", "translation"]
         let initials = name.lowercased()
             .split(whereSeparator: { !$0.isLetter && !$0.isNumber })
@@ -61,7 +61,7 @@ public struct ImportedTranslationIdentity: Sendable, Hashable, Codable {
         return letters.isEmpty ? "IMP" : String(letters.prefix(4))
     }
 
-    /// A stable, filename-safe id. Imported stores never collide with a bundled ASV/BSB/KJV.
+    /// A stable, filename-safe id. Imported stores never collide with a bundled one.
     public static func identifier(for seed: String) -> String {
         var hash: UInt64 = 0xcbf2_9ce4_8422_2325
         for byte in Array(seed.utf8) {
@@ -84,6 +84,7 @@ public enum ImportedBibleBuilder {
             throw BibleImportError.missingCopyright
         }
         let report = ImportCoverageReport(bible)
+        guard report.quality.isAcceptable else { throw BibleImportError.poorQuality(report.quality.score) }
 
         let directory = url.deletingLastPathComponent()
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
