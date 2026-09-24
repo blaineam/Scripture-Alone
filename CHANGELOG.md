@@ -9,7 +9,7 @@
   holds, so a watch reinstalled or holding an older copy is sent it again.
 - The Verse of the Day on the watch reads in the translation the watch is reading, an imported one included.
 - On iPhone, Study's Context tab holds everything Maps & Timeline did — Overview, Map, Timeline
-  and Charts — so the reader's bottom bar loses its map button and sits balanced. The overview
+  and Charts — so the reader loses its map button (on iPad and Mac too) and its bottom bar sits balanced. The overview
   map is a still picture (scrolling passes over it; a tap opens the Map view to explore). Study's
   button is an open book.
 - On Android too, Study's Context tab switches in place between Overview, Map, Timeline and

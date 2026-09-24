@@ -173,13 +173,6 @@ struct ContextViewerPresenter: ViewModifier {
             .onChange(of: request) { _, new in
                 guard let new else { return }
                 request = nil
-                #if DEBUG
-                // Screenshots keep the viewer over the reader instead of in a second window.
-                if ScreenshotScene.current != nil {
-                    sheet = new
-                    return
-                }
-                #endif
                 if supportsMultipleWindows && roomForWindows {
                     openWindow(id: ContextViewerRequest.windowID, value: new)
                 } else {
@@ -204,53 +197,23 @@ extension View {
     }
 }
 
-/// The reader's hooks into Study context: a "Maps & Timeline" toolbar button (iPad and Mac), keeping
+/// The reader's hooks into Study context — the maps, timeline and charts live in Study's Context tab,
+/// with no button of their own — keeping
 /// `ReadingFocus` current, and jumping when a map or chart asks to open a passage.
 struct ContextReaderHooks: ViewModifier {
     @Environment(ReaderModel.self) private var model
-    #if os(iOS)
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    #endif
-    @State private var viewer: ContextViewerRequest?
 
     func body(content: Content) -> some View {
         content
-            .toolbar {
-                #if os(iOS)
-                // On a phone the Study sheet's Context tab holds the maps, timeline and charts;
-                // iPad keeps the button, whose viewer opens in a window beside the text.
-                if horizontalSizeClass != .compact {
-                    ToolbarItem(placement: .topBarTrailing) { button }
-                }
-                #else
-                ToolbarItem(placement: .primaryAction) { button }
-                #endif
-            }
-            .contextViewerPresenter($viewer)
             .onChange(of: model.location, initial: true) { _, location in ReadingFocus.shared.chapter = location }
             .onChange(of: ReadingFocus.shared.jumpRequest) { _, jump in
                 if let jump { model.go(to: jump.verse) }
             }
-            #if DEBUG
-            .task {
-                guard ScreenshotScene.current == .maps else { return }
-                try? await Task.sleep(for: .milliseconds(1_500))
-                viewer = ContextViewerRequest(chapter: ChapterRef(.acts, 13), tab: .map)
-            }
-            #endif
-    }
-
-    private var button: some View {
-        Button { viewer = ContextViewerRequest(chapter: model.location, tab: .overview) } label: {
-            Label("Maps & Timeline", systemImage: "map")
-        }
-        .keyboardShortcut("m", modifiers: [.command, .shift])
-        .help("Maps, timeline and charts for this chapter")
     }
 }
 
 extension View {
-    /// Adds the "Maps & Timeline" entry point to the reader.
+    /// Keeps Study context in step with the reader.
     func contextReaderHooks() -> some View { modifier(ContextReaderHooks()) }
 }
 
