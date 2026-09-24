@@ -193,8 +193,11 @@ private struct ImportSummaryView: View {
         if !book.missingChapters.isEmpty {
             return String(localized: "\(book.chaptersFound) of \(book.chaptersExpected) chapters", comment: "Import coverage for a book. Chapters found, then chapters expected.")
         }
+        // Verses the translation leaves out are listed on their own; only the rest are gaps.
         let refs = book.chaptersWithGaps.flatMap { chapter in
-            chapter.missingVerses.map { "\(chapter.chapter):\($0)" }
+            chapter.missingVerses
+                .filter { !ImportCoverageReport.textualVariants.contains(VerseRef(book.book, chapter.chapter, $0)) }
+                .map { "\(chapter.chapter):\($0)" }
         }
         if refs.isEmpty { return String(localized: "\(book.versesFound) verses", comment: "Import coverage for a book. %lld is a number of verses.") }
         let shown = refs.prefix(4).joined(separator: ", ")

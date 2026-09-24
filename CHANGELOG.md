@@ -2,6 +2,8 @@
 
 ## After 1.0.0
 
+- The import summary no longer repeats, under Gaps, verses it already lists as left out by the
+  translation.
 - On iPhone, a verse you tap with Study open stays above the Study sheet (and the maps and
   places it opens): the page scrolls it into the part of the screen still showing, and the end of
   a chapter can be scrolled clear of the sheet. In the sheet, references and commentary scroll
