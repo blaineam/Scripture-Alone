@@ -38,14 +38,9 @@ nonisolated struct VerseEntry: TimelineEntry {
 nonisolated struct VerseOfDayProvider: TimelineProvider {
     static let days = 7
 
-    private var snapshot: VerseSnapshot? {
-        #if os(watchOS)
-        // The watch bundles the ASV only.
-        nil
-        #else
-        AppGroup.readSnapshot()
-        #endif
-    }
+    /// What the app last wrote to the App Group: the phone's snapshot on iPhone, iPad and Mac, the
+    /// watch app's on the watch (`WatchBible.publishVerseOfDay`) — each device its own translation.
+    private var snapshot: VerseSnapshot? { AppGroup.readSnapshot() }
 
     func entries(from now: Date, calendar: Calendar = .current) -> [VerseEntry] {
         let snapshot = snapshot

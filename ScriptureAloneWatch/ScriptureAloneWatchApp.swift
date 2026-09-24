@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 import SwiftData
 import ScriptureAloneCore
 
@@ -256,6 +257,20 @@ final class WatchBible {
         }
         // Book names in the Bible's own language (a French edition from the phone reads "Jean").
         BookNames.use(language: store?.language ?? Locale.preferredLanguages.first)
+        publishVerseOfDay()
+    }
+
+    /// Puts the translation the watch reads where the complications read it (the App Group), with
+    /// the coming days' Verse of the Day for one the daily list doesn't carry — an import the
+    /// phone sent — and reloads them when it changed.
+    private func publishVerseOfDay() {
+        guard let store else { return }
+        let snapshot = VerseSnapshot(generatedAt: .now, translation: translation, items: [],
+                                     abbreviation: store.info.abbreviation,
+                                     daily: DailyVerseLibrary.ownTexts(from: store))
+        if let previous = AppGroup.readSnapshot(), previous.translation == snapshot.translation,
+           previous.abbreviation == snapshot.abbreviation, previous.daily == snapshot.daily { return }
+        if AppGroup.write(snapshot) { WidgetCenter.shared.reloadAllTimelines() }
     }
 
     private func open(id: String, url: URL) -> BibleStore? {

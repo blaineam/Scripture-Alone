@@ -16,6 +16,7 @@
 		0BDC13BEB61126BB6A23EF3F /* DailyVerseLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F0BC99CE5196F68A181398 /* DailyVerseLibrary.swift */; };
 		0CF01B3F1ADEB43A40A34C2F /* DailyVerses.json in Resources */ = {isa = PBXBuildFile; fileRef = 7FB470D843314F7FBBD87D39 /* DailyVerses.json */; };
 		102A001B3B3B421E170724C3 /* OnlineTranslations.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6A3452FD42CAA93C1C07421 /* OnlineTranslations.swift */; };
+		1271AC1984AF2123E342BBB9 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92CECC981DA199D2D8E1875 /* AppGroup.swift */; };
 		141BB91B972E57BB28053467 /* LegacyReadingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B2F7865CBE3F11E9B378EA /* LegacyReadingViews.swift */; };
 		17AC18B017DE5043396F7C5F /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92CECC981DA199D2D8E1875 /* AppGroup.swift */; };
 		18F02561123B9ED6E9EBD382 /* NoteIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBD294CA96AA689BF14E101A /* NoteIntents.swift */; };
@@ -94,6 +95,7 @@
 		8424029FBF455FF08A704AE7 /* AppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94BF719AE320CC291255FBE5 /* AppearanceView.swift */; };
 		8478C116E45E0D9AFA51A274 /* PlaceViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0618262E7F0D5AFD6612363E /* PlaceViews.swift */; };
 		847A42E21724E641C4CA74C4 /* WidgetSnapshotSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2539ED6AC3F6DFA0CE4CCCD5 /* WidgetSnapshotSync.swift */; };
+		858686A95F5272809753035A /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92CECC981DA199D2D8E1875 /* AppGroup.swift */; };
 		86A874298AE4559C226B66A3 /* DailyVerseLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F0BC99CE5196F68A181398 /* DailyVerseLibrary.swift */; };
 		86D64FB0F0463FCCA4C04061 /* ListenController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10323963B4DFF80E5DD6F887 /* ListenController.swift */; };
 		871C67E0CE22AB0CC5DC791A /* Topics.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 9ACC9445E5EA791DFC94D732 /* Topics.sqlite */; };
@@ -1184,6 +1186,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1271AC1984AF2123E342BBB9 /* AppGroup.swift in Sources */,
 				BD97245C0F9E040DB7BE11A0 /* DailyVerseLibrary.swift in Sources */,
 				D7EF2277F47BF2E8C71E3B77 /* DemoLibrary.swift in Sources */,
 				A3F695662AA5D3E21A9C9836 /* Models.swift in Sources */,
@@ -1320,6 +1323,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				858686A95F5272809753035A /* AppGroup.swift in Sources */,
 				885A850C70EC97AF9120378A /* DailyVerseLibrary.swift in Sources */,
 				75EC754139A6E8FEDEB9B80E /* VerseComplication.swift in Sources */,
 				E85C6125ACAABA95F56A46B8 /* VerseOfDayShared.swift in Sources */,
@@ -1478,6 +1482,7 @@
 		BCF88F149C35962872005E50 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScriptureAloneWatchWidgets/ScriptureAloneWatchWidgets.entitlements;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ScriptureAloneWatchWidgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
@@ -1563,6 +1568,7 @@
 		E93FD7852CBC3084E5BF9D1F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScriptureAloneWatchWidgets/ScriptureAloneWatchWidgets.entitlements;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ScriptureAloneWatchWidgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";

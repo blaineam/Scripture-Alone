@@ -2,6 +2,7 @@
 
 ## After 1.0.0
 
+- The Verse of the Day complication on the watch face reads in the translation the watch is reading, an imported one included.
 - On Android, every translation you import is sent to your Wear OS watch too (when its terms
   allow keeping it offline), listed in the watch's translation picker by its abbreviation, and
   removed from the watch when you remove it from the phone. The watch tells the phone what it
