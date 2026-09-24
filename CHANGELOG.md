@@ -2,6 +2,9 @@
 
 ## After 1.0.0
 
+- Android: a PDF page set as a table, each line ending in a count tabbed to the edge of the column
+  ("his sons, and his relatives — 12"), no longer mistakes the count for a verse number, so the
+  verses after it are no longer lost (a PDF now gives all 31,086 verses, as on iPhone and Mac).
 - Android: the same fix for a verse run on without its number after a verse the translation
   leaves out, and the import summary now lists verses left out by the translation on their own,
   apart from Gaps.

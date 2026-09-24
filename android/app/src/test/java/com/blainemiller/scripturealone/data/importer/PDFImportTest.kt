@@ -190,6 +190,33 @@ class PDFImportTest {
         assertEquals("And they both died also, and the woman was left alone.", bible.verses[ref(BookID.RUTH, 1, 5)]?.text)
     }
 
+    @Test fun aCountTabbedOutAfterWordsIsTextNotAVerseNumber() {
+        // A list set as a table in two columns: each entry's count is tabbed to the column's right edge,
+        // in the text's own face. The counts are figures in the text; the verse numbers are in a face
+        // of their own.
+        val page = Page()
+        page.text("RUTH", 150f, 40f, size = 20f, font = "Sans-Bold")
+        val columns = listOf(
+            Triple(40f, 172f, listOf("1" to "They cast lots:", "2" to "the first to Joseph —", null to "to Gedaliah the second —", "3" to "the third to Zaccur —", "4" to "the fourth to Izri —")),
+            Triple(225f, 365f, listOf("5" to "the fifth to Nethaniah —", "6" to "the sixth to Bukkiah —", "7" to "the seventh to Jesarelah —", "8" to "the eighth to Jeshaiah —", "9" to "the ninth to Mattaniah —")),
+        )
+        for ((left, tab, rows) in columns) {
+            for ((row, entry) in rows.withIndex()) {
+                val y = 70f + row * 12f
+                val (number, words) = entry
+                val x = if (number != null) page.text(number, left, y, font = "Sans-Bold") + 2.5f else left + 12f
+                page.text(words, x, y)
+                if (words.endsWith("—")) page.text("12", tab, y)
+            }
+        }
+        val bible = PDFBibleReader(BibleTextExtractor.Options()).extract(Pages(listOf(page.glyphs)))
+        assertEquals((1..9).toList(), bible.verseNumbers(ChapterRef(BookID.RUTH, 1)))
+        assertEquals("the first to Joseph — 12 to Gedaliah the second — 12", bible.verses[ref(BookID.RUTH, 1, 2)]?.text)
+        assertEquals("the third to Zaccur — 12", bible.verses[ref(BookID.RUTH, 1, 3)]?.text)
+        assertEquals("the fourth to Izri — 12", bible.verses[ref(BookID.RUTH, 1, 4)]?.text)
+        assertEquals("the fifth to Nethaniah — 12", bible.verses[ref(BookID.RUTH, 1, 5)]?.text)
+    }
+
     // MARK: - Real PDFs
 
     private fun pdf(named: String, protection: StandardProtectionPolicy? = null): File {

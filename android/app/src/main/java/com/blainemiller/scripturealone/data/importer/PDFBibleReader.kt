@@ -34,6 +34,11 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
         var ownLine: Boolean = false,
         /** The run ends a line of print. Kept when [Lexicon] resolves the break itself. */
         var endsLine: Boolean = false,
+        /**
+         * A number tabbed out after words on its own row, in their font ("his relatives — 12", a count
+         * in a list): part of the text, not a verse number.
+         */
+        var tabbed: Boolean = false,
     )
 
     // MARK: - Reading
@@ -210,7 +215,7 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
             // different face) is what split it from the words around it — if it is the number a verse
             // would have here. Measures and dates set in another font ("75 feet") go back into the text.
             val number = number(text)
-            if (number != null && number < 200 && followsOn(number, lastVerse[0])) {
+            if (number != null && number < 200 && !run.tabbed && followsOn(number, lastVerse[0])) {
                 lastVerse[0] = number
                 document.shapeCounts[VerseMarkupShape.NUMBER_CLASS] = (document.shapeCounts[VerseMarkupShape.NUMBER_CLASS] ?: 0) + 1
                 flow.add(FlowItem.MarkerItem(Marker(setOf(VerseMarkupShape.NUMBER_CLASS), verse = number)))
@@ -461,7 +466,18 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
                     val opens = before?.let { it in "“‘([ " || it.isWhitespace() } ?: true
                     if (!closes && !opens) last.text += " "
                 }
-                runs.addAll(pieceRuns(piece))
+                val pieceRuns = pieceRuns(piece)
+                // A number set off by a tab after words on the same row, in the words' own font and size:
+                // a figure the line ends in (a count in a list), not a verse number, which the page sets
+                // in a face of its own or hangs at the start of a line.
+                if (prior != null && abs(prior.box.midY - piece.box.midY) <= 2 && piece.box.left - prior.box.right > piece.size &&
+                    number(piece.text) != null && prior.glyphs.last().font == piece.glyphs.first().font &&
+                    rounded(prior.glyphs.last().size.toDouble()) == rounded(piece.glyphs.first().size.toDouble()) &&
+                    prior.text.any { it.isLetter() }
+                ) {
+                    pieceRuns.forEach { it.tabbed = true }
+                }
+                runs.addAll(pieceRuns)
                 runs.last().let { it.text = it.text.trimEnd('\n', '\r') + "\n" }
                 previous = piece
             }
@@ -760,7 +776,7 @@ internal class Lexicon(runs: List<PDFBibleReader.Run>) {
 
     /** Replaces each line break with nothing (inside a word) or a space (between words). */
     fun resolveLineBreaks(runs: List<PDFBibleReader.Run>): List<PDFBibleReader.Run> {
-        val result = runs.map { PDFBibleReader.Run(it.text, it.size, it.ownLine, it.endsLine) }
+        val result = runs.map { PDFBibleReader.Run(it.text, it.size, it.ownLine, it.endsLine, it.tabbed) }
         // A ligature is often a run of its own, so its break can fall between runs too.
         for (index in 0 until result.size - 1) {
             val text = result[index].text.replace("\u00AD", "")
