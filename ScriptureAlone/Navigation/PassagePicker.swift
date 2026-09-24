@@ -365,6 +365,11 @@ struct PassagePicker: View {
             model.rememberSearch(query)
             model.go(to: first.ref)
             dismiss()
+        } else if let theme = matchingThemes.first {
+            // Words no verse uses, but a topic answers ("anxious"): Return opens the topic.
+            path.append(TopicsRoute.theme(theme.id))
+        } else if let topic = matchingIndexTopic {
+            path.append(TopicsRoute.indexTopic(topic.id))
         }
     }
 

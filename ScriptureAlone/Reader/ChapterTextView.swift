@@ -24,8 +24,20 @@ struct ChapterTextConfiguration {
     var onScrolledToTarget: () -> Void
     var onReachedEnd: () -> Void
     var onUserScroll: () -> Void
-    /// Verse being read aloud; scrolled into view whenever it changes and isn't visible.
+    /// Verse being read aloud, or the one just tapped while a sheet covers the page; scrolled into
+    /// view whenever it changes and isn't visible.
     var revealVerse: Int? = nil
+    /// Points at the bottom hidden behind a sheet (Study on iPhone). The text scrolls far enough
+    /// past its end to clear it, and a revealed verse is kept above it.
+    var obscuredBottom: CGFloat = 0
+}
+
+extension ChapterTextConfiguration {
+    func covered(_ points: CGFloat) -> ChapterTextConfiguration {
+        var copy = self
+        copy.obscuredBottom = points
+        return copy
+    }
 }
 
 /// Shared TextKit 1 geometry, used by both platforms.
@@ -122,6 +134,9 @@ struct ChapterTextView: UIViewRepresentable {
     func updateUIView(_ view: ReaderTextView, context: Context) {
         let coordinator = context.coordinator
         coordinator.configuration = configuration
+        if view.contentInset.bottom != configuration.obscuredBottom {
+            view.contentInset.bottom = configuration.obscuredBottom
+        }
         view.backgroundColor = configuration.background
         view.indicatorStyle = configuration.background.isDarkBackground ? .white : .black
 
@@ -239,7 +254,9 @@ struct ChapterTextView: UIViewRepresentable {
             let rect = ChapterGeometry.rect(forCharacters: range, layoutManager: view.layoutManager, container: view.textContainer)
                 .offsetBy(dx: 0, dy: view.textContainerInset.top)
             let top = view.contentOffset.y + view.adjustedContentInset.top
-            let bottom = view.contentOffset.y + view.bounds.height - max(view.adjustedContentInset.bottom, 0) - 180
+            // Clear of the bottom bars by a margin; above a covering sheet, just clear of its edge.
+            let margin: CGFloat = (configuration?.obscuredBottom ?? 0) > 0 ? 24 : 180
+            let bottom = view.contentOffset.y + view.bounds.height - max(view.adjustedContentInset.bottom, 0) - margin
             guard rect.minY < top || rect.minY + min(rect.height, 60) > bottom else { return }
             let maxY = max(-view.adjustedContentInset.top,
                            view.contentSize.height - view.bounds.height + view.adjustedContentInset.bottom)

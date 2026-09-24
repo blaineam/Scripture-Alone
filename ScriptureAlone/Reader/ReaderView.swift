@@ -37,6 +37,8 @@ struct ReaderView: View {
     @State private var showNotes = false
     @State private var notesPath: [UUID] = []
     @State private var popover: ReaderPopover?
+    /// The verse last tapped, kept above the Study sheet when it would open over it.
+    @State private var tappedVerse: Int?
     /// A note to open once the popover that asked for it has finished dismissing.
     @State private var pendingNote: UUID?
     @State private var autoScrolling = false
@@ -67,7 +69,8 @@ struct ReaderView: View {
                         markKeys: model.numbering.kjvKeyRange(of: model.location,
                                                               verseCount: model.source?.verseCount(model.location) ?? 0),
                         style: style, autoScrollSpeed: autoScrolling ? autoScrollSpeed : 0,
-                        onTap: handle, onReachedEnd: advanceWhileScrolling, onUserScroll: { autoScrolling = false })
+                        onTap: handle, onReachedEnd: advanceWhileScrolling, onUserScroll: { autoScrolling = false },
+                        coveredBySheet: studySheetShown.wrappedValue, tappedVerse: tappedVerse)
                 .ignoresSafeArea(edges: .bottom)
                 .background(Color(style.palette.page))
                 .popover(item: $popover, attachmentAnchor: .rect(.rect(popover?.rect ?? .zero))) { item in
@@ -383,6 +386,7 @@ struct ReaderView: View {
         case .verse(let key):
             // A keepsake is read-only: no selecting to highlight or annotate.
             if legacy.reading == nil { model.toggle(key) }
+            tappedVerse = key
             if study.isOn { study.follow(model.numbering.kjv(forNative: key)) }
         case .notes(let ids, let rect):
             popover = ReaderPopover(kind: .notes(ids), rect: rect)
@@ -563,6 +567,9 @@ private struct ChapterPane: View {
     let onTap: (ChapterTap) -> Void
     let onReachedEnd: () -> Void
     let onUserScroll: () -> Void
+    /// The iPhone Study sheet is up over the lower part of the page.
+    let coveredBySheet: Bool
+    let tappedVerse: Int?
 
     @Query private var highlights: [Highlight]
     @Query(sort: \Note.updatedAt, order: .reverse) private var notes: [Note]
@@ -572,8 +579,11 @@ private struct ChapterPane: View {
     /// - Parameter markKeys: the KJV keys this chapter's verses hold (`VerseNumbering.kjvKeyRange`)
     ///   — where its highlights are stored, which is not always this chapter's own numbers.
     init(chapter: ChapterRef, markKeys: ClosedRange<Int>, style: ReaderStyle, autoScrollSpeed: Double,
-         onTap: @escaping (ChapterTap) -> Void, onReachedEnd: @escaping () -> Void, onUserScroll: @escaping () -> Void) {
+         onTap: @escaping (ChapterTap) -> Void, onReachedEnd: @escaping () -> Void, onUserScroll: @escaping () -> Void,
+         coveredBySheet: Bool, tappedVerse: Int?) {
         self.chapter = chapter
+        self.coveredBySheet = coveredBySheet
+        self.tappedVerse = tappedVerse
         self.style = style
         self.autoScrollSpeed = autoScrollSpeed
         self.onTap = onTap
@@ -605,16 +615,20 @@ private struct ChapterPane: View {
                 onReachedEnd: onReachedEnd,
                 onUserScroll: onUserScroll,
                 revealVerse: ListenController.shared.speakingVerse(in: model)
+                    ?? (coveredBySheet ? tappedVerse : nil)
             )
             // Side-by-side columns when the window is wide enough for two at a comfortable
             // measure, as a printed page is set; one scrolling column otherwise, and while the
             // page scrolls itself.
             GeometryReader { geometry in
                 let columns = ReaderColumns.count(width: geometry.size.width, height: geometry.size.height, fontSize: style.size)
-                if columnsEnabled, columns >= 2, autoScrollSpeed == 0 {
+                // The iPhone Study sheet rests at a little under half the screen, and the maps and
+                // places it opens come up to about half: the text keeps to the half above them.
+                let covered = coveredBySheet
+                if columnsEnabled, columns >= 2, autoScrollSpeed == 0, !covered {
                     ColumnChapterView(configuration: configuration, columns: columns)
                 } else {
-                    ChapterTextView(configuration: configuration)
+                    ChapterTextView(configuration: covered ? configuration.covered(geometry.size.height * 0.42) : configuration)
                 }
             }
         } else if let error = model.loadError {

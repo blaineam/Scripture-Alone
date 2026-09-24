@@ -50,6 +50,7 @@ struct StudyPanel: View {
 
     @State private var detent: PresentationDetent = .fraction(0.45)
     @State private var showSources = false
+    @State private var selectionBarHeight: CGFloat = 0
 
     var body: some View {
         @Bindable var study = study
@@ -68,6 +69,9 @@ struct StudyPanel: View {
                 Divider()
                 content
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    // Everything scrolls clear of the selection bar floating over the sheet's foot,
+                    // so no reference or comment is left hidden under it.
+                    .contentMargins(.bottom, selectionBarShown ? selectionBarHeight + 16 : 0, for: .scrollContent)
             }
             .navigationTitle("Study")
             #if os(iOS)
@@ -86,10 +90,11 @@ struct StudyPanel: View {
             // An overlay, not a safe-area inset: the bar's natural width is wider than an
             // iPhone, and an inset would widen the whole panel to fit it.
             .overlay(alignment: .bottom) {
-                if isSheet && !model.selection.isEmpty {
+                if selectionBarShown {
                     SelectionBar(onNote: onNote)
                         .padding(.horizontal)
                         .padding(.bottom, 8)
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { selectionBarHeight = $0 }
                 }
             }
         }
@@ -104,6 +109,8 @@ struct StudyPanel: View {
         .presentationContentInteraction(.scrolls)
         #endif
     }
+
+    private var selectionBarShown: Bool { isSheet && !model.selection.isEmpty }
 
     private var header: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
