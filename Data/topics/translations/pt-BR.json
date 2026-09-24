@@ -1,0 +1,1131 @@
+{
+  "groups": {
+    "feelings": "Preocupações e sentimentos difíceis",
+    "suffering": "Perdas e sofrimento",
+    "sin": "Pecado e tentação",
+    "relationships": "Relacionamentos e família",
+    "life": "Trabalho, dinheiro e direção",
+    "growing": "Crescendo na fé",
+    "promises": "Quem Deus é"
+  },
+  "themes": {
+    "anxiety": {
+      "name": "Ansiedade e preocupação",
+      "description": "Para quando a mente não para e o amanhã pesa demais.",
+      "synonyms": [
+        "ansiedade",
+        "ansioso",
+        "ansiosa",
+        "preocupação",
+        "preocupado",
+        "nervoso",
+        "pânico",
+        "crise de ansiedade",
+        "inquieto",
+        "aflição",
+        "angústia",
+        "pensar demais"
+      ]
+    },
+    "fear": {
+      "name": "Medo",
+      "description": "Coragem que vem de Deus quando você tem medo.",
+      "synonyms": [
+        "medo",
+        "com medo",
+        "assustado",
+        "temor",
+        "pavor",
+        "terror",
+        "apavorado",
+        "receio",
+        "fobia"
+      ]
+    },
+    "future": {
+      "name": "Medo do futuro",
+      "description": "Confiar a Deus aquilo que ainda não aconteceu.",
+      "synonyms": [
+        "futuro",
+        "medo do futuro",
+        "incerteza",
+        "incerto",
+        "desconhecido",
+        "amanhã",
+        "e se",
+        "planos",
+        "insegurança"
+      ]
+    },
+    "loneliness": {
+      "name": "Solidão",
+      "description": "A presença de Deus quando você se sente só.",
+      "synonyms": [
+        "solidão",
+        "sozinho",
+        "sozinha",
+        "solitário",
+        "isolado",
+        "isolamento",
+        "esquecido",
+        "abandonado",
+        "sem amigos",
+        "carência"
+      ]
+    },
+    "depression": {
+      "name": "Depressão e desespero",
+      "description": "Esperança para os vales escuros da alma.",
+      "synonyms": [
+        "depressão",
+        "deprimido",
+        "desespero",
+        "desesperança",
+        "sem esperança",
+        "tristeza",
+        "triste",
+        "escuridão",
+        "vazio",
+        "pra baixo",
+        "saúde mental"
+      ]
+    },
+    "discouragement": {
+      "name": "Desânimo",
+      "description": "Força para seguir em frente quando dá vontade de desistir.",
+      "synonyms": [
+        "desânimo",
+        "desanimado",
+        "desistir",
+        "vontade de desistir",
+        "derrotado",
+        "fracasso",
+        "fracassado",
+        "abatido",
+        "cansado de lutar"
+      ]
+    },
+    "weariness": {
+      "name": "Cansaço e descanso",
+      "description": "Descanso para os cansados e esgotados.",
+      "synonyms": [
+        "cansaço",
+        "cansado",
+        "exausto",
+        "esgotado",
+        "esgotamento",
+        "burnout",
+        "descanso",
+        "descansar",
+        "sono",
+        "fadiga",
+        "sem forças"
+      ]
+    },
+    "stress": {
+      "name": "Estresse e sobrecarga",
+      "description": "Paz quando a vida simplesmente passa do limite.",
+      "synonyms": [
+        "estresse",
+        "estressado",
+        "sobrecarregado",
+        "sobrecarga",
+        "pressão",
+        "correria",
+        "muita coisa",
+        "caos",
+        "fardo",
+        "peso"
+      ]
+    },
+    "anger": {
+      "name": "Ira e raiva",
+      "description": "Sabedoria para o pavio curto e a mágoa que queima por dentro.",
+      "synonyms": [
+        "raiva",
+        "ira",
+        "irritado",
+        "bravo",
+        "nervoso",
+        "ódio",
+        "fúria",
+        "frustração",
+        "frustrado",
+        "amargura",
+        "rancor",
+        "pavio curto"
+      ]
+    },
+    "doubt": {
+      "name": "Dúvida",
+      "description": "Perguntas sinceras e um Deus que permanece fiel.",
+      "synonyms": [
+        "dúvida",
+        "dúvidas",
+        "duvidar",
+        "perguntas",
+        "questionamentos",
+        "incredulidade",
+        "cético",
+        "fé abalada",
+        "crise de fé"
+      ]
+    },
+    "rejection": {
+      "name": "Rejeição",
+      "description": "Aceito por Deus quando os outros viram as costas.",
+      "synonyms": [
+        "rejeição",
+        "rejeitado",
+        "rejeitada",
+        "excluído",
+        "deixado de lado",
+        "indesejado",
+        "não amado",
+        "desprezado",
+        "abandonado"
+      ]
+    },
+    "identity": {
+      "name": "Identidade e valor próprio",
+      "description": "Quem você é aos olhos de Deus.",
+      "synonyms": [
+        "identidade",
+        "valor",
+        "autoestima",
+        "amor-próprio",
+        "sem valor",
+        "inseguro",
+        "insegurança",
+        "não sou suficiente",
+        "quem sou eu",
+        "complexo de inferioridade"
+      ]
+    },
+    "grief": {
+      "name": "Luto e perda",
+      "description": "Consolo para o coração partido.",
+      "synonyms": [
+        "luto",
+        "perda",
+        "perdi alguém",
+        "saudade",
+        "tristeza",
+        "coração partido",
+        "lamento",
+        "falecimento",
+        "dor da perda",
+        "choro"
+      ]
+    },
+    "death": {
+      "name": "Morte e o fim da vida",
+      "description": "Esperança que vai além da sepultura.",
+      "synonyms": [
+        "morte",
+        "morrer",
+        "morrendo",
+        "funeral",
+        "velório",
+        "doença terminal",
+        "fim da vida",
+        "medo de morrer",
+        "eternidade"
+      ]
+    },
+    "illness": {
+      "name": "Doença e cura",
+      "description": "Oração e esperança em meio à enfermidade.",
+      "synonyms": [
+        "doença",
+        "doente",
+        "enfermidade",
+        "enfermo",
+        "câncer",
+        "hospital",
+        "cirurgia",
+        "cura",
+        "curar",
+        "dor",
+        "doença crônica",
+        "diagnóstico"
+      ]
+    },
+    "suffering": {
+      "name": "Sofrimento e provações",
+      "description": "Como Deus vem ao seu encontro nas dificuldades e o que Ele faz por meio delas.",
+      "synonyms": [
+        "sofrimento",
+        "sofrer",
+        "provação",
+        "provações",
+        "aflição",
+        "tribulação",
+        "dificuldade",
+        "luta",
+        "por que deus permite",
+        "dor"
+      ]
+    },
+    "persecution": {
+      "name": "Perseguição",
+      "description": "Firmeza quando você é maltratado por causa da fé.",
+      "synonyms": [
+        "perseguição",
+        "perseguido",
+        "zombaria",
+        "ridicularizado",
+        "oposição",
+        "ódio",
+        "mártir",
+        "intolerância religiosa",
+        "fé atacada"
+      ]
+    },
+    "injustice": {
+      "name": "Injustiça",
+      "description": "Quando o mal parece estar vencendo.",
+      "synonyms": [
+        "injustiça",
+        "injusto",
+        "injustiçado",
+        "opressão",
+        "oprimido",
+        "justiça",
+        "enganado",
+        "prejudicado",
+        "não é justo"
+      ]
+    },
+    "waiting": {
+      "name": "Espera",
+      "description": "Paciência quando o tempo de Deus não é o seu.",
+      "synonyms": [
+        "esperar",
+        "espera",
+        "esperando",
+        "demora",
+        "até quando",
+        "oração sem resposta",
+        "tempo de deus",
+        "hora de deus",
+        "aguardar"
+      ]
+    },
+    "betrayal": {
+      "name": "Traição",
+      "description": "Cura quando alguém em quem você confiava te fere.",
+      "synonyms": [
+        "traição",
+        "traído",
+        "traída",
+        "apunhalado pelas costas",
+        "infidelidade",
+        "infiel",
+        "confiança quebrada",
+        "enganado",
+        "mentiram para mim"
+      ]
+    },
+    "money": {
+      "name": "Preocupações financeiras",
+      "description": "Confiar na provisão de Deus em meio ao aperto financeiro.",
+      "synonyms": [
+        "dinheiro",
+        "finanças",
+        "financeiro",
+        "dívida",
+        "dívidas",
+        "contas",
+        "pobreza",
+        "pobre",
+        "sem dinheiro",
+        "desemprego",
+        "desempregado",
+        "aluguel"
+      ]
+    },
+    "guilt": {
+      "name": "Culpa e vergonha",
+      "description": "Misericórdia para aquilo que você lamenta ter feito.",
+      "synonyms": [
+        "culpa",
+        "culpado",
+        "vergonha",
+        "envergonhado",
+        "remorso",
+        "me arrependo",
+        "condenação",
+        "condenado",
+        "sujo",
+        "meu passado"
+      ]
+    },
+    "forgiven": {
+      "name": "O perdão de Deus",
+      "description": "O perdão completo que Deus oferece em Cristo.",
+      "synonyms": [
+        "perdão",
+        "perdoado",
+        "perdoada",
+        "misericórdia",
+        "purificado",
+        "pecados perdoados",
+        "deus me perdoa",
+        "remissão",
+        "lavado no sangue"
+      ]
+    },
+    "forgiving": {
+      "name": "Perdoar os outros",
+      "description": "Abrir mão do que os outros lhe devem.",
+      "synonyms": [
+        "perdoar",
+        "perdoando",
+        "rancor",
+        "mágoa",
+        "ressentimento",
+        "amargura",
+        "ofendido",
+        "ferido",
+        "deixar para lá",
+        "liberar perdão"
+      ]
+    },
+    "temptation": {
+      "name": "Tentação",
+      "description": "Uma saída quando o pecado puxa você.",
+      "synonyms": [
+        "tentação",
+        "tentado",
+        "cair em tentação",
+        "resistir",
+        "pecado",
+        "fraqueza",
+        "lutando contra o pecado",
+        "carne"
+      ]
+    },
+    "addiction": {
+      "name": "Vícios e escravidão",
+      "description": "Libertação daquilo que domina você.",
+      "synonyms": [
+        "vício",
+        "viciado",
+        "dependência",
+        "álcool",
+        "bebida",
+        "alcoolismo",
+        "drogas",
+        "apostas",
+        "escravidão",
+        "libertação",
+        "recaída",
+        "recuperação"
+      ]
+    },
+    "purity": {
+      "name": "Luxúria e pureza",
+      "description": "Guardar o coração, os olhos e o corpo.",
+      "synonyms": [
+        "luxúria",
+        "lascívia",
+        "pureza",
+        "puro",
+        "pecado sexual",
+        "imoralidade sexual",
+        "pornografia",
+        "pornô",
+        "pensamentos impuros",
+        "adultério",
+        "castidade"
+      ]
+    },
+    "pride": {
+      "name": "Orgulho e humildade",
+      "description": "Andar humildemente diante de Deus e dos outros.",
+      "synonyms": [
+        "orgulho",
+        "orgulhoso",
+        "soberba",
+        "arrogante",
+        "arrogância",
+        "ego",
+        "humilde",
+        "humildade",
+        "vanglória",
+        "vaidade"
+      ]
+    },
+    "envy": {
+      "name": "Inveja e ciúme",
+      "description": "Contentamento quando os outros parecem ter mais.",
+      "synonyms": [
+        "inveja",
+        "invejoso",
+        "ciúme",
+        "ciumento",
+        "comparação",
+        "comparar",
+        "cobiça",
+        "cobiçar",
+        "olho grande"
+      ]
+    },
+    "honesty": {
+      "name": "Mentira e honestidade",
+      "description": "Verdade nas palavras e nas atitudes.",
+      "synonyms": [
+        "mentira",
+        "mentir",
+        "mentiroso",
+        "honesto",
+        "honestidade",
+        "verdade",
+        "integridade",
+        "engano",
+        "falsidade",
+        "trapaça"
+      ]
+    },
+    "repentance": {
+      "name": "De volta para Deus",
+      "description": "Arrependimento e a acolhida em casa depois de se desviar.",
+      "synonyms": [
+        "arrependimento",
+        "arrepender",
+        "arrependido",
+        "desviado",
+        "afastado de deus",
+        "filho pródigo",
+        "voltar para deus",
+        "reconciliação",
+        "confissão",
+        "confessar",
+        "esfriei na fé"
+      ]
+    },
+    "self-control": {
+      "name": "Domínio próprio",
+      "description": "Dominar os apetites, as palavras e os impulsos pelo Espírito.",
+      "synonyms": [
+        "domínio próprio",
+        "autocontrole",
+        "disciplina",
+        "força de vontade",
+        "comer demais",
+        "gula",
+        "gastar demais",
+        "compulsão",
+        "impulso",
+        "temperamento"
+      ]
+    },
+    "marriage": {
+      "name": "Casamento",
+      "description": "Amor, fidelidade e paciência entre marido e mulher.",
+      "synonyms": [
+        "casamento",
+        "casado",
+        "marido",
+        "esposa",
+        "cônjuge",
+        "matrimônio",
+        "crise no casamento",
+        "problemas no casamento",
+        "noivado"
+      ]
+    },
+    "parenting": {
+      "name": "Criação de filhos",
+      "description": "Sabedoria e graça para criar os filhos.",
+      "synonyms": [
+        "pais",
+        "mãe",
+        "pai",
+        "criar filhos",
+        "educar filhos",
+        "criação de filhos",
+        "maternidade",
+        "paternidade",
+        "adolescente",
+        "disciplina",
+        "filho rebelde",
+        "filho pródigo"
+      ]
+    },
+    "children": {
+      "name": "Crianças e jovens",
+      "description": "O coração de Deus pelos pequeninos e uma palavra para os jovens.",
+      "synonyms": [
+        "criança",
+        "crianças",
+        "filhos",
+        "filho",
+        "filha",
+        "bebê",
+        "gravidez",
+        "grávida",
+        "jovens",
+        "juventude",
+        "adolescentes"
+      ]
+    },
+    "singleness": {
+      "name": "Vida de solteiro",
+      "description": "Uma vida plena com Deus, casado ou não.",
+      "synonyms": [
+        "solteiro",
+        "solteira",
+        "vida de solteiro",
+        "namoro",
+        "esperar o cônjuge",
+        "pessoa certa",
+        "celibato",
+        "celibatário",
+        "não casei"
+      ]
+    },
+    "friendship": {
+      "name": "Amizade",
+      "description": "Ser e encontrar um amigo de verdade.",
+      "synonyms": [
+        "amigo",
+        "amiga",
+        "amigos",
+        "amizade",
+        "companheiro",
+        "comunhão",
+        "comunidade",
+        "más companhias",
+        "amizade verdadeira"
+      ]
+    },
+    "conflict": {
+      "name": "Conflitos",
+      "description": "Fazer as pazes em relacionamentos difíceis.",
+      "synonyms": [
+        "conflito",
+        "briga",
+        "brigas",
+        "discussão",
+        "discutir",
+        "desentendimento",
+        "contenda",
+        "tensão",
+        "reconciliar",
+        "reconciliação",
+        "fazer as pazes"
+      ]
+    },
+    "loving-others": {
+      "name": "Amar o próximo",
+      "description": "Um amor paciente, bondoso e que custa caro.",
+      "synonyms": [
+        "amor",
+        "amar o próximo",
+        "próximo",
+        "bondade",
+        "compaixão",
+        "inimigos",
+        "amar os inimigos",
+        "pessoas difíceis",
+        "caridade"
+      ]
+    },
+    "work": {
+      "name": "Trabalho",
+      "description": "Fazer o seu trabalho como serviço ao Senhor.",
+      "synonyms": [
+        "trabalho",
+        "emprego",
+        "carreira",
+        "chefe",
+        "patrão",
+        "colega de trabalho",
+        "negócios",
+        "empresa",
+        "diligência",
+        "preguiça",
+        "preguiçoso"
+      ]
+    },
+    "guidance": {
+      "name": "Decisões e direção",
+      "description": "Buscando a direção de Deus.",
+      "synonyms": [
+        "decisão",
+        "decisões",
+        "decidir",
+        "escolha",
+        "escolher",
+        "direção",
+        "orientação",
+        "que caminho seguir",
+        "vontade de deus",
+        "confuso",
+        "discernimento"
+      ]
+    },
+    "purpose": {
+      "name": "Propósito e chamado",
+      "description": "Por que você está aqui e para que foi criado.",
+      "synonyms": [
+        "propósito",
+        "sentido da vida",
+        "sem sentido",
+        "chamado",
+        "vocação",
+        "dons",
+        "talentos",
+        "missão",
+        "para que estou aqui",
+        "ministério"
+      ]
+    },
+    "new-beginnings": {
+      "name": "Recomeços",
+      "description": "Começar de novo com Deus.",
+      "synonyms": [
+        "recomeço",
+        "recomeçar",
+        "começar de novo",
+        "novo começo",
+        "mudança",
+        "mudança de cidade",
+        "emprego novo",
+        "ano novo",
+        "segunda chance",
+        "transição"
+      ]
+    },
+    "aging": {
+      "name": "Envelhecer",
+      "description": "A fidelidade de Deus em cada estação da vida.",
+      "synonyms": [
+        "velhice",
+        "envelhecer",
+        "envelhecimento",
+        "idoso",
+        "idosa",
+        "terceira idade",
+        "melhor idade",
+        "aposentadoria",
+        "cabelos brancos"
+      ]
+    },
+    "provision": {
+      "name": "Provisão e necessidades",
+      "description": "Deus sabe do que você precisa.",
+      "synonyms": [
+        "provisão",
+        "prover",
+        "necessidade",
+        "necessidades",
+        "falta",
+        "fome",
+        "comida",
+        "pão de cada dia",
+        "sustento",
+        "suprir"
+      ]
+    },
+    "contentment": {
+      "name": "Contentamento",
+      "description": "Deus basta, na fartura ou na escassez.",
+      "synonyms": [
+        "contentamento",
+        "contente",
+        "satisfeito",
+        "insatisfeito",
+        "insatisfação",
+        "querer mais",
+        "materialismo",
+        "ganância",
+        "avareza"
+      ]
+    },
+    "generosity": {
+      "name": "Generosidade",
+      "description": "Dar com liberalidade, como Deus nos deu.",
+      "synonyms": [
+        "dar",
+        "doar",
+        "generoso",
+        "generosidade",
+        "dízimo",
+        "dízimos",
+        "oferta",
+        "ofertar",
+        "caridade",
+        "repartir"
+      ]
+    },
+    "serving": {
+      "name": "Servir",
+      "description": "Seguir Jesus servindo aos outros.",
+      "synonyms": [
+        "servir",
+        "serviço",
+        "voluntário",
+        "voluntariado",
+        "ministério",
+        "ajudar o próximo",
+        "servo",
+        "diaconia"
+      ]
+    },
+    "faith": {
+      "name": "Fé",
+      "description": "Crer em Deus e confiar na Sua palavra.",
+      "synonyms": [
+        "fé",
+        "crer",
+        "crença",
+        "acreditar",
+        "fiel",
+        "ter fé",
+        "pouca fé",
+        "fé em deus"
+      ]
+    },
+    "trust": {
+      "name": "Confiar em Deus",
+      "description": "Apoiar-se nEle quando você não consegue ver o caminho.",
+      "synonyms": [
+        "confiar",
+        "confiança",
+        "depender",
+        "entregar",
+        "entrega",
+        "rendição",
+        "deixar nas mãos de deus",
+        "controle",
+        "descansar em deus"
+      ]
+    },
+    "prayer": {
+      "name": "Oração",
+      "description": "Conversar com Deus e saber que Ele ouve.",
+      "synonyms": [
+        "orar",
+        "oração",
+        "orando",
+        "rezar",
+        "oração sem resposta",
+        "como orar",
+        "intercessão",
+        "pedir",
+        "clamar"
+      ]
+    },
+    "patience": {
+      "name": "Paciência",
+      "description": "Crescer em paciência com as pessoas e com Deus.",
+      "synonyms": [
+        "paciência",
+        "paciente",
+        "impaciente",
+        "impaciência",
+        "perseverança",
+        "longanimidade",
+        "tardio em irar-se",
+        "esperar"
+      ]
+    },
+    "gratitude": {
+      "name": "Gratidão",
+      "description": "Dar graças em todas as circunstâncias.",
+      "synonyms": [
+        "gratidão",
+        "grato",
+        "agradecido",
+        "agradecer",
+        "ação de graças",
+        "dar graças",
+        "bênção",
+        "bênçãos",
+        "obrigado senhor"
+      ]
+    },
+    "joy": {
+      "name": "Alegria",
+      "description": "Uma alegria que não depende das circunstâncias.",
+      "synonyms": [
+        "alegria",
+        "alegre",
+        "feliz",
+        "felicidade",
+        "regozijo",
+        "regozijar",
+        "júbilo",
+        "gozo",
+        "prazer"
+      ]
+    },
+    "obedience": {
+      "name": "Obediência",
+      "description": "Seguir os caminhos de Deus de coração.",
+      "synonyms": [
+        "obedecer",
+        "obediência",
+        "obediente",
+        "mandamentos",
+        "seguir a deus",
+        "rebeldia",
+        "rebelião",
+        "fazer a vontade de deus",
+        "submissão"
+      ]
+    },
+    "wisdom": {
+      "name": "Sabedoria",
+      "description": "Pedir a Deus entendimento.",
+      "synonyms": [
+        "sabedoria",
+        "sábio",
+        "entendimento",
+        "conhecimento",
+        "insensato",
+        "tolo",
+        "discernimento",
+        "prudência",
+        "pedir sabedoria"
+      ]
+    },
+    "scripture": {
+      "name": "A Palavra de Deus",
+      "description": "As Escrituras como luz para o caminho e alimento para a alma.",
+      "synonyms": [
+        "bíblia",
+        "escrituras",
+        "palavra de deus",
+        "leitura bíblica",
+        "ler a bíblia",
+        "estudo bíblico",
+        "devocional",
+        "meditar na palavra"
+      ]
+    },
+    "worship": {
+      "name": "Adoração e louvor",
+      "description": "Dar a Deus a honra que Lhe é devida.",
+      "synonyms": [
+        "adoração",
+        "adorar",
+        "louvor",
+        "louvar",
+        "cantar",
+        "música",
+        "hinos",
+        "aleluia",
+        "glorificar"
+      ]
+    },
+    "witness": {
+      "name": "Compartilhar a fé",
+      "description": "Anunciar aos outros as boas-novas de Jesus.",
+      "synonyms": [
+        "evangelismo",
+        "evangelizar",
+        "testemunhar",
+        "testemunho",
+        "compartilhar a fé",
+        "evangelho",
+        "boas-novas",
+        "pregar",
+        "grande comissão",
+        "missões"
+      ]
+    },
+    "gods-love": {
+      "name": "O amor de Deus",
+      "description": "Quão largo, comprido, alto e profundo é o Seu amor.",
+      "synonyms": [
+        "amor de deus",
+        "amado",
+        "amada",
+        "deus me ama",
+        "não amado",
+        "sem amor",
+        "amor incondicional",
+        "amor eterno"
+      ]
+    },
+    "presence": {
+      "name": "A presença de Deus",
+      "description": "Ele está com você, sempre.",
+      "synonyms": [
+        "presença",
+        "presença de deus",
+        "perto",
+        "comigo",
+        "onde está deus",
+        "silêncio de deus",
+        "deus parece distante",
+        "abandonado",
+        "emanuel"
+      ]
+    },
+    "peace": {
+      "name": "Paz",
+      "description": "A paz que excede todo o entendimento.",
+      "synonyms": [
+        "paz",
+        "calma",
+        "tranquilidade",
+        "tranquilo",
+        "sossego",
+        "quietude",
+        "serenidade",
+        "em paz",
+        "paz interior"
+      ]
+    },
+    "hope": {
+      "name": "Esperança",
+      "description": "Uma âncora firme para a alma.",
+      "synonyms": [
+        "esperança",
+        "esperançoso",
+        "sem esperança",
+        "expectativa",
+        "promessa",
+        "promessas",
+        "aguardar",
+        "esperança no futuro"
+      ]
+    },
+    "comfort": {
+      "name": "Consolo",
+      "description": "O Deus de toda consolação.",
+      "synonyms": [
+        "consolo",
+        "consolação",
+        "consolado",
+        "conforto",
+        "ferido",
+        "quebrantado",
+        "coração partido",
+        "triste",
+        "sofrendo"
+      ]
+    },
+    "strength": {
+      "name": "Força",
+      "description": "O poder dEle na sua fraqueza.",
+      "synonyms": [
+        "força",
+        "forte",
+        "fraco",
+        "fraqueza",
+        "poder",
+        "não aguento mais",
+        "suportar",
+        "forças renovadas"
+      ]
+    },
+    "courage": {
+      "name": "Coragem",
+      "description": "Seja forte e corajoso.",
+      "synonyms": [
+        "coragem",
+        "corajoso",
+        "valente",
+        "bravura",
+        "ousadia",
+        "ousado",
+        "confiança",
+        "ânimo",
+        "esforça-te"
+      ]
+    },
+    "protection": {
+      "name": "Proteção e segurança",
+      "description": "Seu refúgio e sua fortaleza.",
+      "synonyms": [
+        "proteção",
+        "proteger",
+        "segurança",
+        "seguro",
+        "perigo",
+        "viagem",
+        "refúgio",
+        "abrigo",
+        "livramento",
+        "guarda"
+      ]
+    },
+    "salvation": {
+      "name": "Salvação e certeza",
+      "description": "Saber que você pertence a Deus para sempre.",
+      "synonyms": [
+        "salvo",
+        "salvação",
+        "nascer de novo",
+        "novo nascimento",
+        "vida eterna",
+        "certeza da salvação",
+        "estou salvo",
+        "evangelho",
+        "como ser salvo"
+      ]
+    },
+    "grace": {
+      "name": "Graça e misericórdia",
+      "description": "A bondade de Deus que você jamais poderia merecer.",
+      "synonyms": [
+        "graça",
+        "misericórdia",
+        "misericordioso",
+        "imerecido",
+        "favor imerecido",
+        "compaixão",
+        "bondade",
+        "benignidade"
+      ]
+    },
+    "heaven": {
+      "name": "O céu e a vida eterna",
+      "description": "O lar que Deus está preparando.",
+      "synonyms": [
+        "céu",
+        "vida eterna",
+        "eternidade",
+        "vida após a morte",
+        "ressurreição",
+        "nova criação",
+        "paraíso",
+        "novos céus e nova terra"
+      ]
+    },
+    "faithfulness": {
+      "name": "A fidelidade de Deus",
+      "description": "Ele cumpre cada uma de Suas promessas.",
+      "synonyms": [
+        "fidelidade",
+        "fiel",
+        "promessas",
+        "confiável",
+        "nunca muda",
+        "imutável",
+        "deus é fiel"
+      ]
+    },
+    "sovereignty": {
+      "name": "Deus está no controle",
+      "description": "Nada está fora das Suas mãos.",
+      "synonyms": [
+        "soberania",
+        "soberano",
+        "no controle",
+        "deus no controle",
+        "plano de deus",
+        "por quê",
+        "providência",
+        "caos",
+        "propósito de deus"
+      ]
+    }
+  }
+}

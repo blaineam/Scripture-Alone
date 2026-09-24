@@ -1,13 +1,18 @@
 import SwiftUI
 import ScriptureAloneCore
 
-/// Type "jn 3 16", "rom 8:28-39" or a word to search; or browse books and chapters.
+/// Type "jn 3 16", "rom 8:28-39" or a word to search; or browse books and chapters, or topics.
+///
+/// Topics live here rather than in Study because this is where a reader comes looking for a
+/// passage they don't yet have: Study follows the verse already on screen, and a topic starts from
+/// what the reader is carrying instead. So the directory sits beside the books, and a search for
+/// "anxious" offers the Anxiety topic above the verses that happen to use the word.
 struct PassagePicker: View {
     @Environment(ReaderModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
     @State private var results: [BibleStore.SearchHit] = []
-    @State private var path: [BookID] = []
+    @State private var path = NavigationPath()
     @FocusState private var focused: Bool
 
     /// - Parameter initialQuery: words or a reference to start with — a search asked for by Siri,
@@ -17,6 +22,18 @@ struct PassagePicker: View {
     }
 
     private var passage: Passage? { ReferenceParser.parse(query) }
+
+    /// Life themes the words speak to — "anxious" is Anxiety. Only for words, not a reference.
+    private var matchingThemes: [LifeTheme] {
+        guard passage == nil else { return [] }
+        return LifeThemeCatalog.shared.search(query, limit: 3)
+    }
+
+    /// A Nave's topic named exactly what was typed ("prayer", "Abraham"), for English readers.
+    private var matchingIndexTopic: IndexTopic? {
+        guard passage == nil, query.count >= 3 else { return nil }
+        return TopicsLibrary.visibleIndex?.topic(named: query)
+    }
 
     /// Three characters before a search runs — two in Chinese, Japanese and Korean, where a
     /// two-character word (恩典, 信心) is a whole word.
@@ -36,6 +53,7 @@ struct PassagePicker: View {
                     if query.isEmpty {
                         recentSection
                         recentSearchesSection
+                        topicsSection
                         booksSection(title: "Old Testament", books: BookID.allCases.filter { !$0.isNewTestament })
                         booksSection(title: "New Testament", books: BookID.allCases.filter(\.isNewTestament))
                     } else {
@@ -60,6 +78,9 @@ struct PassagePicker: View {
                     dismiss()
                 }
                 .environment(model)
+            }
+            .navigationDestination(for: TopicsRoute.self) { route in
+                topicsDestination(route)
             }
         }
         .task(id: query) { await search() }
@@ -164,6 +185,106 @@ struct PassagePicker: View {
         }
     }
 
+    /// A few of the life themes to start from, and the way into the whole directory.
+    private var topicsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Topics", comment: "The directory of Bible passages by topic: its title, and its heading in Go To.").font(.headline)
+                Spacer()
+                NavigationLink(value: TopicsRoute.directory) {
+                    Text("See All", comment: "Opens the whole Topics directory.")
+                }
+                .font(.subheadline)
+                .buttonStyle(.plain)
+                .foregroundStyle(.tint)
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack {
+                    ForEach(TopicsLibrary.featured.compactMap(LifeThemeCatalog.shared.theme(id:))) { theme in
+                        NavigationLink(value: TopicsRoute.theme(theme.id)) {
+                            Text(theme.localizedName)
+                        }
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.capsule)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func topicsDestination(_ route: TopicsRoute) -> some View {
+        Group {
+            switch route {
+            case .directory:
+                TopicsDirectoryView()
+            case .theme(let id):
+                if let theme = LifeThemeCatalog.shared.theme(id: id) {
+                    LifeThemeView(theme: theme, onOpen: open)
+                }
+            case .indexTopic(let id):
+                if let index = TopicsLibrary.index, let topic = index.topic(id: id) {
+                    IndexTopicView(index: index, topic: topic, onOpen: open)
+                }
+            }
+        }
+        .environment(model)
+    }
+
+    /// A passage chosen in a topic: a KJV-keyed range, so the reader lands on its own verse.
+    private func open(_ range: VerseRange) {
+        model.go(to: range.start)
+        dismiss()
+    }
+
+    /// "Topic: Anxiety & Worry" — offered above the verses when the words name a topic.
+    @ViewBuilder
+    private var topicMatches: some View {
+        let themes = matchingThemes
+        if !themes.isEmpty || matchingIndexTopic != nil {
+            VStack(spacing: 8) {
+                ForEach(themes) { theme in
+                    NavigationLink(value: TopicsRoute.theme(theme.id)) {
+                        topicCard(title: theme.localizedName, detail: theme.localizedDescription)
+                    }
+                    .buttonStyle(.plain)
+                }
+                if let topic = matchingIndexTopic {
+                    NavigationLink(value: TopicsRoute.indexTopic(topic.id)) {
+                        topicCard(title: topic.name, detail: TopicsLibrary.index?.name ?? "")
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func topicCard(title: String, detail: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "text.book.closed")
+                .font(.title3)
+                .foregroundStyle(.tint)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Topic", comment: "Small label over a topic offered in Go To's search results.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(title).font(.headline)
+                if !detail.isEmpty {
+                    Text(detail)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+            }
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right").foregroundStyle(.tertiary)
+        }
+        .padding()
+        .background(.tint.opacity(0.12), in: .rect(cornerRadius: 16))
+        .contentShape(.rect(cornerRadius: 16))
+    }
+
     private func booksSection(title: LocalizedStringKey, books: [BookID]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title).font(.headline)
@@ -195,6 +316,7 @@ struct PassagePicker: View {
             }
             .buttonStyle(.plain)
         }
+        topicMatches
         if !suggestedBooks.isEmpty {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 86), spacing: 8)], spacing: 8) {
                 ForEach(suggestedBooks) { book in
@@ -227,7 +349,8 @@ struct PassagePicker: View {
                     }
                 }
             }
-        } else if passage == nil, suggestedBooks.isEmpty, query.count >= Self.minimumSearchLength(query) {
+        } else if passage == nil, suggestedBooks.isEmpty, matchingThemes.isEmpty, matchingIndexTopic == nil,
+                  query.count >= Self.minimumSearchLength(query) {
             ContentUnavailableView.search(text: query)
         }
     }

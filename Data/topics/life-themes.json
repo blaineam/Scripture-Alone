@@ -1,0 +1,589 @@
+{
+  "about": "Life themes: what someone may be going through, and passages that speak to it. References only, in USFM book codes and KJV versification (the numbering the app stores); the text is always drawn from the reader's own translation. Each theme: a stable id (never renamed, favorites and links may carry it), its group, an English name, a one-line description, words people might search for, 8-20 passages, and optionally the Nave's Topical Bible topics that cover the same ground. Translations of name, description and search words: Data/topics/translations/<lang>.json. Built by Tools/build_topics.py, which checks every reference against the bundled BSB and KJV.",
+  "groups": [
+    {"id": "feelings", "name": "Worry & Hard Feelings"},
+    {"id": "suffering", "name": "Loss & Suffering"},
+    {"id": "sin", "name": "Sin & Temptation"},
+    {"id": "relationships", "name": "Relationships & Family"},
+    {"id": "life", "name": "Work, Money & Direction"},
+    {"id": "growing", "name": "Growing in Faith"},
+    {"id": "promises", "name": "Who God Is"}
+  ],
+  "themes": [
+    {
+      "id": "anxiety", "group": "feelings",
+      "name": "Anxiety & Worry",
+      "description": "For when your mind won’t stop racing and tomorrow feels heavy.",
+      "synonyms": ["anxious", "anxiety", "worry", "worried", "worrying", "nervous", "panic", "uneasy", "restless", "overthinking"],
+      "refs": ["PHP 4:6-7", "MAT 6:25-34", "1PE 5:6-7", "PSA 55:22", "PSA 94:19", "ISA 26:3", "JHN 14:27", "PSA 139:23-24", "PRO 12:25", "LUK 12:22-26", "PSA 56:3-4", "ISA 41:10", "MAT 11:28-30"],
+      "nave": ["CARE"]
+    },
+    {
+      "id": "fear", "group": "feelings",
+      "name": "Fear",
+      "description": "Courage from God when you’re afraid.",
+      "synonyms": ["afraid", "scared", "frightened", "fear", "fearful", "terror", "terrified", "dread", "phobia"],
+      "refs": ["ISA 41:10", "PSA 27:1", "PSA 23:4", "2TI 1:7", "PSA 56:3-4", "JOS 1:9", "DEU 31:6", "PSA 34:4", "ISA 43:1-2", "ROM 8:15", "HEB 13:6", "1JN 4:18", "PSA 46:1-3", "MRK 5:36"],
+      "nave": ["FEAR", "COWARDICE", "COURAGE"]
+    },
+    {
+      "id": "future", "group": "feelings",
+      "name": "Fear of the Future",
+      "description": "Trusting God with what hasn’t happened yet.",
+      "synonyms": ["future", "uncertain", "uncertainty", "unknown", "tomorrow", "what if", "plans"],
+      "refs": ["JER 29:11", "MAT 6:34", "PRO 3:5-6", "ROM 8:28", "PSA 31:14-15", "ISA 46:9-10", "LAM 3:22-23", "PRO 16:9", "JAS 4:13-15", "PHP 1:6", "PSA 16:8", "HEB 13:5-6"],
+      "nave": ["PROVIDENCE"]
+    },
+    {
+      "id": "loneliness", "group": "feelings",
+      "name": "Loneliness",
+      "description": "God’s nearness when you feel alone.",
+      "synonyms": ["lonely", "loneliness", "alone", "isolated", "isolation", "forgotten", "abandoned", "no friends"],
+      "refs": ["DEU 31:8", "PSA 68:5-6", "HEB 13:5", "MAT 28:20", "PSA 25:16", "PSA 27:10", "ISA 41:10", "JHN 14:18", "PSA 139:7-10", "ROM 8:38-39", "PSA 147:3", "2TI 4:16-17"]
+    },
+    {
+      "id": "depression", "group": "feelings",
+      "name": "Depression & Despair",
+      "description": "Hope for the dark valleys of the soul.",
+      "synonyms": ["depressed", "depression", "despair", "hopeless", "darkness", "sad", "sadness", "down", "empty", "numb", "mental health"],
+      "refs": ["PSA 42:11", "PSA 34:17-18", "PSA 40:1-3", "ISA 61:3", "2CO 4:8-9", "2CO 4:16-18", "LAM 3:19-24", "PSA 30:5", "PSA 143:7-8", "ISA 40:31", "1KI 19:4-8", "MAT 11:28-30", "PSA 3:3"],
+      "nave": ["DESPONDENCY"]
+    },
+    {
+      "id": "discouragement", "group": "feelings",
+      "name": "Discouragement",
+      "description": "Strength to keep going when you want to give up.",
+      "synonyms": ["discouraged", "discouragement", "give up", "giving up", "quit", "defeated", "failure", "disheartened"],
+      "refs": ["GAL 6:9", "JOS 1:9", "ISA 40:29-31", "2CO 4:16-18", "PHP 1:6", "HEB 12:1-3", "PSA 73:26", "1CO 15:58", "PSA 31:24", "DEU 31:8", "2CH 15:7"],
+      "nave": ["DISCOURAGEMENT"]
+    },
+    {
+      "id": "weariness", "group": "feelings",
+      "name": "Weariness & Rest",
+      "description": "Rest for the tired and the burned out.",
+      "synonyms": ["tired", "weary", "exhausted", "burnout", "burned out", "rest", "sleep", "fatigue", "worn out"],
+      "refs": ["MAT 11:28-30", "ISA 40:28-31", "PSA 23:1-3", "PSA 127:2", "EXO 33:14", "PSA 4:8", "HEB 4:9-11", "JER 31:25", "MRK 6:31", "PSA 62:1-2", "GAL 6:9"],
+      "nave": ["REST"]
+    },
+    {
+      "id": "stress", "group": "feelings",
+      "name": "Stress & Overwhelm",
+      "description": "Peace when life is simply too much.",
+      "synonyms": ["stress", "stressed", "overwhelmed", "pressure", "busy", "too much", "chaos", "burden"],
+      "refs": ["PSA 61:1-2", "JHN 16:33", "PSA 46:1-3", "PSA 46:10", "ISA 43:2", "2CO 12:9-10", "PHP 4:6-7", "PSA 55:22", "MAT 11:28-30", "PSA 18:2", "LUK 10:41-42", "ISA 26:3"],
+      "nave": ["CARE"]
+    },
+    {
+      "id": "anger", "group": "feelings",
+      "name": "Anger",
+      "description": "Wisdom for a hot temper and hurt that burns.",
+      "synonyms": ["angry", "anger", "mad", "rage", "temper", "frustrated", "frustration", "irritated", "bitterness", "resentment"],
+      "refs": ["EPH 4:26-27", "EPH 4:31-32", "JAS 1:19-20", "PRO 15:1", "PRO 14:29", "PRO 29:11", "COL 3:8", "PSA 37:8", "ECC 7:9", "PRO 16:32", "ROM 12:19", "MAT 5:22-24", "GAL 5:22-23"],
+      "nave": ["ANGER"]
+    },
+    {
+      "id": "doubt", "group": "feelings",
+      "name": "Doubt",
+      "description": "Honest questions, and a faithful God.",
+      "synonyms": ["doubt", "doubts", "doubting", "questions", "unbelief", "skeptical", "struggling faith"],
+      "refs": ["MRK 9:23-24", "JAS 1:5-6", "JUD 1:22", "JHN 20:27-29", "MAT 14:29-31", "HEB 11:1", "HEB 11:6", "ROM 10:17", "ISA 55:8-9", "2TI 2:13", "ROM 4:20-21", "JHN 20:31"],
+      "nave": ["DOUBTING", "UNBELIEF"]
+    },
+    {
+      "id": "rejection", "group": "feelings",
+      "name": "Rejection",
+      "description": "Accepted by God when others turn away.",
+      "synonyms": ["rejected", "rejection", "unwanted", "excluded", "left out", "unloved", "abandoned"],
+      "refs": ["PSA 27:10", "ISA 53:3", "JHN 6:37", "EPH 1:4-6", "1PE 2:4-5", "ROM 8:31", "ISA 49:15-16", "PSA 94:14", "JHN 15:18-19", "DEU 7:6", "ROM 15:7", "HEB 13:5"]
+    },
+    {
+      "id": "identity", "group": "feelings",
+      "name": "Identity & Self-Worth",
+      "description": "Who you are in God’s eyes.",
+      "synonyms": ["identity", "worth", "self-worth", "self-esteem", "worthless", "insecure", "insecurity", "not enough", "value", "who am I"],
+      "refs": ["PSA 139:13-16", "GEN 1:27", "EPH 2:10", "2CO 5:17", "1PE 2:9", "GAL 2:20", "1JN 3:1", "ROM 8:16-17", "MAT 10:29-31", "ISA 43:1", "ZEP 3:17", "JER 1:5", "COL 3:3"],
+      "nave": ["CHILDREN OF GOD"]
+    },
+
+    {
+      "id": "grief", "group": "suffering",
+      "name": "Grief & Loss",
+      "description": "Comfort for a broken heart.",
+      "synonyms": ["grief", "grieving", "mourning", "loss", "lost a loved one", "bereavement", "heartbroken", "sorrow", "miss"],
+      "refs": ["PSA 34:18", "MAT 5:4", "REV 21:4", "2CO 1:3-4", "JHN 11:25-26", "JHN 11:35", "1TH 4:13-14", "PSA 147:3", "ISA 53:4", "PSA 30:5", "PSA 73:26", "ROM 8:38-39", "ECC 3:1-4", "ISA 61:1-3"],
+      "nave": ["SORROW", "AFFLICTIONS AND ADVERSITIES"]
+    },
+    {
+      "id": "death", "group": "suffering",
+      "name": "Death & Dying",
+      "description": "Hope beyond the grave.",
+      "synonyms": ["death", "dying", "die", "funeral", "terminal", "end of life", "afraid to die", "eternity"],
+      "refs": ["JHN 11:25-26", "1CO 15:54-57", "2CO 5:1", "2CO 5:8", "PHP 1:21", "PSA 23:4", "JHN 14:1-3", "REV 21:4", "ROM 14:8", "1TH 4:16-18", "HEB 2:14-15", "PSA 116:15", "ROM 6:23"],
+      "nave": ["DEATH"]
+    },
+    {
+      "id": "illness", "group": "suffering",
+      "name": "Illness & Healing",
+      "description": "Prayer and hope in sickness.",
+      "synonyms": ["sick", "sickness", "ill", "illness", "disease", "cancer", "hospital", "surgery", "healing", "heal", "pain", "chronic", "diagnosis"],
+      "refs": ["JAS 5:14-15", "PSA 103:2-3", "JER 17:14", "ISA 53:5", "PSA 41:3", "2CO 12:9", "PSA 73:26", "3JN 1:2", "EXO 15:26", "MAT 4:23", "2CO 4:16-18", "ROM 8:18", "PSA 30:2"],
+      "nave": ["SICKNESS"]
+    },
+    {
+      "id": "suffering", "group": "suffering",
+      "name": "Suffering & Trials",
+      "description": "How God meets you in hard things, and what He does through them.",
+      "synonyms": ["suffering", "trial", "trials", "hardship", "trouble", "affliction", "why does god allow", "struggle", "pain"],
+      "refs": ["ROM 5:3-5", "JAS 1:2-4", "ROM 8:18", "1PE 4:12-13", "1PE 5:10", "2CO 4:17", "ROM 8:28", "PSA 34:19", "HEB 12:10-11", "JHN 16:33", "2CO 1:3-5", "PSA 119:71", "ISA 43:2"],
+      "nave": ["AFFLICTIONS AND ADVERSITIES"]
+    },
+    {
+      "id": "persecution", "group": "suffering",
+      "name": "Persecution",
+      "description": "Standing firm when you’re mistreated for your faith.",
+      "synonyms": ["persecuted", "persecution", "mocked", "ridiculed", "opposed", "hated", "martyr", "faith attacked"],
+      "refs": ["MAT 5:10-12", "2TI 3:12", "JHN 15:18-20", "1PE 4:12-16", "ROM 8:35-37", "2CO 4:8-10", "MAT 5:44", "ROM 12:14", "1PE 3:14-16", "HEB 10:35-36", "REV 2:10", "ACT 5:41"],
+      "nave": ["PERSECUTION"]
+    },
+    {
+      "id": "injustice", "group": "suffering",
+      "name": "Injustice",
+      "description": "When wrong seems to win.",
+      "synonyms": ["unfair", "unjust", "injustice", "wronged", "oppression", "oppressed", "justice", "cheated"],
+      "refs": ["MIC 6:8", "PSA 37:1-7", "ROM 12:17-21", "ISA 1:17", "PSA 9:9", "PSA 103:6", "AMO 5:24", "PRO 31:8-9", "DEU 32:4", "LUK 18:7-8", "2TH 1:6-7", "1PE 2:23"],
+      "nave": ["INJUSTICE"]
+    },
+    {
+      "id": "waiting", "group": "suffering",
+      "name": "Waiting",
+      "description": "Patience when God’s timing isn’t yours.",
+      "synonyms": ["wait", "waiting", "delay", "how long", "unanswered", "god’s timing", "timing"],
+      "refs": ["ISA 40:31", "PSA 27:14", "LAM 3:25-26", "PSA 37:7", "HAB 2:3", "PSA 130:5-6", "ROM 8:24-25", "GAL 6:9", "ECC 3:1", "2PE 3:9", "PSA 40:1", "MIC 7:7", "JAS 5:7-8"],
+      "nave": ["PATIENCE"]
+    },
+    {
+      "id": "betrayal", "group": "suffering",
+      "name": "Betrayal",
+      "description": "Healing when someone you trusted hurts you.",
+      "synonyms": ["betrayed", "betrayal", "backstabbed", "cheated on", "unfaithful", "broken trust", "lied to"],
+      "refs": ["PSA 41:9", "PSA 55:12-14", "PSA 55:22", "MAT 26:48-50", "GEN 50:20", "PSA 147:3", "ROM 12:17-19", "EPH 4:31-32", "MAT 6:14-15", "PSA 27:10", "HEB 13:5-6", "2TI 4:16-17", "LUK 6:27-28"],
+      "nave": ["TREACHERY"]
+    },
+    {
+      "id": "money", "group": "suffering",
+      "name": "Money Worries",
+      "description": "Trusting God’s provision under financial strain.",
+      "synonyms": ["money", "finances", "financial", "debt", "bills", "poor", "poverty", "broke", "job loss", "unemployed", "rent"],
+      "refs": ["PHP 4:19", "MAT 6:31-33", "HEB 13:5", "PSA 37:25", "PRO 3:9-10", "LUK 12:15", "1TI 6:6-10", "PRO 22:7", "ROM 13:8", "PSA 23:1", "2CO 9:8", "PRO 30:8-9"],
+      "nave": ["POVERTY", "RICHES", "MONEY"]
+    },
+
+    {
+      "id": "guilt", "group": "sin",
+      "name": "Guilt & Shame",
+      "description": "Mercy for what you regret.",
+      "synonyms": ["guilt", "guilty", "shame", "ashamed", "regret", "remorse", "condemned", "dirty", "my past"],
+      "refs": ["ROM 8:1", "1JN 1:9", "PSA 103:10-12", "ISA 1:18", "PSA 32:1-5", "2CO 5:17", "MIC 7:18-19", "HEB 10:22", "PSA 51:1-2", "PSA 51:10-12", "ISA 43:25", "PSA 34:5", "HEB 8:12"],
+      "nave": ["FORGIVENESS"]
+    },
+    {
+      "id": "forgiven", "group": "sin",
+      "name": "Being Forgiven",
+      "description": "God’s complete forgiveness in Christ.",
+      "synonyms": ["forgiven", "forgiveness", "pardon", "mercy", "cleansed", "sins forgiven", "can god forgive me"],
+      "refs": ["1JN 1:9", "EPH 1:7", "COL 1:13-14", "PSA 103:12", "ACT 3:19", "ISA 1:18", "ACT 10:43", "PSA 86:5", "COL 2:13-14", "HEB 8:12", "LUK 15:20-24", "MIC 7:18-19"],
+      "nave": ["FORGIVENESS", "SIN"]
+    },
+    {
+      "id": "forgiving", "group": "sin",
+      "name": "Forgiving Others",
+      "description": "Letting go of what others owe you.",
+      "synonyms": ["forgive", "forgiving", "grudge", "resentment", "bitterness", "hurt", "offended", "let go"],
+      "refs": ["COL 3:13", "EPH 4:32", "MAT 6:14-15", "MAT 18:21-22", "MAT 18:32-35", "LUK 6:37", "MRK 11:25", "LUK 23:34", "ROM 12:17-21", "PRO 19:11", "1PE 3:9", "LUK 17:3-4"],
+      "nave": ["FORGIVENESS"]
+    },
+    {
+      "id": "temptation", "group": "sin",
+      "name": "Temptation",
+      "description": "A way out when you’re pulled toward sin.",
+      "synonyms": ["tempted", "temptation", "resist", "sin", "weakness", "struggling with sin"],
+      "refs": ["1CO 10:13", "JAS 1:12-15", "HEB 2:18", "HEB 4:15-16", "MAT 26:41", "JAS 4:7", "1PE 5:8-9", "PSA 119:9-11", "GAL 5:16", "EPH 6:10-11", "MAT 4:1-4", "2PE 2:9", "ROM 6:12-14"],
+      "nave": ["TEMPTATION"]
+    },
+    {
+      "id": "addiction", "group": "sin",
+      "name": "Addiction & Bondage",
+      "description": "Freedom from what has a hold on you.",
+      "synonyms": ["addiction", "addicted", "alcohol", "drinking", "drunk", "drugs", "gambling", "habit", "bondage", "chains", "sober", "recovery", "relapse"],
+      "refs": ["JHN 8:36", "1CO 10:13", "GAL 5:1", "ROM 6:6-7", "1CO 6:12", "1CO 6:19-20", "2CO 5:17", "TIT 2:11-12", "ROM 7:24-25", "ROM 12:2", "PSA 107:13-14", "EPH 5:18", "2PE 2:19", "PHP 4:13"],
+      "nave": ["DRUNKENNESS", "TEMPERANCE"]
+    },
+    {
+      "id": "purity", "group": "sin",
+      "name": "Lust & Purity",
+      "description": "Guarding your heart, your eyes and your body.",
+      "synonyms": ["lust", "purity", "pure", "sexual sin", "pornography", "porn", "impure thoughts", "adultery", "chastity"],
+      "refs": ["MAT 5:27-28", "1TH 4:3-5", "1CO 6:18-20", "PSA 119:9", "JOB 31:1", "2TI 2:22", "PHP 4:8", "HEB 13:4", "GAL 5:16", "PSA 51:10", "1JN 2:16-17", "PRO 4:23", "ROM 13:14"],
+      "nave": ["LUST", "CHASTITY"]
+    },
+    {
+      "id": "pride", "group": "sin",
+      "name": "Pride & Humility",
+      "description": "Walking humbly before God and others.",
+      "synonyms": ["pride", "proud", "arrogant", "arrogance", "ego", "humble", "humility", "boasting", "conceit"],
+      "refs": ["PRO 16:18", "JAS 4:6", "JAS 4:10", "PHP 2:3-8", "MIC 6:8", "1PE 5:5-6", "PRO 11:2", "ROM 12:3", "PRO 27:2", "LUK 14:11", "PSA 25:9", "GAL 6:3"],
+      "nave": ["PRIDE", "HUMILITY"]
+    },
+    {
+      "id": "envy", "group": "sin",
+      "name": "Envy & Jealousy",
+      "description": "Contentment when others seem to have more.",
+      "synonyms": ["envy", "envious", "jealous", "jealousy", "comparison", "comparing", "covet", "coveting"],
+      "refs": ["PRO 14:30", "JAS 3:14-16", "GAL 5:26", "PSA 37:1-4", "PSA 73:1-3", "EXO 20:17", "1CO 13:4", "PRO 23:17-18", "PHP 4:11-12", "1PE 2:1", "ROM 13:13", "GAL 6:4"],
+      "nave": ["ENVY", "JEALOUSY"]
+    },
+    {
+      "id": "honesty", "group": "sin",
+      "name": "Lying & Honesty",
+      "description": "Truthfulness in word and deed.",
+      "synonyms": ["lie", "lying", "lies", "liar", "honest", "honesty", "truth", "integrity", "deceit", "cheating"],
+      "refs": ["EPH 4:25", "PRO 12:22", "COL 3:9-10", "PRO 10:9", "PRO 11:3", "PSA 15:1-2", "EXO 20:16", "ZEC 8:16", "PRO 19:1", "LUK 16:10", "PSA 34:13", "JHN 8:32", "PRO 6:16-19"],
+      "nave": ["LYING", "HONESTY", "INTEGRITY"]
+    },
+    {
+      "id": "repentance", "group": "sin",
+      "name": "Coming Back to God",
+      "description": "Repentance, and the welcome home after wandering away.",
+      "synonyms": ["repent", "repentance", "backsliding", "backslidden", "wandered", "prodigal", "return", "turn back", "far from god", "confess", "confession"],
+      "refs": ["LUK 15:18-24", "ACT 3:19", "2CH 7:14", "1JN 1:9", "JOL 2:12-13", "ISA 55:6-7", "PSA 51:10-12", "JAS 4:8", "HOS 14:1-2", "2CO 7:10", "LAM 3:40", "LUK 15:7"],
+      "nave": ["REPENTANCE"]
+    },
+    {
+      "id": "self-control", "group": "sin",
+      "name": "Self-Control",
+      "description": "Mastering appetites, words and impulses by the Spirit.",
+      "synonyms": ["self-control", "self control", "discipline", "willpower", "overeating", "gluttony", "overspending", "impulse", "temper"],
+      "refs": ["GAL 5:22-23", "PRO 25:28", "1CO 9:25-27", "TIT 2:11-12", "2PE 1:5-6", "2TI 1:7", "PRO 16:32", "1CO 10:31", "1PE 5:8", "ROM 12:1-2", "1CO 6:12"],
+      "nave": ["SELF-CONTROL", "TEMPERANCE"]
+    },
+
+    {
+      "id": "marriage", "group": "relationships",
+      "name": "Marriage",
+      "description": "Love, faithfulness and patience between husband and wife.",
+      "synonyms": ["marriage", "married", "husband", "wife", "spouse", "wedding", "marriage problems"],
+      "refs": ["GEN 2:24", "EPH 5:25-28", "EPH 5:33", "1PE 3:7", "COL 3:18-19", "1CO 13:4-7", "ECC 4:9-12", "PRO 18:22", "HEB 13:4", "MRK 10:6-9", "PRO 31:10-12", "SNG 8:6-7", "EPH 4:2-3"],
+      "nave": ["MARRIAGE"]
+    },
+    {
+      "id": "parenting", "group": "relationships",
+      "name": "Parenting",
+      "description": "Wisdom and grace for raising children.",
+      "synonyms": ["parent", "parents", "parenting", "mom", "mother", "dad", "father", "raising kids", "teenager", "discipline", "prodigal child"],
+      "refs": ["PRO 22:6", "DEU 6:6-7", "EPH 6:4", "COL 3:21", "PSA 127:3-5", "PRO 29:17", "ISA 54:13", "3JN 1:4", "PRO 3:11-12", "PSA 103:13", "JAS 1:5", "2TI 3:14-15", "LUK 15:20"],
+      "nave": ["PARENTS"]
+    },
+    {
+      "id": "children", "group": "relationships",
+      "name": "Children",
+      "description": "God’s heart for the little ones, and a word for the young.",
+      "synonyms": ["child", "children", "kids", "son", "daughter", "baby", "infant", "pregnancy", "pregnant", "young people", "youth"],
+      "refs": ["PSA 127:3", "MAT 19:14", "MRK 10:13-16", "PSA 139:13-14", "MAT 18:10", "EPH 6:1-3", "COL 3:20", "PRO 1:8-9", "JER 1:5", "1TI 4:12", "ECC 12:1", "PRO 20:11", "LUK 2:52"],
+      "nave": ["CHILDREN"]
+    },
+    {
+      "id": "singleness", "group": "relationships",
+      "name": "Singleness",
+      "description": "A full life with God, married or not.",
+      "synonyms": ["single", "singleness", "unmarried", "dating", "waiting for a spouse", "celibacy", "celibate"],
+      "refs": ["1CO 7:7-8", "1CO 7:32-35", "ISA 54:5", "PSA 16:11", "PSA 37:4", "MAT 19:11-12", "PSA 84:11", "PHP 4:11-13", "COL 2:10", "PSA 73:25-26", "PRO 3:5-6", "MAT 6:33", "PSA 68:6"],
+      "nave": ["CELIBACY"]
+    },
+    {
+      "id": "friendship", "group": "relationships",
+      "name": "Friendship",
+      "description": "Being, and finding, a true friend.",
+      "synonyms": ["friend", "friends", "friendship", "companion", "community", "bad company"],
+      "refs": ["PRO 17:17", "PRO 18:24", "ECC 4:9-12", "JHN 15:13-15", "PRO 27:17", "PRO 27:6", "PRO 27:9", "1SA 18:1-3", "PRO 13:20", "1CO 15:33", "ROM 12:10", "HEB 10:24-25", "PRO 16:28"],
+      "nave": ["FRIENDSHIP"]
+    },
+    {
+      "id": "conflict", "group": "relationships",
+      "name": "Conflict",
+      "description": "Making peace in hard relationships.",
+      "synonyms": ["conflict", "argument", "arguing", "fight", "fighting", "quarrel", "disagreement", "tension", "reconcile", "reconciliation"],
+      "refs": ["MAT 5:9", "MAT 18:15", "ROM 12:18", "PRO 15:1", "JAS 4:1-2", "MAT 5:23-24", "EPH 4:2-3", "PRO 17:14", "PRO 20:3", "COL 3:12-14", "2TI 2:23-24", "HEB 12:14", "PHP 2:3-4", "JAS 3:17-18"],
+      "nave": ["STRIFE", "RECONCILIATION"]
+    },
+    {
+      "id": "loving-others", "group": "relationships",
+      "name": "Loving Others",
+      "description": "Love that is patient, kind, and costly.",
+      "synonyms": ["love", "love others", "neighbor", "kindness", "compassion", "enemies", "difficult people"],
+      "refs": ["JHN 13:34-35", "1CO 13:4-7", "1JN 4:7-8", "1JN 4:11", "ROM 13:8-10", "MAT 22:37-39", "LUK 6:27-31", "1PE 4:8", "ROM 12:9-10", "GAL 5:13-14", "COL 3:14", "1JN 3:18", "LUK 10:36-37"],
+      "nave": ["LOVE"]
+    },
+
+    {
+      "id": "work", "group": "life",
+      "name": "Work",
+      "description": "Doing your job as service to the Lord.",
+      "synonyms": ["work", "job", "career", "boss", "coworker", "employment", "business", "diligence", "lazy", "laziness"],
+      "refs": ["COL 3:23-24", "PRO 16:3", "ECC 9:10", "1CO 10:31", "PRO 14:23", "2TH 3:10", "PSA 90:17", "PRO 22:29", "PRO 12:11", "GEN 2:15", "1TH 4:11-12", "PRO 13:4", "GAL 6:9"],
+      "nave": ["INDUSTRY"]
+    },
+    {
+      "id": "guidance", "group": "life",
+      "name": "Decisions & Guidance",
+      "description": "Seeking God’s direction.",
+      "synonyms": ["decision", "decisions", "decide", "choice", "choose", "guidance", "direction", "which way", "god’s will", "confused"],
+      "refs": ["PRO 3:5-6", "JAS 1:5", "PSA 32:8", "PSA 119:105", "ISA 30:21", "PRO 16:9", "PRO 11:14", "ROM 12:2", "PSA 37:23", "PRO 16:3", "PSA 25:4-5", "JER 33:3", "PRO 15:22", "COL 3:15"],
+      "nave": ["GUIDANCE"]
+    },
+    {
+      "id": "purpose", "group": "life",
+      "name": "Purpose & Calling",
+      "description": "Why you’re here, and what you were made for.",
+      "synonyms": ["purpose", "meaning", "meaningless", "calling", "called", "gifts", "talents", "mission", "why am I here"],
+      "refs": ["EPH 2:10", "JER 29:11", "ROM 8:28", "1PE 4:10", "MIC 6:8", "ECC 12:13", "MAT 5:14-16", "PHP 3:13-14", "COL 1:16", "ISA 43:7", "2TI 1:9", "MAT 28:19-20", "ACT 20:24", "ROM 12:6-8"]
+    },
+    {
+      "id": "new-beginnings", "group": "life",
+      "name": "New Beginnings",
+      "description": "Starting over with God.",
+      "synonyms": ["new start", "fresh start", "start over", "starting over", "change", "moving", "new job", "new year", "second chance", "transition"],
+      "refs": ["2CO 5:17", "ISA 43:18-19", "LAM 3:22-23", "PHP 3:13-14", "EZK 36:26", "REV 21:5", "ROM 6:4", "PSA 40:3", "ISA 42:9", "PSA 51:10", "ECC 3:1"],
+      "nave": ["REGENERATION"]
+    },
+    {
+      "id": "aging", "group": "life",
+      "name": "Growing Older",
+      "description": "God’s faithfulness through every season of life.",
+      "synonyms": ["aging", "old", "older", "old age", "elderly", "retirement", "gray hair", "senior"],
+      "refs": ["ISA 46:4", "PSA 71:9", "PSA 71:17-18", "PSA 92:12-15", "PRO 16:31", "2CO 4:16", "JOB 12:12", "PSA 90:12", "TIT 2:2-3", "PSA 37:25", "LEV 19:32", "PRO 20:29"],
+      "nave": ["OLD AGE", "AGED"]
+    },
+    {
+      "id": "provision", "group": "life",
+      "name": "Provision & Needs",
+      "description": "God knows what you need.",
+      "synonyms": ["provide", "provision", "need", "needs", "lack", "hungry", "food", "daily bread", "supply"],
+      "refs": ["PHP 4:19", "MAT 6:26", "MAT 7:7-11", "PSA 23:1", "PSA 34:10", "PSA 37:25", "2CO 9:8", "GEN 22:14", "MAT 6:11", "LUK 12:24", "PSA 145:15-16", "DEU 8:18", "PSA 84:11"],
+      "nave": ["PROVIDENCE"]
+    },
+    {
+      "id": "contentment", "group": "life",
+      "name": "Contentment",
+      "description": "Enough in God, in plenty or in want.",
+      "synonyms": ["content", "contentment", "satisfied", "discontent", "wanting more", "materialism", "greed"],
+      "refs": ["PHP 4:11-13", "HEB 13:5", "1TI 6:6-8", "PSA 16:5-6", "PRO 30:8-9", "ECC 5:10", "LUK 12:15", "PSA 73:25-26", "MAT 6:19-21", "2CO 12:10", "PSA 23:1", "PRO 15:16"],
+      "nave": ["CONTENTMENT"]
+    },
+    {
+      "id": "generosity", "group": "life",
+      "name": "Generosity",
+      "description": "Giving freely, as God has given.",
+      "synonyms": ["give", "giving", "generous", "generosity", "tithe", "tithing", "charity", "offering", "share"],
+      "refs": ["2CO 9:6-8", "ACT 20:35", "LUK 6:38", "PRO 11:24-25", "MAL 3:10", "PRO 3:9-10", "1TI 6:17-19", "MAT 6:1-4", "PRO 19:17", "1JN 3:17", "HEB 13:16", "DEU 15:10", "2CO 8:9"],
+      "nave": ["LIBERALITY"]
+    },
+    {
+      "id": "serving", "group": "life",
+      "name": "Serving",
+      "description": "Following Jesus by serving others.",
+      "synonyms": ["serve", "serving", "service", "volunteer", "ministry", "help others", "servant"],
+      "refs": ["MRK 10:45", "GAL 5:13", "1PE 4:10-11", "PHP 2:3-7", "JHN 13:14-15", "MAT 25:35-40", "COL 3:23-24", "ROM 12:11", "HEB 6:10", "MAT 20:26-28", "JOS 24:15", "1CO 15:58"]
+    },
+
+    {
+      "id": "faith", "group": "growing",
+      "name": "Faith",
+      "description": "Believing God, and taking Him at His word.",
+      "synonyms": ["faith", "believe", "believing", "belief", "faithful"],
+      "refs": ["HEB 11:1", "HEB 11:6", "EPH 2:8-9", "ROM 10:17", "MRK 11:22-24", "ROM 5:1", "2CO 5:7", "GAL 2:20", "JAS 2:17-18", "MAT 17:20", "1PE 1:8-9", "HAB 2:4", "ROM 1:16-17"],
+      "nave": ["FAITH"]
+    },
+    {
+      "id": "trust", "group": "growing",
+      "name": "Trusting God",
+      "description": "Leaning on Him when you can’t see the way.",
+      "synonyms": ["trust", "trusting", "rely", "depend", "surrender", "let go", "control"],
+      "refs": ["PRO 3:5-6", "PSA 56:3-4", "ISA 26:3-4", "PSA 37:3-5", "JER 17:7-8", "PSA 9:10", "PSA 62:8", "ROM 15:13", "PSA 20:7", "NAM 1:7", "PSA 28:7", "ISA 12:2", "PSA 125:1"],
+      "nave": ["TRUST"]
+    },
+    {
+      "id": "prayer", "group": "growing",
+      "name": "Prayer",
+      "description": "Talking with God, and knowing He hears.",
+      "synonyms": ["pray", "prayer", "praying", "unanswered prayer", "how to pray", "intercession", "ask"],
+      "refs": ["MAT 6:9-13", "PHP 4:6-7", "1TH 5:16-18", "JER 33:3", "MAT 7:7-8", "1JN 5:14-15", "JAS 5:16", "ROM 8:26-27", "MRK 11:24", "HEB 4:16", "PSA 145:18", "LUK 18:1", "MAT 6:6", "2CH 7:14"],
+      "nave": ["PRAYER"]
+    },
+    {
+      "id": "patience", "group": "growing",
+      "name": "Patience",
+      "description": "Growing in patience with people, and with God.",
+      "synonyms": ["patience", "patient", "impatient", "impatience", "endurance", "perseverance", "slow to anger"],
+      "refs": ["GAL 5:22-23", "ROM 12:12", "JAS 1:2-4", "JAS 5:7-8", "ECC 7:8", "COL 3:12", "EPH 4:2", "PSA 37:7", "ROM 8:25", "PRO 15:18", "1CO 13:4", "HEB 10:36", "2PE 3:9"],
+      "nave": ["PATIENCE"]
+    },
+    {
+      "id": "gratitude", "group": "growing",
+      "name": "Gratitude",
+      "description": "Giving thanks in every circumstance.",
+      "synonyms": ["thankful", "thanks", "thanksgiving", "gratitude", "grateful", "blessing", "blessings", "counting blessings"],
+      "refs": ["1TH 5:18", "PSA 100:4-5", "PSA 107:1", "COL 3:15-17", "PHP 4:6", "PSA 136:1", "EPH 5:20", "PSA 103:1-5", "JAS 1:17", "PSA 118:24", "COL 2:6-7", "PSA 9:1", "HEB 12:28"],
+      "nave": ["THANKFULNESS"]
+    },
+    {
+      "id": "joy", "group": "growing",
+      "name": "Joy",
+      "description": "Joy that doesn’t depend on circumstances.",
+      "synonyms": ["joy", "joyful", "happy", "happiness", "rejoice", "glad", "delight", "cheerful"],
+      "refs": ["NEH 8:10", "PHP 4:4", "PSA 16:11", "JHN 15:11", "ROM 15:13", "JAS 1:2-3", "PSA 30:11-12", "1PE 1:8", "GAL 5:22", "HAB 3:17-18", "PSA 126:5", "JHN 16:22", "PSA 118:24"],
+      "nave": ["JOY"]
+    },
+    {
+      "id": "obedience", "group": "growing",
+      "name": "Obedience",
+      "description": "Following God’s ways from the heart.",
+      "synonyms": ["obey", "obedience", "obedient", "commandments", "follow", "rebellion", "doing god’s will"],
+      "refs": ["JHN 14:15", "JHN 14:21", "JAS 1:22", "1SA 15:22", "MAT 7:24", "1JN 5:3", "ROM 12:1-2", "LUK 11:28", "DEU 10:12-13", "PSA 119:1-2", "JOS 1:8", "2JN 1:6"],
+      "nave": ["OBEDIENCE"]
+    },
+    {
+      "id": "wisdom", "group": "growing",
+      "name": "Wisdom",
+      "description": "Asking God for understanding.",
+      "synonyms": ["wisdom", "wise", "understanding", "knowledge", "foolish", "discernment", "insight"],
+      "refs": ["JAS 1:5", "PRO 1:7", "PRO 2:6", "PRO 3:13-14", "PRO 4:7", "PSA 111:10", "JAS 3:17", "COL 2:2-3", "PRO 9:10", "ECC 7:12", "1CO 1:25", "PSA 90:12", "PRO 19:20", "EPH 1:17"],
+      "nave": ["WISDOM"]
+    },
+    {
+      "id": "scripture", "group": "growing",
+      "name": "God’s Word",
+      "description": "Scripture as light for the path and food for the soul.",
+      "synonyms": ["bible", "scripture", "word of god", "bible reading", "reading the bible", "study"],
+      "refs": ["2TI 3:16-17", "PSA 119:105", "HEB 4:12", "JOS 1:8", "PSA 119:11", "ISA 40:8", "MAT 4:4", "ROM 15:4", "JAS 1:22", "PSA 1:1-3", "JHN 17:17", "ISA 55:10-11", "PSA 19:7-8"],
+      "nave": ["WORD OF GOD"]
+    },
+    {
+      "id": "worship", "group": "growing",
+      "name": "Worship & Praise",
+      "description": "Giving God the honor He is due.",
+      "synonyms": ["worship", "praise", "sing", "singing", "music", "adoration", "hallelujah"],
+      "refs": ["PSA 95:1-7", "JHN 4:23-24", "PSA 150:1-6", "ROM 12:1", "HEB 13:15", "PSA 100:1-5", "PSA 34:1-3", "COL 3:16", "REV 4:11", "PSA 96:1-4", "PSA 103:1-2", "PSA 63:3-4"],
+      "nave": ["WORSHIP", "PRAISE"]
+    },
+    {
+      "id": "witness", "group": "growing",
+      "name": "Sharing Your Faith",
+      "description": "Telling others the good news of Jesus.",
+      "synonyms": ["evangelism", "witness", "witnessing", "share my faith", "gospel", "testimony", "tell others", "great commission", "missions"],
+      "refs": ["MAT 28:18-20", "ACT 1:8", "ROM 1:16", "1PE 3:15", "ROM 10:14-15", "MRK 16:15", "2TI 4:2", "MAT 5:14-16", "COL 4:5-6", "2CO 5:20", "ISA 52:7"]
+    },
+
+    {
+      "id": "gods-love", "group": "promises",
+      "name": "God’s Love",
+      "description": "How wide and long and high and deep His love is.",
+      "synonyms": ["god’s love", "loved", "unloved", "does god love me", "beloved", "love of god"],
+      "refs": ["JHN 3:16", "ROM 5:8", "ROM 8:38-39", "1JN 4:9-10", "1JN 4:16", "EPH 3:17-19", "JER 31:3", "ZEP 3:17", "PSA 136:1", "LAM 3:22-23", "1JN 3:1", "PSA 103:11", "ISA 54:10", "GAL 2:20"],
+      "nave": ["LOVE", "GOD"]
+    },
+    {
+      "id": "presence", "group": "promises",
+      "name": "God’s Presence",
+      "description": "He is with you, always.",
+      "synonyms": ["presence", "near", "with me", "where is god", "god is silent", "god feels far", "abandoned"],
+      "refs": ["PSA 139:7-10", "MAT 28:20", "DEU 31:6", "ISA 43:2", "JOS 1:9", "PSA 16:11", "PSA 46:1", "ZEP 3:17", "JAS 4:8", "HEB 13:5", "PSA 23:4", "ISA 41:10", "PSA 145:18", "JHN 14:23"]
+    },
+    {
+      "id": "peace", "group": "promises",
+      "name": "Peace",
+      "description": "The peace that passes understanding.",
+      "synonyms": ["peace", "calm", "peaceful", "quiet", "stillness", "serenity", "at peace"],
+      "refs": ["JHN 14:27", "PHP 4:6-7", "ISA 26:3", "JHN 16:33", "ROM 5:1", "COL 3:15", "PSA 4:8", "NUM 6:24-26", "ROM 15:13", "PSA 29:11", "2TH 3:16", "ISA 9:6", "PSA 46:10"],
+      "nave": ["PEACE"]
+    },
+    {
+      "id": "hope", "group": "promises",
+      "name": "Hope",
+      "description": "An anchor for the soul.",
+      "synonyms": ["hope", "hopeful", "hopeless", "expectation", "promise", "looking forward"],
+      "refs": ["ROM 15:13", "JER 29:11", "HEB 6:19", "ROM 5:3-5", "LAM 3:21-24", "ISA 40:31", "PSA 42:11", "ROM 8:24-25", "1PE 1:3", "PSA 33:18", "PSA 71:14", "TIT 2:13", "PRO 23:18", "HEB 10:23"],
+      "nave": ["HOPE"]
+    },
+    {
+      "id": "comfort", "group": "promises",
+      "name": "Comfort",
+      "description": "The God of all comfort.",
+      "synonyms": ["comfort", "comforted", "consolation", "hurting", "broken", "heartbroken", "sad"],
+      "refs": ["2CO 1:3-4", "PSA 23:4", "MAT 5:4", "ISA 66:13", "PSA 119:50", "PSA 119:76", "ISA 40:1", "JHN 14:16-18", "PSA 34:18", "ISA 49:13", "PSA 147:3", "2TH 2:16-17", "REV 21:4"],
+      "nave": ["COMFORT"]
+    },
+    {
+      "id": "strength", "group": "promises",
+      "name": "Strength",
+      "description": "His power in your weakness.",
+      "synonyms": ["strength", "strong", "weak", "weakness", "power", "can’t go on", "endure"],
+      "refs": ["PHP 4:13", "ISA 40:29-31", "2CO 12:9-10", "PSA 46:1", "NEH 8:10", "PSA 28:7", "PSA 73:26", "EPH 6:10", "ISA 41:10", "HAB 3:19", "PSA 18:32", "EXO 15:2", "1CH 16:11", "PSA 29:11"],
+      "nave": ["STRENGTH"]
+    },
+    {
+      "id": "courage", "group": "promises",
+      "name": "Courage",
+      "description": "Be strong and courageous.",
+      "synonyms": ["courage", "courageous", "brave", "bravery", "bold", "boldness", "confidence"],
+      "refs": ["JOS 1:9", "DEU 31:6", "PSA 27:14", "1CO 16:13", "2TI 1:7", "PSA 31:24", "ISA 41:10", "1CH 28:20", "PRO 28:1", "ACT 4:31", "HEB 13:6", "EPH 6:10-11", "EST 4:14"],
+      "nave": ["COURAGE"]
+    },
+    {
+      "id": "protection", "group": "promises",
+      "name": "Protection & Safety",
+      "description": "Your refuge and your fortress.",
+      "synonyms": ["protection", "protect", "safety", "safe", "danger", "travel", "security", "refuge", "shelter"],
+      "refs": ["PSA 91:1-2", "PSA 91:9-11", "PSA 121:1-8", "PSA 46:1", "PRO 18:10", "2TH 3:3", "PSA 4:8", "ISA 54:17", "PSA 18:2", "PSA 32:7", "PSA 34:7", "PRO 3:24", "PSA 27:1"],
+      "nave": ["PROVIDENCE"]
+    },
+    {
+      "id": "salvation", "group": "promises",
+      "name": "Salvation & Assurance",
+      "description": "Knowing you belong to God forever.",
+      "synonyms": ["saved", "salvation", "born again", "eternal life", "assurance", "am I saved", "gospel", "how to be saved"],
+      "refs": ["JHN 3:16", "ROM 10:9-10", "EPH 2:8-9", "ROM 6:23", "JHN 1:12", "1JN 5:11-13", "JHN 10:27-29", "ROM 8:1", "ROM 5:8", "ACT 4:12", "TIT 3:5", "JHN 5:24", "ROM 8:38-39", "PHP 1:6", "ACT 16:31"],
+      "nave": ["SALVATION", "ASSURANCE"]
+    },
+    {
+      "id": "grace", "group": "promises",
+      "name": "Grace & Mercy",
+      "description": "God’s kindness you could never earn.",
+      "synonyms": ["grace", "mercy", "merciful", "undeserved", "compassion", "kindness"],
+      "refs": ["EPH 2:4-5", "EPH 2:8-9", "LAM 3:22-23", "TIT 2:11", "HEB 4:16", "2CO 12:9", "PSA 103:8", "TIT 3:4-7", "ROM 3:23-24", "MIC 7:18", "JHN 1:16", "ROM 5:20", "1PE 5:10", "PSA 86:15"],
+      "nave": ["GRACE OF GOD", "MERCY"]
+    },
+    {
+      "id": "heaven", "group": "promises",
+      "name": "Heaven & Eternal Life",
+      "description": "The home God is preparing.",
+      "synonyms": ["heaven", "eternal life", "eternity", "afterlife", "resurrection", "new creation", "paradise"],
+      "refs": ["JHN 14:1-3", "REV 21:1-4", "PHP 3:20-21", "2CO 5:1", "1CO 2:9", "1TH 4:16-17", "1CO 15:51-55", "REV 22:3-5", "ROM 8:18", "1PE 1:3-4", "2PE 3:13", "LUK 23:43", "COL 3:1-4"],
+      "nave": ["HEAVEN"]
+    },
+    {
+      "id": "faithfulness", "group": "promises",
+      "name": "God’s Faithfulness",
+      "description": "He keeps every promise.",
+      "synonyms": ["faithfulness", "faithful", "promises", "reliable", "never changes", "unchanging"],
+      "refs": ["LAM 3:22-23", "DEU 7:9", "2TI 2:13", "HEB 10:23", "1CO 1:9", "NUM 23:19", "PSA 36:5", "1TH 5:24", "HEB 13:8", "MAL 3:6", "JOS 21:45", "2CO 1:20", "PSA 100:5", "ISA 25:1"]
+    },
+    {
+      "id": "sovereignty", "group": "promises",
+      "name": "God Is in Control",
+      "description": "Nothing is outside His hand.",
+      "synonyms": ["sovereignty", "sovereign", "in control", "god’s plan", "why", "providence", "chaos"],
+      "refs": ["ROM 8:28", "ISA 46:9-10", "PRO 16:9", "PRO 19:21", "PSA 115:3", "DAN 4:35", "GEN 50:20", "ISA 55:8-9", "EPH 1:11", "JOB 42:2", "PSA 33:11", "COL 1:17", "MAT 10:29-30", "PSA 103:19"],
+      "nave": ["PROVIDENCE"]
+    }
+  ]
+}

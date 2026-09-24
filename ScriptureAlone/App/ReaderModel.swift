@@ -332,6 +332,23 @@ final class ReaderModel {
     /// Supplied by the app, like `onlineLoader`, so the model needn't know about keys.
     var onlineSearch: (@MainActor (TranslationEntry, String) async throws -> [BibleStore.SearchHit])?
 
+    /// A passage (KJV keys) in the translation being read — for lists of passages away from the
+    /// reader, such as a topic's.
+    ///
+    /// An online translation has on the device only the chapters already read, so a passage from
+    /// any other is fetched through the reader's key, one chapter at a time, and kept in the cache
+    /// like any chapter read. Nil when it can't be had (no key, no connection).
+    func passageVerses(_ range: VerseRange) async -> [VerseText]? {
+        func verses(in source: (any ChapterTextSource)?) -> [VerseText]? {
+            guard let verses = try? source?.verses(in: range), !verses.isEmpty else { return nil }
+            return verses
+        }
+        if let local = verses(in: source) { return local }
+        guard let entry = onlineTranslation?.entry,
+              let store = try? await onlineStore(for: entry, chapter: range.start.chapterKey) else { return nil }
+        return verses(in: store)
+    }
+
     var translationID: String {
         onlineTranslation?.entry.id ?? source?.info.id ?? Self.defaultTranslation
     }

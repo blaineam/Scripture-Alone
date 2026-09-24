@@ -52,6 +52,7 @@
 		4AB012AE8C3B7C9A3FCCE461 /* FamilySharingSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E1114FBD372117B3796076 /* FamilySharingSupport.swift */; };
 		4D220640C3B4DEA23DF4F17E /* Entities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93FAE7B8C1A17A1BAD1F94B7 /* Entities.swift */; };
 		51067F02DBFC89BBCD92F9F8 /* InterlinearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F435AEBC1B470F11ED9904CE /* InterlinearView.swift */; };
+		546FCFD807AD47BCB4AB92D1 /* TopicsDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6C76A2E0892BB0F67ACFEE1 /* TopicsDirectory.swift */; };
 		5493681CFA1710000C4CA0D6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */; };
 		551D89B9A0AE47EC704BBE72 /* StudyContextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1EE071A16E5CB568DFB3331 /* StudyContextView.swift */; };
 		57828EF5983539D10AB2ABF6 /* CrossReferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 060801F1607F15B63E34EFF7 /* CrossReferencesView.swift */; };
@@ -95,6 +96,7 @@
 		847A42E21724E641C4CA74C4 /* WidgetSnapshotSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2539ED6AC3F6DFA0CE4CCCD5 /* WidgetSnapshotSync.swift */; };
 		86A874298AE4559C226B66A3 /* DailyVerseLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F0BC99CE5196F68A181398 /* DailyVerseLibrary.swift */; };
 		86D64FB0F0463FCCA4C04061 /* ListenController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10323963B4DFF80E5DD6F887 /* ListenController.swift */; };
+		871C67E0CE22AB0CC5DC791A /* Topics.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 9ACC9445E5EA791DFC94D732 /* Topics.sqlite */; };
 		885A850C70EC97AF9120378A /* DailyVerseLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4F0BC99CE5196F68A181398 /* DailyVerseLibrary.swift */; };
 		8AA41671A2329FE6258257B5 /* ExportSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7888AAC43ECF30A87D1EBA8 /* ExportSupport.swift */; };
 		8D1229784458488BCB724C1B /* Context.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = A6ECFE14FC10FF50EAF8A454 /* Context.sqlite */; };
@@ -324,6 +326,7 @@
 		94BF719AE320CC291255FBE5 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
 		961828BA63931539A77621BD /* ChapterTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterTextView.swift; sourceTree = "<group>"; };
 		99AE4A67B166D962CA7ED4C9 /* ImportedBibleSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedBibleSync.swift; sourceTree = "<group>"; };
+		9ACC9445E5EA791DFC94D732 /* Topics.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = Topics.sqlite; sourceTree = "<group>"; };
 		9AF91EB082450DA041248BE6 /* ShareSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSupport.swift; sourceTree = "<group>"; };
 		9DB385840CA261E1F5B13852 /* ScriptureAloneWatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ScriptureAloneWatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DE766724AEE6AA9844B429B /* StudyPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyPanel.swift; sourceTree = "<group>"; };
@@ -339,6 +342,7 @@
 		B428BCAE12449F8C77B44484 /* ImportedLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedLibrary.swift; sourceTree = "<group>"; };
 		B4F0BC99CE5196F68A181398 /* DailyVerseLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyVerseLibrary.swift; sourceTree = "<group>"; };
 		B6A3452FD42CAA93C1C07421 /* OnlineTranslations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineTranslations.swift; sourceTree = "<group>"; };
+		B6C76A2E0892BB0F67ACFEE1 /* TopicsDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopicsDirectory.swift; sourceTree = "<group>"; };
 		B6D74C961BED0B7388ED862C /* NotesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesPanel.swift; sourceTree = "<group>"; };
 		B92CECC981DA199D2D8E1875 /* AppGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroup.swift; sourceTree = "<group>"; };
 		B979A47FCB565BD87D575D13 /* OnlineTextLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineTextLoader.swift; sourceTree = "<group>"; };
@@ -543,6 +547,7 @@
 				CD26A00921ADE7C04FC80237 /* Basemap.bin */,
 				A6ECFE14FC10FF50EAF8A454 /* Context.sqlite */,
 				4C961CAB44265A68006BEDE7 /* CrossReferences.sqlite */,
+				9ACC9445E5EA791DFC94D732 /* Topics.sqlite */,
 			);
 			path = Study;
 			sourceTree = "<group>";
@@ -741,6 +746,7 @@
 			isa = PBXGroup;
 			children = (
 				02B573C120EA0CFCEF9EB807 /* PassagePicker.swift */,
+				B6C76A2E0892BB0F67ACFEE1 /* TopicsDirectory.swift */,
 			);
 			path = Navigation;
 			sourceTree = "<group>";
@@ -1049,6 +1055,7 @@
 				421F1D504BC55173091F44DE /* CrossReferences.sqlite in Resources */,
 				0CF01B3F1ADEB43A40A34C2F /* DailyVerses.json in Resources */,
 				487EFEAB1AB68A3B0EE0659B /* Localizable.xcstrings in Resources */,
+				871C67E0CE22AB0CC5DC791A /* Topics.sqlite in Resources */,
 				AEC5E4BE40E074C767038607 /* bundled-signing.pub in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1300,6 +1307,7 @@
 				B589F08088F4F69A2A2CD15D /* StudyPanel.swift in Sources */,
 				EEFB219B7EF6795D22B864A9 /* StudySourcesView.swift in Sources */,
 				F430E26F04771337A57782F0 /* TimelineViews.swift in Sources */,
+				546FCFD807AD47BCB4AB92D1 /* TopicsDirectory.swift in Sources */,
 				6B8B2ED41138FFA398296B75 /* TranslationDownloadBanner.swift in Sources */,
 				C11A56B3EC4153B0651D82C7 /* TranslationsView.swift in Sources */,
 				27BEB865D8AFE43FDA089FF5 /* WatchLink.swift in Sources */,

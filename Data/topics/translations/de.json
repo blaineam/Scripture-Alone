@@ -1,0 +1,1148 @@
+{
+  "groups": {
+    "feelings": "Sorgen & schwere Gefühle",
+    "suffering": "Verlust & Leid",
+    "sin": "Sünde & Versuchung",
+    "relationships": "Beziehungen & Familie",
+    "life": "Arbeit, Geld & Orientierung",
+    "growing": "Im Glauben wachsen",
+    "promises": "Wer Gott ist"
+  },
+  "themes": {
+    "anxiety": {
+      "name": "Angst & Sorgen",
+      "description": "Für die Zeiten, in denen die Gedanken nicht zur Ruhe kommen und das Morgen schwer wiegt.",
+      "synonyms": [
+        "angst",
+        "ängstlich",
+        "sorgen",
+        "sorge",
+        "besorgt",
+        "sich sorgen",
+        "nervös",
+        "panik",
+        "unruhe",
+        "unruhig",
+        "grübeln",
+        "angststörung"
+      ]
+    },
+    "fear": {
+      "name": "Furcht",
+      "description": "Mut von Gott, wenn du dich fürchtest.",
+      "synonyms": [
+        "furcht",
+        "fürchten",
+        "angst",
+        "angst haben",
+        "ängstlich",
+        "erschrocken",
+        "schrecken",
+        "panik",
+        "bange",
+        "phobie",
+        "fürchte dich nicht"
+      ]
+    },
+    "future": {
+      "name": "Angst vor der Zukunft",
+      "description": "Gott anvertrauen, was noch nicht geschehen ist.",
+      "synonyms": [
+        "zukunft",
+        "zukunftsangst",
+        "ungewiss",
+        "ungewissheit",
+        "unsicherheit",
+        "morgen",
+        "was wäre wenn",
+        "pläne",
+        "was kommt"
+      ]
+    },
+    "loneliness": {
+      "name": "Einsamkeit",
+      "description": "Gottes Nähe, wenn du dich allein fühlst.",
+      "synonyms": [
+        "einsam",
+        "einsamkeit",
+        "allein",
+        "alleinsein",
+        "isoliert",
+        "vergessen",
+        "verlassen",
+        "keine freunde",
+        "niemand versteht mich"
+      ]
+    },
+    "depression": {
+      "name": "Depression & Verzweiflung",
+      "description": "Hoffnung für die dunklen Täler der Seele.",
+      "synonyms": [
+        "depression",
+        "depressiv",
+        "verzweiflung",
+        "verzweifelt",
+        "hoffnungslos",
+        "dunkelheit",
+        "traurig",
+        "traurigkeit",
+        "niedergeschlagen",
+        "leer",
+        "schwermut",
+        "psychische gesundheit"
+      ]
+    },
+    "discouragement": {
+      "name": "Entmutigung",
+      "description": "Kraft zum Weitergehen, wenn du am liebsten aufgeben würdest.",
+      "synonyms": [
+        "entmutigt",
+        "entmutigung",
+        "mutlos",
+        "aufgeben",
+        "aufhören",
+        "versagt",
+        "versagen",
+        "niederlage",
+        "keine kraft mehr",
+        "resigniert"
+      ]
+    },
+    "weariness": {
+      "name": "Müdigkeit & Ruhe",
+      "description": "Ruhe für Müde und Ausgebrannte.",
+      "synonyms": [
+        "müde",
+        "müdigkeit",
+        "erschöpft",
+        "erschöpfung",
+        "burnout",
+        "ausgebrannt",
+        "ruhe",
+        "schlaf",
+        "schlaflos",
+        "kraftlos",
+        "ausruhen"
+      ]
+    },
+    "stress": {
+      "name": "Stress & Überforderung",
+      "description": "Frieden, wenn dir einfach alles zu viel wird.",
+      "synonyms": [
+        "stress",
+        "gestresst",
+        "überfordert",
+        "überforderung",
+        "druck",
+        "hektik",
+        "alles zu viel",
+        "chaos",
+        "last",
+        "belastung"
+      ]
+    },
+    "anger": {
+      "name": "Zorn",
+      "description": "Weisheit für ein aufbrausendes Gemüt und Verletzungen, die brennen.",
+      "synonyms": [
+        "zorn",
+        "wut",
+        "wütend",
+        "zornig",
+        "ärger",
+        "ärgerlich",
+        "jähzorn",
+        "frust",
+        "frustriert",
+        "gereizt",
+        "bitterkeit",
+        "groll"
+      ]
+    },
+    "doubt": {
+      "name": "Zweifel",
+      "description": "Ehrliche Fragen – und ein treuer Gott.",
+      "synonyms": [
+        "zweifel",
+        "zweifeln",
+        "glaubenszweifel",
+        "fragen",
+        "unglaube",
+        "skeptisch",
+        "glaubenskrise",
+        "glaube wankt"
+      ]
+    },
+    "rejection": {
+      "name": "Ablehnung",
+      "description": "Von Gott angenommen, wenn andere sich abwenden.",
+      "synonyms": [
+        "abgelehnt",
+        "ablehnung",
+        "zurückgewiesen",
+        "ungewollt",
+        "ausgeschlossen",
+        "ausgegrenzt",
+        "ungeliebt",
+        "verlassen",
+        "nicht dazugehören"
+      ]
+    },
+    "identity": {
+      "name": "Identität & Selbstwert",
+      "description": "Wer du in Gottes Augen bist.",
+      "synonyms": [
+        "identität",
+        "selbstwert",
+        "selbstwertgefühl",
+        "wert",
+        "wertlos",
+        "minderwertig",
+        "unsicher",
+        "unsicherheit",
+        "nicht gut genug",
+        "wer bin ich"
+      ]
+    },
+    "grief": {
+      "name": "Trauer & Verlust",
+      "description": "Trost für ein gebrochenes Herz.",
+      "synonyms": [
+        "trauer",
+        "trauern",
+        "verlust",
+        "tod eines angehörigen",
+        "trauerfall",
+        "gebrochenes herz",
+        "kummer",
+        "schmerz",
+        "vermissen",
+        "hinterblieben"
+      ]
+    },
+    "death": {
+      "name": "Tod & Sterben",
+      "description": "Hoffnung über das Grab hinaus.",
+      "synonyms": [
+        "tod",
+        "sterben",
+        "sterbend",
+        "beerdigung",
+        "todkrank",
+        "lebensende",
+        "angst vor dem tod",
+        "ewigkeit",
+        "sterbebegleitung"
+      ]
+    },
+    "illness": {
+      "name": "Krankheit & Heilung",
+      "description": "Gebet und Hoffnung in Krankheit.",
+      "synonyms": [
+        "krank",
+        "krankheit",
+        "erkrankung",
+        "krebs",
+        "krankenhaus",
+        "operation",
+        "heilung",
+        "heilen",
+        "schmerzen",
+        "chronisch",
+        "diagnose",
+        "gesundheit"
+      ]
+    },
+    "suffering": {
+      "name": "Leid & Anfechtung",
+      "description": "Wie Gott dir im Schweren begegnet und was er dadurch wirkt.",
+      "synonyms": [
+        "leid",
+        "leiden",
+        "anfechtung",
+        "prüfung",
+        "prüfungen",
+        "not",
+        "trübsal",
+        "schwere zeit",
+        "warum lässt gott das zu",
+        "schmerz",
+        "kampf"
+      ]
+    },
+    "persecution": {
+      "name": "Verfolgung",
+      "description": "Standhaft bleiben, wenn man dich um des Glaubens willen schlecht behandelt.",
+      "synonyms": [
+        "verfolgt",
+        "verfolgung",
+        "verspottet",
+        "spott",
+        "ausgelacht",
+        "angefeindet",
+        "gehasst",
+        "märtyrer",
+        "christenverfolgung",
+        "glaube angegriffen"
+      ]
+    },
+    "injustice": {
+      "name": "Ungerechtigkeit",
+      "description": "Wenn das Unrecht zu siegen scheint.",
+      "synonyms": [
+        "unfair",
+        "ungerecht",
+        "ungerechtigkeit",
+        "unrecht",
+        "unrecht getan",
+        "unterdrückung",
+        "unterdrückt",
+        "gerechtigkeit",
+        "betrogen"
+      ]
+    },
+    "waiting": {
+      "name": "Warten",
+      "description": "Geduld, wenn Gottes Zeitplan nicht deiner ist.",
+      "synonyms": [
+        "warten",
+        "abwarten",
+        "verzögerung",
+        "wie lange noch",
+        "unerhört",
+        "gottes zeit",
+        "zeitpunkt",
+        "geduld"
+      ]
+    },
+    "betrayal": {
+      "name": "Verrat",
+      "description": "Heilung, wenn dich jemand verletzt, dem du vertraut hast.",
+      "synonyms": [
+        "verraten",
+        "verrat",
+        "hintergangen",
+        "betrogen",
+        "fremdgehen",
+        "untreu",
+        "untreue",
+        "vertrauensbruch",
+        "belogen",
+        "enttäuscht"
+      ]
+    },
+    "money": {
+      "name": "Geldsorgen",
+      "description": "Gottes Versorgung vertrauen, wenn das Geld knapp ist.",
+      "synonyms": [
+        "geld",
+        "geldsorgen",
+        "finanzen",
+        "finanziell",
+        "schulden",
+        "rechnungen",
+        "arm",
+        "armut",
+        "pleite",
+        "jobverlust",
+        "arbeitslos",
+        "miete"
+      ]
+    },
+    "guilt": {
+      "name": "Schuld & Scham",
+      "description": "Barmherzigkeit für das, was du bereust.",
+      "synonyms": [
+        "schuld",
+        "schuldig",
+        "schuldgefühle",
+        "scham",
+        "schämen",
+        "reue",
+        "bereuen",
+        "verurteilt",
+        "unrein",
+        "meine vergangenheit"
+      ]
+    },
+    "forgiven": {
+      "name": "Vergebung empfangen",
+      "description": "Gottes vollkommene Vergebung in Christus.",
+      "synonyms": [
+        "vergeben",
+        "vergebung",
+        "sündenvergebung",
+        "gnade",
+        "barmherzigkeit",
+        "reingewaschen",
+        "rechtfertigung",
+        "kann gott mir vergeben"
+      ]
+    },
+    "forgiving": {
+      "name": "Anderen vergeben",
+      "description": "Loslassen, was andere dir schuldig sind.",
+      "synonyms": [
+        "vergeben",
+        "vergebung",
+        "verzeihen",
+        "groll",
+        "nachtragend",
+        "bitterkeit",
+        "verletzt",
+        "gekränkt",
+        "loslassen",
+        "versöhnung"
+      ]
+    },
+    "temptation": {
+      "name": "Versuchung",
+      "description": "Ein Ausweg, wenn es dich zur Sünde zieht.",
+      "synonyms": [
+        "versuchung",
+        "versucht",
+        "versuchungen",
+        "widerstehen",
+        "sünde",
+        "sündigen",
+        "schwachheit",
+        "anfechtung",
+        "kampf mit der sünde"
+      ]
+    },
+    "addiction": {
+      "name": "Sucht & Gebundenheit",
+      "description": "Freiheit von dem, was dich gefangen hält.",
+      "synonyms": [
+        "sucht",
+        "süchtig",
+        "abhängig",
+        "abhängigkeit",
+        "alkohol",
+        "betrunken",
+        "drogen",
+        "spielsucht",
+        "gebundenheit",
+        "befreiung",
+        "rückfall",
+        "nüchtern"
+      ]
+    },
+    "purity": {
+      "name": "Begierde & Reinheit",
+      "description": "Dein Herz, deine Augen und deinen Leib bewahren.",
+      "synonyms": [
+        "begierde",
+        "lust",
+        "reinheit",
+        "rein",
+        "sexuelle sünde",
+        "pornografie",
+        "porno",
+        "unreine gedanken",
+        "ehebruch",
+        "keuschheit"
+      ]
+    },
+    "pride": {
+      "name": "Hochmut & Demut",
+      "description": "Demütig leben vor Gott und den Menschen.",
+      "synonyms": [
+        "hochmut",
+        "stolz",
+        "hochmütig",
+        "arrogant",
+        "arroganz",
+        "ego",
+        "demut",
+        "demütig",
+        "prahlen",
+        "eitelkeit",
+        "überheblich"
+      ]
+    },
+    "envy": {
+      "name": "Neid & Eifersucht",
+      "description": "Zufriedenheit, wenn andere scheinbar mehr haben.",
+      "synonyms": [
+        "neid",
+        "neidisch",
+        "eifersucht",
+        "eifersüchtig",
+        "vergleichen",
+        "vergleich",
+        "begehren",
+        "missgunst",
+        "habgier"
+      ]
+    },
+    "honesty": {
+      "name": "Lüge & Ehrlichkeit",
+      "description": "Wahrhaftigkeit in Wort und Tat.",
+      "synonyms": [
+        "lüge",
+        "lügen",
+        "lügner",
+        "ehrlich",
+        "ehrlichkeit",
+        "wahrheit",
+        "wahrhaftig",
+        "integrität",
+        "betrug",
+        "täuschung",
+        "schummeln"
+      ]
+    },
+    "repentance": {
+      "name": "Umkehr zu Gott",
+      "description": "Buße – und das Willkommen zu Hause nach dem Weglaufen.",
+      "synonyms": [
+        "buße",
+        "buße tun",
+        "umkehr",
+        "umkehren",
+        "bekehrung",
+        "abgefallen",
+        "verlorener sohn",
+        "zurückkehren",
+        "fern von gott",
+        "bekennen",
+        "sündenbekenntnis",
+        "beichte"
+      ]
+    },
+    "self-control": {
+      "name": "Selbstbeherrschung",
+      "description": "Begierden, Worte und Impulse durch den Geist beherrschen.",
+      "synonyms": [
+        "selbstbeherrschung",
+        "selbstkontrolle",
+        "disziplin",
+        "willenskraft",
+        "maßhalten",
+        "enthaltsamkeit",
+        "völlerei",
+        "zu viel essen",
+        "kaufsucht",
+        "impulsiv",
+        "beherrschung"
+      ]
+    },
+    "marriage": {
+      "name": "Ehe",
+      "description": "Liebe, Treue und Geduld zwischen Mann und Frau.",
+      "synonyms": [
+        "ehe",
+        "verheiratet",
+        "ehemann",
+        "ehefrau",
+        "ehepartner",
+        "mann",
+        "frau",
+        "hochzeit",
+        "eheprobleme",
+        "ehekrise",
+        "treue"
+      ]
+    },
+    "parenting": {
+      "name": "Erziehung",
+      "description": "Weisheit und Gnade, um Kinder großzuziehen.",
+      "synonyms": [
+        "eltern",
+        "erziehung",
+        "kindererziehung",
+        "mutter",
+        "mama",
+        "vater",
+        "papa",
+        "kinder erziehen",
+        "teenager",
+        "pubertät",
+        "verlorenes kind"
+      ]
+    },
+    "children": {
+      "name": "Kinder",
+      "description": "Gottes Herz für die Kleinen – und ein Wort an die Jungen.",
+      "synonyms": [
+        "kind",
+        "kinder",
+        "sohn",
+        "tochter",
+        "baby",
+        "säugling",
+        "schwangerschaft",
+        "schwanger",
+        "jugend",
+        "jugendliche",
+        "junge menschen"
+      ]
+    },
+    "singleness": {
+      "name": "Singlesein",
+      "description": "Ein erfülltes Leben mit Gott – ob verheiratet oder nicht.",
+      "synonyms": [
+        "single",
+        "singlesein",
+        "ledig",
+        "unverheiratet",
+        "alleinstehend",
+        "partnersuche",
+        "dating",
+        "warten auf den partner",
+        "ehelos",
+        "ehelosigkeit"
+      ]
+    },
+    "friendship": {
+      "name": "Freundschaft",
+      "description": "Ein echter Freund sein – und einen finden.",
+      "synonyms": [
+        "freund",
+        "freundin",
+        "freunde",
+        "freundschaft",
+        "gefährte",
+        "gemeinschaft",
+        "schlechter umgang",
+        "falsche freunde"
+      ]
+    },
+    "conflict": {
+      "name": "Streit & Konflikte",
+      "description": "Frieden stiften in schwierigen Beziehungen.",
+      "synonyms": [
+        "konflikt",
+        "streit",
+        "streiten",
+        "zank",
+        "auseinandersetzung",
+        "meinungsverschiedenheit",
+        "spannungen",
+        "versöhnen",
+        "versöhnung",
+        "frieden stiften"
+      ]
+    },
+    "loving-others": {
+      "name": "Nächstenliebe",
+      "description": "Eine Liebe, die geduldig und freundlich ist und etwas kostet.",
+      "synonyms": [
+        "liebe",
+        "nächstenliebe",
+        "den nächsten lieben",
+        "nächster",
+        "freundlichkeit",
+        "mitgefühl",
+        "barmherzigkeit",
+        "feindesliebe",
+        "feinde",
+        "schwierige menschen"
+      ]
+    },
+    "work": {
+      "name": "Arbeit & Beruf",
+      "description": "Deine Arbeit als Dienst für den Herrn tun.",
+      "synonyms": [
+        "arbeit",
+        "beruf",
+        "job",
+        "karriere",
+        "chef",
+        "kollegen",
+        "arbeitsplatz",
+        "geschäft",
+        "fleiß",
+        "faul",
+        "faulheit"
+      ]
+    },
+    "guidance": {
+      "name": "Entscheidungen & Führung",
+      "description": "Gottes Weg für dich suchen.",
+      "synonyms": [
+        "entscheidung",
+        "entscheidungen",
+        "entscheiden",
+        "wahl",
+        "wählen",
+        "führung",
+        "leitung",
+        "richtung",
+        "welcher weg",
+        "gottes wille",
+        "ratlos",
+        "verwirrt"
+      ]
+    },
+    "purpose": {
+      "name": "Sinn & Berufung",
+      "description": "Wozu du hier bist und wofür du geschaffen wurdest.",
+      "synonyms": [
+        "sinn",
+        "lebenssinn",
+        "sinnlos",
+        "berufung",
+        "berufen",
+        "gaben",
+        "begabungen",
+        "talente",
+        "auftrag",
+        "wozu lebe ich"
+      ]
+    },
+    "new-beginnings": {
+      "name": "Neuanfang",
+      "description": "Mit Gott neu beginnen.",
+      "synonyms": [
+        "neuanfang",
+        "neubeginn",
+        "neu anfangen",
+        "von vorn anfangen",
+        "veränderung",
+        "umzug",
+        "neuer job",
+        "neues jahr",
+        "zweite chance",
+        "übergang"
+      ]
+    },
+    "aging": {
+      "name": "Älterwerden",
+      "description": "Gottes Treue in jeder Lebensphase.",
+      "synonyms": [
+        "alter",
+        "älter werden",
+        "altern",
+        "alt",
+        "senioren",
+        "ruhestand",
+        "rente",
+        "graue haare",
+        "lebensabend"
+      ]
+    },
+    "provision": {
+      "name": "Versorgung & Bedürfnisse",
+      "description": "Gott weiß, was du brauchst.",
+      "synonyms": [
+        "versorgung",
+        "versorgen",
+        "bedürfnisse",
+        "bedarf",
+        "mangel",
+        "hunger",
+        "hungrig",
+        "essen",
+        "tägliches brot",
+        "gott sorgt"
+      ]
+    },
+    "contentment": {
+      "name": "Zufriedenheit",
+      "description": "Genug in Gott – im Überfluss wie im Mangel.",
+      "synonyms": [
+        "zufrieden",
+        "zufriedenheit",
+        "genügsam",
+        "genügsamkeit",
+        "unzufrieden",
+        "immer mehr wollen",
+        "materialismus",
+        "habgier",
+        "gier",
+        "geiz"
+      ]
+    },
+    "generosity": {
+      "name": "Großzügigkeit",
+      "description": "Frei geben, wie Gott gegeben hat.",
+      "synonyms": [
+        "geben",
+        "großzügig",
+        "großzügigkeit",
+        "freigebig",
+        "der zehnte",
+        "zehnten",
+        "spenden",
+        "spende",
+        "kollekte",
+        "opfer",
+        "teilen"
+      ]
+    },
+    "serving": {
+      "name": "Dienen",
+      "description": "Jesus nachfolgen, indem man anderen dient.",
+      "synonyms": [
+        "dienen",
+        "dienst",
+        "ehrenamt",
+        "ehrenamtlich",
+        "mitarbeit",
+        "gemeindedienst",
+        "anderen helfen",
+        "diener",
+        "diakonie"
+      ]
+    },
+    "faith": {
+      "name": "Glaube",
+      "description": "Gott glauben und ihn beim Wort nehmen.",
+      "synonyms": [
+        "glaube",
+        "glauben",
+        "gläubig",
+        "vertrauen",
+        "treu",
+        "glaubensstärke",
+        "kleinglaube"
+      ]
+    },
+    "trust": {
+      "name": "Gott vertrauen",
+      "description": "Sich auf ihn verlassen, wenn du den Weg nicht siehst.",
+      "synonyms": [
+        "vertrauen",
+        "gottvertrauen",
+        "sich verlassen",
+        "verlassen auf",
+        "abhängig",
+        "hingabe",
+        "loslassen",
+        "kontrolle",
+        "sich fallen lassen"
+      ]
+    },
+    "prayer": {
+      "name": "Gebet",
+      "description": "Mit Gott reden – und wissen, dass er hört.",
+      "synonyms": [
+        "beten",
+        "gebet",
+        "gebete",
+        "unerhörtes gebet",
+        "wie bete ich",
+        "fürbitte",
+        "bitten",
+        "gebetserhörung",
+        "stille zeit"
+      ]
+    },
+    "patience": {
+      "name": "Geduld",
+      "description": "In der Geduld wachsen – mit Menschen und mit Gott.",
+      "synonyms": [
+        "geduld",
+        "geduldig",
+        "ungeduldig",
+        "ungeduld",
+        "ausdauer",
+        "beharrlichkeit",
+        "langmut",
+        "langsam zum zorn"
+      ]
+    },
+    "gratitude": {
+      "name": "Dankbarkeit",
+      "description": "Dankbar sein in allen Dingen.",
+      "synonyms": [
+        "dankbar",
+        "dankbarkeit",
+        "danken",
+        "dank",
+        "danksagung",
+        "segen",
+        "gesegnet",
+        "erntedank"
+      ]
+    },
+    "joy": {
+      "name": "Freude",
+      "description": "Eine Freude, die nicht von den Umständen abhängt.",
+      "synonyms": [
+        "freude",
+        "fröhlich",
+        "glücklich",
+        "glück",
+        "sich freuen",
+        "froh",
+        "jubel",
+        "wonne",
+        "heiter"
+      ]
+    },
+    "obedience": {
+      "name": "Gehorsam",
+      "description": "Gottes Wege von Herzen gehen.",
+      "synonyms": [
+        "gehorsam",
+        "gehorchen",
+        "gebote",
+        "nachfolge",
+        "nachfolgen",
+        "ungehorsam",
+        "rebellion",
+        "gottes willen tun"
+      ]
+    },
+    "wisdom": {
+      "name": "Weisheit",
+      "description": "Gott um Einsicht bitten.",
+      "synonyms": [
+        "weisheit",
+        "weise",
+        "verstand",
+        "einsicht",
+        "erkenntnis",
+        "wissen",
+        "töricht",
+        "torheit",
+        "unterscheidung",
+        "klugheit"
+      ]
+    },
+    "scripture": {
+      "name": "Gottes Wort",
+      "description": "Die Schrift als Licht auf dem Weg und Speise für die Seele.",
+      "synonyms": [
+        "bibel",
+        "heilige schrift",
+        "schrift",
+        "gottes wort",
+        "wort gottes",
+        "bibellesen",
+        "bibel lesen",
+        "bibelstudium",
+        "andacht"
+      ]
+    },
+    "worship": {
+      "name": "Anbetung & Lobpreis",
+      "description": "Gott die Ehre geben, die ihm gebührt.",
+      "synonyms": [
+        "anbetung",
+        "anbeten",
+        "lobpreis",
+        "loben",
+        "lob",
+        "singen",
+        "lieder",
+        "musik",
+        "halleluja",
+        "gottesdienst"
+      ]
+    },
+    "witness": {
+      "name": "Den Glauben weitergeben",
+      "description": "Anderen die gute Nachricht von Jesus erzählen.",
+      "synonyms": [
+        "evangelisation",
+        "zeugnis",
+        "zeugnis geben",
+        "zeuge",
+        "glauben weitergeben",
+        "evangelium",
+        "frohe botschaft",
+        "missionsbefehl",
+        "mission",
+        "anderen erzählen"
+      ]
+    },
+    "gods-love": {
+      "name": "Gottes Liebe",
+      "description": "Wie breit und lang und hoch und tief seine Liebe ist.",
+      "synonyms": [
+        "gottes liebe",
+        "liebe gottes",
+        "geliebt",
+        "ungeliebt",
+        "liebt gott mich",
+        "liebt mich gott",
+        "geliebtes kind"
+      ]
+    },
+    "presence": {
+      "name": "Gottes Gegenwart",
+      "description": "Er ist bei dir – alle Tage.",
+      "synonyms": [
+        "gegenwart",
+        "gottes gegenwart",
+        "nähe",
+        "gottes nähe",
+        "bei mir",
+        "wo ist gott",
+        "gott schweigt",
+        "gott ist fern",
+        "verlassen"
+      ]
+    },
+    "peace": {
+      "name": "Frieden",
+      "description": "Der Friede, der höher ist als alle Vernunft.",
+      "synonyms": [
+        "frieden",
+        "friede",
+        "ruhe",
+        "ruhig",
+        "friedlich",
+        "stille",
+        "gelassenheit",
+        "innerer frieden"
+      ]
+    },
+    "hope": {
+      "name": "Hoffnung",
+      "description": "Ein Anker für die Seele.",
+      "synonyms": [
+        "hoffnung",
+        "hoffen",
+        "hoffnungsvoll",
+        "hoffnungslos",
+        "erwartung",
+        "verheißung",
+        "zuversicht",
+        "vorfreude"
+      ]
+    },
+    "comfort": {
+      "name": "Trost",
+      "description": "Der Gott allen Trostes.",
+      "synonyms": [
+        "trost",
+        "trösten",
+        "getröstet",
+        "tröstlich",
+        "verletzt",
+        "zerbrochen",
+        "gebrochenes herz",
+        "traurig",
+        "kummer"
+      ]
+    },
+    "strength": {
+      "name": "Kraft",
+      "description": "Seine Kraft in deiner Schwachheit.",
+      "synonyms": [
+        "kraft",
+        "stärke",
+        "stark",
+        "schwach",
+        "schwachheit",
+        "macht",
+        "ich kann nicht mehr",
+        "durchhalten",
+        "kraftlos"
+      ]
+    },
+    "courage": {
+      "name": "Mut",
+      "description": "Sei stark und mutig.",
+      "synonyms": [
+        "mut",
+        "mutig",
+        "tapfer",
+        "tapferkeit",
+        "kühn",
+        "kühnheit",
+        "zuversicht",
+        "furchtlos",
+        "sei getrost"
+      ]
+    },
+    "protection": {
+      "name": "Schutz & Geborgenheit",
+      "description": "Deine Zuflucht und deine Burg.",
+      "synonyms": [
+        "schutz",
+        "beschützen",
+        "bewahrung",
+        "bewahren",
+        "sicherheit",
+        "sicher",
+        "gefahr",
+        "reise",
+        "geborgenheit",
+        "zuflucht",
+        "schirm"
+      ]
+    },
+    "salvation": {
+      "name": "Errettung & Heilsgewissheit",
+      "description": "Wissen, dass du für immer zu Gott gehörst.",
+      "synonyms": [
+        "gerettet",
+        "errettung",
+        "rettung",
+        "erlösung",
+        "heil",
+        "wiedergeburt",
+        "wiedergeboren",
+        "ewiges leben",
+        "heilsgewissheit",
+        "bin ich gerettet",
+        "evangelium"
+      ]
+    },
+    "grace": {
+      "name": "Gnade & Barmherzigkeit",
+      "description": "Gottes Güte, die du dir nie verdienen könntest.",
+      "synonyms": [
+        "gnade",
+        "barmherzigkeit",
+        "barmherzig",
+        "gnädig",
+        "unverdient",
+        "erbarmen",
+        "güte",
+        "mitleid"
+      ]
+    },
+    "heaven": {
+      "name": "Himmel & ewiges Leben",
+      "description": "Das Zuhause, das Gott bereitet.",
+      "synonyms": [
+        "himmel",
+        "ewiges leben",
+        "ewigkeit",
+        "jenseits",
+        "leben nach dem tod",
+        "auferstehung",
+        "neue schöpfung",
+        "paradies",
+        "neue erde"
+      ]
+    },
+    "faithfulness": {
+      "name": "Gottes Treue",
+      "description": "Er hält jede Verheißung.",
+      "synonyms": [
+        "treue",
+        "treu",
+        "gottes treue",
+        "verheißungen",
+        "zuverlässig",
+        "verlässlich",
+        "unwandelbar",
+        "ändert sich nie"
+      ]
+    },
+    "sovereignty": {
+      "name": "Gott hat alles in der Hand",
+      "description": "Nichts entgleitet ihm.",
+      "synonyms": [
+        "souveränität",
+        "souverän",
+        "allmacht",
+        "gott hat alles im griff",
+        "gottes plan",
+        "warum",
+        "vorsehung",
+        "fügung",
+        "chaos",
+        "kontrolle"
+      ]
+    }
+  }
+}
