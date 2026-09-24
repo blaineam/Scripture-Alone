@@ -24,7 +24,7 @@ data class ScalarSpan(val start: Int, val length: Int)
 
 /**
  * A styled run inside a fragment. The three styles are the ones the reader already draws: words of
- * Christ, supplied words (the KJV's italics) and small caps (LORD).
+ * Christ, supplied words (set in italics by some translations) and small caps (LORD).
  */
 data class StyledSpan(val start: Int, val length: Int, val style: Style) {
     enum class Style(val rawValue: String) { WORDS_OF_CHRIST("r"), SUPPLIED("i"), SMALL_CAPS("c") }
@@ -91,6 +91,52 @@ data class ImportNote(val severity: Severity, val message: String) {
 }
 
 /**
+ * What a study Bible adds to the text, as found in the file. Ported from `ExtractedStudy` in
+ * `Import/ExtractedBible.swift`.
+ *
+ * Nothing here is scripture and none of it is shown as scripture. Notes are anchored by the verses
+ * whose callers point at them; essays and pictures by the verse they sit beside; introductions by the
+ * book they come before.
+ */
+class ExtractedStudy {
+    data class Note(val start: VerseRef, val end: VerseRef, val text: String)
+
+    enum class ArticleKind(val rawValue: String) {
+        /** A book's introduction or outline, read before its text. */
+        INTRODUCTION("introduction"),
+
+        /** An essay set into the text beside a verse. */
+        ESSAY("essay"),
+    }
+
+    data class Article(val kind: ArticleKind, val book: BookID, val anchor: VerseRef?, val title: String, val text: String)
+
+    class Image(
+        val anchor: VerseRef?,
+        val book: BookID?,
+        val caption: String,
+        /** Path inside the source file. */
+        val path: String,
+        val data: ByteArray?,
+        val mediaType: String,
+    ) {
+        fun copy(data: ByteArray?): Image = Image(anchor, book, caption, path, data, mediaType)
+    }
+
+    /** Keyed by the note's own id in the file, so every caller pointing at it widens its range. */
+    val notes: MutableMap<String, Note> = HashMap()
+    val noteOrder: MutableList<String> = ArrayList()
+    val articles: MutableList<Article> = ArrayList()
+    val images: MutableList<Image> = ArrayList()
+
+    /** Who publishes the study material — the file's own publisher, which is often not the translation's. */
+    var publisher: String? = null
+
+    val isEmpty: Boolean get() = notes.isEmpty() && articles.isEmpty() && images.isEmpty()
+    val orderedNotes: List<Note> get() = noteOrder.mapNotNull { notes[it] }
+}
+
+/**
  * Everything one file yielded: verses, the layout blocks that print them, and what went wrong.
  * Ported from `Import/ExtractedBible.swift`.
  */
@@ -119,6 +165,41 @@ class ExtractedBible {
 
     /** How each spine file's verse markup was recognised. */
     val shapesByDocument: MutableMap<String, VerseMarkupShape> = LinkedHashMap()
+
+    /** A study Bible's own material, kept apart from the text: its notes, introductions, essays and pictures. */
+    val study = ExtractedStudy()
+
+    /** The words of Christ were carried over from another translation, not marked by the file. */
+    var redLettersInferred = false
+        internal set
+
+    internal fun setRed(red: List<ScalarSpan>, ref: VerseRef) {
+        val verse = verseMap[ref] ?: return
+        verseMap[ref] = verse.copy(red = red)
+    }
+
+    internal fun updateFragments(chapter: ChapterRef, change: (ExtractedFragment) -> ExtractedFragment) {
+        val chapterBlocks = blockMap[chapter] ?: return
+        blockMap[chapter] = chapterBlocks.map { block -> block.copy(fragments = block.fragments.map(change)) }
+    }
+
+    /** Some chapter of [book] has already been laid out. */
+    internal fun hasVerses(book: BookID): Boolean = chapterList.any { it.book == book }
+
+    /**
+     * Reads each picture the study material names, once; pictures that can't be read, and repeats of
+     * one already kept, are dropped.
+     */
+    internal fun loadStudyImages(read: (String) -> ByteArray?) {
+        val seen = HashSet<String>()
+        val loaded = study.images.mapNotNull { image ->
+            if (!seen.add(image.path)) return@mapNotNull null
+            val data = read(image.path)
+            if (data == null || data.isEmpty()) null else image.copy(data = data)
+        }
+        study.images.clear()
+        study.images.addAll(loaded)
+    }
 
     val books: List<BookID> get() = chapterList.map { it.book }.distinct().sortedBy { it.number }
 
@@ -263,7 +344,7 @@ class ExtractedBible {
  * publishers mix shapes between front matter, the Gospels and the Psalms in one product.
  */
 enum class VerseMarkupShape(val rawValue: String, val label: String) {
-    /** `id="ESV_Gen.1.1"`, `id="csb-Gen-1-1"`, `id="MAT.5.3"` — a full reference on the element. */
+    /** `id="ABC_Gen.1.1"`, `id="xyz-Gen-1-1"`, `id="MAT.5.3"` — a full reference on the element. */
     REFERENCE_IDENTIFIER("referenceIdentifier", "reference ids"),
 
     /** `id="v1"`, `id="verse-3"` — a chapter-relative verse anchor. */
@@ -274,6 +355,12 @@ enum class VerseMarkupShape(val rawValue: String, val label: String) {
 
     /** `<sup>3</sup>` — a superscript holding nothing but digits. */
     SUPERSCRIPT("superscript", "superscript numbers"),
+
+    /**
+     * `<b>3</b>`, `<span class="b">3</span>` — a bold number. The weakest evidence of all, so it wins
+     * only in a file with nothing better.
+     */
+    BOLD_NUMBER("boldNumber", "bold numbers"),
 
     /** USFM `\c` / `\v` markers — unambiguous, so no detection is needed. */
     USFM_MARKERS("usfmMarkers", "USFM markers"),

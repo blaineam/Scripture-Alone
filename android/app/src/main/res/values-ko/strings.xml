@@ -861,4 +861,5 @@
     <string name="assistant_new_note_2">노트 만들기</string>
     <string name="assistant_favorites_1">즐겨찾기</string>
     <string name="assistant_favorites_2">즐겨찾는 구절</string>
+    <string name="data_import_poor_quality">이 파일은 사용할 수 있을 만큼 깔끔하게 읽히지 않았습니다(100점 중 %1$d점). 아무것도 추가되지 않았습니다.</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.data.importer
 
 import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.data.rights.PublisherTerms
 import com.blainemiller.scripturealone.text.AppText
 import java.io.File
 import java.io.IOException
@@ -13,7 +14,7 @@ enum class ImportedFileFormat(val rawValue: String, val label: String) {
     /** A DRM-free ePub the user already owns. */
     EPUB("epub", "ePub"),
 
-    /** A zip of USFM books — the shape eBible.org publishes. */
+    /** A zip of USFM books — the shape public USFM distributions take. */
     USFM_ZIP("usfmZip", "USFM"),
 }
 
@@ -71,7 +72,8 @@ class BibleFileImporter(
             ImportedFileFormat.EPUB -> {
                 val pkg = EPUBPackage(zip)
                 val bible = BibleTextExtractor(options).extract(pkg)
-                bible to BibleImportPreview(ImportedFileFormat.EPUB, ImportedTranslationIdentity.suggested(pkg.metadata), pkg.spine.size)
+                bible.study.publisher = pkg.metadata.publisher
+                bible to BibleImportPreview(ImportedFileFormat.EPUB, suggestedIdentity(pkg), pkg.spine.size)
             }
             ImportedFileFormat.USFM_ZIP -> {
                 val pkg = USFMPackage(zip)
@@ -105,7 +107,7 @@ class BibleFileImporter(
     private fun preview(zip: ZipReader): BibleImportPreview = when (format(zip)) {
         ImportedFileFormat.EPUB -> {
             val pkg = EPUBPackage(zip)
-            BibleImportPreview(ImportedFileFormat.EPUB, ImportedTranslationIdentity.suggested(pkg.metadata), pkg.spine.size)
+            BibleImportPreview(ImportedFileFormat.EPUB, suggestedIdentity(pkg), pkg.spine.size)
         }
         ImportedFileFormat.USFM_ZIP -> {
             val pkg = USFMPackage(zip)
@@ -114,7 +116,7 @@ class BibleFileImporter(
     }
 
     companion object {
-        /** `IMPORT-XXXX.sqlite`, beside the bundled `ASV.sqlite` naming but never colliding with it. */
+        /** `IMPORT-XXXX.sqlite`, named like the bundled stores but never colliding with one. */
         fun storeFilename(identity: ImportedTranslationIdentity): String {
             val characters = SwiftCharacters(identity.id)
             val safe = buildString {
@@ -125,6 +127,51 @@ class BibleFileImporter(
                 }
             }
             return safe.ifEmpty { "IMPORT" } + ".sqlite"
+        }
+
+        // MARK: - Recognising the translation
+
+        /**
+         * What the file says about itself, plus the translation its copyright page names.
+         *
+         * A study Bible is titled for the study Bible rather than the translation, and its metadata often
+         * says only "All rights reserved"; the translation — and so the terms a quotation from it is held
+         * to — is named on the copyright page. The name is kept; the abbreviation becomes the
+         * translation's, and a generic rights line gives way to the publisher's own notice.
+         */
+        internal fun suggestedIdentity(pkg: EPUBPackage): ImportedTranslationIdentity {
+            val identity = ImportedTranslationIdentity.suggested(pkg.metadata)
+            if (PublisherTerms.matching(identity.abbreviation, identity.name, identity.copyright) != null) return identity
+            val terms = recognizedTerms(pkg) ?: return identity
+            return identity.copy(
+                abbreviation = terms.abbreviation,
+                copyright = if (SwiftText.characterCount(identity.copyright) < 60) terms.notice else identity.copyright,
+            )
+        }
+
+        private val tags = Regex("<[^>]+>")
+
+        /**
+         * The first front-matter page naming a known translation: pages whose file name says
+         * "copyright" or "rights" first, then the opening pages of the book.
+         */
+        internal fun recognizedTerms(pkg: EPUBPackage): PublisherTerms? {
+            val front = pkg.spine.take(16)
+            val likely = front.filter { item ->
+                val name = item.path.lowercase()
+                name.contains("copy") || name.contains("rights") || name.contains("legal")
+            }
+            for (item in likely + front.filter { it !in likely }) {
+                val xhtml = try {
+                    pkg.document(item)
+                } catch (_: BibleImportError) {
+                    continue
+                }
+                val text = xhtml.replace(tags, " ")
+                if (!text.contains("copyright", ignoreCase = true) && !text.contains('©')) continue
+                PublisherTerms.matching(text)?.let { return it }
+            }
+            return null
         }
 
         /**

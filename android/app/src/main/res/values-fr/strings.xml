@@ -861,4 +861,5 @@
     <string name="assistant_new_note_2">créer une note</string>
     <string name="assistant_favorites_1">favoris</string>
     <string name="assistant_favorites_2">versets favoris</string>
+    <string name="data_import_poor_quality">Ce fichier n’a pas pu être lu assez proprement pour être utilisé (score de %1$d sur 100). Rien n’a été ajouté.</string>
 </resources>

@@ -861,4 +861,5 @@
     <string name="assistant_new_note_2">criar uma nota</string>
     <string name="assistant_favorites_1">favoritos</string>
     <string name="assistant_favorites_2">versículos favoritos</string>
+    <string name="data_import_poor_quality">Não foi possível ler esse arquivo com qualidade suficiente para usá-lo (ele obteve %1$d de 100). Nada foi adicionado.</string>
 </resources>

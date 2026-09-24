@@ -67,9 +67,9 @@ data class ImportedTranslationIdentity(
 
         private val skippedWords = setOf("the", "of", "a", "an", "and", "holy", "version", "edition", "translation")
 
-        /** Letters of the significant words, so "Holman Christian Standard Bible" suggests "HCSB". */
+        /** Letters of the significant words, so "New Example Standard Bible" suggests "NESB". */
         fun abbreviation(name: String): String {
-            // "Bible" is kept: the B in CSB, BSB and ESV comes from it.
+            // "Bible" is kept: the B at the end of most abbreviations comes from it.
             val initials = SwiftText.split(name.lowercase()) { chars, i -> !chars.isLetter(i) && !chars.isNumber(i) }
                 .filter { it !in skippedWords }
                 .map { word -> SwiftCharacters(word).string(0).uppercase() }
@@ -82,7 +82,7 @@ data class ImportedTranslationIdentity(
             return if (letters.isEmpty()) "IMP" else SwiftText.prefix(letters, 4)
         }
 
-        /** A stable, filename-safe id (FNV-1a over UTF-8). Imported stores never collide with a bundled ASV/BSB/KJV. */
+        /** A stable, filename-safe id (FNV-1a over UTF-8). Imported stores never collide with a bundled one. */
         fun identifier(seed: String): String {
             var hash = 0xcbf2_9ce4_8422_2325uL
             for (byte in seed.toByteArray(Charsets.UTF_8)) {
@@ -132,6 +132,7 @@ object ImportedBibleBuilder {
         if (bible.isEmpty) throw BibleImportError.NoScriptureFound()
         if (SwiftText.trimWhitespaceAndNewlines(identity.copyright).isEmpty()) throw BibleImportError.MissingCopyright()
         val report = ImportCoverageReport(bible)
+        if (!report.quality.isAcceptable) throw BibleImportError.PoorQuality(report.quality.score)
 
         val directory = file.absoluteFile.parentFile
         directory?.mkdirs()

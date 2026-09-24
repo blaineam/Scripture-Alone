@@ -42,6 +42,9 @@ sealed class BibleImportError(message: String) : Exception(message) {
     class MissingCopyright :
         BibleImportError(AppText.get(R.string.data_import_missing_copyright))
 
+    /** The text came out too damaged to store ([ImportQuality]); the score says how far. */
+    class PoorQuality(val score: Int) : BibleImportError(AppText.get(R.string.data_import_poor_quality, score))
+
     /** Writing the SQLite store failed. */
     class DatabaseWrite(val detail: String) : BibleImportError(AppText.get(R.string.data_import_database_write, detail))
 
@@ -55,6 +58,7 @@ sealed class BibleImportError(message: String) : Exception(message) {
             is UnsupportedFormat -> detail
             is ProtectedByDRM -> evidence
             is DatabaseWrite -> detail
+            is PoorQuality -> score
             is NotAZipArchive, is NoScriptureFound, is MissingCopyright -> null
         }
 

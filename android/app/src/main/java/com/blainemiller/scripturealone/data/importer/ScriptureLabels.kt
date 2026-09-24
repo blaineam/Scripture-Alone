@@ -5,7 +5,7 @@ import com.blainemiller.scripturealone.data.reference.ReferenceParser
 
 /**
  * Reading book names and references out of the strings publishers actually ship: chapter headings
- * ("The Gospel According to St. John", "PSALM 23") and element ids ("ESV_Gen.1.1", "csb-Gen-1-1",
+ * ("The Gospel According to St. John", "PSALM 23") and element ids ("ABC_Gen.1.1", "xyz-Gen-1-1",
  * "v12"). Ported from `Import/ScriptureLabels.swift`.
  *
  * Book matching goes through the canon and abbreviation tables the app already has ([BookID],
@@ -157,7 +157,7 @@ internal object ScriptureLabels {
     // MARK: - Identifiers
 
     /**
-     * Reads an element id. Handles `ESV_Gen.1.1`, `csb-Gen-1-1`, `MAT.5.3`, `1Cor.13.4`, `Gen.1`,
+     * Reads an element id. Handles `ABC_Gen.1.1`, `xyz-Gen-1-1`, `MAT.5.3`, `1Cor.13.4`, `Gen.1`,
      * `v12`, `verse-3`, `ch2`.
      */
     fun identifier(raw: String): Identifier? {
@@ -198,7 +198,7 @@ internal object ScriptureLabels {
 
     data class IDComponent(val text: String, val isDigits: Boolean)
 
-    /** Splits on separators and on letter/digit boundaries: "ESV_1Cor.13.4" → ESV, 1, Cor, 13, 4. */
+    /** Splits on separators and on letter/digit boundaries: "ABC_1Cor.13.4" → ABC, 1, Cor, 13, 4. */
     fun idComponents(raw: String): List<IDComponent> {
         val parts = ArrayList<IDComponent>()
         val current = StringBuilder()

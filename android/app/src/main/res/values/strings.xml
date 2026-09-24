@@ -1597,4 +1597,5 @@
     <string name="assistant_new_note_2">create a note</string>
     <string name="assistant_favorites_1">favorites</string>
     <string name="assistant_favorites_2">favorite verses</string>
+    <string name="data_import_poor_quality">That file couldn’t be read cleanly enough to use (it scored %1$d of 100). Nothing was added.</string>
 </resources>

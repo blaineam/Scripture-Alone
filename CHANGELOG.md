@@ -2,6 +2,12 @@
 
 ## After 1.0.0
 
+- Android imports ePubs the way iPhone, iPad and Mac do: study-Bible shapes bring in the whole
+  Bible and nothing else (drop-cap chapters, each file's own title, headings above the verse they
+  introduce, notes pages, boxed essays, captions and "next book" links kept out of the text, red
+  letters wherever the stylesheet colors them), every import is judged by the same quality gate
+  and refused with its score when it reads too poorly, and a study Bible titled for itself is
+  recognised from its copyright page.
 - An imported English translation whose file doesn't mark the words of Christ gets them from
   the BSB (or KJV) on the device: each verse is matched word for word, and only the words that
   line up with red ones turn red — "Jesus said to him" stays black, "I am the way" turns red. A

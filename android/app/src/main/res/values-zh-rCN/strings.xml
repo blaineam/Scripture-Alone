@@ -861,4 +861,5 @@
     <string name="assistant_new_note_2">写笔记</string>
     <string name="assistant_favorites_1">收藏</string>
     <string name="assistant_favorites_2">收藏的经文</string>
+    <string name="data_import_poor_quality">该文件无法被足够清晰地读取以供使用（得分 %1$d/100）。未添加任何内容。</string>
 </resources>

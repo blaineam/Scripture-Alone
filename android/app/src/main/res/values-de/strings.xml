@@ -861,4 +861,5 @@
     <string name="assistant_new_note_2">notiz erstellen</string>
     <string name="assistant_favorites_1">favoriten</string>
     <string name="assistant_favorites_2">Lieblingsverse</string>
+    <string name="data_import_poor_quality">Diese Datei ließ sich nicht sauber genug lesen, um sie zu verwenden (sie erreichte %1$d von 100). Es wurde nichts hinzugefügt.</string>
 </resources>

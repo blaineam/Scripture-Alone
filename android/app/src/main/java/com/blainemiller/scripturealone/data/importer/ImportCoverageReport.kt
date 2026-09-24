@@ -19,8 +19,8 @@ class ImportCoverageReport(bible: ExtractedBible) {
         val highestVerse: Int,
         val versesFound: Int,
         /**
-         * Numbers missing from 1..highestVerse. A translation that genuinely omits a verse (the ASV
-         * omits sixteen) shows up here too, which is the honest answer.
+         * Numbers missing from 1..highestVerse. A translation that genuinely omits a verse (some
+         * omit a handful) shows up here too, which is the honest answer.
          */
         val missingVerses: List<Int>,
         val outOfOrder: Boolean,
@@ -48,6 +48,9 @@ class ImportCoverageReport(bible: ExtractedBible) {
     /** How each spine document's (or USFM file's) verse markup was recognised. */
     val markupShapes: Map<String, VerseMarkupShape>
     val notes: List<ImportNote>
+
+    /** How well the file read, whatever it was — see [ImportQuality]. */
+    val quality: ImportQuality
 
     val booksFound: List<BookID> get() = books.map { it.book }
     val isWholeBible: Boolean get() = booksMissing.isEmpty() && books.all { it.isComplete }
@@ -168,6 +171,7 @@ class ImportCoverageReport(bible: ExtractedBible) {
         totalChapters = chapterTotal
         markupShapes = bible.shapesByDocument.toMap()
         notes = bible.notes.toList()
+        quality = ImportQuality(bible, coverage)
     }
 
     companion object {

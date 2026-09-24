@@ -861,4 +861,5 @@
     <string name="assistant_new_note_2">ノートを作成</string>
     <string name="assistant_favorites_1">お気に入り</string>
     <string name="assistant_favorites_2">お気に入りの聖句</string>
+    <string name="data_import_poor_quality">このファイルは十分に正確に読み取れなかったため使用できません（100点中%1$d点）。何も追加されていません。</string>
 </resources>
