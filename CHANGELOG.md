@@ -2,6 +2,13 @@
 
 ## After 1.0.0
 
+- Words of Christ carried over to an import are read by its own quotation marks: each quotation
+  is His or not as a whole, so a parable turns red from its first word to its last however
+  differently it is worded, the narration around a saying stays black, and His words quoted by
+  someone else (Paul telling what the Lord said to him) are found too. Checked against the BSB,
+  an imported ESV now matches 2,045 of its 2,047 red verses (a PDF 2,028) with none marked
+  wrongly. A book in another language, or without English quotation marks, is matched word by
+  word as before. Re-import a translation to get it.
 - Compare names an imported translation by its abbreviation, not its internal file name.
 - "Find my notes", "Show my notes" or "Pull up my notes in Scripture Alone" makes Siri show the
   notes it found, each opening in the app with a tap, instead of only saying how many.
