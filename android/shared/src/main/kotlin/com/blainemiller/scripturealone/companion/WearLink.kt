@@ -38,6 +38,40 @@ object WearLink {
     /** The edition asset. */
     const val KEY_EDITION = "edition"
 
+    /**
+     * On an edition item: what it is — [KIND_IMPORT] for a translation the reader imported, which the
+     * phone's [PATH_IMPORTS] list governs; absent for a language Bible, which stays until removed on
+     * the watch. `WatchLinkKeys.kind`.
+     */
+    const val KEY_KIND = "kind"
+    const val KIND_IMPORT = "import"
+
+    /** On an import's edition item: its version, a fingerprint of the phone's store. `WatchLinkKeys.version`. */
+    const val KEY_VERSION = "version"
+
+    /**
+     * On an edition item: when the phone last put it, in milliseconds. Changing it re-delivers an
+     * edition the watch reports it lacks — an unchanged item raises no change on the watch.
+     */
+    const val KEY_SENT_AT = "sentAt"
+
+    /**
+     * Phone → watch: the ids of every translation the reader imported ([KEY_IMPORTS], a string array),
+     * so one removed on the phone is removed from the watch. Never written before the phone's library
+     * has loaded: an empty list then would wipe every import the watch holds. `WatchLinkKeys.imports`.
+     */
+    const val PATH_IMPORTS = "/scripturealone/imports"
+    const val KEY_IMPORTS = "imports"
+
+    /**
+     * Watch → phone: the editions the watch holds that the phone sent ([KEY_EDITIONS], a string array)
+     * and the version of each that has one ([KEY_VERSIONS], a data map id → version), so the phone
+     * re-sends one the watch lacks or holds an older copy of. `WatchLinkKeys.editions`/`editionVersions`.
+     */
+    const val PATH_HELD = "/scripturealone/held"
+    const val KEY_EDITIONS = "editions"
+    const val KEY_VERSIONS = "versions"
+
     fun editionPath(id: String): String = PATH_EDITION_PREFIX + id
 
     /** The translation an edition path carries, or null for any other path or an unsafe id. */

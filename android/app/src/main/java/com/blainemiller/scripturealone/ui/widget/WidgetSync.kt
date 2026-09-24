@@ -33,6 +33,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import android.net.Uri
+import com.blainemiller.scripturealone.companion.WearLink
+import com.blainemiller.scripturealone.data.translations.TranslationLibrary
+import com.google.android.gms.wearable.DataClient
+import com.google.android.gms.wearable.Wearable
 import java.time.Instant
 
 /**
@@ -41,6 +50,8 @@ import java.time.Instant
  * - When the reader switches translation or turns red letters on or off, Verse of the Day redraws
  *   (iOS reloads the "VerseOfDay" timelines), and the watch is told the new translation.
  * - When the reader picks another accent colour, the watch is told it (its dark-page value).
+ * - When the reader's imports change, the watch is sent each one's edition and the list of them —
+ *   and again when the watch reports holding less than it should (`WatchLink.importsChanged`).
  * - When the library or the translation changes, the snapshot is rebuilt, a second after the last
  *   change so a burst (a multi-verse highlight, a sync) is one write; if its content changed, the
  *   Favorites widget redraws and the watch gets the new snapshot.
@@ -86,11 +97,56 @@ object WidgetSync {
             .onEach { translation -> WearPublisher.publishEdition(app, translation) }
             .launchIn(scope)
 
+        // Every import's watch edition, and the list that removes one deleted here — once the library
+        // has scanned its directory — and again whenever the watch reports what it holds.
+        TranslationLibrary.state
+            .map { it.importsLoaded to it.imported }
+            .distinctUntilChanged()
+            .onEach { syncImports(app) }
+            .launchIn(scope)
+        watchHeldReports(app)
+
         val library = WidgetContent.sources(app).flatMapLatest { it.library }
         combine(library, settings.map { it.translation }.distinctUntilChanged(), ::Pair)
             .debounce(1_000)
             .onEach { (library, translation) -> refresh(app, library, translation) }
             .launchIn(scope)
+    }
+
+    private val importsLock = Mutex()
+    private var retry: Job? = null
+
+    /**
+     * Sends the watch what it lacks of the reader's imports ([WearPublisher.publishImports]). One pass
+     * at a time; a failed send is tried again 30 seconds later, as iOS retries a failed transfer.
+     */
+    private suspend fun syncImports(app: Context) {
+        val ok = importsLock.withLock {
+            val state = TranslationLibrary.state.value
+            WearPublisher.publishImports(app, state.importsLoaded, state.imported)
+        }
+        if (!ok && retry?.isActive != true) {
+            retry = scope.launch {
+                delay(30_000)
+                syncImports(app)
+            }
+        }
+    }
+
+    /** The watch reported the editions it holds — after a reinstall, say — so check what it lacks. */
+    private fun watchHeldReports(app: Context) {
+        val uri = Uri.Builder().scheme("wear").path(WearLink.PATH_HELD).build()
+        try {
+            Wearable.getDataClient(app).addListener(
+                { events ->
+                    events.release()
+                    scope.launch { syncImports(app) }
+                },
+                uri, DataClient.FILTER_LITERAL,
+            )
+        } catch (e: RuntimeException) {
+            // No Play services: no watch to hear from.
+        }
     }
 
     /** Rebuilds the snapshot; redraws and re-sends it only if its content changed. */

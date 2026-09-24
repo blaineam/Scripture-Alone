@@ -8,6 +8,7 @@ import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUp
 import com.blainemiller.scripturealone.companion.TranslationChoice
 import com.blainemiller.scripturealone.companion.VerseSnapshot
 import com.blainemiller.scripturealone.companion.WatchEditionBuilder
+import com.blainemiller.scripturealone.companion.WearImports
 import com.blainemiller.scripturealone.companion.WearLink
 import com.blainemiller.scripturealone.data.VerseNumbering
 import com.blainemiller.scripturealone.data.VerseRange
@@ -32,6 +33,8 @@ import java.time.Instant
  * (docs/localization.md) are not bundled — eight would be 40 MB on every watch — so the phone writes the
  * edition of the one the reader uses and sends it over the Data Layer ([PhoneLink]); it lands in
  * [receivedDirectory] and reads through the very same code, carrying its `kjv_map` and `meta.language`.
+ * Every translation the reader imported on the phone arrives the same way, and leaves when the phone's
+ * list of imports no longer has it ([phoneImports]).
  *
  * **Which one is shown.** The most recent choice the watch can actually show wins: the reader picking
  * one here, or the phone reporting a switch there ([TranslationChoice]). A phone choice the watch has no
@@ -54,6 +57,8 @@ class WatchBible private constructor(private val app: Context) {
         val bundled: Boolean,
         /** `meta.language`; null for the English Bibles. */
         val language: String? = null,
+        /** What the picker shows: "ASV", or an import's own abbreviation rather than its `IMPORT-…` id. */
+        val abbreviation: String = id,
     )
 
     data class State(
@@ -69,6 +74,9 @@ class WatchBible private constructor(private val app: Context) {
         val accent: Int? = null,
     ) {
         val edition: Edition? get() = editions.firstOrNull { it.id == translation }
+
+        /** The current translation's abbreviation, for the home row and messages. */
+        val abbreviation: String get() = edition?.abbreviation ?: translation
     }
 
     private val prefs = app.getSharedPreferences("watch", Context.MODE_PRIVATE)
@@ -136,8 +144,9 @@ class WatchBible private constructor(private val app: Context) {
      * claims to be, it has Genesis 1 — and only then moved into place; anything else is dropped, and the
      * watch keeps what it had. Blocking; call off the main thread.
      */
-    fun receiveEdition(id: String, input: InputStream, digest: String?): Boolean {
+    fun receiveEdition(id: String, input: InputStream, digest: String?, version: String? = null, isImport: Boolean = false): Boolean {
         if (!WearLink.isSafeId(id) || id in BUNDLED) return false
+        if (isImport && !WearImports.accepts(id, offeredImports())) return false
         val dir = receivedDirectory(app).apply { mkdirs() }
         val partial = File(dir, ".${WatchEditionBuilder.fileName(id)}.partial")
         try {
@@ -149,7 +158,7 @@ class WatchBible private constructor(private val app: Context) {
         val info = try {
             val edition = WatchEdition(id, AndroidEditionRows(partial))
             try {
-                if (edition.meta["id"] != id || edition.verseCount(1, 1) == 0) null else edition.name to edition.language
+                if (edition.meta["id"] != id || edition.verseCount(1, 1) == 0) null else Triple(edition.name, edition.language, edition.meta["abbreviation"])
             } finally {
                 edition.close()
             }
@@ -172,11 +181,53 @@ class WatchBible private constructor(private val app: Context) {
             prefs.edit()
                 .putString(Keys.name(id), info.first)
                 .putString(Keys.language(id), info.second.orEmpty())
+                .putString(Keys.abbreviation(id), info.third.orEmpty())
                 .putString(Keys.digest(id), digest)
+                .putString(Keys.version(id), version)
+                .putBoolean(Keys.import(id), isImport)
                 .apply()
         }
         publish()
         return true
+    }
+
+    /**
+     * The phone's list of the reader's imports arrived: forget any import the watch holds that the list
+     * no longer has — `removeImports(notIn:)`. A language Bible the phone sent isn't governed by it.
+     * Returns the ids removed.
+     */
+    fun phoneImports(offered: List<String>): Set<String> {
+        val gone = synchronized(this) {
+            prefs.edit().putStringSet(Keys.OFFERED, offered.toSet()).apply()
+            val gone = WearImports.toRemove(receivedImports(), offered)
+            for (id in gone) {
+                opened.remove(id)
+                receivedFile(id).delete()
+                prefs.edit()
+                    .remove(Keys.name(id)).remove(Keys.language(id)).remove(Keys.abbreviation(id))
+                    .remove(Keys.digest(id)).remove(Keys.version(id)).remove(Keys.import(id))
+                    .apply()
+            }
+            gone
+        }
+        if (gone.isNotEmpty()) publish()
+        return gone
+    }
+
+    /** The phone's last list of imports, or null before one has arrived (an older phone app sends none). */
+    fun offeredImports(): Set<String>? = prefs.getStringSet(Keys.OFFERED, null)
+
+    /** The received editions that are imports, which the phone's list governs. */
+    private fun receivedImports(): Set<String> =
+        readEditions().filter { !it.bundled && prefs.getBoolean(Keys.import(it.id), false) }.map { it.id }.toSet()
+
+    /** What the watch holds of what the phone sent, for the phone to send what's missing or out of date. */
+    fun held(): WearImports.Held {
+        val received = readEditions().filter { !it.bundled }.map { it.id }
+        return WearImports.Held(
+            ids = received.toSet(),
+            versions = received.mapNotNull { id -> prefs.getString(Keys.version(id), null)?.let { id to it } }.toMap(),
+        )
     }
 
     private fun publish() {
@@ -219,13 +270,22 @@ class WatchBible private constructor(private val app: Context) {
                 val id = file.name.removeSuffix(suffix)
                 if (!WearLink.isSafeId(id) || id in BUNDLED) return@mapNotNull null
                 val name = prefs.getString(Keys.name(id), null)
-                if (name != null) return@mapNotNull Edition(id, name, bundled = false, language = prefs.getString(Keys.language(id), null)?.ifEmpty { null })
+                if (name != null) {
+                    return@mapNotNull Edition(
+                        id, name, bundled = false, language = prefs.getString(Keys.language(id), null)?.ifEmpty { null },
+                        abbreviation = prefs.getString(Keys.abbreviation(id), null)?.ifEmpty { null } ?: id,
+                    )
+                }
                 // A file put here some other way (a restore, a debug push): read its meta once.
                 try {
                     val edition = WatchEdition(id, AndroidEditionRows(file))
                     try {
-                        val result = Edition(id, edition.name, bundled = false, language = edition.language)
-                        prefs.edit().putString(Keys.name(id), result.name).putString(Keys.language(id), result.language.orEmpty()).apply()
+                        val abbreviation = edition.meta["abbreviation"]?.ifEmpty { null } ?: id
+                        val result = Edition(id, edition.name, bundled = false, language = edition.language, abbreviation = abbreviation)
+                        prefs.edit()
+                            .putString(Keys.name(id), result.name).putString(Keys.language(id), result.language.orEmpty())
+                            .putString(Keys.abbreviation(id), abbreviation)
+                            .apply()
                         result
                     } finally {
                         edition.close()
@@ -330,6 +390,11 @@ class WatchBible private constructor(private val app: Context) {
         fun name(id: String) = "watch.edition.$id.name"
         fun language(id: String) = "watch.edition.$id.language"
         fun digest(id: String) = "watch.edition.$id.digest"
+        fun abbreviation(id: String) = "watch.edition.$id.abbreviation"
+        fun version(id: String) = "watch.edition.$id.version"
+        fun import(id: String) = "watch.edition.$id.import"
+        /** The phone's last list of imports. */
+        const val OFFERED = "watch.imports.offered"
     }
 
     companion object {

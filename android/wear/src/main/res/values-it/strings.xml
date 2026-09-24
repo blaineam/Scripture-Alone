@@ -37,5 +37,5 @@
     <string name="wear_note_deleted">Nota eliminata</string>
     <string name="wear_note_edit_on_phone">Modifica le note sul telefono.</string>
     <string name="wear_translation_phone_unavailable">%1$s sul telefono non si può leggere qui. Le traduzioni online non si possono salvare sull\'orologio.</string>
-    <string name="wear_translation_follows_phone">Segue il telefono.</string>
+    <string name="wear_translation_follows_phone">Segue il telefono. Una traduzione importata lì compare anche qui.</string>
 </resources>

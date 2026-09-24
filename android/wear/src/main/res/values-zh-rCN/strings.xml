@@ -37,5 +37,5 @@
     <string name="wear_note_deleted">笔记已删除</string>
     <string name="wear_note_edit_on_phone">请在手机上编辑笔记。</string>
     <string name="wear_translation_phone_unavailable">无法在此阅读手机上的%1$s。在线译本无法存储在手表上。</string>
-    <string name="wear_translation_follows_phone">跟随手机设置。</string>
+    <string name="wear_translation_follows_phone">跟随手机设置。在手机上导入的译本也会出现在这里。</string>
 </resources>

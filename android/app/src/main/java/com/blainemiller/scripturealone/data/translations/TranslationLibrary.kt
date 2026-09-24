@@ -61,7 +61,15 @@ data class ImportedTranslation(val info: TranslationInfo, val file: File) {
  */
 object TranslationLibrary {
 
-    data class State(val imported: List<ImportedTranslation> = emptyList(), val online: List<OnlineEntry> = emptyList())
+    data class State(
+        val imported: List<ImportedTranslation> = emptyList(),
+        val online: List<OnlineEntry> = emptyList(),
+        /**
+         * Whether [imported] is the directory's contents rather than the empty placeholder held until
+         * the first scan — so the watch is never told "no imports" before the library has looked.
+         */
+        val importsLoaded: Boolean = false,
+    )
 
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state
@@ -69,6 +77,7 @@ object TranslationLibrary {
     private lateinit var app: Context
     private val driver = BundledSQLiteDriver()
     private val openImported = mutableMapOf<String, FileChapterSource>()
+    private var importsLoaded = false
 
     /** Ids of every added translation, imported first, as the reader's switcher lists them. */
     val addedIds: List<String>
@@ -131,6 +140,7 @@ object TranslationLibrary {
         // A store replaced by a re-import must be re-opened, not read through its old connection.
         openImported.values.forEach { it.close() }
         openImported.clear()
+        importsLoaded = true
         publish(imported, allOnline)
         // A study Bible's notes and pictures live in its store: they come and go with it.
         ImportedStudyLibrary.reload(imported)
@@ -179,7 +189,7 @@ object TranslationLibrary {
     @Synchronized
     private fun publish(imported: List<ImportedTranslation>, online: List<OnlineEntry>) {
         allOnline = online
-        _state.value = State(imported, online.filter { entry -> imported.none { sameTranslation(it.info, entry) } })
+        _state.value = State(imported, online.filter { entry -> imported.none { sameTranslation(it.info, entry) } }, importsLoaded)
     }
 
     /** The imported translation that now stands in for online translation [id], when one does. */

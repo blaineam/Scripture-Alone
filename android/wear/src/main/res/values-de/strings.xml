@@ -37,5 +37,5 @@
     <string name="wear_note_deleted">Notiz gelöscht</string>
     <string name="wear_note_edit_on_phone">Notizen auf dem Handy bearbeiten.</string>
     <string name="wear_translation_phone_unavailable">%1$s auf dem Handy kann hier nicht gelesen werden. Online-Übersetzungen lassen sich nicht auf der Uhr speichern.</string>
-    <string name="wear_translation_follows_phone">Folgt deinem Handy.</string>
+    <string name="wear_translation_follows_phone">Folgt deinem Handy. Eine dort importierte Übersetzung erscheint auch hier.</string>
 </resources>

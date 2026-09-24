@@ -2,6 +2,10 @@
 
 ## After 1.0.0
 
+- On Android, every translation you import is sent to your Wear OS watch too (when its terms
+  allow keeping it offline), listed in the watch's translation picker by its abbreviation, and
+  removed from the watch when you remove it from the phone. The watch tells the phone what it
+  holds, so a watch reinstalled or holding an older copy is sent it again.
 - The Verse of the Day on the watch reads in the translation the watch is reading, an imported one included.
 - On iPhone, Study's Context tab holds everything Maps & Timeline did — Overview, Map, Timeline
   and Charts — so the reader's bottom bar loses its map button and sits balanced. The overview

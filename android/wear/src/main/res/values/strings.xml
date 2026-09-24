@@ -75,6 +75,6 @@
     <!-- Translations -->
     <!-- Footer when the phone's translation isn't on the watch. %1$s is a translation abbreviation, e.g. ESV. -->
     <string name="wear_translation_phone_unavailable">%1$s on your phone can’t be read here. Online translations can’t be stored on the watch.</string>
-    <!-- Footer of the translation picker: the watch's translation follows the phone's. -->
-    <string name="wear_translation_follows_phone">Follows your phone.</string>
+    <!-- Footer of the translation picker: the watch's translation follows the phone's, and the phone's imports appear on the watch. -->
+    <string name="wear_translation_follows_phone">Follows your phone. A translation you import there appears here too.</string>
 </resources>

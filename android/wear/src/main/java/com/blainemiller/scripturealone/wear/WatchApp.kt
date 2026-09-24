@@ -245,7 +245,7 @@ private fun HomeScreen(bible: WatchBible, state: WatchBible.State, go: (String) 
         item { RowChip(stringResource(R.string.wear_notes), R.drawable.ic_note, NoteOrange, trailing = notes.takeIf { it > 0 }?.toString()) { go(Routes.NOTES) } }
         item { RowChip(stringResource(R.string.wear_highlights), R.drawable.ic_highlighter, HighlightYellow, trailing = highlights.takeIf { it > 0 }?.toString()) { go(Routes.HIGHLIGHTS) } }
         item { RowChip(stringResource(R.string.wear_read), R.drawable.ic_book) { go(Routes.BOOKS) } }
-        item { RowChip(stringResource(R.string.wear_translation), R.drawable.ic_translate, trailing = state.translation) { go(Routes.TRANSLATIONS) } }
+        item { RowChip(stringResource(R.string.wear_translation), R.drawable.ic_translate, trailing = state.abbreviation) { go(Routes.TRANSLATIONS) } }
     }
 }
 
@@ -272,7 +272,7 @@ private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: Verse
         item { Title(shown.display, Accent) }
         val loaded = verses
         if (loaded != null && loaded.isEmpty()) {
-            item { Text(stringResource(R.string.wear_verse_not_in_edition, state.translation), color = Secondary, textAlign = TextAlign.Center) }
+            item { Text(stringResource(R.string.wear_verse_not_in_edition, state.abbreviation), color = Secondary, textAlign = TextAlign.Center) }
         }
         items(loaded.orEmpty()) { verse -> VerseText(verse, numbered = loaded.orEmpty().size > 1) }
         if (!loaded.isNullOrEmpty()) {
@@ -550,7 +550,7 @@ private fun TranslationsScreen(bible: WatchBible, state: WatchBible.State) {
             ToggleChip(
                 checked = selected,
                 onCheckedChange = { bible.choose(edition.id) },
-                label = { Text(edition.id, fontWeight = FontWeight.SemiBold) },
+                label = { Text(edition.abbreviation, fontWeight = FontWeight.SemiBold) },
                 secondaryLabel = { Text(edition.name, maxLines = 2, overflow = TextOverflow.Ellipsis) },
                 toggleControl = { RadioButton(selected = selected) },
                 modifier = Modifier.fillMaxWidth(),
