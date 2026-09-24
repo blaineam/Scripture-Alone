@@ -15,12 +15,12 @@ android {
         minSdk = 30
         targetSdk = 36
         // The phone and watch bundles share one package, so every uploaded bundle needs its own
-        // versionCode: one sequential counter, the phone taking the next code and the watch the one
-        // after (scripts/play-publish.mjs). 1,000,001–1,000,004 are a retired Wear range. The release
-        // workflow passes -PsaWearVersionCode and -PsaVersionName (the tag); local builds use these.
-        versionCode = providers.gradleProperty("saWearVersionCode").orNull?.toInt() ?: 4
+        // versionCode: the watch numbers from 1,000,000 up, the phone below (scripts/play-publish.mjs).
+        // The release workflow passes -PsaWearVersionCode and -PsaVersionName (the tag); local builds
+        // use these.
+        versionCode = providers.gradleProperty("saWearVersionCode").orNull?.toInt() ?: 1_000_005
         versionName = providers.gradleProperty("saVersionName").orNull ?: "1.0.0"
-        check(versionCode!! < 1_000_000) { "Wear OS versionCode $versionCode is in the retired 1,000,000+ range" }
+        check(versionCode!! >= 1_000_000) { "Wear OS versionCode $versionCode must be 1,000,000 or more" }
     }
 
     buildTypes.getByName("debug") {

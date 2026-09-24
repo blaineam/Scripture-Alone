@@ -10,7 +10,8 @@ name: android
 # release lands whole or not at all, and the same versionCode is never uploaded twice.
 #
 # versionCodes: the plan step asks Play for every code it has ever seen (uploaded bundles + track
-# releases) and takes max + 1 for the phone, max + 2 for Wear OS — one sequential counter. Codes can never
+# releases) and takes the highest + 1 in each range: the phone below 1,000,000, Wear OS from
+# 1,000,000 up (Play refuses a watch build numbered below the one on its track). Codes can never
 # be reused, and a code burned by a Console draft is still counted because Play lists the bundle.
 #
 # Everything is gated on secrets and SKIPS (green, with a notice) when they are absent:

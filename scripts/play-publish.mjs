@@ -36,9 +36,10 @@ import { join } from 'node:path';
 
 const API = 'https://androidpublisher.googleapis.com/androidpublisher/v3/applications';
 const UPLOAD = 'https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications';
-// Codes from 1,000,000 up are the Wear OS app's retired range (1,000,001–1,000,004, before the
-// switch to one sequential counter on 2026-09-23). They stay burned but no longer count.
-const LEGACY_WEAR_FLOOR = 1_000_000;
+// The Wear OS app numbers from 1,000,000 up, the phone below it. A single sequential counter was
+// tried (2026-09-23) and can't work: Play refuses a watch build numbered below the one already on
+// its track ("does not allow any existing users to upgrade"), and Wear 1,000,004 is there.
+const WEAR_FLOOR = 1_000_000;
 
 const die = (m) => { console.error(`✗ ${m}`); summary(`- ❌ Play: ${m}`); process.exit(1); };
 // Inside an open edit, fail by THROWING so `finally` deletes the edit (process.exit would skip it).
@@ -156,11 +157,13 @@ function checkTracks(tracks, wanted) {
 }
 
 function nextCodes(codes) {
-	// One counter for both form factors: every upload takes the next number. Phone and watch share
-	// the package, so their codes must differ; the phone takes `next`, the watch `next + 1`.
-	const used = codes.filter((c) => c < LEGACY_WEAR_FLOOR);
-	const phoneNext = Math.max(used.length ? Math.max(...used) + 1 : 1, 3);   // 1 and 2 are burned
-	return { phoneNext, wearNext: phoneNext + 1 };
+	// Phone and watch share the package, so their codes must differ: the phone counts up below
+	// WEAR_FLOOR, the watch above it, each from the highest code Play has seen in its range.
+	const phone = codes.filter((c) => c < WEAR_FLOOR);
+	const watch = codes.filter((c) => c >= WEAR_FLOOR);
+	const phoneNext = Math.max(phone.length ? Math.max(...phone) + 1 : 1, 3);   // 1 and 2 are burned
+	const wearNext = watch.length ? Math.max(...watch) + 1 : WEAR_FLOOR + 1;
+	return { phoneNext, wearNext };
 }
 
 function releaseNotes(dir) {
@@ -219,7 +222,7 @@ async function main() {
 		if (!a.phoneAab || !a.phoneCode || !a.phoneTracks?.length) fail('--phone-aab, --phone-code and --phone-tracks are required');
 		const wear = Boolean(a.wearAab);
 		if (wear && (!a.wearCode || !a.wearTracks?.length)) fail('--wear-aab needs --wear-code and --wear-tracks');
-		if (a.phoneCode >= LEGACY_WEAR_FLOOR || (wear && a.wearCode >= LEGACY_WEAR_FLOOR)) fail('versionCodes from 1,000,000 up are retired — the plan step picks sequential codes');
+		if (a.phoneCode >= WEAR_FLOOR || (wear && a.wearCode < WEAR_FLOOR)) fail('the phone numbers below 1,000,000 and Wear OS from 1,000,000 up — the plan step picks both');
 		if (wear && a.wearCode === a.phoneCode) fail('the phone and Wear OS bundles need different versionCodes');
 		for (const [c, what] of [[a.phoneCode, 'phone'], ...(wear ? [[a.wearCode, 'Wear OS']] : [])]) {
 			if (snap.codes.includes(c)) fail(`${what} versionCode ${c} was already used on Play — codes can never be reused; re-run the workflow so the plan step picks a fresh one`);
