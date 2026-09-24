@@ -34,6 +34,8 @@ struct PDFBibleReader {
         var size: Double
         /// The run begins a line of its own and ends one.
         var ownLine: Bool
+        /// The run ends a line of print. Kept when `Lexicon` resolves the break itself.
+        var endsLine = false
     }
 
     // MARK: - Reading
@@ -49,8 +51,10 @@ struct PDFBibleReader {
         var assembler = Assembler(options: options)
         var outside = true   // before the first book title, and after anything that isn't one
         var lastVerse = 0
+        var chapterOpen = false
         for (index, runs) in pages.enumerated() {
-            let (document, stillOutside) = scan(runs, page: index, body: body, rare: rare, outside: outside, lastVerse: &lastVerse)
+            let (document, stillOutside) = scan(runs, page: index, body: body, rare: rare, outside: outside,
+                                                lastVerse: &lastVerse, chapterOpen: &chapterOpen)
             outside = stillOutside
             assembler.consume(document, path: "page \(index + 1)")
         }
@@ -60,9 +64,11 @@ struct PDFBibleReader {
     }
 
     /// Turns one page's runs into a flow. `outside` is true while the reader is in front or back
-    /// matter: set by a large title that isn't a book, cleared by one that is.
+    /// matter: set by a large title that isn't a book, cleared by one that is. `chapterOpen` is
+    /// true between a chapter's number and its first words, where a "1" printed after a heading
+    /// (a psalm's title) numbers the verse the chapter's number already began.
     func scan(_ runs: [Run], page: Int, body: Double, rare: Set<Double>, outside: Bool,
-              lastVerse: inout Int) -> (ScannedDocument, Bool) {
+              lastVerse: inout Int, chapterOpen: inout Bool) -> (ScannedDocument, Bool) {
         var document = ScannedDocument()
         var outside = outside
         var chapterSinceTitle = true
@@ -79,11 +85,30 @@ struct PDFBibleReader {
             noteText = ""
         }
 
-        for (index, run) in runs.enumerated() {
+        var skipThrough = -1
+        for (index, run) in runs.enumerated() where index > skipThrough {
             let text = run.text.replacingOccurrences(of: "\u{AD}", with: "").trimmingCharacters(in: .whitespacesAndNewlines)
             guard !text.isEmpty, !Self.isPrinterSlug(text) else { continue }
             let ratio = run.size / body
             let next = runs.dropFirst(index + 1).first { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+            // A short line that opens a little larger than the text, in a face of its own: an
+            // acrostic letter and its name, a heading set as one line in two fonts — or in two
+            // sizes, neither of them the text's ("S" + "hin / " + "Sin").
+            if !outside, ratio > 1.04, ratio < 1.45, !run.ownLine, !run.endsLine,
+               let end = runs.indices.dropFirst(index + 1).first(where: { runs[$0].endsLine }), end - index <= 4 {
+                let line = runs[index...end].map(\.text).joined()
+                let words = line.split(whereSeparator: \.isWhitespace)
+                let offBody = runs[index...end].allSatisfy { other in
+                    let size = other.size / body
+                    return size < 0.97 || size > 1.04 || !other.text.contains(where: \.isLetter)
+                }
+                if (words.count <= 3 && end - index <= 2) || offBody, line.count <= 32, !line.contains(where: \.isNumber) {
+                    if options.headings { appendHeading(Self.headingText(line), to: &document) }
+                    skipThrough = end
+                    continue
+                }
+            }
 
             // Titles: a book begins, or something that isn't scripture does.
             if ratio >= 1.45 {
@@ -119,6 +144,7 @@ struct PDFBibleReader {
                     document.flow.append(.marker(marker))
                     chapterSinceTitle = true
                     lastVerse = 1
+                    chapterOpen = true
                 } else if let place = ScriptureLabels.heading(text), let book = place.book {
                     outside = false
                     chapterSinceTitle = false
@@ -138,8 +164,9 @@ struct PDFBibleReader {
 
             // The notes at the foot of the page: a tiny caller, then "15:4", then the note.
             if ratio < 0.8 {
+                // In a book of one chapter a note names only its verse ("17"), in note-sized type.
                 let isLabel = Self.isCallerLetters(text) && ratio < 0.58
-                    && next.map { Self.isReference($0.text) } == true
+                    && next.map { Self.isReference($0.text) || (Self.number($0.text) != nil && $0.size / body < 0.8) } == true
                 if isLabel {
                     closeNote()
                     inNotes = true
@@ -152,9 +179,13 @@ struct PDFBibleReader {
                 }
                 // In the text: a small letter is a footnote caller, a small number a superscript
                 // verse number. Anything else this small (a running head, a page number) goes.
-                if Self.isCallerLetters(text) {
+                // Two notes on one word are two callers, "l,m".
+                let callers = text.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+                if callers.count > 1 ? callers.allSatisfy(Self.isCallerLetters) : Self.isCallerLetters(text) {
                     if options.footnotes {
-                        document.flow.append(.noteMarker(id: Self.noteID(page: page, label: text), label: text))
+                        for label in callers {
+                            document.flow.append(.noteMarker(id: Self.noteID(page: page, label: label), label: label))
+                        }
                     }
                     // A caller sits in a word break; the break survives it.
                     let after = next?.text.first
@@ -162,8 +193,11 @@ struct PDFBibleReader {
                         || after == "\u{AD}" || after?.isWhitespace == true {
                         document.flow.append(.text(" ", red: false))
                     }
+                } else if let number = Self.number(text), number == 1, lastVerse == 1, chapterOpen {
+                    continue
                 } else if let number = Self.number(text), Self.followsOn(number, after: lastVerse) {
                     lastVerse = number
+                    chapterOpen = false
                     document.shapeCounts[.superscript, default: 0] += 1
                     document.flow.append(.marker(Marker(shapes: [.superscript], verse: number)))
                 }
@@ -179,7 +213,7 @@ struct PDFBibleReader {
             // Smaller than the text but not note-sized: headings, and the running heads and page
             // numbers every page carries, which aren't content.
             if ratio < 0.97 {
-                if Self.number(text) != nil || Self.isRunningHead(text) { continue }
+                if text.allSatisfy(\.isNumber) || Self.isRunningHead(text) { continue }
                 if options.headings { appendHeading(Self.headingText(text), to: &document) }
                 continue
             }
@@ -188,8 +222,13 @@ struct PDFBibleReader {
             // or a different face) is what split it from the words around it.
             // …if it is the number a verse would have here. Measures and dates set in another font
             // ("75 feet", "7 1/2") are numbers too, and go back into the text.
-            if let number = Self.number(text), number < 200, Self.followsOn(number, after: lastVerse) {
+            // A whole number before a fraction ("10 1/2 feet") is a measure, set apart only by the
+            // fraction's font.
+            let measure = next.map { $0.text.replacingOccurrences(of: "\u{AD}", with: "").trimmingCharacters(in: .whitespaces).firstMatch(of: /^\d+\s*[\/\x{2044}]\s*\d/) != nil } == true
+            if Self.number(text) == 1, lastVerse == 1, chapterOpen { continue }
+            if let number = Self.number(text), number < 200, !measure, Self.followsOn(number, after: lastVerse) {
                 lastVerse = number
+                chapterOpen = false
                 document.shapeCounts[.numberClass, default: 0] += 1
                 document.flow.append(.marker(Marker(shapes: [.numberClass], verse: number)))
                 continue
@@ -200,7 +239,9 @@ struct PDFBibleReader {
                 if options.headings { appendHeading(Self.headingText(text), to: &document) }
                 continue
             }
-            document.flow.append(.text(Self.bodyText(run.text), red: false))
+            let words = Self.bodyText(run.text)
+            if words.contains(where: \.isLetter) { chapterOpen = false }
+            document.flow.append(.text(words, red: false))
         }
         closeNote()
         return (document, outside)
@@ -227,14 +268,26 @@ struct PDFBibleReader {
     /// the gutter spans the page (a book title, a heading across it) and divides the page into
     /// bands; each band is read left column first, top to bottom, then the right. Every line ends
     /// in "\n", for `Lexicon` to decide whether the break fell between words or inside one.
-    static func runs(on page: PDFPage?) -> [Run] {
+    static func runs(on page: PDFPage?, trace: ((String) -> Void)? = nil) -> [Run] {
         // The text and its fonts come from the page's own attributed string, which is the same on
         // every platform; PDFKit's selections are asked only where each line and glyph sits, and
         // are checked against the text they should cover (`selection(on:covering:)`), because one
         // platform's selections start a character early and repeat line ends.
         guard let page, let attributed = page.attributedString, attributed.length > 0 else { return [] }
         let string = attributed.string as NSString
-        struct Piece { var rect: CGRect; var text: NSAttributedString; var range: NSRange }
+        struct Piece {
+            var rect: CGRect
+            var text: NSAttributedString
+            var range: NSRange
+            /// The largest type in the piece.
+            var size: CGFloat {
+                var size: CGFloat = 0
+                text.enumerateAttribute(.font, in: NSRange(location: 0, length: text.length)) { value, _, _ in
+                    size = max(size, (value as? PlatformFont)?.pointSize ?? 0)
+                }
+                return size
+            }
+        }
         var pieces: [Piece] = []
         var location = 0
         while location < string.length {
@@ -247,10 +300,46 @@ struct PDFBibleReader {
             }
             // A line of text can run on over two rows of print (a word hyphenated at the end of a
             // row stays on its line); each row is placed on its own.
-            for row in rows(of: trimmed, in: attributed, on: page) {
+            for var row in rows(of: trimmed, in: attributed, on: page) {
+                // Spaces at a row's ends have no place of their own to measure.
+                while row.length > 0, let scalar = UnicodeScalar(string.character(at: row.location)),
+                      CharacterSet.whitespaces.contains(scalar) {
+                    row = NSRange(location: row.location + 1, length: row.length - 1)
+                }
+                while row.length > 0, let scalar = UnicodeScalar(string.character(at: row.location + row.length - 1)),
+                      CharacterSet.whitespaces.contains(scalar) {
+                    row.length -= 1
+                }
                 guard !string.substring(with: row).replacingOccurrences(of: "\u{AD}", with: "").trimmingCharacters(in: .whitespaces).isEmpty,
-                      let rect = bounds(on: page, covering: row, in: string), !rect.isEmpty else { continue }
-                pieces.append(Piece(rect: rect, text: normalizedLine(attributed.attributedSubstring(from: row)), range: row))
+                      var rect = bounds(on: page, covering: row, in: string), !rect.isEmpty else { continue }
+                // A long line's box is measured two characters in from each end; its ends are where
+                // its first and last glyphs are — a verse number the text layer ran onto the end
+                // of a line from across the gutter ("Ger" + "42") included.
+                let printing = (row.location..<(row.location + row.length)).filter { isPrinting(string.character(at: $0)) }
+                if row.length > 6, let first = printing.first, let last = printing.last {
+                    for index in Set([first, last]) {
+                        // One glyph's box: a selection of one character can come back as its
+                        // whole line's.
+                        let size = (attributed.attribute(.font, at: index, effectiveRange: nil) as? PlatformFont)?.pointSize ?? 0
+                        guard let box = glyphBox(at: index, in: string, on: page), !box.isEmpty, box.width < size * 1.5,
+                              abs(box.midY - rect.midY) < max(rect.height, box.height) / 2 else { continue }
+                        rect = CGRect(x: min(rect.minX, box.minX), y: rect.minY,
+                                      width: max(rect.maxX, box.maxX) - min(rect.minX, box.minX), height: rect.height)
+                    }
+                }
+                var text = normalizedLine(attributed.attributedSubstring(from: row))
+                // A row that ends between two letters of one line of text ends inside a word the
+                // typesetter hyphenated ("distinguish" / "ing"), whose hyphen the text layer
+                // dropped: it ends in a soft hyphen, as a break inside a word does.
+                let end = row.location + row.length
+                if end < trimmed.location + trimmed.length, row.length > 0,
+                   let last = UnicodeScalar(string.character(at: end - 1)), Character(last).isLetter,
+                   let next = UnicodeScalar(string.character(at: end)), Character(next).isLetter {
+                    let marked = NSMutableAttributedString(attributedString: text)
+                    marked.append(NSAttributedString(string: "\u{AD}", attributes: text.attributes(at: max(0, text.length - 1), effectiveRange: nil)))
+                    text = marked
+                }
+                pieces.append(Piece(rect: rect, text: text, range: row))
             }
         }
         guard !pieces.isEmpty else { return [] }
@@ -259,11 +348,20 @@ struct PDFBibleReader {
             pieces = pieces.map { Piece(rect: $0.rect, text: restoringSmallCapitals($0.text, in: $0.rect, occurrences: smallCaps), range: $0.range) }
         }
         pieces = mergedStackedDigits(pieces.map { ($0.rect, $0.text, $0.range) }).map { Piece(rect: $0.0, text: $0.1, range: $0.2) }
-        let left = pieces.map(\.rect.minX).min() ?? 0
-        let right = pieces.map(\.rect.maxX).max() ?? 0
+        // The columns are the text's: rows in the page's own body type. A printer's slug in the
+        // margin or a line of notes across the foot says nothing about where the gutter is.
+        let typical: CGFloat = {
+            var counts: [Double: Int] = [:]
+            for piece in pieces { counts[rounded(Double(piece.size)), default: 0] += piece.text.length }
+            return CGFloat(counts.max { $0.value != $1.value ? $0.value < $1.value : $0.key > $1.key }?.key ?? 0)
+        }()
+        let isBody = { (piece: Piece) in abs(piece.size - typical) <= typical * 0.1 }
+        let body = pieces.contains(where: isBody) ? pieces.filter(isBody) : pieces
+        let left = body.map(\.rect.minX).min() ?? 0
+        let right = body.map(\.rect.maxX).max() ?? 0
         // The gutter is where the fewest lines cross, near the middle — not the middle itself: a
         // left-hand page's columns sit off-centre on the sheet.
-        let narrow = pieces.filter { $0.rect.width < (right - left) * 0.6 }
+        let narrow = body.filter { $0.rect.width < (right - left) * 0.6 }
         let middle: CGFloat = {
             let center = (left + right) / 2
             var best = center
@@ -295,7 +393,10 @@ struct PDFBibleReader {
         }
         let open = crossing.filter { gutterIsEmpty(pieces[$0].rect) }
         let rightOnly = pieces.filter { $0.rect.minX >= middle }.count
-        let twoColumns = rightOnly > 2 && open.count * 2 >= crossing.count
+        // Judged by the text's own lines: notes set across the foot of the page cross an empty
+        // gutter above them, and say nothing about whether the text runs in columns.
+        let bodyCrossing = crossing.filter { isBody(pieces[$0]) }
+        let twoColumns = rightOnly > 2 && bodyCrossing.filter { open.contains($0) }.count * 2 >= bodyCrossing.count
         var spanning = Set<Int>()
         if twoColumns {
             var split: [Piece] = []
@@ -333,13 +434,18 @@ struct PDFBibleReader {
             let piece = pieces[index]
             guard piece.rect.width < 40 else { return piece.rect.minX >= middle }
             // Its neighbours are the lines beside it: overlapping it vertically (a drop cap spans
-            // two or three).
-            let sameLine = pieces.filter { other in
+            // two or three), and text rather than another hung number — a short line ("Do not
+            // steal.") is one too.
+            let sameLine = pieces.indices.filter { $0 != index }.map { pieces[$0] }.filter { other in
                 let overlap = min(other.rect.maxY, piece.rect.maxY) - max(other.rect.minY, piece.rect.minY)
-                return other.rect.width >= 40 && overlap > min(other.rect.height, piece.rect.height) * 0.3
+                return (other.rect.width >= 40 || number(other.text.string) == nil)
+                    && overlap > min(other.rect.height, piece.rect.height) * 0.3
             }
             let before = sameLine.filter { $0.rect.maxX <= piece.rect.minX + 1 }.map { piece.rect.minX - $0.rect.maxX }.min()
-            let after = sameLine.filter { $0.rect.minX >= piece.rect.maxX - 1 }
+            // A verse number goes with the nearer line; words (the short last line of a column,
+            // "are also") only with a line they sit right up against.
+            let isNumber = number(piece.text.string) != nil
+            let after = sameLine.filter { $0.rect.minX >= piece.rect.maxX - 1 && (isNumber || $0.rect.minX - piece.rect.maxX < piece.size * 1.5) }
                 .min { $0.rect.minX < $1.rect.minX }
             if let after, before.map({ after.rect.minX - piece.rect.maxX < $0 }) ?? true {
                 return after.rect.minX >= middle
@@ -371,6 +477,16 @@ struct PDFBibleReader {
             }
         }
         flush()
+        if let trace {
+            trace("middle=\(middle) twoColumns=\(twoColumns) crossing=\(crossing.count) open=\(open.count) rightOnly=\(rightOnly)")
+            for piece in ordered {
+                let index = pieces.firstIndex { $0.range == piece.range && $0.rect == piece.rect } ?? -1
+                let r = piece.rect
+                trace(String(format: "  [%6.1f %6.1f %6.1f %6.1f] %@%@ ", r.minX, r.minY, r.maxX, r.maxY,
+                             index >= 0 && isRight[index] ? "R" : "L", spanning.contains(index) ? "S" : " ")
+                      + piece.text.string.replacingOccurrences(of: "\u{AD}", with: "~"))
+            }
+        }
 
         var runs: [Run] = []
         var previous: Piece?
@@ -384,15 +500,29 @@ struct PDFBibleReader {
                 // ("Elijah?" + "”") or opens onto what follows.
                 let before = last.text.replacingOccurrences(of: "\u{AD}", with: "").last
                 let after = piece.text.string.replacingOccurrences(of: "\u{AD}", with: "").first
-                let closes = after.map { "”’),.;:!?]".contains($0) } ?? true
+                // "LORD’" + "s": a possessive whose name was set in small capitals.
+                let possessive = before.map { "’'".contains($0) } == true
+                    && piece.text.string.replacingOccurrences(of: "\u{AD}", with: "").firstMatch(of: /^s(?!\p{L})/) != nil
+                let closes = possessive || after.map { "”’),.;:!?]".contains($0) } ?? true
                 let opens = before.map { "“‘([ ".contains($0) || $0.isWhitespace } ?? true
                 if !closes && !opens { last.text += " " }
                 runs.append(last)
             }
             let string = piece.text.string as NSString
+            var first = true
             piece.text.enumerateAttributes(in: NSRange(location: 0, length: piece.text.length)) { attributes, range, _ in
                 let size = (attributes[.font] as? PlatformFont).map { Double($0.pointSize) } ?? 0
-                runs.append(Run(text: string.substring(with: range), size: size, ownLine: false))
+                var text = string.substring(with: range)
+                // A word set in a face of its own at the end of a line ("forever." + "Selah") is
+                // spaced from it on the page, not in the text: a capital straight after the end of a
+                // word or a sentence in another font begins a new word.
+                if !first, let before = runs.last?.text.replacingOccurrences(of: "\u{AD}", with: "").last,
+                   before.isLowercase || ".,;:!?".contains(before),
+                   let after = text.replacingOccurrences(of: "\u{AD}", with: "").first, after.isUppercase {
+                    text = " " + text
+                }
+                first = false
+                runs.append(Run(text: text, size: size, ownLine: false))
             }
             if var last = runs.popLast() {
                 last.text = last.text.trimmingCharacters(in: .newlines) + "\n"
@@ -404,6 +534,7 @@ struct PDFBibleReader {
         for index in runs.indices {
             let endsLine = runs[index].text.hasSuffix("\n")
             runs[index].ownLine = lineStart && endsLine
+            runs[index].endsLine = endsLine
             lineStart = endsLine
         }
         return runs
@@ -449,6 +580,12 @@ struct PDFBibleReader {
         return fallback ?? page.selection(for: range)?.bounds(for: page)
     }
 
+    /// Whether a character of the text prints: not a space, a line break or a soft hyphen.
+    static func isPrinting(_ character: unichar) -> Bool {
+        guard let scalar = UnicodeScalar(character) else { return false }
+        return scalar != "\u{AD}" && !CharacterSet.whitespacesAndNewlines.contains(scalar)
+    }
+
     /// Where one character sits.
     static func glyphBox(at index: Int, in string: NSString, on page: PDFPage) -> CGRect? {
         bounds(on: page, covering: NSRange(location: index, length: 1), in: string)
@@ -460,17 +597,42 @@ struct PDFBibleReader {
         let string = attributed.string as NSString
         var rows: [NSRange] = []
         var rest = range
+        // A drop cap opens the first lines of a chapter, and the text layer can run those lines
+        // together behind it, the second before the first. It is a row of its own, and the rest
+        // is measured by the text's own size.
+        var sizes: [(NSRange, CGFloat)] = []
+        attributed.enumerateAttribute(.font, in: range) { value, run, _ in
+            sizes.append((run, (value as? PlatformFont)?.pointSize ?? 0))
+        }
+        if sizes.count > 1, let lead = sizes.first, lead.1 > 0,
+           let restSize = sizes.dropFirst().map(\.1).max(), restSize > 0, lead.1 >= restSize * 1.45,
+           string.substring(with: lead.0).trimmingCharacters(in: .whitespaces).allSatisfy({ $0.isNumber || $0.isLetter }) {
+            rows.append(lead.0)
+            rest = NSRange(location: lead.0.location + lead.0.length, length: range.location + range.length - lead.0.location - lead.0.length)
+        }
         for _ in 0..<4 {
             guard rest.length > 1, let rect = bounds(on: page, covering: rest, in: string) else { break }
             var size: CGFloat = 0
             attributed.enumerateAttribute(.font, in: rest) { value, _, _ in
                 size = max(size, (value as? PlatformFont)?.pointSize ?? 0)
             }
-            guard size > 0, rect.height > size * 1.7,
-                  let firstBox = glyphBox(at: rest.location, in: string, on: page) else { break }
+            // The first and last glyphs that print: a soft hyphen or a space has no place of its own.
+            let printing = (rest.location..<(rest.location + rest.length)).filter { isPrinting(string.character(at: $0)) }
+            guard size > 0, let first = printing.first, let last = printing.last,
+                  let firstBox = glyphBox(at: first, in: string, on: page) else { break }
+            // A box taller than its type spans rows. So does a line whose last glyph sits on another
+            // row than its first — the box of a long line is measured from inside its ends, which
+            // can miss a verse number run on after a printer's slug.
+            let lastBox = last == first ? firstBox : glyphBox(at: last, in: string, on: page)
+            let apart = lastBox.map { abs($0.midY - firstBox.midY) > size * 0.6 } ?? false
+            guard rect.height > size * 1.7 || apart else { break }
             // Up or down: a line of text can join print from anywhere on the page (a printer's
             // slug at the foot, run together with a verse at the top of a column).
-            let cut = firstIndex(in: rest, of: string, on: page) { abs($0.midY - firstBox.midY) > size * 0.6 }
+            // By the middle of each glyph, or its top: a row set beside a drop cap can come back in
+            // one box with the drop cap's rows, as tall as they are together.
+            let cut = firstIndex(in: rest, of: string, on: page) {
+                abs($0.midY - firstBox.midY) > size * 0.6 || abs($0.maxY - firstBox.maxY) > size * 0.6
+            }
             guard cut > rest.location, cut < rest.location + rest.length else { break }
             rows.append(NSRange(location: rest.location, length: cut - rest.location))
             rest = NSRange(location: cut, length: rest.location + rest.length - cut)
@@ -614,6 +776,8 @@ struct PDFBibleReader {
         }
         text = text.replacingOccurrences(of: "\u{AD}\n", with: "")
         text = text.replacingOccurrences(of: "\u{AD}", with: "")
+        // Control characters a text layer leaves in (a tab leader's backspace) aren't text.
+        text.unicodeScalars.removeAll { $0.properties.generalCategory == .control && $0 != "\n" && $0 != "\t" }
         text = text.replacing(/(\p{L})-\n(?=\p{L})/) { "\($0.output.1)-" }
         return DocumentScanner.collapse(text)
     }
@@ -651,12 +815,17 @@ struct PDFBibleReader {
         // Case is not a test: small capitals can come out of a PDF as "NUMbERS".
         let words = text.replacing(/[\d\-–—:,]/, with: " ").trimmingCharacters(in: .whitespaces.union(.controlCharacters))
         guard !words.isEmpty, text.count <= 48 else { return false }
-        return ScriptureLabels.heading(words)?.book != nil
+        if ScriptureLabels.heading(words)?.book != nil { return true }
+        // A numbered book ("235 1 SAMUEL 2-3"): the numeral just before the name is the name's.
+        guard let named = text.firstMatch(of: /(?:^|\s)([1-3]\s+\p{L}[\p{L}\s]*\p{L})/) else { return false }
+        return ScriptureLabels.heading(String(named.output.1))?.book != nil
     }
 
-    /// The imposition slug a printer leaves on every page ("Bible.indb 11 10/26/17 8:59 PM").
+    /// The imposition slug a printer leaves on every page ("Bible.indb 11 10/26/17 8:59 PM") —
+    /// its file name, or its time stamp when that comes apart from the name.
     static func isPrinterSlug(_ text: String) -> Bool {
         text.firstMatch(of: /\.(indb|indd|qxp|pdf)\b/) != nil
+            || text.wholeMatch(of: /\d{1,2}\/\d{1,2}\/\d{2,4}\s+\d{1,2}:\d{2}\s*[AP]M/) != nil
     }
 
     static func noteID(page: Int, label: String) -> String {
@@ -681,6 +850,11 @@ struct PDFBibleReader {
 struct Lexicon {
     private var words: [String: Int] = [:]
     private var pairs: [String: Int] = [:]
+    /// Compounds written with a hyphen inside a line ("three-year"), so a break at their hyphen
+    /// keeps it.
+    private var hyphenated: [String: Int] = [:]
+    /// First halves of those compounds ("beth" of "Beth-shemesh"): a name that opens many.
+    private var compoundHeads: [String: Int] = [:]
     /// Words seen other than straight after an f-ligature ("off er", "suf ering").
     private(set) var standalone: [String: Int] = [:]
     /// Words seen straight after one ending in "f".
@@ -701,6 +875,14 @@ struct Lexicon {
                 for (previous, word) in zip(tokens, tokens.dropFirst()) {
                     if Self.endsInLigature(previous) { afterF[word, default: 0] += 1 } else { standalone[word, default: 0] += 1 }
                 }
+                // Each joint of a chain: "three-year-old" is "three-year" and "year-old".
+                for match in line.matches(of: /\p{L}+(?:-\p{L}+)+/) {
+                    let parts = match.output.lowercased().split(separator: "-").map(String.init)
+                    for (a, b) in zip(parts, parts.dropFirst()) {
+                        hyphenated[a + "-" + b, default: 0] += 1
+                        compoundHeads[a, default: 0] += 1
+                    }
+                }
             }
         }
     }
@@ -714,10 +896,25 @@ struct Lexicon {
     /// Extraction breaks words at f-ligatures: "offered" comes out "off ered". The piece after
     /// the break is joined back when it never stands as a word anywhere else in the book.
     func repairingLigatures(_ text: String) -> String {
-        text.replacing(/(\p{L}*f) (\p{Ll}+)/) { match in
-            let tail = String(match.output.2)
-            return isFragment(tail) ? "\(match.output.1)\(tail)" : String(match.output.0)
+        // Soft hyphens can sit anywhere in the tail ("off i\u{AD}cials"). The tail is only looked
+        // at, so it can be the head of the next ("of selfi sh").
+        text.replacing(/(\p{L}*f[il]?) (?=(\x{AD}?\p{Ll}(?:\p{Ll}|\x{AD})*))/) { match in
+            let head = String(match.output.1), tail = String(match.output.2)
+            return ligatureJoins(head, tail.replacingOccurrences(of: "\u{AD}", with: "")) ? head : head + " "
         }
+    }
+
+    /// Whether `head` and `tail`, a gap between them, are one word broken at a ligature. A word
+    /// doesn't end in "fi" or "fl", so a gap after those is always the ligature's ("profi t",
+    /// "certifi cate"). After "ff" the tail has to be a fragment ("diff erently"); after a single
+    /// "f", seen so more than once too, as "of" is a word before a rare one ("of grinding").
+    func ligatureJoins(_ head: String, _ tail: String) -> Bool {
+        let head = head.lowercased(), tail = tail.lowercased()
+        guard let first = tail.first, first.isLetter, first.isLowercase else { return false }
+        if head.hasSuffix("fi") || head.hasSuffix("fl") { return true }
+        // "off ice": a tail that follows "ff" more often than not.
+        if head.hasSuffix("ff") { return (standalone[tail] ?? 0) < (afterF[tail] ?? 0) }
+        return head.hasSuffix("f") && isFragment(tail) && (afterF[tail] ?? 0) >= 2
     }
 
     /// A piece of a word broken after an "f": it follows an "f" far more often than it stands
@@ -740,21 +937,40 @@ struct Lexicon {
         return joined >= (pairs[a + " " + b] ?? 0)
     }
 
+    /// Whether a hyphen that ends a line between `first` and `second` is the typesetter's (the
+    /// word is one: "Phari-" / "sees") rather than the word's own ("three-" / "year"). A break the
+    /// book never shows either way is the typesetter's — unless its first half opens compounds
+    /// elsewhere and its second is a word of its own, as in "Beth-" / "haran".
+    func hyphenIsTypesetting(_ first: String, _ second: String) -> Bool {
+        let a = first.lowercased(), b = second.lowercased()
+        let joined = words[a + b] ?? 0
+        let kept = hyphenated[a + "-" + b] ?? 0
+        if joined > 0 || kept > 0 { return joined >= kept }
+        return (compoundHeads[a] ?? 0) == 0 || (words[b] ?? 0) == 0
+    }
+
     /// Replaces each line break with nothing (inside a word) or a space (between words).
     func resolveLineBreaks(in runs: [PDFBibleReader.Run]) -> [PDFBibleReader.Run] {
         var runs = runs
-        // A ligature is often a run of its own, so its break can fall between runs too.
+        // A ligature is often a run of its own, so its break can fall between runs too, the gap
+        // at the end of one or the start of the next.
         for index in runs.indices.dropLast() {
             let text = runs[index].text.replacingOccurrences(of: "\u{AD}", with: "")
-            guard text.hasSuffix(" "), Self.endsInLigature(String(text.dropLast()).lowercased()) else { continue }
-            let tail = String(runs[index + 1].text.replacingOccurrences(of: "\u{AD}", with: "").prefix { $0.isLetter })
-            guard let first = tail.first, first.isLowercase, isFragment(tail) else { continue }
+            let next = runs[index + 1].text.replacingOccurrences(of: "\u{AD}", with: "")
+            guard text.hasSuffix(" ") != next.hasPrefix(" ") else { continue }
+            let head = String(text.trimmingCharacters(in: .whitespaces).reversed().prefix { $0.isLetter }.reversed())
+            let tail = String(next.trimmingCharacters(in: .whitespaces).prefix { $0.isLetter })
+            guard !head.isEmpty, ligatureJoins(head, tail) else { continue }
             while runs[index].text.last?.isWhitespace == true { runs[index].text.removeLast() }
+            while runs[index + 1].text.first?.isWhitespace == true { runs[index + 1].text.removeFirst() }
         }
+        // The line so far: a run can hold no more than its end ("-", in a font of its own).
+        var line = ""
         for index in runs.indices {
             var text = runs[index].text
             guard text.contains("\n") else {
                 runs[index].text = repairingLigatures(text)
+                line += text
                 continue
             }
             let following = runs[(index + 1)...].first { !$0.text.isEmpty }?.text ?? ""
@@ -762,9 +978,13 @@ struct Lexicon {
             let parts = text.components(separatedBy: "\n")
             for (position, part) in parts.enumerated() {
                 result += part
+                line = position == 0 ? line + part : part
                 guard position < parts.count - 1 else { break }
                 let next = position + 1 < parts.count - 1 || !parts[position + 1].isEmpty ? parts[position + 1] : following
-                result += separator(after: part, before: next)
+                switch separator(after: line, before: next) {
+                case .dropHyphen: if result.hasSuffix("-") { result.removeLast() }
+                case .text(let separator): result += separator
+                }
             }
             text = result
             runs[index].text = repairingLigatures(text)
@@ -772,17 +992,30 @@ struct Lexicon {
         return runs
     }
 
-    private func separator(after line: String, before next: String) -> String {
+    private enum Separator { case text(String), dropHyphen }
+
+    private func separator(after line: String, before next: String) -> Separator {
         let clean = line.replacingOccurrences(of: "\u{AD}", with: "")
-        // A real hyphen at the end of a line between letters: a compound, kept ("three-year-" / "old").
-        if clean.hasSuffix("-"), let first = next.first, first.isLetter { return "" }
-        if line.hasSuffix("\u{AD}") { return "" }
-        guard let last = clean.last, last.isLetter,
-              let head = next.replacingOccurrences(of: "\u{AD}", with: "").first, head.isLetter,
-              !next.hasPrefix("\u{AD}") else { return " " }
+        let head = next.replacingOccurrences(of: "\u{AD}", with: "")
+        if line.hasSuffix("\u{AD}") { return .text("") }
+        // A hyphen at the end of a line between letters: the typesetter's ("Phari-" / "sees"), or
+        // the word's own ("three-year-" / "old").
+        if clean.hasSuffix("-"), head.first?.isLetter == true {
+            let before = clean.dropLast()
+            guard before.last?.isLetter == true else { return .text("") }
+            let tail = String(before.reversed().prefix { $0.isLetter }.reversed())
+            let lead = String(head.prefix { $0.isLetter })
+            return line.hasSuffix("-") && hyphenIsTypesetting(tail, lead) ? .dropHyphen : .text("")
+        }
+        // Nothing between an opening quote or bracket and what it opens, or between what closes
+        // and its closing mark.
+        if let last = clean.last, "“‘([".contains(last) { return .text("") }
+        if let first = head.first, "”’)]".contains(first) { return .text("") }
+        guard let last = clean.last, last.isLetter, let first = head.first, first.isLetter,
+              !next.hasPrefix("\u{AD}") else { return .text(" ") }
         let tail = String(clean.reversed().prefix { $0.isLetter }.reversed())
-        let lead = String(next.replacingOccurrences(of: "\u{AD}", with: "").prefix { $0.isLetter })
-        return joins(tail, lead) ? "" : " "
+        let lead = String(head.prefix { $0.isLetter })
+        return joins(tail, lead) ? .text("") : .text(" ")
     }
 }
 
