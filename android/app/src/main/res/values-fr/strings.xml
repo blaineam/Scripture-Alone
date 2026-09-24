@@ -187,6 +187,16 @@
     <string name="nav_no_results_title">Aucun résultat pour « %1$s »</string>
     <string name="nav_no_results_message">Vérifiez l\'orthographe ou lancez une nouvelle recherche.</string>
     <string name="nav_chapter_label">%1$s chapitre %2$d</string>
+    <string name="nav_topics">Thèmes</string>
+    <string name="nav_topics_see_all">Tout afficher</string>
+    <string name="nav_topic_card">Thème</string>
+    <string name="topics_search_placeholder">Rechercher un thème</string>
+    <string name="topics_life_topics">Thèmes de vie</string>
+    <string name="topics_nave_intro">Tous les thèmes de Nave’s Topical Bible, d’Aaron à Zuzims, avec les passages qu’il cite.</string>
+    <string name="topics_passages_from">Passages tirés de la %1$s.</string>
+    <string name="topics_more_in">Plus dans %1$s</string>
+    <string name="topics_passage_unavailable">Impossible de charger ce passage.</string>
+    <string name="topics_see">Voir %1$s</string>
     <string name="translations_compare_unavailable">Cette traduction n\'est pas disponible.</string>
     <string name="translations_compare_empty_title">Rien à comparer</string>
     <string name="translations_compare_empty_message">Ajoutez d\'abord une autre traduction.</string>

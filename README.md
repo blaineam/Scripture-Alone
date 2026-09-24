@@ -35,6 +35,12 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 - **Quick navigation** — type `jn 3 16`, `rom 8:28-39`, `1co13` or a word to search; or browse
   books and chapters. The chapters you've read and the words you've searched wait at the top,
   ready to run again. ⌘L on Mac and iPad keyboards.
+- **Topics** — in Go To, passages for what you're going through: 72 themes (anxiety, grief,
+  temptation, marriage, waiting, God's presence…), each with a dozen or so well-loved passages in
+  the translation you're reading, and found by the words people use ("anxious", "burned out") in
+  all nine languages. Searching Go To for such a word offers the topic above the verses. English
+  readers also get Nave's Topical Bible from A to Z (5,310 topics, public domain). The themes and
+  their passages are listed in [docs/topics.md](docs/topics.md).
 - **Highlights and notes** — tap verses to select; highlight in five colors; attach a note to one
   or more verse ranges (a sermon on Romans 8:1–17). Notes show inline beside the verse and in a
   searchable Notes panel.
@@ -141,6 +147,8 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 | `Tools/build_study.py` | Compiles `Data/source/study/` (cross references, commentary) into `ScriptureAlone/Resources/Study/Study.sqlite` |
 | `Tools/build_context.py` | Builds `Resources/Study/Context.sqlite` + `Basemap.bin` from OpenBible.info places, Natural Earth and `Data/context/` |
 | `Data/context/` | Authored eras, events, chapter→era map, charts and map labels |
+| `Data/topics/` | The curated life themes (references only) and their translations |
+| `Tools/build_topics.py` | Checks every theme passage against the BSB and KJV, writes `LifeThemes.json`, the catalog entries, Android's arrays and `docs/topics.md`; builds `Resources/Study/Topics.sqlite` from Nave's Topical Bible (`Data/source/topics/`) |
 
 ## Build
 
@@ -150,6 +158,7 @@ python3 Tools/build_bibles.py --check
 python3 Tools/build_study.py --check
 python3 Tools/build_context.py --check   # fetches pinned sources once into Data/cache/
 python3 Tools/build_companion_data.py --check
+python3 Tools/build_topics.py --check
 cd ScriptureAloneCore && swift test
 ```
 
@@ -175,6 +184,6 @@ Designs and captions live in `docs/appstore-screenshots/`; the rig is `Tools/cap
 
 Code: GNU AGPL‑3.0‑or‑later with the additional permissions in
 [LICENSE-EXCEPTIONS.md](LICENSE-EXCEPTIONS.md). Bible texts and commentaries: public domain.
-Cross references and place data: © OpenBible.info, CC BY 4.0. Base map: Natural Earth, public
+Nave's Topical Bible: public domain. Cross references and place data: © OpenBible.info, CC BY 4.0. Base map: Natural Earth, public
 domain ([details](docs/study-sources.md), [context](docs/context-sources.md)). See
 [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.

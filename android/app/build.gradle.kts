@@ -173,13 +173,21 @@ val syncBundledData by tasks.registering(Sync::class) {
         // publisher key the ASV's signature is checked against — a trust anchor that arrived by the
         // same channel as the package it vouches for would vouch for nothing. The Bibles and the
         // commentary and interlinear databases are asset packs (`packs/`).
-        include("Study/CrossReferences.sqlite", "Study/Context.sqlite", "Study/Basemap.bin", "Packages/bundled-signing.pub")
+        // Nave's Topical Bible (Study/Topics.sqlite, 1.2 MB) for the Topics directory, as on iOS.
+        include(
+            "Study/CrossReferences.sqlite", "Study/Context.sqlite", "Study/Basemap.bin", "Study/Topics.sqlite",
+            "Packages/bundled-signing.pub",
+        )
         eachFile { path = name }          // flatten, as the iOS bundle does
         includeEmptyDirs = false
     }
     // Verse of the Day: the same curated list, and so the same passage on the same day, as iOS.
     from(rootProject.layout.projectDirectory.dir("../ScriptureAlone/Shared")) {
         include("DailyVerses.json")
+    }
+    // The curated life themes of the Topics directory: the same passages as iOS (Tools/build_topics.py).
+    from(rootProject.layout.projectDirectory.dir("../ScriptureAloneCore/Sources/ScriptureAloneCore/Resources")) {
+        include("LifeThemes.json")
     }
     into(layout.buildDirectory.dir("generated/bundledData"))
 }

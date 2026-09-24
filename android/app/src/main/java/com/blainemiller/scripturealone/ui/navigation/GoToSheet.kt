@@ -96,6 +96,10 @@ import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.search.SearchEmphasis
 import com.blainemiller.scripturealone.data.search.SearchHit
 import com.blainemiller.scripturealone.data.search.VerseSearch
+import com.blainemiller.scripturealone.data.topics.LifeThemeCatalog
+import com.blainemiller.scripturealone.data.topics.TopicsLibrary
+import com.blainemiller.scripturealone.text.AppLanguage
+import com.blainemiller.scripturealone.ui.study.loaded
 import com.blainemiller.scripturealone.text.countedString
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
@@ -106,7 +110,9 @@ import kotlinx.coroutines.delay
 /**
  * The Go To sheet — `ScriptureAlone/Navigation/PassagePicker.swift`. One field takes a reference
  * ("jn 3 16", "rom 8:28-39") or words to search; empty, the sheet shows Recent chapters, Recent
- * Searches and the two testaments' books, and a book opens its chapter grid.
+ * Searches, Topics and the two testaments' books, and a book opens its chapter grid. Words that name
+ * a topic ("anxious") offer it above the verses; the Topics directory, a theme and a Nave's topic
+ * open inside the sheet (`TopicsScreens.kt`), with Back returning through them.
  *
  * Laid out as the iOS sheet is — the same sections in the same order, the same grid minimums (86 pt
  * book tiles, 52 pt chapter cells, 8 pt gaps), the same type scale (headline 17, callout 16, caption2
@@ -124,6 +130,12 @@ fun GoToSheet(
     var query by rememberSaveable { mutableStateOf(initialQuery) }
     /** The book whose chapter grid is open — iOS's `NavigationStack` path, one level deep. */
     var book by rememberSaveable { mutableStateOf<Int?>(null) }
+    /** The topics opened, deepest last — the rest of iOS's path ([TopicRoute.key]s). */
+    var topicStack by rememberSaveable { mutableStateOf(listOf<String>()) }
+    val topicRoute = topicStack.lastOrNull()?.let(TopicRoute::of)
+    val language = AppLanguage.current
+    val topicCatalog = loaded(language) { TopicsLibrary.catalog(it) }
+    val topicIndex = loaded(language) { TopicsLibrary.visibleIndex(it) }
     var results by remember { mutableStateOf<List<SearchHit>>(emptyList()) }
     /** The query [results] answer, so "No Results" is never shown for a search still running. */
     var answered by remember { mutableStateOf<String?>(null) }
@@ -135,6 +147,9 @@ fun GoToSheet(
     }
     /** Words, not a reference: what iOS sends to the search. */
     val isWordSearch = VerseSearch.isLongEnough(query) && passage == null
+    /** Life themes the words speak to — "anxious" is Anxiety — and a Nave's topic named exactly them. */
+    val matchedThemes = remember(query, topicCatalog) { if (passage != null) emptyList() else topicCatalog?.search(query).orEmpty() }
+    val matchedTopic = remember(query, topicIndex) { if (passage != null || query.length < 3) null else topicIndex?.topic(query) }
 
     // A reference navigates; anything else searches the text — after 180 ms, as iOS waits, so a
     // search isn't run for every keystroke of a word still being typed.
@@ -172,7 +187,24 @@ fun GoToSheet(
         }
     }
 
-    BackHandler { if (book != null) book = null else dismiss() }
+    fun openTopic(route: TopicRoute) {
+        keyboard?.hide()
+        topicStack = topicStack + route.key
+    }
+
+    /** A passage chosen in a topic: KJV keys, so the reader lands on its own verse. */
+    fun openPassage(range: com.blainemiller.scripturealone.data.VerseRange) {
+        model.go(range.start)
+        dismiss()
+    }
+
+    BackHandler {
+        when {
+            book != null -> book = null
+            topicStack.isNotEmpty() -> topicStack = topicStack.dropLast(1)
+            else -> dismiss()
+        }
+    }
 
     val surface = SheetColors.surface(palette)
     Column(
@@ -186,17 +218,37 @@ fun GoToSheet(
             .takesTaps(),
     ) {
         val open = book?.let { BookID.of(it) }
+        val topicsTitle = stringResource(R.string.nav_topics)
         Header(
-            title = open?.displayName ?: stringResource(R.string.nav_title),
+            title = open?.displayName ?: topicRoute?.let { topicTitle(it, topicCatalog, topicIndex, topicsTitle) } ?: stringResource(R.string.nav_title),
             palette = palette,
             surface = surface,
-            back = open != null,
-            onLeading = { if (open != null) book = null else dismiss() },
+            back = open != null || topicRoute != null,
+            onLeading = {
+                when {
+                    open != null -> book = null
+                    topicRoute != null -> topicStack = topicStack.dropLast(1)
+                    else -> dismiss()
+                }
+            },
         )
         if (open != null) {
             ChapterGrid(open, model.location, palette) { chapter ->
                 model.show(chapter)
                 dismiss()
+            }
+        } else if (topicRoute != null) {
+            val catalog = topicCatalog
+            when (topicRoute) {
+                TopicRoute.Directory -> if (catalog != null) TopicsDirectory(catalog, topicIndex, palette, surface, ::openTopic)
+                is TopicRoute.Theme -> catalog?.theme(topicRoute.id)?.let { theme ->
+                    LifeThemeScreen(theme, topicIndex, model, palette, ::openTopic, ::openPassage)
+                }
+                is TopicRoute.Index -> {
+                    val index = topicIndex
+                    val topic = index?.topic(topicRoute.id)
+                    if (index != null && topic != null) IndexTopicScreen(topic, index, model, palette, ::openTopic, ::openPassage)
+                }
             }
         } else {
             SearchField(query, palette, surface, onChange = { query = it }, onSubmit = ::submit)
@@ -214,6 +266,7 @@ fun GoToSheet(
                         dismiss()
                     }
                     recentSearchesSection(model, palette) { query = it }
+                    topicCatalog?.let { topicsSection(it, palette, ::openTopic) }
                     booksSection(R.string.nav_old_testament, BookID.entries.filter { !it.isNewTestament }, palette) {
                         keyboard?.hide()
                         book = it.number
@@ -225,6 +278,16 @@ fun GoToSheet(
                 } else {
                     passage?.let { p ->
                         full("goto") { GoToCard(p.clamped.display, palette, onClick = ::submit) }
+                    }
+                    for (theme in matchedThemes) {
+                        full("topic-${theme.id}") {
+                            TopicCard(theme.localizedName, theme.localizedDescription, palette) { openTopic(TopicRoute.Theme(theme.id)) }
+                        }
+                    }
+                    matchedTopic?.let { topic ->
+                        full("nave-${topic.id}") {
+                            TopicCard(topic.name, topicIndex?.name.orEmpty(), palette) { openTopic(TopicRoute.Index(topic.id)) }
+                        }
                     }
                     if (suggested.isNotEmpty()) {
                         items(suggested, key = { "suggest-${it.number}" }) { b ->
@@ -239,7 +302,7 @@ fun GoToSheet(
                             UnsearchableNotice(model.translationAbbreviation, palette) { id -> model.selectTranslation(id) }
                         }
                         results.isNotEmpty() -> resultsSection(results, query, palette, ::openResult)
-                        isWordSearch && suggested.isEmpty() && answered == query -> full("empty") {
+                        isWordSearch && suggested.isEmpty() && matchedThemes.isEmpty() && matchedTopic == null && answered == query -> full("empty") {
                             NoResults(query, palette)
                         }
                     }
@@ -284,13 +347,24 @@ private fun Header(title: String, palette: ReaderPalette, surface: Color, back: 
     }
 }
 
+/**
+ * The sheet's glass search field. Go To's takes focus as the sheet appears, so typing starts at once,
+ * as iOS's does; the Topics directory's waits to be tapped, as `.searchable` does.
+ */
 @Composable
-private fun SearchField(query: String, palette: ReaderPalette, surface: Color, onChange: (String) -> Unit, onSubmit: () -> Unit) = CappedFontScale {
+internal fun SearchField(
+    query: String,
+    palette: ReaderPalette,
+    surface: Color,
+    placeholder: String = stringResource(R.string.nav_field_placeholder),
+    autoFocus: Boolean = true,
+    onChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+) = CappedFontScale {
     val focus = remember { FocusRequester() }
-    val fieldLabel = stringResource(R.string.nav_field_label)
+    val fieldLabel = if (autoFocus) stringResource(R.string.nav_field_label) else placeholder
     val clearLabel = stringResource(R.string.common_clear)
-    // iOS focuses the field as the sheet appears, so typing starts at once.
-    LaunchedEffect(Unit) { focus.requestFocus() }
+    if (autoFocus) LaunchedEffect(Unit) { focus.requestFocus() }
     Row(
         Modifier
             .padding(start = 16.dp, end = 16.dp, bottom = 6.dp)
@@ -319,7 +393,7 @@ private fun SearchField(query: String, palette: ReaderPalette, surface: Color, o
                 Box(contentAlignment = Alignment.CenterStart) {
                     if (query.isEmpty()) {
                         Text(
-                            stringResource(R.string.nav_field_placeholder), color = palette.secondary.copy(alpha = 0.8f),
+                            placeholder, color = palette.secondary.copy(alpha = 0.8f),
                             fontSize = 17.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
                         )
                     }
@@ -408,6 +482,31 @@ private fun LazyGridScope.recentSearchesSection(model: ReaderViewModel, palette:
                     }
                 }
                 Separator(palette)
+            }
+        }
+    }
+}
+
+/** A few of the life themes to start from, and See All for the whole directory — iOS's `topicsSection`. */
+private fun LazyGridScope.topicsSection(catalog: LifeThemeCatalog, palette: ReaderPalette, onOpen: (TopicRoute) -> Unit) {
+    val featured = TopicsLibrary.FEATURED.mapNotNull(catalog::theme)
+    if (featured.isEmpty()) return
+    sectionTitle("topics-title", R.string.nav_topics, palette) {
+        Text(
+            stringResource(R.string.nav_topics_see_all), color = palette.accent, fontSize = 15.sp,
+            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button) { onOpen(TopicRoute.Directory) }.padding(4.dp),
+        )
+    }
+    full("topics") {
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (theme in featured) {
+                Box(
+                    Modifier.height(36.dp).clip(CircleShape).background(SheetColors.buttonFill(palette))
+                        .clickable(role = Role.Button) { onOpen(TopicRoute.Theme(theme.id)) }.padding(horizontal = 14.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(theme.localizedName, color = palette.accent, fontSize = 17.sp, maxLines = 1)
+                }
             }
         }
     }

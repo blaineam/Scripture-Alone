@@ -586,6 +586,18 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     /**
+     * One passage (KJV keys) away from the reader — a topic's — as a quotation, under the same terms a
+     * selection is quoted under: "" when the translation's terms don't allow that much of it.
+     */
+    suspend fun passageQuotation(range: VerseRange): String {
+        val verses = verses(listOf(range))
+        if (verses.isEmpty()) return ""
+        val info = chapter?.translation
+        if (info != null && info.quotationRefusal(verses.map { it.ref.key }) { book -> bookSizes[info.id to book.number] ?: 0 } != null) return ""
+        return Selection.quotation(listOf(displayRange(range)), verses, translationAbbreviation, info?.attributionNotice)
+    }
+
+    /**
      * The share link for [ranges] with the designer's remembered template, typeface, aspect and red
      * letters — as `ShareMenu` makes it — or null when the passage is too long for one or the
      * translation's terms don't allow links (see [ShareSource.linksAllowed]).

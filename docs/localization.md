@@ -84,6 +84,10 @@ styling coverage is character-for-character unchanged.
 - **Verse of the Day** (`DailyVerses.json`): ASV/BSB/KJV text only, English themes.
 - **Maps, timeline, charts** (`Context.sqlite`: places, events, eras, charts, labels): English.
 - **Commentary / lexicon definitions**: hidden per the decisions above.
+- **Topics** (Go To): the 72 life themes' names, descriptions and search words are translated in
+  `Data/topics/translations/<lang>.json` and written into the core catalog and Android's
+  `life_themes.xml` by `Tools/build_topics.py`; their passages come from the reader's own Bible.
+  Nave's Topical Bible is English prose, so like the commentary it is hidden outside English.
 - **Store**: App Store + Play listings and screenshots in 8 locales. The website is already in 9.
 
 ## Phases

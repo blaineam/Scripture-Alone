@@ -187,6 +187,16 @@
     <string name="nav_no_results_title">没有“%1$s”的结果</string>
     <string name="nav_no_results_message">请检查拼写或换个词搜索。</string>
     <string name="nav_chapter_label">%1$s 第 %2$d 章</string>
+    <string name="nav_topics">主题</string>
+    <string name="nav_topics_see_all">查看全部</string>
+    <string name="nav_topic_card">主题</string>
+    <string name="topics_search_placeholder">搜索主题</string>
+    <string name="topics_life_topics">人生主题</string>
+    <string name="topics_nave_intro">Nave’s Topical Bible 中的全部主题（从亚伦到苏西人），附其所列经文。</string>
+    <string name="topics_passages_from">经文出自 %1$s。</string>
+    <string name="topics_more_in">%1$s 中的更多内容</string>
+    <string name="topics_passage_unavailable">无法载入这段经文。</string>
+    <string name="topics_see">参见 %1$s</string>
     <string name="translations_compare_unavailable">该译本不可用。</string>
     <string name="translations_compare_empty_title">没有可对照的译本</string>
     <string name="translations_compare_empty_message">请先添加另一个译本。</string>

@@ -2,6 +2,15 @@
 
 ## After 1.0.0
 
+- Topics: a way to find what the Bible says about what you're going through. In Go To there is
+  now a Topics row — Anxiety & Worry, Fear, Grief & Loss, Loneliness and more — and See All opens
+  72 topics in seven groups, from Depression & Despair and Guilt & Shame to Marriage, Parenting,
+  Work, Waiting and God's Presence. Each one gathers a dozen or so well-known passages, shown in
+  the translation you're reading; tap one to go there, or press and hold to add it to your
+  Favorites, copy it or share it (as far as the translation's publisher allows). Typing a word
+  like "anxious", "lonely" or "burned out" in Go To offers the matching topic above the verses, in
+  any of the app's nine languages. In English, the directory also holds Nave's Topical Bible from
+  A to Z — more than 5,000 topics, each passage a link. On iPhone, iPad, Mac and Android.
 - With an imported study Bible, the Commentary tab still offers the bundled commentators
   (Calvin, Gill, and Jamieson, Fausset & Brown) to download, in a row above the study Bible's notes.
 - Fixed a crash opening Manage Translations on a Mac.

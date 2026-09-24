@@ -65,6 +65,34 @@ Attribution lines (shown under each commentary and on About Study Resources) nam
 date, its public-domain status, and "Text from the Free Use Bible API by AO Lab
 (bible.helloao.org), Public Domain Mark 1.0."
 
+## Topics — Nave's Topical Bible (public domain) ✅ used
+
+The A–Z half of the Topics directory in Go To (English readers only, like the commentaries).
+
+- **Work**: Orville J. Nave, *Nave's Topical Bible* (1896): 5,310 topics and subtopics, about
+  78,000 references. Published in 1896 by a US author who died in 1917, it is public domain.
+- **Data**: CrossWire's SWORD module `Nave`
+  (<https://www.crosswire.org/ftpmirror/pub/sword/packages/rawzip/Nave.zip>, version 3.0,
+  2021-02-28), whose `.conf` reads `DistributionLicense=Public Domain` and
+  `TextSource=https://ccel.org/ccel/n/nave/bible.xml`. The zip is kept as
+  `Data/source/topics/Nave.zip` (1.3 MB, SHA-256
+  `52d9b7cde04c2abb5187ae804bcb97d93c7344a1358539f50ebc178ac0c945f0`);
+  `python3 Tools/build_topics.py --fetch` downloads it again and says if it has changed.
+- **Build**: `Tools/build_topics.py` reads the module's compressed lexicon (TEI with OSIS
+  references) into `ScriptureAlone/Resources/Study/Topics.sqlite` (1.2 MB, bundled on both
+  platforms): names title-cased, each topic's lines and references compressed together. A link
+  whose target the source misspells is matched to the nearest topic or dropped (176 of 4,368);
+  23 references to verses the KJV doesn't have are dropped.
+- **Attribution shown in the app** (under every topic): "Nave's Topical Bible by Orville J. Nave
+  (1896), public domain; text from the CCEL edition via CrossWire's SWORD module."
+
+Torrey's *New Topical Textbook* (also public domain, also a CrossWire module) was considered and
+left out: Nave's covers its ground and more, and one index keeps the directory simple.
+
+The curated **life themes** in the same directory are the project's own work (`Data/topics/`,
+listed in [topics.md](topics.md)): references only, with the text drawn from the reader's
+translation.
+
 ## Database size
 
 `Study.sqlite` is 45.7 MB. Each chapter's commentary is compressed as a single raw-DEFLATE block,
