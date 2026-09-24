@@ -52,6 +52,7 @@ final class ImportedLibrary {
                 return Entry(info: store.info, url: url)
             }
             .sorted { $0.info.name.localizedCaseInsensitiveCompare($1.info.name) == .orderedAscending }
+        ImportedStudyLibrary.shared.reload()
     }
 
     /// Reads a file the reader picked and writes a store beside the others.

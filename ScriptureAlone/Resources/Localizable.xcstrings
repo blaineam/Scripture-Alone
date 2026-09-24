@@ -4208,6 +4208,66 @@
         }
       }
     },
+    "A whole Bible can take a minute or two, longer with study notes or from a PDF." : {
+      "comment" : "Shown while a translation is being imported.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine ganze Bibel kann ein, zwei Minuten dauern, mit Studienanmerkungen oder aus einem PDF länger."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A whole Bible can take a minute or two, longer with study notes or from a PDF."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una Biblia completa puede tardar uno o dos minutos; más con notas de estudio o desde un PDF."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une Bible entière peut prendre une ou deux minutes, davantage avec des notes d’étude ou depuis un PDF."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una Bibbia intera può richiedere un paio di minuti, di più con le note di studio o da un PDF."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聖書全体では 1〜2 分かかることがあります。学習ノート付きや PDF からの場合はさらにかかります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "성경 전체는 1~2분 걸릴 수 있으며, 연구 노트가 있거나 PDF에서 가져오면 더 걸립니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma Bíblia inteira pode levar um ou dois minutos, mais com notas de estudo ou a partir de um PDF."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整本圣经可能需要一两分钟；含研读注释或来自 PDF 时会更久。"
+          }
+        }
+      }
+    },
     "API key" : {
       "localizations" : {
         "de" : {
@@ -18859,6 +18919,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "显示 %@ 的地图。"
+          }
+        }
+      }
+    },
+    "Maps & Images" : {
+      "comment" : "Study panel Context section: maps and pictures from an imported study Bible.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karten & Bilder"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Maps & Images"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapas e imágenes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cartes et images"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mappe e immagini"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地図と画像"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지도 및 이미지"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapas e imagens"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地图与图片"
           }
         }
       }
@@ -36029,58 +36149,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这将替换 %2$@ 的《%1$@》珍藏。"
-          }
-        }
-      }
-    },
-    "This takes a few seconds for a whole Bible." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Für eine ganze Bibel dauert das ein paar Sekunden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esto tarda unos segundos con una Biblia entera."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cela prend quelques secondes pour une Bible entière."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Per una Bibbia intera occorrono alcuni secondi."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "聖書全体では数秒かかります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "성경 전체는 몇 초 정도 걸립니다."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Isso leva alguns segundos para uma Bíblia inteira."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "整本圣经需要几秒钟。"
           }
         }
       }

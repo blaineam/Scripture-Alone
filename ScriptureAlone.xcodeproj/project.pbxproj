@@ -57,6 +57,7 @@
 		581B9288A814AD5AA93E385B /* LegacySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFE4FE8B7E7BFDE0693CADF /* LegacySettingsView.swift */; };
 		58AA92EA5928A397E0556F9C /* ContextServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F32FA504E1D64ABEE007588 /* ContextServices.swift */; };
 		5AAD64D40AF187BC39ACBE5D /* WatchTranslations.swift in Sources */ = {isa = PBXBuildFile; fileRef = A366981F70F0236C453C9222 /* WatchTranslations.swift */; };
+		5B35697999E0F4E64D281ACF /* ImportedStudyLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A35AD23887D5429D641CB50 /* ImportedStudyLibrary.swift */; };
 		5E6D7A57E26E8901C389D81E /* WatchVerseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8336CBEF8FA208CEC7AB8F7 /* WatchVerseView.swift */; };
 		5EAD4346E4DB8A50570A9868 /* CatalogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 392230810B0A26093991E9F3 /* CatalogView.swift */; };
 		60FC358C80B4C02DF0C7A784 /* NotesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6D74C961BED0B7388ED862C /* NotesPanel.swift */; };
@@ -246,6 +247,7 @@
 		0618262E7F0D5AFD6612363E /* PlaceViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceViews.swift; sourceTree = "<group>"; };
 		07881EA7262DD7AB438C9EB2 /* AssetLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLibrary.swift; sourceTree = "<group>"; };
 		0A1AFE932B4592CED1A13EC4 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		0A35AD23887D5429D641CB50 /* ImportedStudyLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedStudyLibrary.swift; sourceTree = "<group>"; };
 		0B4035AD8C6AA89E5A0CE15B /* VerseSpeaker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseSpeaker.swift; sourceTree = "<group>"; };
 		0E396FC4547F0E28D153AA60 /* ContextViewer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextViewer.swift; sourceTree = "<group>"; };
 		0F32FA504E1D64ABEE007588 /* ContextServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextServices.swift; sourceTree = "<group>"; };
@@ -747,6 +749,7 @@
 				64254A487F2AB5DE14735746 /* CommentaryView.swift */,
 				A362F8FBBAC7FE3A433DD868 /* CommentatorTraditionsView.swift */,
 				060801F1607F15B63E34EFF7 /* CrossReferencesView.swift */,
+				0A35AD23887D5429D641CB50 /* ImportedStudyLibrary.swift */,
 				F435AEBC1B470F11ED9904CE /* InterlinearView.swift */,
 				A1EE071A16E5CB568DFB3331 /* StudyContextView.swift */,
 				F98B39ABED248B61521DF491 /* StudyLanguage.swift */,
@@ -1239,6 +1242,7 @@
 				37FEC9F94DD87B26AB164FF6 /* FavoritesSection.swift in Sources */,
 				EC750938A3FCAC99AA441252 /* ImportedBibleSync.swift in Sources */,
 				31C68B8F127E821D23A383BD /* ImportedLibrary.swift in Sources */,
+				5B35697999E0F4E64D281ACF /* ImportedStudyLibrary.swift in Sources */,
 				09AEBD0E10988629C66DB223 /* IntentLibrary.swift in Sources */,
 				51067F02DBFC89BBCD92F9F8 /* InterlinearView.swift in Sources */,
 				F1ED4C9CBFA73E1B4868D00D /* KeepsakeCreateView.swift in Sources */,

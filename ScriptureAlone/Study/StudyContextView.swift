@@ -33,6 +33,7 @@ struct StudyContextView: View {
                                             selectedPlace: $selectedPlace)
                     }
                     chartsSection
+                    ImportedImagesSection(chapter: chapter)
                     Button("Sources & Credits", systemImage: "info.circle") { showCredits = true }
                         .font(.footnote)
                         .buttonStyle(.borderless)

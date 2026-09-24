@@ -31,6 +31,9 @@ public struct BibleTextExtractor: Sendable {
         /// Keep footnote markers, with the note text when the ePub puts it in the same file.
         public var footnotes: Bool
 
+        /// Keep a study Bible's notes, introductions, essays and pictures, apart from the text.
+        public var studyMaterial: Bool = true
+
         public init(redLetters: Bool = true, headings: Bool = true, footnotes: Bool = true) {
             self.redLetters = redLetters
             self.headings = headings
@@ -62,7 +65,9 @@ public struct BibleTextExtractor: Sendable {
         }
         assembler.finish()
         guard !assembler.bible.isEmpty else { throw BibleImportError.noScriptureFound }
-        return assembler.bible
+        var bible = assembler.bible
+        bible.loadStudyImages { try? package.data(atPath: $0) }
+        return bible
     }
 
     /// One document, for tests and for callers that already hold the XHTML.
@@ -101,6 +106,10 @@ enum FlowItem: Sendable {
     case noteMarker(id: String?, label: String)
     /// The document said which book this is outside its text — `<section title="Romans">`.
     case place(BookID, chapter: Int?)
+    /// An essay or box set into the text: its title and paragraphs.
+    case article(title: String, text: String)
+    /// A picture: its source path as written, and its description.
+    case image(source: String, caption: String)
 }
 
 /// A candidate verse or chapter number, with every shape that would explain it.
@@ -145,6 +154,7 @@ struct DocumentScanner: Sendable {
         case heading
         case note(String)
         case noteReference(id: String?)
+        case essay
     }
 
     private struct Frame {
@@ -191,6 +201,21 @@ struct DocumentScanner: Sendable {
                 let epubType = tag.epubType
                 let classes = Set(tag.classes)
 
+                // A picture is recorded where it stands, even inside a caption or figure the text
+                // skips: a study Bible's maps sit beside the verses they illustrate.
+                if tag.name == "img", options.studyMaterial, let source = tag.attribute("src"), !source.isEmpty {
+                    let caption = (tag.attribute("alt") ?? "").replacingOccurrences(of: "-", with: " ")
+                        .replacingOccurrences(of: "_", with: " ").trimmingCharacters(in: .whitespaces)
+                    buffers[buffers.count - 1].append(.image(source: source, caption: caption))
+                }
+                // An essay boxed into the text is kept, as study material, not as scripture.
+                if skipDepth == 0, options.studyMaterial, classes.contains(where: Self.isEssayClass) {
+                    var frame = Frame(name: tag.name, capture: .essay, isSkipped: false, isRed: false, startedBlock: false)
+                    frame.blockMark = nil
+                    buffers.append([])
+                    stack.append(frame)
+                    continue
+                }
                 if Self.skippedElements.contains(tag.name)
                     || epubType.split(separator: " ").contains(where: { Self.skippedTypes.contains(String($0)) })
                     || classes.contains("toc") || classes.contains("footnotes")
@@ -364,8 +389,25 @@ struct DocumentScanner: Sendable {
             let trimmed = text.trimmingCharacters(in: .whitespaces)
             if !trimmed.isEmpty { emit(.heading(trimmed)) }
         case .note(let id):
-            let trimmed = text.trimmingCharacters(in: .whitespaces)
+            let trimmed = Self.paragraphs(captured).joined(separator: "\n\n")
             if !id.isEmpty, !trimmed.isEmpty { document.notes[id] = trimmed }
+        case .essay:
+            var title = ""
+            var items = captured
+            if let first = items.firstIndex(where: { if case .heading = $0 { return true } else { return false } }),
+               case .heading(let heading) = items[first] {
+                title = heading
+                items.remove(at: first)
+            }
+            var paragraphs = Self.paragraphs(items)
+            if title.isEmpty, let first = paragraphs.first, Self.looksLikeTitle(first) {
+                title = first
+                paragraphs.removeFirst()
+            }
+            let body = paragraphs.joined(separator: "\n\n")
+            if !body.isEmpty { emit(.article(title: title, text: body)) }
+            // Pictures inside the box still stand where the box does.
+            for case .image(let source, let caption) in captured { emit(.image(source: source, caption: caption)) }
         case .noteReference(let id):
             guard options.footnotes else { return }
             emit(.noteMarker(id: id, label: text.trimmingCharacters(in: .whitespaces)))
@@ -398,6 +440,12 @@ struct DocumentScanner: Sendable {
 
     /// Classes whose subtree is never the translation's text: cross-reference callers, study notes,
     /// essay boxes set into the text, and image captions.
+    /// A box or sidebar set into the text: an essay.
+    static func isEssayClass(_ name: String) -> Bool {
+        let squashed = name.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: "_", with: "")
+        return squashed.contains("sidebar") || (squashed.hasSuffix("box") && squashed.count <= 12)
+    }
+
     static func isNeverScriptureClass(_ name: String) -> Bool {
         let squashed = name.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: "_", with: "")
         return squashed.contains("crossref") || squashed == "xref" || squashed.hasPrefix("xref")
@@ -585,6 +633,36 @@ struct DocumentScanner: Sendable {
         return output
     }
 
+    /// A short paragraph in capitals, standing where a title would: "COVENANT OF WORKS".
+    static func looksLikeTitle(_ paragraph: String) -> Bool {
+        let letters = paragraph.filter(\.isLetter)
+        return paragraph.count <= 90 && letters.count >= 3 && letters.uppercased() == letters
+    }
+
+    /// Text as paragraphs, split where the markup's blocks were.
+    static func paragraphs(_ items: [FlowItem]) -> [String] {
+        var result: [String] = []
+        var current = ""
+        func flush() {
+            let trimmed = collapse(current).trimmingCharacters(in: .whitespaces)
+            if !trimmed.isEmpty { result.append(trimmed) }
+            current = ""
+        }
+        for item in items {
+            switch item {
+            case .text(let text, _): current += text
+            case .heading(let text):
+                flush()
+                current = text
+                flush()
+            case .blockStart, .blockEnd: flush()
+            default: break
+            }
+        }
+        flush()
+        return result
+    }
+
     static func plainText(_ items: [FlowItem]) -> String {
         var output = ""
         for item in items {
@@ -719,6 +797,12 @@ struct Assembler {
                     continue
                 }
             }
+            // A page read before its book's text begins is that book's introduction or outline.
+            // Pages of notes follow the text they annotate, so they never qualify — even ones
+            // that open with a table of links to every chapter, as an introduction may too.
+            if options.studyMaterial, let book, !bible.hasVerses(in: book) {
+                recordIntroduction(document, book: book, path: path)
+            }
             return
         }
 
@@ -790,6 +874,16 @@ struct Assembler {
                     move(to: hintBook, chapter: hint.chapter)
                 }
                 start(verse: marker.verse, through: marker.through)
+            case .article(let title, let text):
+                guard options.studyMaterial, let book else { continue }
+                bible.study.articles.append(ExtractedStudy.Article(kind: .essay, book: book, anchor: studyAnchor,
+                                                                  title: title, text: text))
+            case .image(let source, let caption):
+                guard options.studyMaterial else { continue }
+                bible.study.images.append(ExtractedStudy.Image(
+                    anchor: studyAnchor, book: book, caption: caption,
+                    path: EPUBPackage.resolve(base: EPUBPackage.directory(of: path), href: source),
+                    data: nil, mediaType: Self.mediaType(of: source)))
             case .text(let text, let red):
                 if awaitingFirstVerse, verse == nil, !text.trimmingCharacters(in: .whitespaces).isEmpty {
                     start(verse: 1)
@@ -797,6 +891,11 @@ struct Assembler {
                 }
                 append(text, red: red && options.redLetters)
             case .noteMarker(let id, let label):
+                // A study Bible's own note: kept as study material, anchored on this verse.
+                if options.studyMaterial, let id, let raw = document.notes[id], Self.isCommentary(Self.strippingLabel(raw, label)) {
+                    recordStudyNote(id: path + "#" + id, text: raw)
+                    continue
+                }
                 guard options.footnotes,
                       let body = Self.footnoteBody(id.flatMap { document.notes[$0] }, label: label) else { continue }
                 if awaitingFirstVerse, verse == nil {
@@ -858,6 +957,83 @@ struct Assembler {
             previous = marker.through ?? number
         }
         return total > 0 && Double(steps) / Double(total) >= 0.6
+    }
+
+    // MARK: Study material
+
+    /// Where study material found now belongs: the verse being read, or the start of the chapter.
+    private var studyAnchor: VerseRef? {
+        guard let book, let chapter else { return nil }
+        return VerseRef(book, chapter, verse ?? 1)
+    }
+
+    /// Every caller pointing at one note widens it: a note on 1:1–2 is called from both verses.
+    private mutating func recordStudyNote(id: String, text: String) {
+        guard let anchor = studyAnchor else { return }
+        if var note = bible.study.notes[id] {
+            if anchor.key > note.end.key { note.end = anchor }
+            if anchor.key < note.start.key { note.start = anchor }
+            bible.study.notes[id] = note
+        } else {
+            bible.study.notes[id] = ExtractedStudy.Note(start: anchor, end: anchor, text: Self.studyNoteText(text))
+            bible.study.noteOrder.append(id)
+        }
+    }
+
+    private mutating func recordIntroduction(_ document: ScannedDocument, book: BookID, path: String) {
+        var title = ""
+        var items = document.flow
+        if let first = items.firstIndex(where: { if case .heading = $0 { return true } else { return false } }),
+           case .heading(let heading) = items[first] {
+            title = heading
+            items.remove(at: first)
+        }
+        // A table of links to every chapter ("Genesis 1 · Genesis 2 · …") is navigation, not prose.
+        var paragraphs = DocumentScanner.paragraphs(items).filter { paragraph in
+            let covered = ReferenceDetector.detect(in: paragraph).reduce(0) { $0 + $1.range.length }
+            return Double(covered) < Double((paragraph as NSString).length) * 0.6
+        }
+        if title.isEmpty, let first = paragraphs.first, DocumentScanner.looksLikeTitle(first) {
+            title = first
+            paragraphs.removeFirst()
+        }
+        guard paragraphs.joined().count > 120 else { return }
+        bible.study.articles.append(ExtractedStudy.Article(kind: .introduction, book: book, anchor: nil,
+                                                          title: title, text: paragraphs.joined(separator: "\n\n")))
+        for case .image(let source, let caption) in document.flow {
+            bible.study.images.append(ExtractedStudy.Image(
+                anchor: nil, book: book, caption: caption,
+                path: EPUBPackage.resolve(base: EPUBPackage.directory(of: path), href: source),
+                data: nil, mediaType: Self.mediaType(of: source)))
+        }
+    }
+
+    /// A note opens by naming what it discusses ("ROMANS 1:1 Paul."); the reader shows the
+    /// passage already, so the reference goes and the lemma ("Paul.") stays.
+    static func studyNoteText(_ raw: String) -> String {
+        var text = raw
+        if let match = text.firstMatch(of: /^\s*(?:[1-3]\s)?\p{Lu}[\p{Lu}\s]*?\s+\d+(?:[:.,;–\-]\s?\d+)*[;,]?\s*/) {
+            text.removeSubrange(match.range)
+        } else if let match = text.firstMatch(of: /^\s*\d+:\d+(?:[–\-,]\s?\d+)*\s*/) {
+            text.removeSubrange(match.range)
+        }
+        return text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    static func strippingLabel(_ body: String, _ label: String) -> String {
+        let caller = label.trimmingCharacters(in: .whitespaces)
+        guard !caller.isEmpty, body.hasPrefix(caller + " ") else { return body }
+        return String(body.dropFirst(caller.count + 1))
+    }
+
+    static func mediaType(of path: String) -> String {
+        switch (path as NSString).pathExtension.lowercased() {
+        case "png": "image/png"
+        case "gif": "image/gif"
+        case "svg": "image/svg+xml"
+        case "webp": "image/webp"
+        default: "image/jpeg"
+        }
     }
 
     /// What a footnote marker should carry, or nil when it carries nothing worth keeping.

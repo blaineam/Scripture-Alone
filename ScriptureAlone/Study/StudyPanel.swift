@@ -7,10 +7,11 @@ enum StudyTab: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    /// The tabs this reader gets: the commentary is English-only, so it is offered only in
-    /// English (`StudyLanguage`).
-    static var available: [StudyTab] {
-        StudyLanguage.isEnglish ? allCases : allCases.filter { $0 != .commentary }
+    /// The tabs this reader gets: the bundled commentary is English-only, so it is offered only in
+    /// English (`StudyLanguage`) — unless the reader imported study material of their own, which is
+    /// in whatever language they chose.
+    @MainActor static var available: [StudyTab] {
+        StudyLanguage.isEnglish || !ImportedStudyLibrary.shared.isEmpty ? allCases : allCases.filter { $0 != .commentary }
     }
 
     var title: String {
@@ -162,7 +163,7 @@ struct StudyPanel: View {
 
     @ViewBuilder
     private var content: some View {
-        if study.tab == .commentary, study.store == nil {
+        if study.tab == .commentary, study.store == nil, ImportedStudyLibrary.shared.isEmpty {
             commentaryDownload
         } else if study.tab == .context {
             StudyContextView(chapter: study.verse?.chapterKey ?? model.location, verse: study.verse?.verse)

@@ -115,6 +115,7 @@ public enum ImportedBibleBuilder {
             try writeBooks(db, bible: bible)
             try writeChapters(db, bible: bible)
             try writeVerses(db, bible: bible)
+            if !bible.study.isEmpty { try writeStudy(db, study: bible.study, name: identity.name) }
             try exec(db, "COMMIT")
             try exec(db, "INSERT INTO verses_fts(verses_fts) VALUES ('rebuild')")
             try exec(db, "INSERT INTO verses_fts(verses_fts) VALUES ('optimize')")
@@ -256,6 +257,66 @@ public enum ImportedBibleBuilder {
             throw BibleImportError.databaseWrite("could not encode the chapter layout")
         }
         return text
+    }
+
+    // MARK: - Study material
+
+    /// A study Bible's own material, in tables of its own beside the text (`ImportedStudyStore`
+    /// reads them). The store syncs and is removed as one file, so the notes go wherever the
+    /// translation goes and nowhere else.
+    static let studySchema = """
+        CREATE TABLE study_notes (start_key INTEGER NOT NULL, end_key INTEGER NOT NULL, body TEXT NOT NULL);
+        CREATE INDEX study_notes_start ON study_notes (start_key);
+        CREATE TABLE study_articles (kind TEXT NOT NULL, book INTEGER NOT NULL, anchor_key INTEGER,
+                                     title TEXT NOT NULL, body TEXT NOT NULL);
+        CREATE TABLE study_images (id INTEGER PRIMARY KEY, book INTEGER, anchor_key INTEGER,
+                                   caption TEXT NOT NULL, media_type TEXT NOT NULL, data BLOB NOT NULL);
+        """
+
+    private static func writeStudy(_ db: OpaquePointer, study: ExtractedStudy, name: String) throws {
+        try exec(db, studySchema)
+        let meta = try prepare(db, "INSERT OR REPLACE INTO meta VALUES (?1, ?2)")
+        defer { sqlite3_finalize(meta) }
+        for (key, value) in [("study_name", name), ("study_publisher", study.publisher ?? "")] where !value.isEmpty {
+            sqlite3_reset(meta)
+            bind(meta, 1, key)
+            bind(meta, 2, value)
+            try step(db, meta)
+        }
+
+        let notes = try prepare(db, "INSERT INTO study_notes VALUES (?1, ?2, ?3)")
+        defer { sqlite3_finalize(notes) }
+        for note in study.orderedNotes where !note.text.isEmpty {
+            sqlite3_reset(notes)
+            sqlite3_bind_int64(notes, 1, sqlite3_int64(note.start.key))
+            sqlite3_bind_int64(notes, 2, sqlite3_int64(note.end.key))
+            bind(notes, 3, note.text)
+            try step(db, notes)
+        }
+        let articles = try prepare(db, "INSERT INTO study_articles VALUES (?1, ?2, ?3, ?4, ?5)")
+        defer { sqlite3_finalize(articles) }
+        for article in study.articles {
+            sqlite3_reset(articles)
+            bind(articles, 1, article.kind.rawValue)
+            sqlite3_bind_int64(articles, 2, sqlite3_int64(article.book.rawValue))
+            if let anchor = article.anchor { sqlite3_bind_int64(articles, 3, sqlite3_int64(anchor.key)) } else { sqlite3_bind_null(articles, 3) }
+            bind(articles, 4, article.title)
+            bind(articles, 5, article.text)
+            try step(db, articles)
+        }
+        let images = try prepare(db, "INSERT INTO study_images (book, anchor_key, caption, media_type, data) VALUES (?1, ?2, ?3, ?4, ?5)")
+        defer { sqlite3_finalize(images) }
+        let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+        for image in study.images {
+            guard let data = image.data else { continue }
+            sqlite3_reset(images)
+            if let book = image.book { sqlite3_bind_int64(images, 1, sqlite3_int64(book.rawValue)) } else { sqlite3_bind_null(images, 1) }
+            if let anchor = image.anchor { sqlite3_bind_int64(images, 2, sqlite3_int64(anchor.key)) } else { sqlite3_bind_null(images, 2) }
+            bind(images, 3, image.caption)
+            bind(images, 4, image.mediaType)
+            _ = data.withUnsafeBytes { sqlite3_bind_blob(images, 5, $0.baseAddress, Int32(data.count), transient) }
+            try step(db, images)
+        }
     }
 
     // MARK: - SQLite helpers

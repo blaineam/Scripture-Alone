@@ -159,6 +159,56 @@ public struct ImportNote: Sendable, Hashable, Codable {
 }
 
 /// Everything one ePub yielded: verses, the layout blocks that print them, and what went wrong.
+/// What a study Bible adds to the text, as found in the file.
+///
+/// Nothing here is scripture and none of it is shown as scripture. Notes are anchored by the
+/// verses whose callers point at them; essays and pictures by the verse they sit beside;
+/// introductions by the book they come before.
+public struct ExtractedStudy: Sendable {
+    public struct Note: Sendable, Hashable {
+        public var start: VerseRef
+        public var end: VerseRef
+        public var text: String
+    }
+
+    public enum ArticleKind: String, Sendable, Hashable {
+        /// A book's introduction or outline, read before its text.
+        case introduction
+        /// An essay set into the text beside a verse.
+        case essay
+    }
+
+    public struct Article: Sendable, Hashable {
+        public var kind: ArticleKind
+        public var book: BookID
+        public var anchor: VerseRef?
+        public var title: String
+        public var text: String
+    }
+
+    public struct Image: Sendable, Hashable {
+        public var anchor: VerseRef?
+        public var book: BookID?
+        public var caption: String
+        /// Path inside the source file.
+        public var path: String
+        public var data: Data?
+        public var mediaType: String
+    }
+
+    /// Keyed by the note's own id in the file, so every caller pointing at it widens its range.
+    public internal(set) var notes: [String: Note] = [:]
+    public internal(set) var noteOrder: [String] = []
+    public internal(set) var articles: [Article] = []
+    public internal(set) var images: [Image] = []
+    /// Who publishes the study material — the file's own publisher, which is often not the
+    /// translation's.
+    public internal(set) var publisher: String?
+
+    public var isEmpty: Bool { notes.isEmpty && articles.isEmpty && images.isEmpty }
+    public var orderedNotes: [Note] { noteOrder.compactMap { notes[$0] } }
+}
+
 public struct ExtractedBible: Sendable {
     /// Chapters in the order they were met, so the reader's blocks stay in reading order.
     public private(set) var chapterOrder: [ChapterRef] = []
@@ -173,6 +223,9 @@ public struct ExtractedBible: Sendable {
     /// How each spine file's verse markup was recognised, for the report and for debugging a file
     /// that came out empty.
     public internal(set) var shapesByDocument: [String: VerseMarkupShape] = [:]
+    /// A study Bible's own material, kept apart from the text: its notes, introductions, essays
+    /// and pictures.
+    public internal(set) var study = ExtractedStudy()
 
     public var books: [BookID] {
         var seen: Set<BookID> = []
@@ -184,6 +237,18 @@ public struct ExtractedBible: Sendable {
     }
 
     public var verseCount: Int { verses.count }
+
+    /// Reads each picture the study material names, once; pictures that can't be read, and
+    /// repeats of one already kept, are dropped.
+    mutating func loadStudyImages(_ read: (String) -> Data?) {
+        var seen = Set<String>()
+        study.images = study.images.compactMap { image in
+            guard seen.insert(image.path).inserted, let data = read(image.path), !data.isEmpty else { return nil }
+            var loaded = image
+            loaded.data = data
+            return loaded
+        }
+    }
     public var isEmpty: Bool { verses.isEmpty }
 
     public func blocks(for chapter: ChapterRef) -> [ExtractedBlock] { blocks[chapter] ?? [] }

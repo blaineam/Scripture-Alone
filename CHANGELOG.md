@@ -2,6 +2,13 @@
 
 ## After 1.0.0
 
+- A study Bible you import brings its study material with it, kept apart from the text: its
+  notes appear as a source in the Commentary picker (each note on every verse it covers), book
+  introductions and outlines open with each book's first chapter, essays sit at the verse they
+  stand beside, and its maps and pictures appear under Maps & Images in the Context tab, full
+  size on a tap. The notes are credited to the study Bible's publisher, travel with the
+  translation through iCloud, and go when it is removed. Commentary shows for an imported study
+  Bible in any language.
 - A Bible PDF with a text layer can be imported, read from how it is typeset rather than how
   any one publisher lays it out: the size of its text against its own body type tells book
   titles, chapter drop caps, verse numbers, headings, footnotes and page furniture apart; its

@@ -88,7 +88,8 @@ public struct BibleFileImporter: Sendable {
         switch try Self.format(of: zip) {
         case .epub:
             let package = try EPUBPackage(zip: zip)
-            let bible = try BibleTextExtractor(options: options).extract(from: package)
+            var bible = try BibleTextExtractor(options: options).extract(from: package)
+            bible.study.publisher = package.metadata.publisher
             return (bible, BibleImportPreview(format: .epub,
                                               identity: Self.suggestedIdentity(for: package),
                                               documentCount: package.spine.count))

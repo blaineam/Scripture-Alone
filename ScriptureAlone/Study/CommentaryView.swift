@@ -26,7 +26,12 @@ struct CommentaryView: View {
         let alternatives: [StudySource]
     }
 
-    private var sources: [StudySource] { study.store?.commentarySources ?? [] }
+    /// The bundled commentators (English readers, once downloaded), then any study Bible the reader
+    /// imported, in its own language.
+    private var sources: [StudySource] {
+        let bundled = StudyLanguage.isEnglish ? (study.store?.commentarySources ?? []) : []
+        return bundled + ImportedStudyLibrary.shared.sources
+    }
     private var source: StudySource? { sources.first { $0.id == sourceID } ?? sources.first }
     private var loadKey: String { "\(source?.id ?? "")-\(verse.key)" }
 
@@ -75,7 +80,9 @@ struct CommentaryView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(source.name).font(.headline)
-                    Text(source.author).font(.caption).foregroundStyle(.secondary)
+                    if !source.author.isEmpty {
+                        Text(source.author).font(.caption).foregroundStyle(.secondary)
+                    }
                 }
                 if let intro = loaded.introduction {
                     DisclosureGroup {
@@ -137,7 +144,23 @@ struct CommentaryView: View {
     }
 
     private func load() {
-        guard let store = study.store, let source else { return }
+        guard let source else { return }
+        if let imported = ImportedStudyLibrary.shared.store(for: source.id) {
+            let entries = imported.commentary(on: verse)
+            let intro = imported.introduction(to: verse.chapterKey)
+            var alternatives: [StudySource] = []
+            if entries.isEmpty {
+                let commenting = (try? study.store?.sourcesCommenting(on: verse)) ?? []
+                alternatives = sources.filter { other in
+                    other.id != source.id
+                        && (commenting.contains(other.id) || ImportedStudyLibrary.shared.store(for: other.id)?.comments(on: verse) == true)
+                }
+            }
+            loaded = Loaded(key: loadKey, entries: entries.map(prepare), introduction: intro.map(prepare),
+                            alternatives: alternatives)
+            return
+        }
+        guard let store = study.store else { return }
         let entries = (try? store.commentary(source.id, on: verse)) ?? []
         let intro = try? store.introduction(source.id, to: verse.chapterKey)
         var alternatives: [StudySource] = []

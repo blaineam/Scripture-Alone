@@ -111,6 +111,11 @@ public struct EPUBPackage: Sendable {
         spine = order.filter { $0.isXHTML && zip.contains($0.path) }
     }
 
+    /// The raw bytes of any file in the archive — a picture a document shows.
+    public func data(atPath path: String) throws -> Data {
+        try zip.data(for: path)
+    }
+
     /// The decoded text of one document in the archive.
     public func document(_ item: EPUBManifestItem) throws -> String {
         Self.text(try zip.data(for: item.path))

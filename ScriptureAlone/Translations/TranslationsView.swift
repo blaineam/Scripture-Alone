@@ -162,7 +162,7 @@ private struct ImportingOverlay: View {
             VStack(spacing: 12) {
                 ProgressView()
                 Text("Reading \(name)…").font(.callout)
-                Text("This takes a few seconds for a whole Bible.")
+                Text("A whole Bible can take a minute or two, longer with study notes or from a PDF.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             .padding(24)
