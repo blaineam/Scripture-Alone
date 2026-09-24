@@ -24,8 +24,10 @@ final class WatchLink: NSObject {
     private let defaults = UserDefaults.standard
     /// The latest translation to report, held until the session is ready to carry it.
     private var pending: TranslationEntry?
-    /// Every imported translation, as the library last reported them.
-    private var imports: [TranslationEntry] = []
+    /// Every imported translation, as the library last reported them — nil until it first has.
+    /// The session can come up before the library reports, and an empty list sent then would tell
+    /// the watch to delete every import it holds, only to be sent them all again.
+    private var imports: [TranslationEntry]?
 
     func activate() {
         guard let session, session.delegate == nil else { return }
@@ -57,9 +59,10 @@ final class WatchLink: NSObject {
 
     /// The reader's imports changed — one added or removed here, or arriving through iCloud.
     func importsChanged(_ entries: [TranslationEntry]) {
-        imports = entries.filter { WatchLinkKeys.isSafeID($0.id) }
+        let safe = entries.filter { WatchLinkKeys.isSafeID($0.id) }
+        imports = safe
         updateContext()
-        for entry in imports { sendEditionIfNeeded(entry) }
+        for entry in safe { sendEditionIfNeeded(entry) }
     }
 
     /// Application context holds one dictionary, replaced whole on every update, so every key the
@@ -67,7 +70,9 @@ final class WatchLink: NSObject {
     private func updateContext() {
         guard let session, session.activationState == .activated,
               session.isPaired, session.isWatchAppInstalled else { return }
-        var context: [String: Any] = [WatchLinkKeys.imports: imports.map(\.id)]
+        // No list at all until the library has reported: the watch then keeps what it holds.
+        var context: [String: Any] = [:]
+        if let imports { context[WatchLinkKeys.imports] = imports.map(\.id) }
         if let pending {
             context[WatchLinkKeys.translation] = pending.id
             context[WatchLinkKeys.changedAt] = defaults.double(forKey: Self.changedAtKey)
@@ -134,7 +139,7 @@ extension WatchLink: WCSessionDelegate {
                              error: Error?) {
         Task { @MainActor in
             if let pending = self.pending { self.send(pending) }
-            self.importsChanged(self.imports)
+            if let imports = self.imports { self.importsChanged(imports) }
         }
     }
 
@@ -143,7 +148,7 @@ extension WatchLink: WCSessionDelegate {
     nonisolated func session(_ session: WCSession, didReceiveApplicationContext context: [String: Any]) {
         Task { @MainActor in
             if let pending = self.pending { self.sendEditionIfNeeded(pending) }
-            for entry in self.imports { self.sendEditionIfNeeded(entry) }
+            for entry in self.imports ?? [] { self.sendEditionIfNeeded(entry) }
         }
     }
 
@@ -153,13 +158,13 @@ extension WatchLink: WCSessionDelegate {
         guard error != nil else { return }
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(30))
-            for entry in self.imports { self.sendEditionIfNeeded(entry) }
+            for entry in self.imports ?? [] { self.sendEditionIfNeeded(entry) }
         }
     }
 
     /// The watch app was installed (or removed) — send it what it should hold.
     nonisolated func sessionWatchStateDidChange(_ session: WCSession) {
-        Task { @MainActor in self.importsChanged(self.imports) }
+        Task { @MainActor in if let imports = self.imports { self.importsChanged(imports) } }
     }
 
     nonisolated func sessionDidBecomeInactive(_ session: WCSession) {}

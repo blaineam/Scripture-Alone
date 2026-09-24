@@ -2,6 +2,8 @@
 
 ## After 1.0.0
 
+- Opening the iPhone app no longer risks the watch briefly dropping, then downloading again,
+  the translations you imported.
 - The import summary no longer repeats, under Gaps, verses it already lists as left out by the
   translation.
 - On iPhone, a verse you tap with Study open stays above the Study sheet (and the maps and
