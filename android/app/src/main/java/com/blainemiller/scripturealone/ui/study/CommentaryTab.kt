@@ -24,6 +24,13 @@ import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.UnfoldMore
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -124,9 +131,15 @@ fun CommentaryTab(verse: VerseRef, study: StudyModel, reader: ReaderViewModel, p
         if (sources.size > 1) {
             var showingTraditions by remember { mutableStateOf(false) }
             Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                SegmentedPicker(
-                    sources.map { it.shortName }, sources.indexOf(source), palette, Modifier.weight(1f),
-                ) { study.selectCommentary(sources[it].id) }
+                // Side by side while they fit; a menu of full names once imported study Bibles make a
+                // library of them — `CommentaryView`'s `.segmented` / `.menu` pickers.
+                if (sources.size <= 3) {
+                    SegmentedPicker(
+                        sources.map { it.shortName }, sources.indexOf(source), palette, Modifier.weight(1f),
+                    ) { study.selectCommentary(sources[it].id) }
+                } else {
+                    SourceMenu(sources, source, palette, Modifier.weight(1f)) { study.selectCommentary(it.id) }
+                }
                 IconButton(onClick = { showingTraditions = true }) {
                     Icon(Icons.Outlined.Info, contentDescription = "Where these commentators stand", tint = palette.accent)
                 }
@@ -237,5 +250,36 @@ private fun linked(paragraph: String, palette: ReaderPalette, open: (VerseRange)
             at = match.range.last + 1
         }
         append(paragraph.substring(at))
+    }
+}
+
+/** The commentary picker as a menu, for more sources than segments can hold: each by its full name. */
+@Composable
+private fun SourceMenu(sources: List<StudySource>, selected: StudySource, palette: ReaderPalette, modifier: Modifier, onSelect: (StudySource) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box(modifier) {
+        Row(
+            Modifier.clip(RoundedCornerShape(9.dp)).clickable(role = Role.DropdownList) { open = true }
+                .padding(horizontal = 4.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                selected.name, color = palette.accent, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.SemiBold,
+                maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
+            )
+            Icon(Icons.Rounded.UnfoldMore, null, tint = palette.accent, modifier = Modifier.padding(start = 4.dp).size(16.dp))
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            for (source in sources) {
+                DropdownMenuItem(
+                    text = { Text(source.name, color = palette.ink) },
+                    trailingIcon = { if (source.id == selected.id) Icon(Icons.Rounded.Check, stringResource(R.string.translations_selected), tint = palette.accent) },
+                    onClick = {
+                        open = false
+                        onSelect(source)
+                    },
+                )
+            }
+        }
     }
 }

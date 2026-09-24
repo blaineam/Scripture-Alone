@@ -67,7 +67,8 @@ class VerseOfDayWidget : GlanceAppWidget() {
             val revision by WidgetRevision.value.collectAsState()
             val settings by remember { WidgetReaderSettings.flow(context) }.collectAsState(initial)
             val entry = remember(revision, settings.translation) {
-                VerseOfDayEntry.at(catalog, Instant.now(), settings.translation)
+                // An imported translation's text comes from the passages the app wrote ahead.
+                VerseOfDayEntry.at(catalog, Instant.now(), settings.translation, snapshot = WidgetSnapshots.read(context))
             }
             VerseOfDayContent(entry, redLetters = settings.redLetters)
         }
@@ -130,7 +131,7 @@ fun VerseOfDayContent(entry: VerseOfDayEntry, redLetters: Boolean) {
                 AndroidRemoteViews(WidgetText.reference(context, entry.reference), GlanceModifier.defaultWeight())
                 Spacer(GlanceModifier.width(8.dp))
                 Text(
-                    entry.translation,
+                    entry.label,
                     maxLines = 1,
                     style = TextStyle(color = WidgetColors.secondaryInk, fontSize = 11.sp, fontWeight = FontWeight.Medium),
                 )

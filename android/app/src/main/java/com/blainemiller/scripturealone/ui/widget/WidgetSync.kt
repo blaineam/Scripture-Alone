@@ -12,11 +12,16 @@ import androidx.startup.Initializer
 import com.blainemiller.scripturealone.companion.VerseSnapshot
 import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.assets.AssetState
+import com.blainemiller.scripturealone.data.prefs.ReaderKeys
+import com.blainemiller.scripturealone.data.prefs.readerDataStore
+import com.blainemiller.scripturealone.ui.reader.ReaderAccent
+import androidx.datastore.preferences.core.emptyPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -35,6 +40,7 @@ import java.time.Instant
  *
  * - When the reader switches translation or turns red letters on or off, Verse of the Day redraws
  *   (iOS reloads the "VerseOfDay" timelines), and the watch is told the new translation.
+ * - When the reader picks another accent colour, the watch is told it (its dark-page value).
  * - When the library or the translation changes, the snapshot is rebuilt, a second after the last
  *   change so a burst (a multi-verse highlight, a sync) is one write; if its content changed, the
  *   Favorites widget redraws and the watch gets the new snapshot.
@@ -64,6 +70,14 @@ object WidgetSync {
             .onEach { translation -> WearPublisher.publishTranslation(app, translation, WidgetPrefs.translationChangedAt(app, translation)) }
             .launchIn(scope)
 
+        // The watch wears the reader's accent too.
+        app.readerDataStore.data
+            .catch { if (it is java.io.IOException) emit(emptyPreferences()) else throw it }
+            .map { (ReaderAccent.fromRaw(it[ReaderKeys.ACCENT]) ?: ReaderAccent.SUNRISE).watchHex }
+            .distinctUntilChanged()
+            .onEach { WearPublisher.publishAccent(app, it) }
+            .launchIn(scope)
+
         // A locale Bible's watch edition, once its pack is on the phone — so also when the pack lands
         // after the switch (first launch fetches it without waiting).
         val readyBibles = AssetLibrary.states.map { states -> states.filterValues { it == AssetState.Ready }.keys }.distinctUntilChanged()
@@ -82,9 +96,14 @@ object WidgetSync {
     /** Rebuilds the snapshot; redraws and re-sends it only if its content changed. */
     suspend fun refresh(context: Context, library: WidgetLibrary, translation: String) {
         val snapshot = WidgetSnapshots.build(context, library, translation)
+        val previous = WidgetSnapshots.read(context)
         if (WidgetSnapshots.write(context, snapshot)) {
             WidgetRevision.bump()
             FavoritesWidget().updateAll(context)
+            // Verse of the Day reads an import's coming passages and its label from the snapshot too.
+            if (previous?.daily != snapshot.daily || previous?.abbreviation != snapshot.abbreviation) {
+                VerseOfDayWidget().updateAll(context)
+            }
         }
         WearPublisher.publishSnapshot(context, WidgetSnapshots.read(context) ?: snapshot)
     }

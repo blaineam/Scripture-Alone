@@ -185,6 +185,8 @@ fun ReaderScreen(
     listen: ListenController? = null,
     /** Whether Study is showing — the Study button's On/Off, as iOS's `accessibilityValue`. */
     studyOpen: Boolean = false,
+    /** Whether Study is up as the phone's bottom sheet, covering the lower part of the text. */
+    studyCovers: Boolean = false,
     /** Study's back trail (⌥⌘[) and Maps & Timeline (⇧⌘M), for the keyboard shortcuts. */
     onStudyBack: () -> Unit = {},
     onMaps: () -> Unit = {},
@@ -198,7 +200,7 @@ fun ReaderScreen(
     var openNote by rememberSaveable { mutableStateOf<String?>(null) }
     /** What a search link or shortcut asked the Go To sheet to search for, and the scope a notes link asked for. */
     var searchSeed by rememberSaveable { mutableStateOf("") }
-    var notesScope by rememberSaveable { mutableStateOf(NotesScope.ALL) }
+    var notesScope by rememberSaveable { mutableStateOf(NotesScope.NOTES) }
     /** Bumped by such a request, so a sheet already up starts over with it rather than keeping its own state. */
     var sheetGeneration by rememberSaveable { mutableIntStateOf(0) }
     val goTo = sheet != null
@@ -210,6 +212,8 @@ fun ReaderScreen(
     val highlights = remember(keepsake, ownHighlights) { keepsake?.let(KeepsakeBuilder::highlights) ?: ownHighlights }
     val notes = remember(keepsake, ownNotes) { keepsake?.let(KeepsakeBuilder::notes) ?: ownNotes }
     var bannerHeight by remember { mutableStateOf(0.dp) }
+    /** The verse last tapped, kept above the Study sheet when it would open over it. */
+    var tappedVerse by remember { mutableStateOf<Int?>(null) }
     val density = LocalDensity.current
 
     fun showNote(id: UUID) {
@@ -290,12 +294,12 @@ fun ReaderScreen(
                 sheet = ReaderSheet.GO_TO
             }
             is ReaderRequest.Kind.Note -> {
-                notesScope = NotesScope.ALL
+                notesScope = NotesScope.NOTES
                 openNote = kind.id.toString()
                 sheet = ReaderSheet.NOTES
             }
             ReaderRequest.Kind.Notes, ReaderRequest.Kind.Favorites -> {
-                notesScope = if (kind == ReaderRequest.Kind.Favorites) NotesScope.FAVORITES else NotesScope.ALL
+                notesScope = if (kind == ReaderRequest.Kind.Favorites) NotesScope.FAVORITES else NotesScope.NOTES
                 openNote = null
                 sheetGeneration++
                 sheet = ReaderSheet.NOTES
@@ -362,7 +366,10 @@ fun ReaderScreen(
                             marks = VerseMarks(colors, model.selection, speaking),
                             markerSize = style.size,
                             // A keepsake is read-only: no selecting to highlight or annotate.
-                            onVerseTap = { if (keepsake == null) model.toggle(it) },
+                            onVerseTap = {
+                                if (keepsake == null) model.toggle(it)
+                                tappedVerse = it
+                            },
                             onVerseLongPress = { if (keepsake == null) model.extendSelection(it) },
                             selectable = keepsake == null,
                             notesFor = { ids -> notes.filter { it.id.toString() in ids } },
@@ -376,8 +383,11 @@ fun ReaderScreen(
                             autoScrollSpeed = if (autoScrolling) model.autoScrollSpeed else 0.0,
                             onReachedEnd = { if (Canon.next(model.location) != null) model.next() else autoScrolling = false },
                             onUserScroll = { autoScrolling = false },
-                            revealVerse = speaking,
+                            // The verse being read aloud; else, with the Study sheet over the lower part of
+                            // the page, the one just tapped — kept in the part still showing above it.
+                            revealVerse = speaking ?: tappedVerse.takeIf { studyCovers },
                             extraBottom = if (listening) NOW_PLAYING_ROOM else 0.dp,
+                            coveredFraction = if (studyCovers) STUDY_SHEET_COVER else 0f,
                             extraTop = if (keepsake != null) bannerHeight + 8.dp else 0.dp,
                         )
                     }
@@ -486,13 +496,13 @@ fun ReaderScreen(
                         },
                     ) else key(sheetGeneration) {
                         NotesPanel(
-                            model, palette, notes, favorites,
+                            model, palette, notes, ownHighlights, favorites,
                             openNote = openNote,
                             onOpenNoteChange = { openNote = it },
                             onDismiss = {
                                 sheet = null
                                 openNote = null
-                                notesScope = NotesScope.ALL
+                                notesScope = NotesScope.NOTES
                             },
                             initialScope = notesScope,
                         )
@@ -581,6 +591,11 @@ private fun ChapterColumn(
     onUserScroll: () -> Unit = {},
     revealVerse: Int? = null,
     extraBottom: Dp = 0.dp,
+    /**
+     * How much of the page, from the bottom, a sheet covers (Study on a phone). The chapter's end
+     * scrolls clear of it, and a revealed verse is kept above it.
+     */
+    coveredFraction: Float = 0f,
     /** Room for the keepsake banner beneath the top bar. */
     extraTop: Dp = 0.dp,
     /** False while a keepsake is read: TalkBack offers no selecting either. */
@@ -672,7 +687,12 @@ private fun ChapterColumn(
         val y = info.beforeContentPadding + item.offset + before + layout.getLineTop(line)
         val lineHeight = minOf(layout.getLineBottom(line) - layout.getLineTop(line), with(density) { 60.dp.toPx() })
         val top = with(density) { (status + BAR_HEIGHT + extraTop).toPx() }
-        val bottom = info.viewportSize.height - with(density) { (nav + 72.dp + extraBottom + 180.dp).toPx() }
+        // Clear of the bottom bars by a margin; above a covering sheet, just clear of its edge.
+        val bottom = if (coveredFraction > 0f) {
+            info.viewportSize.height * (1f - coveredFraction) - with(density) { 24.dp.toPx() }
+        } else {
+            info.viewportSize.height - with(density) { (nav + 72.dp + extraBottom + 180.dp).toPx() }
+        }
         if (y >= top && y + lineHeight <= maxOf(bottom, top + lineHeight)) return@LaunchedEffect
         state.animateScrollBy(y - (top + info.viewportSize.height * 0.18f))
     }
@@ -698,7 +718,7 @@ private fun ChapterColumn(
         LazyColumn(
             state = state,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = inset, end = inset, top = status + BAR_HEIGHT + 20.dp + extraTop, bottom = nav + 140.dp + extraBottom),
+            contentPadding = PaddingValues(start = inset, end = inset, top = status + BAR_HEIGHT + 20.dp + extraTop, bottom = nav + 140.dp + extraBottom + maxHeight * coveredFraction),
         ) {
             itemsIndexed(rendered.paragraphs) { index, paragraph ->
                 Paragraph(
@@ -992,6 +1012,9 @@ private val BAR_HEIGHT = 64.dp
 
 /** Room kept under the text for the Now Playing bar while it is up (the bar and its gap). */
 private val NOW_PLAYING_ROOM = 72.dp
+
+/** The part of the page the phone's Study sheet covers at rest: it rises to 45% (`StudySheet`). */
+private const val STUDY_SHEET_COVER = 0.45f
 
 /**
  * The top chrome, in the iOS arrangement: Notes and Study in one pill on the left with the passage

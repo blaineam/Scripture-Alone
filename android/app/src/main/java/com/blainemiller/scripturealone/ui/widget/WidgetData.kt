@@ -117,18 +117,36 @@ object DailyVerseLibrary {
  * else the ASV. (The iOS widget labels the text with the reader's translation even when it has fallen
  * back; here the label always names what is shown.)
  */
-data class VerseOfDayEntry(val verse: DailyVerse, val translation: String) {
+data class VerseOfDayEntry(
+    val verse: DailyVerse,
+    val translation: String,
+    /** The translation's label ("CSB"); its id can be an import's file name. */
+    val label: String = translation,
+    /** Today's passage in a translation the daily list doesn't carry, from the app ([VerseSnapshot.daily]). */
+    val own: VerseSnapshot.DailyText? = null,
+) {
     val range: VerseRange? get() = verse.range
     val reference: String get() = range?.display.orEmpty()
     val shortReference: String get() = range?.abbreviatedDisplay.orEmpty()
-    val text: String get() = verse.text(translation)
-    val red: List<Pair<Int, Int>> get() = verse.redRanges(translation)
+    val text: String get() = own?.text ?: verse.text(translation)
+    val red: List<Pair<Int, Int>> get() = own?.redRanges ?: verse.redRanges(translation)
 
     companion object {
-        fun at(catalog: DailyVerseCatalog?, instant: Instant, readerTranslation: String, zone: ZoneId = ZoneId.systemDefault()): VerseOfDayEntry {
+        /**
+         * The day's entry in the reader's translation: from the daily list when it carries it, else from
+         * the passages the app wrote ahead into [snapshot] (an import), else the ASV.
+         */
+        fun at(
+            catalog: DailyVerseCatalog?, instant: Instant, readerTranslation: String,
+            zone: ZoneId = ZoneId.systemDefault(), snapshot: VerseSnapshot? = null,
+        ): VerseOfDayEntry {
             val verse = catalog?.verse(instant, zone) ?: DailyVerseLibrary.placeholder
-            val shown = if (verse.text.containsKey(readerTranslation)) readerTranslation else DailyVerseCatalog.FALLBACK_TRANSLATION
-            return VerseOfDayEntry(verse, shown)
+            val mine = snapshot?.takeIf { it.translation == readerTranslation }
+            val own = if (verse.text.containsKey(readerTranslation)) null else mine?.daily?.get(verse.ref)
+            if (own == null && !verse.text.containsKey(readerTranslation)) {
+                return VerseOfDayEntry(verse, DailyVerseCatalog.FALLBACK_TRANSLATION)
+            }
+            return VerseOfDayEntry(verse, readerTranslation, label = mine?.abbreviation ?: readerTranslation, own = own)
         }
     }
 }
@@ -150,7 +168,11 @@ object WidgetSnapshots {
     /** Writes atomically; false when the content (all but the generation time) is unchanged. */
     fun write(context: Context, snapshot: VerseSnapshot): Boolean {
         val previous = read(context)
-        if (previous != null && previous.translation == snapshot.translation && previous.items == snapshot.items) return false
+        if (previous != null && previous.translation == snapshot.translation && previous.items == snapshot.items &&
+            previous.abbreviation == snapshot.abbreviation && previous.daily == snapshot.daily
+        ) {
+            return false
+        }
         val target = file(context)
         val partial = File(target.parentFile, "${target.name}.partial")
         return try {
@@ -175,7 +197,7 @@ object WidgetSnapshots {
             val ref = ChapterRef(book, chapter)
             if (source.contains(ref)) source.chapter(ref).verses else emptyList()
         }
-        return VerseSnapshot.build(
+        val built = VerseSnapshot.build(
             favorites = library.favorites,
             highlights = library.highlights,
             notes = library.notes,
@@ -185,6 +207,71 @@ object WidgetSnapshots {
             // Marks are KJV ranges; the text is read from the verses the translation calls them.
             text = { range -> numbering.nativeRange(range)?.let { textOf(it, ::verses) }.orEmpty() },
         )
+        return built.copy(
+            abbreviation = source.info.abbreviation,
+            daily = dailyTexts(context, source, translation, now, ::verses),
+        )
+    }
+
+    /** How many days of Verse of the Day [dailyTexts] writes ahead — `WidgetSnapshotSync.dailyTexts`. */
+    const val DAILY_DAYS = 14
+
+    /**
+     * The next two weeks' Verse of the Day in [source], for a translation the widget doesn't carry (the
+     * daily list has the bundled Bibles' text already): an import, and only one whose terms let its
+     * text be stored. Red letters as the widget draws them, in Unicode scalars of the joined text.
+     */
+    fun dailyTexts(
+        context: Context,
+        source: com.blainemiller.scripturealone.data.ChapterSource,
+        translation: String,
+        now: Instant,
+        verses: (book: Int, chapter: Int) -> List<ChapterVerse>,
+        zone: ZoneId = ZoneId.systemDefault(),
+    ): Map<String, VerseSnapshot.DailyText>? {
+        val catalog = DailyVerseLibrary.catalog(context) ?: return null
+        if (!source.info.rights.allowOfflineStorage || translation in catalog.translations) return null
+        val result = sortedMapOf<String, VerseSnapshot.DailyText>()
+        var date = now
+        repeat(DAILY_DAYS) {
+            val verse = catalog.verse(date, zone)
+            val range = verse?.range?.let(source.numbering::nativeRange)
+            if (verse != null && range != null) {
+                dailyText(range, verses)?.let { result[verse.ref] = it }
+            }
+            date = DailyVerseCatalog.nextMidnight(date, zone)
+        }
+        return result.takeIf { it.isNotEmpty() }
+    }
+
+    /**
+     * [range]'s verses joined as the widget shows them, the pilcrow at a paragraph start dropped and
+     * each verse's words of Christ moved to where it lands in the joined text. Null when the
+     * translation lacks the passage.
+     */
+    fun dailyText(range: VerseRange, verses: (book: Int, chapter: Int) -> List<ChapterVerse>): VerseSnapshot.DailyText? {
+        val rows = mutableListOf<ChapterVerse>()
+        if (range.start.book == range.end.book) {
+            for (chapter in range.start.chapter..range.end.chapter) {
+                verses(range.start.book, chapter).filterTo(rows) { it.ref.key in range.start.key..range.end.key && it.ref.verse > 0 }
+            }
+        }
+        if (rows.isEmpty()) return null
+        val text = StringBuilder()
+        val red = mutableListOf<List<Int>>()
+        for (row in rows) {
+            val shift = if (row.text.startsWith("¶ ")) 2 else 0
+            val words = row.text.substring(shift)
+            if (text.isNotEmpty()) text.append(' ')
+            val base = text.codePointCount(0, text.length)
+            val scalars = row.text.codePointCount(0, row.text.length)
+            for (span in row.red) {
+                if (span.start < shift || span.length <= 0 || span.start + span.length > scalars) continue
+                red += listOf(base + span.start - shift, span.length)
+            }
+            text.append(words)
+        }
+        return VerseSnapshot.DailyText(text.toString(), red)
     }
 
     /**

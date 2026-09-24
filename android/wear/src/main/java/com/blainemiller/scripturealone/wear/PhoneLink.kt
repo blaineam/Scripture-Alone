@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The watch's end of the Data Layer — `WatchPhoneLink` on the Apple Watch: which translation the reader
- * uses on the phone, the phone's favorites/highlights/notes snapshot, and the editions of the locale
+ * uses on the phone, the accent colour chosen there, the phone's favorites/highlights/notes snapshot, and the editions of the locale
  * Bibles the watch doesn't bundle (one data item each, [WearLink.PATH_EDITION_PREFIX]).
  *
  * The phone writes each as a data item at a fixed path ([WearLink]). A data item holds only its latest
@@ -43,6 +43,7 @@ object PhoneLink {
                 if (!WearLink.isSafeId(id)) return
                 bible.phoneChose(id, map.getDouble(WearLink.KEY_CHANGED_AT))
             }
+            WearLink.PATH_ACCENT -> bible.phoneAccent(map.getInt(WearLink.KEY_ACCENT))
             WearLink.PATH_SNAPSHOT -> {
                 val asset = map.getAsset(WearLink.KEY_SNAPSHOT) ?: return
                 val bytes = try {

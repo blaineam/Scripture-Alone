@@ -12,6 +12,15 @@ object WearLink {
     /** Phone → watch: the translation the reader is using on the phone, and when they switched to it. */
     const val PATH_TRANSLATION = "/scripturealone/translation"
 
+    /**
+     * Phone → watch: the reader's accent colour, as 0xRRGGBB in [KEY_ACCENT] — its dark-page value, the
+     * watch's face being always dark. `WatchLinkKeys.accent`.
+     */
+    const val PATH_ACCENT = "/scripturealone/accent"
+
+    /** The accent colour, an Int 0xRRGGBB. */
+    const val KEY_ACCENT = "accent"
+
     /** Phone → watch: the [VerseSnapshot] JSON — favorites, highlights and notes — as an asset. */
     const val PATH_SNAPSHOT = "/scripturealone/snapshot"
 

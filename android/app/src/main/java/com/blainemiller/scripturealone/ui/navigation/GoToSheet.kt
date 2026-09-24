@@ -57,6 +57,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -180,19 +181,37 @@ fun GoToSheet(
         dismiss()
     }
 
-    fun submit() {
-        val p = passage
-        if (p != null) {
-            model.go(p)
-            dismiss()
-        } else {
-            results.firstOrNull()?.let(::openResult)
-        }
-    }
+    // Read when Return is pressed: the text field keeps the submit action it was first handed, so what
+    // it reads must be current, not what this composition captured.
+    val currentThemes by rememberUpdatedState(matchedThemes)
+    val currentTopic by rememberUpdatedState(matchedTopic)
+    val currentPassage by rememberUpdatedState(passage)
 
     fun openTopic(route: TopicRoute) {
         keyboard?.hide()
+        // A topic opened from the words typed ("anxious" → Anxiety & Worry) is a search worth keeping,
+        // like a verse opened from them. A crisis search is never kept on show.
+        if (query.isNotBlank() && !CrisisSupport.isCrisis(query) && (currentThemes.isNotEmpty() || currentTopic != null)) {
+            model.rememberSearch(query)
+        }
         topicStack = topicStack + route.key
+    }
+
+    fun submit() {
+        val p = currentPassage
+        val first = results.firstOrNull()
+        val theme = currentThemes.firstOrNull()
+        val topic = currentTopic
+        when {
+            p != null -> {
+                model.go(p)
+                dismiss()
+            }
+            first != null -> openResult(first)
+            // Words no verse uses, but a topic answers ("anxious"): Return opens the topic.
+            theme != null -> openTopic(TopicRoute.Theme(theme.id))
+            topic != null -> openTopic(TopicRoute.Index(topic.id))
+        }
     }
 
     /** A passage chosen in a topic: KJV keys, so the reader lands on its own verse. */

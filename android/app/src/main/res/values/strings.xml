@@ -506,8 +506,6 @@
     <!-- Notes panel -->
     <!-- Panel title; also the export title for several notes. -->
     <string name="notes_title">Notes</string>
-    <!-- Scope tab: every note. -->
-    <string name="notes_scope_all">All Notes</string>
     <!-- Scope tab: notes on the chapter on screen. -->
     <string name="notes_scope_chapter">This Chapter</string>
     <!-- Scope tab: the reader’s favorite passages. -->
@@ -520,6 +518,28 @@
     <string name="notes_search_favorites">Search favorites or a passage</string>
     <!-- Search field placeholder. -->
     <string name="notes_search_notes">Search notes or a passage</string>
+    <!-- Scope tab: the reader’s highlighted verses. -->
+    <string name="notes_scope_highlights">Highlights</string>
+    <!-- Filter: notes, highlights or favorites anywhere in the Bible. -->
+    <string name="notes_place_all">All Books</string>
+    <!-- Filter: only the book on screen. -->
+    <string name="notes_place_book">This Book</string>
+    <!-- Search field placeholder on the Highlights scope. -->
+    <string name="notes_search_highlights">Search highlights or a passage</string>
+    <!-- Highlights scope, when there are none. -->
+    <string name="highlights_empty_title">No Highlights Yet</string>
+    <!-- Highlights scope, when there are none. -->
+    <string name="highlights_empty_message">Tap verses in the text, then a colour, to highlight them.</string>
+    <!-- Highlight colour name, as in “Highlight yellow”; also searched in the Highlights list. -->
+    <string name="highlight_color_yellow">yellow</string>
+    <!-- Highlight colour name. -->
+    <string name="highlight_color_green">green</string>
+    <!-- Highlight colour name. -->
+    <string name="highlight_color_blue">blue</string>
+    <!-- Highlight colour name. -->
+    <string name="highlight_color_pink">pink</string>
+    <!-- Highlight colour name. -->
+    <string name="highlight_color_purple">purple</string>
     <string name="notes_empty_title">No Notes Yet</string>
     <string name="notes_empty_message">Tap verses in the text, then the pencil, to start a note on a passage — or scan this Sunday’s sermon slide.</string>
     <!-- Empty search results, for notes and favorites. -->

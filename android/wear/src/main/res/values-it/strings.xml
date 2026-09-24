@@ -31,6 +31,9 @@
     <string name="wear_favorites_empty_message">Aggiungi un versetto ai preferiti sul telefono e apparirà qui.</string>
     <string name="wear_notes_empty_title">Nessuna nota</string>
     <string name="wear_notes_empty_message">Le note che scrivi sul telefono appaiono qui.</string>
+    <string name="wear_highlights">Evidenziazioni</string>
+    <string name="wear_highlights_empty_title">Nessuna evidenziazione</string>
+    <string name="wear_highlights_empty_message">Evidenzia un versetto sul telefono e apparirà qui.</string>
     <string name="wear_note_deleted">Nota eliminata</string>
     <string name="wear_note_edit_on_phone">Modifica le note sul telefono.</string>
     <string name="wear_translation_phone_unavailable">%1$s sul telefono non si può leggere qui. Le traduzioni online non si possono salvare sull\'orologio.</string>

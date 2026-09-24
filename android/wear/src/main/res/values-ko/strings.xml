@@ -31,6 +31,9 @@
     <string name="wear_favorites_empty_message">휴대폰에서 구절을 즐겨찾기하면 여기에 표시됩니다.</string>
     <string name="wear_notes_empty_title">노트 없음</string>
     <string name="wear_notes_empty_message">휴대폰에서 작성한 노트가 여기에 표시됩니다.</string>
+    <string name="wear_highlights">하이라이트</string>
+    <string name="wear_highlights_empty_title">하이라이트 없음</string>
+    <string name="wear_highlights_empty_message">휴대폰에서 구절을 하이라이트하면 여기에 표시됩니다.</string>
     <string name="wear_note_deleted">노트 삭제됨</string>
     <string name="wear_note_edit_on_phone">휴대폰에서 노트를 편집하세요.</string>
     <string name="wear_translation_phone_unavailable">휴대폰의 %1$s은(는) 여기서 읽을 수 없습니다. 온라인 번역본은 워치에 저장할 수 없습니다.</string>

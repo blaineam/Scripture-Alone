@@ -1,6 +1,5 @@
 package com.blainemiller.scripturealone.ui.favorites
 
-import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -15,15 +14,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.outlined.BorderColor
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,15 +34,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.stringResource
 import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
-import com.blainemiller.scripturealone.data.userdata.Favorite
+import com.blainemiller.scripturealone.data.userdata.Highlight
+import com.blainemiller.scripturealone.data.userdata.HighlightRun
 import com.blainemiller.scripturealone.data.userdata.NoteSearch
 import com.blainemiller.scripturealone.data.userdata.NotesPlace
 import com.blainemiller.scripturealone.ui.notes.EmptyState
@@ -51,54 +54,52 @@ import com.blainemiller.scripturealone.ui.notes.PanelColors
 import com.blainemiller.scripturealone.ui.notes.PanelSeparator
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
-import java.util.UUID
 
 /**
- * The Favorites scope of the Notes panel — `ScriptureAlone/Favorites/FavoritesSection.swift`:
- * favorited passages, newest first, each with its text in the translation being read. Tapping one
- * opens it in the reader; a long press offers Delete (iOS's swipe).
+ * The Highlights scope of the Notes panel — `HighlightsSection` in
+ * `ScriptureAlone/Favorites/FavoritesSection.swift`: every highlighted verse in Bible order. Verses in a
+ * row marked in one colour read as one passage ("Romans 8:38–39") with that colour's dot and the text in
+ * the translation being read. Tapping one opens it; a long press offers Delete (iOS's swipe), which
+ * removes the whole run.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FavoritesSection(
+fun HighlightsSection(
     model: ReaderViewModel,
     palette: ReaderPalette,
-    favorites: List<Favorite>,
+    highlights: List<Highlight>,
     search: String,
+    place: NotesPlace,
     bottomInset: Dp,
     onOpened: () -> Unit,
-    /** All Books, This Book or This Chapter — the panel's second filter row. */
-    place: NotesPlace = NotesPlace.ALL,
 ) {
-    // Each favorite's text, read off the main thread in the current translation.
-    var texts by remember { mutableStateOf<Map<UUID, String>>(emptyMap()) }
-    LaunchedEffect(favorites, model.translationId) {
-        texts = favorites.associate { favorite ->
-            favorite.id to model.verses(listOf(favorite.range)).joinToString(" ") { it.text }
-        }
+    val runs = remember(highlights) { HighlightRun.of(highlights) }
+    // Each run's text, read off the main thread in the current translation.
+    var texts by remember { mutableStateOf<Map<Int, String>>(emptyMap()) }
+    LaunchedEffect(runs, model.translationId) {
+        texts = runs.associate { run -> run.range.start.key to model.verses(listOf(run.range)).joinToString(" ") { it.text } }
     }
     val verseCount = { book: com.blainemiller.scripturealone.data.canon.BookID, chapter: Int ->
         model.verseCount(ChapterRef(book.number, chapter))
     }
     val location = model.location
-    val rows = favorites.filter {
-        // Stored as KJV keys; the place is the chapter as the translation numbers it.
-        place.contains(model.displayRange(it.range), location) &&
-            NoteSearch.matches(it, texts[it.id].orEmpty(), search, verseCount, model.numbering)
+    val rows = runs.filter { run ->
+        place.contains(model.displayRange(run.range), location) &&
+            NoteSearch.matches(run, texts[run.range.start.key].orEmpty(), run.color.localizedName, search, verseCount, model.numbering)
     }
 
     if (rows.isEmpty()) {
         EmptyState(
-            Icons.Rounded.FavoriteBorder,
-            if (search.isBlank()) stringResource(R.string.favorites_empty_title) else stringResource(R.string.notes_no_matches_title),
-            if (search.isBlank()) stringResource(R.string.favorites_empty_message)
+            Icons.Outlined.BorderColor,
+            if (search.isBlank()) stringResource(R.string.highlights_empty_title) else stringResource(R.string.notes_no_matches_title),
+            if (search.isBlank()) stringResource(R.string.highlights_empty_message)
             else stringResource(R.string.notes_no_matches_message),
             palette,
         )
         return
     }
     LazyColumn(Modifier.fillMaxSize().imePadding(), contentPadding = PaddingValues(bottom = bottomInset + 24.dp)) {
-        itemsIndexed(rows, key = { _, favorite -> favorite.id }) { index, favorite ->
+        itemsIndexed(rows, key = { _, run -> run.range.start.key }) { index, run ->
             val shape = when {
                 rows.size == 1 -> RoundedCornerShape(22.dp)
                 index == 0 -> RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
@@ -111,19 +112,24 @@ fun FavoritesSection(
                     Column(
                         Modifier.fillMaxWidth()
                             .combinedClickable(role = Role.Button, onLongClickLabel = stringResource(R.string.notes_show_options), onLongClick = { menu = true }) {
-                                model.go(favorite.range.start)
+                                model.go(run.range.start)
                                 onOpened()
                             }
                             .padding(horizontal = 18.dp, vertical = 12.dp),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            val colorName = run.color.localizedName
+                            Box(
+                                Modifier.size(10.dp).clip(CircleShape).background(Color(0xFF000000 or run.color.rgb))
+                                    .semantics { contentDescription = colorName },
+                            )
+                            Spacer(Modifier.width(8.dp))
                             Text(
-                                model.displayRange(favorite.range).display, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
+                                model.displayRange(run.range).display, color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
                                 maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
                             )
-                            Icon(Icons.Rounded.Favorite, null, tint = Color(0xFFFF3B30), modifier = Modifier.size(14.dp))
                         }
-                        val text = texts[favorite.id].orEmpty()
+                        val text = texts[run.range.start.key].orEmpty()
                         if (text.isNotEmpty()) {
                             Spacer(Modifier.height(4.dp))
                             Text(text, color = palette.secondary, fontSize = 16.sp, lineHeight = 21.sp, maxLines = 3, overflow = TextOverflow.Ellipsis)
@@ -134,7 +140,7 @@ fun FavoritesSection(
                             text = { Text(stringResource(R.string.common_delete), color = palette.red, fontSize = 15.sp) },
                             onClick = {
                                 menu = false
-                                model.userData.deleteFavorite(favorite.id)
+                                model.userData.removeHighlights(run.keys)
                             },
                         )
                     }

@@ -31,6 +31,9 @@
     <string name="wear_favorites_empty_message">Marque um versículo como favorito no celular e ele aparece aqui.</string>
     <string name="wear_notes_empty_title">Nenhuma nota</string>
     <string name="wear_notes_empty_message">As notas que você escreve no celular aparecem aqui.</string>
+    <string name="wear_highlights">Destaques</string>
+    <string name="wear_highlights_empty_title">Nenhum destaque</string>
+    <string name="wear_highlights_empty_message">Destaque um versículo no celular e ele aparece aqui.</string>
     <string name="wear_note_deleted">Nota excluída</string>
     <string name="wear_note_edit_on_phone">Edite as notas no celular.</string>
     <string name="wear_translation_phone_unavailable">Não é possível ler %1$s do seu celular aqui. Traduções on-line não podem ser armazenadas no relógio.</string>

@@ -29,6 +29,18 @@ enum class HighlightColor(val rgb: Long) {
 
     fun alpha(isDark: Boolean): Float = if (isDark) 0.34f else 0.42f
 
+    /** "yellow", in the app's language — `HighlightColor.name`: the Highlights list's dot and search. */
+    val localizedName: String
+        get() = AppText.get(
+            when (this) {
+                YELLOW -> R.string.highlight_color_yellow
+                GREEN -> R.string.highlight_color_green
+                BLUE -> R.string.highlight_color_blue
+                PINK -> R.string.highlight_color_pink
+                PURPLE -> R.string.highlight_color_purple
+            },
+        )
+
     companion object {
         fun fromRaw(raw: String?): HighlightColor? = entries.firstOrNull { it.raw == raw }
     }

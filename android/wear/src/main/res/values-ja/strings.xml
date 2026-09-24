@@ -31,6 +31,9 @@
     <string name="wear_favorites_empty_message">スマートフォンで聖句をお気に入りに追加すると、ここに表示されます。</string>
     <string name="wear_notes_empty_title">メモなし</string>
     <string name="wear_notes_empty_message">スマートフォンで書いたメモがここに表示されます。</string>
+    <string name="wear_highlights">ハイライト</string>
+    <string name="wear_highlights_empty_title">ハイライトなし</string>
+    <string name="wear_highlights_empty_message">スマートフォンで聖句をハイライトすると、ここに表示されます。</string>
     <string name="wear_note_deleted">メモを削除しました</string>
     <string name="wear_note_edit_on_phone">メモの編集はスマートフォンで行えます。</string>
     <string name="wear_translation_phone_unavailable">スマートフォンの%1$sはここでは読めません。オンラインの翻訳は時計に保存できません。</string>

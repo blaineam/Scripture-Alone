@@ -54,4 +54,22 @@ object NoteSearch {
         passage(trimmed, verseCount, numbering)?.let { return favorite.range.overlaps(it) }
         return favorite.range.display.contains(trimmed, ignoreCase = true) || text.contains(trimmed, ignoreCase = true)
     }
+
+    /**
+     * A run of highlighted verses — `HighlightsSection.rows`: by passage, else by its reference, its
+     * text or its colour's name ([colorName], in the app's language).
+     */
+    fun matches(
+        run: HighlightRun,
+        text: String,
+        colorName: String,
+        term: String,
+        verseCount: (BookID, Int) -> Int = { _, _ -> 0 },
+        numbering: VerseNumbering = VerseNumbering.IDENTITY,
+    ): Boolean {
+        val trimmed = term.trim()
+        if (trimmed.isEmpty()) return true
+        passage(trimmed, verseCount, numbering)?.let { return run.range.overlaps(it) }
+        return listOf(run.range.display, text, colorName).any { it.contains(trimmed, ignoreCase = true) }
+    }
 }

@@ -64,6 +64,8 @@ class WatchBible private constructor(private val app: Context) {
         val editions: List<Edition> = emptyList(),
         /** Whether [translation] is someone's choice rather than the fallback. */
         val chosen: Boolean = false,
+        /** The reader's accent colour from the phone, 0xRRGGBB; null until the phone has said. */
+        val accent: Int? = null,
     ) {
         val edition: Edition? get() = editions.firstOrNull { it.id == translation }
     }
@@ -77,7 +79,7 @@ class WatchBible private constructor(private val app: Context) {
     init {
         val editions = readEditions()
         val (translation, chosen) = resolve(editions)
-        _state = MutableStateFlow(State(translation, prefs.getString(Keys.PHONE, null), readSnapshot(), editions, chosen))
+        _state = MutableStateFlow(State(translation, prefs.getString(Keys.PHONE, null), readSnapshot(), editions, chosen, accent()))
         state = _state.asStateFlow()
         nameBooks()
     }
@@ -98,6 +100,15 @@ class WatchBible private constructor(private val app: Context) {
         prefs.edit().putString(Keys.PHONE, id).putString(Keys.PHONE_AT, at.toString()).apply()
         publish()
     }
+
+    /** The phone reported the reader's accent colour (0xRRGGBB, its dark-page value). */
+    fun phoneAccent(hex: Int) {
+        if (hex <= 0 || hex > 0xFFFFFF || hex == accent()) return
+        prefs.edit().putInt(Keys.ACCENT, hex).apply()
+        publish()
+    }
+
+    private fun accent(): Int? = prefs.getInt(Keys.ACCENT, 0).takeIf { it > 0 }
 
     /** The phone sent its library. A snapshot that doesn't decode is ignored, never half-applied. */
     fun receiveSnapshot(json: String) {
@@ -171,7 +182,7 @@ class WatchBible private constructor(private val app: Context) {
         val before = _state.value
         val editions = readEditions()
         val (translation, chosen) = resolve(editions)
-        _state.value = State(translation, prefs.getString(Keys.PHONE, null), readSnapshot(), editions, chosen)
+        _state.value = State(translation, prefs.getString(Keys.PHONE, null), readSnapshot(), editions, chosen, accent())
         nameBooks()
         if (before.translation != translation || before.editions != editions) refreshSurfaces(app)
     }
@@ -303,6 +314,7 @@ class WatchBible private constructor(private val app: Context) {
         const val CHOICE_AT = "watch.translation.choiceAt"
         const val PHONE = "watch.translation.phone"
         const val PHONE_AT = "watch.translation.phoneAt"
+        const val ACCENT = "watch.accent"
         fun name(id: String) = "watch.edition.$id.name"
         fun language(id: String) = "watch.edition.$id.language"
         fun digest(id: String) = "watch.edition.$id.digest"

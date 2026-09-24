@@ -7,6 +7,7 @@ import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookID
 import com.blainemiller.scripturealone.data.daily.DailyVerseCatalog
+import com.blainemiller.scripturealone.data.sabible.ScalarRange
 import com.blainemiller.scripturealone.data.userdata.HighlightColor
 import com.blainemiller.scripturealone.data.userdata.JdbcUserDatabase
 import com.blainemiller.scripturealone.data.userdata.Note
@@ -135,6 +136,42 @@ class WidgetContentTest {
         assertEquals(kjv.verse, VerseOfDayEntry.at(catalog, lateEvening, "KJV", zone).verse)
         assertTrue(kjv.verse != VerseOfDayEntry.at(catalog, nextDay, "KJV", zone).verse)
         assertEquals(nextDay, DailyVerseCatalog.nextMidnight(day, zone))
+    }
+
+    @Test fun verseOfTheDayReadsAnImportFromThePassagesWrittenAhead() {
+        val root = System.getProperty("scripturealone.resources") ?: error("scripturealone.resources is not set")
+        val catalog = DailyVerseCatalog.parse(File(root, "../Shared/DailyVerses.json").readText())
+        val zone = ZoneId.of("America/Chicago")
+        val day = LocalDateTime.of(2026, 9, 21, 9, 0).atZone(zone).toInstant()
+        val ref = catalog.verse(day, zone)!!.ref
+        val own = VerseSnapshot.DailyText("In my own words", listOf(listOf(3, 3)))
+        val snapshot = VerseSnapshot(generatedAt = day, translation = "imported-csb-1", items = emptyList(),
+            abbreviation = "CSB", daily = mapOf(ref to own))
+        val entry = VerseOfDayEntry.at(catalog, day, "imported-csb-1", zone, snapshot)
+        assertEquals("In my own words", entry.text)
+        assertEquals(listOf(3 to 3), entry.red)
+        // Labelled by its abbreviation, never the import's id.
+        assertEquals("CSB", entry.label)
+        // A day the app didn't write ahead, or another translation's snapshot: the ASV, labelled so.
+        val later = VerseOfDayEntry.at(catalog, DailyVerseCatalog.nextMidnight(day, zone), "imported-csb-1", zone, snapshot)
+        assertEquals("ASV", later.label)
+        assertEquals(later.verse.text["ASV"], later.text)
+        assertEquals("ASV", VerseOfDayEntry.at(catalog, day, "other-import", zone, snapshot).label)
+        // A translation the list carries reads the list, whatever the snapshot holds.
+        assertEquals(catalog.verse(day, zone)!!.text["KJV"], VerseOfDayEntry.at(catalog, day, "KJV", zone, snapshot).text)
+    }
+
+    @Test fun dailyTextJoinsVersesAndMovesTheirRedLetters() {
+        fun verses(book: Int, chapter: Int) = listOf(
+            ChapterVerse(VerseRef(book, chapter, 0), "Heading", emptyList()),
+            ChapterVerse(VerseRef(book, chapter, 16), "¶ For God so loved", listOf(ScalarRange(2, 3))),
+            ChapterVerse(VerseRef(book, chapter, 17), "𝔄 sent", listOf(ScalarRange(2, 4))),
+        )
+        val text = WidgetSnapshots.dailyText(VerseRange(ref(BookID.JOHN, 3, 16), ref(BookID.JOHN, 3, 17)), ::verses)!!
+        assertEquals("For God so loved 𝔄 sent", text.text)
+        // "For" (after the dropped pilcrow) and "sent" (counted in scalars past the astral 𝔄).
+        assertEquals(listOf(listOf(0, 3), listOf(19, 4)), text.red)
+        assertNull(WidgetSnapshots.dailyText(VerseRange(ref(BookID.JOHN, 4, 1), ref(BookID.JOHN, 4, 1))) { _, _ -> emptyList() })
     }
 
     @Test fun snapshotTextIsTheOpeningOfTheFirstChapter() {

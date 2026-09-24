@@ -31,6 +31,9 @@
     <string name="wear_favorites_empty_message">Markiere einen Vers auf dem Handy als Favorit, dann erscheint er hier.</string>
     <string name="wear_notes_empty_title">Keine Notizen</string>
     <string name="wear_notes_empty_message">Notizen, die du auf dem Handy schreibst, erscheinen hier.</string>
+    <string name="wear_highlights">Markierungen</string>
+    <string name="wear_highlights_empty_title">Keine Markierungen</string>
+    <string name="wear_highlights_empty_message">Markiere einen Vers auf dem Handy farbig, dann erscheint er hier.</string>
     <string name="wear_note_deleted">Notiz gelöscht</string>
     <string name="wear_note_edit_on_phone">Notizen auf dem Handy bearbeiten.</string>
     <string name="wear_translation_phone_unavailable">%1$s auf dem Handy kann hier nicht gelesen werden. Online-Übersetzungen lassen sich nicht auf der Uhr speichern.</string>

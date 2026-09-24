@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * The phone's end of the Wearable Data Layer — `WatchLink.swift`. Tells the watch which translation the
- * reader is using and sends it the favorites/highlights/notes snapshot, as data items the watch reads
+ * reader is using, its accent colour and the favorites/highlights/notes snapshot, as data items the watch reads
  * whenever it next can (the semantics of WatchConnectivity's application context).
  *
  * The watch bundles the ASV, BSB and KJV, so only the choice travels for those. For one of the big-8
@@ -39,6 +39,18 @@ object WearPublisher {
         }.asPutDataRequest().setUrgent()
         if (put(context) { Wearable.getDataClient(context).putDataItem(request) }) {
             WidgetPrefs.setPublished(context, "translation", signature)
+        }
+    }
+
+    /** The reader picked another accent colour ([hex], 0xRRGGBB, its dark value); the watch follows. */
+    fun publishAccent(context: Context, hex: Int) {
+        val signature = "a:$hex"
+        if (WidgetPrefs.published(context, "accent") == signature) return
+        val request = PutDataMapRequest.create(WearLink.PATH_ACCENT).apply {
+            dataMap.putInt(WearLink.KEY_ACCENT, hex)
+        }.asPutDataRequest()
+        if (put(context) { Wearable.getDataClient(context).putDataItem(request) }) {
+            WidgetPrefs.setPublished(context, "accent", signature)
         }
     }
 

@@ -31,6 +31,9 @@
     <string name="wear_favorites_empty_message">在手机上收藏经文后，会显示在这里。</string>
     <string name="wear_notes_empty_title">暂无笔记</string>
     <string name="wear_notes_empty_message">你在手机上写的笔记会显示在这里。</string>
+    <string name="wear_highlights">高亮</string>
+    <string name="wear_highlights_empty_title">没有高亮</string>
+    <string name="wear_highlights_empty_message">在手机上高亮经文后，会显示在这里。</string>
     <string name="wear_note_deleted">笔记已删除</string>
     <string name="wear_note_edit_on_phone">请在手机上编辑笔记。</string>
     <string name="wear_translation_phone_unavailable">无法在此阅读手机上的%1$s。在线译本无法存储在手表上。</string>

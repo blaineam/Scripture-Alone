@@ -35,7 +35,25 @@ data class VerseSnapshot(
     val translation: String,
     /** Newest first within each kind. */
     val items: List<Item>,
+    /** How the translation is labelled ("CSB") — its id can be an import's file name. */
+    val abbreviation: String? = null,
+    /**
+     * The coming days' Verse of the Day in the reader's translation, by stored range
+     * ("43003016-43003016"), for one the widget doesn't carry itself (an import). Null when the
+     * translation may not be stored, or the widget has it already.
+     */
+    val daily: Map<String, DailyText>? = null,
 ) {
+    /** One day's passage in the reader's translation — Swift's `VerseSnapshot.DailyText`. */
+    data class DailyText(
+        val text: String,
+        /** Words of Christ, as [start, length] in Unicode scalars — the form `DailyVerse` uses. */
+        val red: List<List<Int>>,
+    ) {
+        val redRanges: List<Pair<Int, Int>>
+            get() = red.mapNotNull { if (it.size == 2 && it[0] >= 0 && it[1] > 0) it[0] to it[1] else null }
+    }
+
     enum class Kind(val raw: String) {
         FAVORITE("favorite"), HIGHLIGHT("highlight"), NOTE("note");
 
@@ -100,6 +118,16 @@ data class VerseSnapshot(
             "translation" to JsonPrimitive(translation),
             "version" to JsonPrimitive(version),
         )
+        // Absent when nil, as Swift's synthesized `Codable` leaves an optional out.
+        abbreviation?.let { root["abbreviation"] = JsonPrimitive(it) }
+        daily?.let { days ->
+            root["daily"] = JsonObject(days.toSortedMap().mapValues { (_, day) ->
+                JsonObject(sortedMapOf(
+                    "red" to kotlinx.serialization.json.JsonArray(day.red.map { pair -> kotlinx.serialization.json.JsonArray(pair.map { JsonPrimitive(it) }) }),
+                    "text" to JsonPrimitive(day.text),
+                ))
+            })
+        }
         return JsonObject(root).toString()
     }
 
@@ -134,6 +162,14 @@ data class VerseSnapshot(
                         noteTitle = string("noteTitle"),
                         date = Instant.parse(string("date")!!),
                         noteBody = string("noteBody"),
+                    )
+                },
+                abbreviation = (root["abbreviation"] as? JsonPrimitive)?.takeIf { it.isString }?.content,
+                daily = (root["daily"] as? JsonObject)?.mapValues { (_, value) ->
+                    val day = value.jsonObject
+                    DailyText(
+                        text = day["text"]!!.jsonPrimitive.content,
+                        red = day["red"]?.jsonArray?.map { pair -> pair.jsonArray.map { it.jsonPrimitive.int } }.orEmpty(),
                     )
                 },
             )

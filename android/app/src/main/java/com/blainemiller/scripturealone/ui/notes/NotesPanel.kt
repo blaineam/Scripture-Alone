@@ -50,13 +50,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.userdata.Favorite
+import com.blainemiller.scripturealone.data.userdata.Highlight
+import com.blainemiller.scripturealone.data.userdata.NotesPlace
 import com.blainemiller.scripturealone.data.userdata.Note
 import com.blainemiller.scripturealone.data.userdata.NoteSearch
-import com.blainemiller.scripturealone.data.userdata.overlaps
 import com.blainemiller.scripturealone.ui.camera.SlideCapture
 import com.blainemiller.scripturealone.ui.camera.SlideCaptureHost
 import com.blainemiller.scripturealone.ui.camera.SlideCaptureMenu
 import com.blainemiller.scripturealone.ui.favorites.FavoritesSection
+import com.blainemiller.scripturealone.ui.favorites.HighlightsSection
 import com.blainemiller.scripturealone.ui.reader.ReaderIcons
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
@@ -70,14 +72,14 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-/** The panel's scopes — `NotesPanel.Scope`, in the same order and wording. */
+/** What the panel lists — `NotesPanel.Scope`, in the same order and wording. */
 enum class NotesScope(@StringRes val titleRes: Int) {
-    ALL(R.string.notes_scope_all), CHAPTER(R.string.notes_scope_chapter), FAVORITES(R.string.notes_scope_favorites),
+    NOTES(R.string.notes_title), HIGHLIGHTS(R.string.notes_scope_highlights), FAVORITES(R.string.notes_scope_favorites),
 }
 
 /**
- * Every note, searchable, filterable to the chapter on screen, with the reader's favorites as a third
- * scope — `ScriptureAlone/Notes/NotesPanel.swift`. On iPhone it is a sheet over the text; so it is
+ * Every note, highlight and favorite, searchable, and narrowed to the book or chapter on screen
+ * ([NotesPlace]) — `ScriptureAlone/Notes/NotesPanel.swift`. On iPhone it is a sheet over the text; so it is
  * here. A note opens in [NoteEditor] within the same sheet, as iOS pushes it onto the panel's stack;
  * [openNote] is that stack, hoisted so Add Note in the selection bar can open straight onto a note.
  *
@@ -93,16 +95,18 @@ fun NotesPanel(
     model: ReaderViewModel,
     palette: ReaderPalette,
     notes: List<Note>,
+    highlights: List<Highlight>,
     favorites: List<Favorite>,
     openNote: String?,
     onOpenNoteChange: (String?) -> Unit,
     onDismiss: () -> Unit,
     /** The scope to open on — Favorites for a favorites link or shortcut. */
-    initialScope: NotesScope = NotesScope.ALL,
+    initialScope: NotesScope = NotesScope.NOTES,
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
     var search by rememberSaveable { mutableStateOf("") }
     var scope by rememberSaveable { mutableStateOf(initialScope) }
+    var place by rememberSaveable { mutableStateOf(NotesPlace.ALL) }
 
     fun dismiss() {
         keyboard?.hide()
@@ -139,8 +143,8 @@ fun NotesPanel(
                 model.verseCount(ChapterRef(book.number, chapter))
             }
             val filtered = notes.filter { note ->
-                // Anchors are KJV ranges; "this chapter" is the chapter as the translation numbers it.
-                (scope == NotesScope.ALL || note.anchors.any { model.displayRange(it).overlaps(location) }) &&
+                // Anchors are KJV ranges; the place is the book or chapter as the translation numbers it.
+                (place == NotesPlace.ALL || note.anchors.any { place.contains(model.displayRange(it), location) }) &&
                     NoteSearch.matches(note, search, verseCount, model.numbering)
             }
             PanelHeader(stringResource(R.string.notes_title), palette, back = false, onLeading = ::dismiss) {
@@ -148,20 +152,30 @@ fun NotesPanel(
                     onOpenNoteChange(model.newNote().id.toString())
                 }
                 SlideCaptureMenu(capture, palette)
-                ExportMenu(model, palette, notes, if (scope == NotesScope.FAVORITES) notes else filtered)
+                ExportMenu(model, palette, notes, if (scope == NotesScope.NOTES) filtered else notes)
             }
-            PanelSearchField(
-                search, if (scope == NotesScope.FAVORITES) stringResource(R.string.notes_search_favorites) else stringResource(R.string.notes_search_notes),
-                palette, onChange = { search = it },
-            )
+            // Each list has its own prompt — `NotesPanel.searchPrompt`.
+            val prompt = when (scope) {
+                NotesScope.NOTES -> stringResource(R.string.notes_search_notes)
+                NotesScope.HIGHLIGHTS -> stringResource(R.string.notes_search_highlights)
+                NotesScope.FAVORITES -> stringResource(R.string.notes_search_favorites)
+            }
+            PanelSearchField(search, prompt, palette, onChange = { search = it })
             Spacer(Modifier.height(12.dp))
             val scopeTitles = NotesScope.entries.associateWith { stringResource(it.titleRes) }
             Segmented(NotesScope.entries, scope, { scopeTitles.getValue(it) }, palette) { scope = it }
+            Spacer(Modifier.height(8.dp))
+            val placeTitles = NotesPlace.entries.associateWith { stringResource(it.titleRes) }
+            Segmented(NotesPlace.entries, place, { placeTitles.getValue(it) }, palette) { place = it }
             Spacer(Modifier.height(12.dp))
 
             val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             if (scope == NotesScope.FAVORITES) {
-                FavoritesSection(model, palette, favorites, search, bottom, onOpened = ::dismiss)
+                FavoritesSection(model, palette, favorites, search, bottom, onOpened = ::dismiss, place = place)
+                return@Column
+            }
+            if (scope == NotesScope.HIGHLIGHTS) {
+                HighlightsSection(model, palette, highlights, search, place, bottom, onOpened = ::dismiss)
                 return@Column
             }
 

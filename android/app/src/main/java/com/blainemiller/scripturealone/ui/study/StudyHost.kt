@@ -74,6 +74,11 @@ class ReaderPanels(
     val openCompare: () -> Unit,
     /** Whether the Study panel is up (state-backed: reading it recomposes on a change). */
     val studyOpen: () -> Boolean,
+    /**
+     * Whether Study is up as the phone's bottom sheet, over the lower part of the text (state-backed).
+     * The reader then keeps a tapped verse above it and lets the chapter's end scroll clear of it.
+     */
+    val studyCovers: () -> Boolean,
     /** Study's back trail — the Back to… button, ⌥⌘[. */
     val studyBack: () -> Unit,
     /** Maps & Timeline for the chapter — ⇧⌘M: Study on its Context tab. */
@@ -94,6 +99,8 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
     val study = remember { StudyModel(context) }
     var showTranslations by rememberSaveable { mutableStateOf(false) }
     var showCompare by rememberSaveable { mutableStateOf(false) }
+    /** Study beside the text (a wide screen) rather than in a sheet over it. */
+    var wideLayout by remember { mutableStateOf(false) }
     val palette = reader.theme.palette(isSystemInDarkTheme()).accented(reader.accent)
     val panels = remember {
         ReaderPanels(
@@ -119,6 +126,7 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
             openTranslations = { showTranslations = true },
             openCompare = { showCompare = true },
             studyOpen = { study.isOpen },
+            studyCovers = { study.isOpen && !wideLayout },
             studyBack = { if (study.isOpen) study.back(reader) },
             openMaps = {
                 val here = reader.location
@@ -158,6 +166,7 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
     val behind = if (covered) Modifier.clearAndSetSemantics {} else Modifier
     BoxWithConstraints(Modifier.fillMaxSize().background(Color.Black)) {
         val wide = maxWidth >= 700.dp
+        LaunchedEffect(wide) { wideLayout = wide }
         if (wide) {
             Row(Modifier.fillMaxSize()) {
                 Box(Modifier.weight(1f).fillMaxHeight().then(behind)) { content(panels) }

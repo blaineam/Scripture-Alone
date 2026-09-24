@@ -13,8 +13,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -87,8 +91,9 @@ object Routes {
     const val BOOKS = "books"
     const val FAVORITES = "favorites"
     const val NOTES = "notes"
+    const val HIGHLIGHTS = "highlights"
     const val TRANSLATIONS = "translations"
-    val SCREENS = setOf(BOOKS, FAVORITES, NOTES, TRANSLATIONS)
+    val SCREENS = setOf(BOOKS, FAVORITES, NOTES, HIGHLIGHTS, TRANSLATIONS)
 
     fun verse(ref: String) = "verse/$ref"
     fun verse(range: VerseRange) = verse(range.storageString)
@@ -97,17 +102,27 @@ object Routes {
     fun note(id: String) = "note/${Uri.encode(id)}"
 }
 
-private val Accent = Color(VersePalette.DARK.accent)
+/** The app's own accent, until the phone sends the reader's (`WatchAccent`). */
+private val DefaultAccent = Color(VersePalette.DARK.accent)
+private val LocalAccent = staticCompositionLocalOf { DefaultAccent }
+
+/** The reader's accent colour from the phone, or the app's own. */
+private val Accent: Color
+    @Composable @ReadOnlyComposable get() = LocalAccent.current
 private val Secondary = Color(0xFFB4ABA2)
 private val HeartRed = Color(0xFFFF453A)
 private val NoteOrange = Color(0xFFFF9F0A)
+private val HighlightYellow = Color(0xFFFFD60A)
 private val WordsOfChrist = Color(VersePalette.WATCH_RED)
 
 @Composable
 fun WatchApp(bible: WatchBible, pendingRoute: MutableStateFlow<String?>) {
-    MaterialTheme(colors = Colors(primary = Accent, primaryVariant = Accent, onPrimary = Color.Black)) {
+    val state by bible.state.collectAsStateWithLifecycle()
+    // The phone's accent colour (`WatchLinkKeys.accent`) tints the app; its own until the phone has said.
+    val accent = state.accent?.let { Color(0xFF000000 or it.toLong()) } ?: DefaultAccent
+    CompositionLocalProvider(LocalAccent provides accent) {
+    MaterialTheme(colors = Colors(primary = accent, primaryVariant = accent, onPrimary = Color.Black)) {
         val nav = rememberSwipeDismissableNavController()
-        val state by bible.state.collectAsStateWithLifecycle()
         val route by pendingRoute.collectAsStateWithLifecycle()
         LaunchedEffect(route) {
             val target = route ?: return@LaunchedEffect
@@ -141,8 +156,10 @@ fun WatchApp(bible: WatchBible, pendingRoute: MutableStateFlow<String?>) {
             composable("note/{id}") { entry ->
                 NoteScreen(state, entry.arguments?.getString("id").orEmpty()) { nav.navigate(it) }
             }
+            composable(Routes.HIGHLIGHTS) { HighlightsScreen(bible, state) { nav.navigate(it) } }
             composable(Routes.TRANSLATIONS) { TranslationsScreen(bible, state) }
         }
+    }
     }
 }
 
@@ -207,6 +224,7 @@ private fun HomeScreen(bible: WatchBible, state: WatchBible.State, go: (String) 
     val today = verseOfDay
     val favorites = state.snapshot?.items(setOf(Kind.FAVORITE)).orEmpty().size
     val notes = state.snapshot?.items(setOf(Kind.NOTE)).orEmpty().size
+    val highlights = state.snapshot?.items(setOf(Kind.HIGHLIGHT)).orEmpty().size
     Screen {
         item { Title(stringResource(R.string.app_name)) }
         today?.range?.let { range ->
@@ -225,6 +243,7 @@ private fun HomeScreen(bible: WatchBible, state: WatchBible.State, go: (String) 
         }
         item { RowChip(stringResource(R.string.wear_favorites), R.drawable.ic_heart, HeartRed, trailing = favorites.takeIf { it > 0 }?.toString()) { go(Routes.FAVORITES) } }
         item { RowChip(stringResource(R.string.wear_notes), R.drawable.ic_note, NoteOrange, trailing = notes.takeIf { it > 0 }?.toString()) { go(Routes.NOTES) } }
+        item { RowChip(stringResource(R.string.wear_highlights), R.drawable.ic_highlighter, HighlightYellow, trailing = highlights.takeIf { it > 0 }?.toString()) { go(Routes.HIGHLIGHTS) } }
         item { RowChip(stringResource(R.string.wear_read), R.drawable.ic_book) { go(Routes.BOOKS) } }
         item { RowChip(stringResource(R.string.wear_translation), R.drawable.ic_translate, trailing = state.translation) { go(Routes.TRANSLATIONS) } }
     }
@@ -435,6 +454,38 @@ private fun FavoritesScreen(bible: WatchBible, state: WatchBible.State, go: (Str
         items(favorites) { item ->
             Card(onClick = { item.verseRange?.let { go(Routes.verse(it)) } }) {
                 Text(item.reference, style = MaterialTheme.typography.title3, color = Accent)
+                Text(texts[item.range] ?: item.text, style = MaterialTheme.typography.body2, color = Color.White, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
+}
+
+/**
+ * Highlighted verses in Bible order — `WatchHighlightsView`: neighbouring verses in one colour read as
+ * one passage (the snapshot groups them), each with its colour's dot and its text in the watch's own
+ * translation.
+ */
+@Composable
+private fun HighlightsScreen(bible: WatchBible, state: WatchBible.State, go: (String) -> Unit) {
+    val runs = state.snapshot?.items(setOf(Kind.HIGHLIGHT)).orEmpty().sortedWith(compareBy({ it.startKey }, { it.endKey }))
+    val texts by produceState(emptyMap<String, String>(), runs, state.translation) {
+        value = withContext(Dispatchers.IO) {
+            val edition = bible.edition(state.translation)
+            runs.associate { item -> item.range to (item.verseRange?.let(edition::text)?.takeIf { it.isNotEmpty() } ?: item.text) }
+        }
+    }
+    Screen {
+        item { Title(stringResource(R.string.wear_highlights)) }
+        if (runs.isEmpty()) {
+            item { Empty(R.drawable.ic_highlighter, stringResource(R.string.wear_highlights_empty_title), stringResource(R.string.wear_highlights_empty_message)) }
+        }
+        items(runs) { item ->
+            Card(onClick = { item.verseRange?.let { go(Routes.verse(it)) } }) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(Modifier.size(8.dp).background(Color(VersePalette.highlight(item.color)), CircleShape))
+                    Spacer(Modifier.width(6.dp))
+                    Text(item.reference, style = MaterialTheme.typography.title3, color = Accent, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
                 Text(texts[item.range] ?: item.text, style = MaterialTheme.typography.body2, color = Color.White, maxLines = 3, overflow = TextOverflow.Ellipsis)
             }
         }

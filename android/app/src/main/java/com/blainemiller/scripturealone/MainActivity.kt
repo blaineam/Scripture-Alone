@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
                     // Listen: the toolbar button, the selection bar's Listen and the Now Playing bar.
                     listen = ListenController.get(this),
                     studyOpen = panels.studyOpen(),
+                    studyCovers = panels.studyCovers(),
                     onStudyBack = panels.studyBack,
                     onMaps = panels.openMaps,
                 )

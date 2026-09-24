@@ -64,6 +64,10 @@
     <string name="wear_favorites_empty_message">Favorite a verse on your phone and it appears here.</string>
     <string name="wear_notes_empty_title">No Notes</string>
     <string name="wear_notes_empty_message">Notes you write on your phone appear here.</string>
+    <!-- Home row and screen title: the verses highlighted on the phone. -->
+    <string name="wear_highlights">Highlights</string>
+    <string name="wear_highlights_empty_title">No Highlights</string>
+    <string name="wear_highlights_empty_message">Highlight a verse on your phone and it appears here.</string>
     <!-- Shown when the note that was open was deleted on the phone. -->
     <string name="wear_note_deleted">Note Deleted</string>
     <string name="wear_note_edit_on_phone">Edit notes on your phone.</string>

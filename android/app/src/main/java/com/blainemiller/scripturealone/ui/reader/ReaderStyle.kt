@@ -63,6 +63,9 @@ enum class ReaderAccent(@StringRes private val titleRes: Int, private val light:
     /** The swatch in a picker, always its light-page value — as on iOS. */
     val swatch: Color get() = rgb(light)
 
+    /** The value the watch uses, 0xRRGGBB: its face is always dark — `ReaderAccent.watchHex`. */
+    val watchHex: Int get() = dark.toInt()
+
     /** The Swift raw value, as stored under `reader.accent`: "sunrise", "sea", … */
     val raw: String get() = name.lowercase()
 

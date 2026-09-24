@@ -111,6 +111,24 @@ class VerseSnapshotTest {
         assertEquals(swift, snapshot.encoded())
     }
 
+    /** The abbreviation and the days written ahead for an import travel as Swift's optional keys. */
+    @Test fun encodesTheDailyPassagesAndAbbreviation() {
+        val plain = snapshot()
+        val snapshot = plain.copy(
+            abbreviation = "CSB",
+            daily = mapOf("43003016-43003016" to VerseSnapshot.DailyText("For God so loved", listOf(listOf(0, 3)))),
+        )
+        val data = snapshot.encoded()
+        val json = Json.parseToJsonElement(data).jsonObject
+        assertEquals("CSB", json["abbreviation"]!!.jsonPrimitive.content)
+        val day = json["daily"]!!.jsonObject["43003016-43003016"]!!.jsonObject
+        assertEquals(listOf("red", "text"), day.keys.toList())
+        assertEquals(snapshot, VerseSnapshot.decode(data))
+        assertEquals(listOf(0 to 3), VerseSnapshot.decode(data)!!.daily!!.values.single().redRanges)
+        // Without them, nothing is written: the Swift bytes are unchanged.
+        assertTrue("abbreviation" !in Json.parseToJsonElement(plain.encoded()).jsonObject.keys)
+    }
+
     @Test fun malformedSnapshotsDecodeToNull() {
         assertNull(VerseSnapshot.decode(""))
         assertNull(VerseSnapshot.decode("[]"))
