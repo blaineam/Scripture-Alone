@@ -68,6 +68,7 @@ final class SettingsSync {
         SyncedSetting(SettingsKey.fontSize, .double, perDeviceKind: true),
         SyncedSetting(SettingsKey.lineSpacing, .double),
         SyncedSetting(SettingsKey.layout, .string),
+        SyncedSetting(SettingsKey.columns, .bool),
         SyncedSetting(SettingsKey.redLetters, .bool),
         SyncedSetting(SettingsKey.verseNumbers, .bool),
         SyncedSetting(SettingsKey.headings, .bool),

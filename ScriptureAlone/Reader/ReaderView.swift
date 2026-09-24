@@ -563,6 +563,7 @@ private struct ChapterPane: View {
     @Query private var highlights: [Highlight]
     @Query(sort: \Note.updatedAt, order: .reverse) private var notes: [Note]
     @State private var cache = RenderCache()
+    @AppStorage(SettingsKey.columns) private var columnsEnabled = true
 
     /// - Parameter markKeys: the KJV keys this chapter's verses hold (`VerseNumbering.kjvKeyRange`)
     ///   — where its highlights are stored, which is not always this chapter's own numbers.
@@ -588,7 +589,7 @@ private struct ChapterPane: View {
         // text beneath another's reference.
         if let layout = model.layout, model.layoutChapter == chapter, let source = model.source {
             let rendered = cache.render(layout: layout, input: renderInput(source: source), style: style)
-            ChapterTextView(configuration: ChapterTextConfiguration(
+            let configuration = ChapterTextConfiguration(
                 content: rendered,
                 background: style.palette.page,
                 scrollTarget: model.scrollTarget,
@@ -600,7 +601,18 @@ private struct ChapterPane: View {
                 onReachedEnd: onReachedEnd,
                 onUserScroll: onUserScroll,
                 revealVerse: ListenController.shared.speakingVerse(in: model)
-            ))
+            )
+            // Side-by-side columns when the window is wide enough for two at a comfortable
+            // measure, as a printed page is set; one scrolling column otherwise, and while the
+            // page scrolls itself.
+            GeometryReader { geometry in
+                let columns = ReaderColumns.count(width: geometry.size.width, height: geometry.size.height, fontSize: style.size)
+                if columnsEnabled, columns >= 2, autoScrollSpeed == 0 {
+                    ColumnChapterView(configuration: configuration, columns: columns)
+                } else {
+                    ChapterTextView(configuration: configuration)
+                }
+            }
         } else if let error = model.loadError {
             ContentUnavailableView {
                 Label("Can’t Open This Chapter", systemImage: "book.closed")

@@ -26,6 +26,8 @@ enum SettingsKey {
     static let verseNumbers = "reader.verseNumbers"
     static let headings = "reader.headings"
     static let footnotes = "reader.footnotes"
+    /// Side-by-side columns on a wide screen (`ColumnChapterView`).
+    static let columns = "reader.columns"
     static let autoScrollSpeed = "reader.autoScrollSpeed"
     static let listenVoice = "listen.voice"
     static let listenStudioVoice = "listen.studioVoice"

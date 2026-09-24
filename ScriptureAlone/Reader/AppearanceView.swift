@@ -14,6 +14,7 @@ struct AppearanceView: View {
     @AppStorage(SettingsKey.verseNumbers) private var verseNumbers = true
     @AppStorage(SettingsKey.headings) private var headings = true
     @AppStorage(SettingsKey.footnotes) private var footnotes = true
+    @AppStorage(SettingsKey.columns) private var columns = true
     @AppStorage(SpotlightSettingsKey.notes) private var notesInSpotlight = false
     @AppStorage(SpotlightSettingsKey.favorites) private var favoritesInSpotlight = false
     @Environment(\.colorScheme) private var colorScheme
@@ -63,6 +64,7 @@ struct AppearanceView: View {
                     ForEach(ReadingLayout.allCases) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.segmented)
+                Toggle("Columns on Wide Screens", isOn: $columns)
             }
 
             Section("Font") {

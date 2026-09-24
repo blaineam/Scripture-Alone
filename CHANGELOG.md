@@ -2,6 +2,14 @@
 
 ## After 1.0.0
 
+- On a wide screen — an iPhone on its side, an iPad, a wide Mac window — the reader lays a
+  chapter out in two or three columns, like a printed Bible, and turns page by page with a
+  swipe (or the arrow keys, space bar or trackpad on a Mac); swiping past the last page moves
+  to the next chapter. Tapping a verse still selects it. Columns can be turned off under
+  Appearance, and auto-scroll keeps the single column.
+- The import summary lists verses a translation leaves out because the oldest manuscripts
+  don't have them (such as Acts 8:37) under their own heading instead of as gaps, so a clean
+  file of a modern translation reads as clean.
 - An imported English translation whose file doesn't mark the words of Christ gets them from
   the BSB (or KJV) on the device: each verse is matched word for word, and only the words that
   line up with red ones turn red — "Jesus said to him" stays black, "I am the way" turns red. A

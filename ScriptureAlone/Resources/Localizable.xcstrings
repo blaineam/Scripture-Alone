@@ -8346,6 +8346,66 @@
         }
       }
     },
+    "Columns on Wide Screens" : {
+      "comment" : "Appearance setting: lay the chapter out in side-by-side columns, turned page by page, when the window is wide.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spalten auf breiten Bildschirmen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Columns on Wide Screens"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Columnas en pantallas anchas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colonnes sur les grands écrans"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colonne sugli schermi larghi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "横長の画面では段組み"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "넓은 화면에서 단 나누기"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colunas em telas largas"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "宽屏时分栏显示"
+          }
+        }
+      }
+    },
     "Coming From Somewhere Else" : {
       "localizations" : {
         "de" : {
@@ -17712,6 +17772,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "左对齐"
+          }
+        }
+      }
+    },
+    "Left Out by This Translation" : {
+      "comment" : "Import summary section: verses this translation deliberately omits (textual variants).",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Von dieser Übersetzung ausgelassen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Left Out by This Translation"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitidos por esta traducción"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omis par cette traduction"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omessi da questa traduzione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この翻訳が省いている節"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 번역본에서 생략된 구절"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitidos por esta tradução"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此译本省略的经文"
           }
         }
       }
@@ -35620,6 +35740,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这些需要联网。阅读内容会在出版方允许的范围内缓存，且无法离线搜索。"
+          }
+        }
+      }
+    },
+    "These verses aren’t in the oldest manuscripts. Most modern translations print them only as footnotes, so nothing is missing from your file." : {
+      "comment" : "Footer explaining textual-variant verses in the import summary.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Verse stehen nicht in den ältesten Handschriften. Die meisten modernen Übersetzungen bringen sie nur als Fußnote – in deiner Datei fehlt also nichts."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "These verses aren’t in the oldest manuscripts. Most modern translations print them only as footnotes, so nothing is missing from your file."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estos versículos no están en los manuscritos más antiguos. La mayoría de las traducciones modernas los incluyen solo como notas al pie, así que no falta nada en tu archivo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ces versets ne figurent pas dans les plus anciens manuscrits. La plupart des traductions modernes ne les donnent qu’en note, il ne manque donc rien à votre fichier."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questi versetti non si trovano nei manoscritti più antichi. La maggior parte delle traduzioni moderne li riporta solo in nota, quindi al tuo file non manca nulla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これらの節は最古の写本にはありません。多くの現代訳では脚注にのみ記されているため、ファイルに欠けているものはありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 구절들은 가장 오래된 사본에 없습니다. 대부분의 현대 번역본은 각주로만 싣기 때문에, 파일에서 빠진 것은 없습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estes versículos não estão nos manuscritos mais antigos. A maioria das traduções modernas os traz só em notas de rodapé, então não falta nada no seu arquivo."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这些经文不见于最古老的抄本。多数现代译本只把它们放在脚注中，所以你的文件并没有缺漏。"
           }
         }
       }

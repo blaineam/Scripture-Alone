@@ -40,6 +40,7 @@
 		40D4243305A23E4092AB825F /* LegacyLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3121B576043D263B63F71D1 /* LegacyLibrary.swift */; };
 		421F1D504BC55173091F44DE /* CrossReferences.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = 4C961CAB44265A68006BEDE7 /* CrossReferences.sqlite */; };
 		4381074D1BBCF51EA8DAB262 /* AppShortcuts.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = F2782EC501EE1E4CC4BCE601 /* AppShortcuts.xcstrings */; };
+		446A717533D5FC3908927968 /* ColumnChapterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A8700D32AF5FC445CF30E5 /* ColumnChapterView.swift */; };
 		458F54193454C89DE6F698E7 /* NowPlayingBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5588F9A87B421F8DCA9755A9 /* NowPlayingBar.swift */; };
 		46004442636C39F82714B4AA /* SlideReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39247E7AAA95CDD87B0CBD9C /* SlideReviewView.swift */; };
 		4770DFEA1BC39A2844D7DA92 /* SelectionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 293DBAA61F3889B10D77CBFE /* SelectionBar.swift */; };
@@ -262,6 +263,7 @@
 		24F97E7F3971462B4C11C7CF /* FavoriteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteButton.swift; sourceTree = "<group>"; };
 		2539ED6AC3F6DFA0CE4CCCD5 /* WidgetSnapshotSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshotSync.swift; sourceTree = "<group>"; };
 		2544CC6D255BC8BECC33D29C /* ScriptureAloneWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScriptureAloneWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		25A8700D32AF5FC445CF30E5 /* ColumnChapterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColumnChapterView.swift; sourceTree = "<group>"; };
 		2616BBE8FB3990ABC21357B7 /* AppCommandCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommandCenter.swift; sourceTree = "<group>"; };
 		28B87B651438BBE462790DCD /* StudySourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudySourcesView.swift; sourceTree = "<group>"; };
 		293DBAA61F3889B10D77CBFE /* SelectionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionBar.swift; sourceTree = "<group>"; };
@@ -663,6 +665,7 @@
 				94BF719AE320CC291255FBE5 /* AppearanceView.swift */,
 				BEF5F2289267C3D0B0E64A70 /* ChapterRenderer.swift */,
 				961828BA63931539A77621BD /* ChapterTextView.swift */,
+				25A8700D32AF5FC445CF30E5 /* ColumnChapterView.swift */,
 				5F2651262AA20DD2F3B106F7 /* CompareView.swift */,
 				3CF99F7EE590AF05C6A9CF56 /* ReaderStyle.swift */,
 				14F3A5CAF08690618C671B97 /* ReaderView.swift */,
@@ -1219,6 +1222,7 @@
 				D5C9D7F8E5D34F73C626B369 /* ChapterTextView.swift in Sources */,
 				34EEE38976C8CB13024D9B34 /* ChartViews.swift in Sources */,
 				F82AD3B909696EA9D7B25488 /* CloudKitSchemaBootstrap.swift in Sources */,
+				446A717533D5FC3908927968 /* ColumnChapterView.swift in Sources */,
 				F1EE746BD1D92D5FD44A7C89 /* CommentaryView.swift in Sources */,
 				0ACF98A8DA756970D2E02C27 /* CommentatorTraditionsView.swift in Sources */,
 				6DFDAE02A6F001B51EBC1441 /* CompareView.swift in Sources */,

@@ -236,6 +236,39 @@ public struct ImportQuality: Sendable, Hashable, Codable {
     }
 }
 
+public extension ImportCoverageReport {
+    /// The New Testament verses the oldest manuscripts don't contain. Translations made from them
+    /// print these only as footnotes, so their absence is the translation, not a damaged file.
+    static let textualVariants: Set<VerseRef> = [
+        VerseRef(.matthew, 12, 47), VerseRef(.matthew, 17, 21), VerseRef(.matthew, 18, 11), VerseRef(.matthew, 23, 14),
+        VerseRef(.mark, 7, 16), VerseRef(.mark, 9, 44), VerseRef(.mark, 9, 46), VerseRef(.mark, 11, 26), VerseRef(.mark, 15, 28),
+        VerseRef(.luke, 17, 36), VerseRef(.luke, 23, 17), VerseRef(.john, 5, 4),
+        VerseRef(.acts, 8, 37), VerseRef(.acts, 15, 34), VerseRef(.acts, 24, 7), VerseRef(.acts, 28, 29),
+        VerseRef(.romans, 16, 24),
+    ]
+
+    /// Verses missing only because the translation leaves them out (`textualVariants`), by book.
+    var omittedByTranslation: [(book: BookID, verses: [VerseRef])] {
+        books.compactMap { book in
+            let omitted = book.chaptersWithGaps.flatMap { chapter in
+                chapter.missingVerses.map { VerseRef(book.book, chapter.chapter, $0) }
+            }.filter { Self.textualVariants.contains($0) }
+            return omitted.isEmpty ? nil : (book.book, omitted)
+        }
+    }
+
+    /// Books with something wrong beyond verses the translation leaves out.
+    var booksWithRealGaps: [BookCoverage] {
+        books.filter { book in
+            !book.missingChapters.isEmpty || !book.unexpectedChapters.isEmpty
+                || book.chaptersWithGaps.contains { chapter in
+                    chapter.outOfOrder || chapter.versesFound == 0
+                        || chapter.missingVerses.contains { !Self.textualVariants.contains(VerseRef(book.book, chapter.chapter, $0)) }
+                }
+        }
+    }
+}
+
 private extension ImportCoverageReport.BookCoverage {
     var name: String { book.name }
 }

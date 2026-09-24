@@ -177,8 +177,10 @@ private struct ImportSummaryView: View {
     let result: BibleImportResult
     @Environment(\.dismiss) private var dismiss
 
+    /// Books with real gaps. Verses the translation itself leaves out are listed on their own,
+    /// not as damage (`ImportCoverageReport.textualVariants`).
     private var gaps: [ImportCoverageReport.BookCoverage] {
-        result.report.books.filter { !$0.isComplete }
+        result.report.booksWithRealGaps
     }
 
 
@@ -230,6 +232,22 @@ private struct ImportSummaryView: View {
                     Text(result.identity.copyright)
                 }
 
+                let omitted = result.report.omittedByTranslation
+                if !omitted.isEmpty {
+                    Section {
+                        ForEach(omitted, id: \.book) { entry in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(entry.book.name)
+                                Text(verbatim: entry.verses.map { "\($0.chapter):\($0.verse)" }.joined(separator: ", "))
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                    } header: {
+                        Text("Left Out by This Translation")
+                    } footer: {
+                        Text("These verses aren’t in the oldest manuscripts. Most modern translations print them only as footnotes, so nothing is missing from your file.")
+                    }
+                }
                 if gaps.isEmpty && result.report.booksMissing.isEmpty {
                     Section {
                         Label("Every book read cleanly.", systemImage: "checkmark.circle")
