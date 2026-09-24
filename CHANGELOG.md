@@ -2,6 +2,7 @@
 
 ## After 1.0.0
 
+- Compare names an imported translation by its abbreviation, not its internal file name.
 - "Find my notes", "Show my notes" or "Pull up my notes in Scripture Alone" makes Siri show the
   notes it found, each opening in the app with a tap, instead of only saying how many.
 - Notes has a Highlights list beside Notes and Favorites: every highlighted verse in Bible

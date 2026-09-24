@@ -71,7 +71,8 @@ struct CompareView: View {
             HStack(spacing: 4) {
                 Text(model.translationAbbreviation).font(.subheadline.weight(.semibold))
                 Image(systemName: "arrow.left.arrow.right").font(.caption)
-                Text(otherID.isEmpty ? String(localized: "Choose", comment: "Button: choose a second translation to compare") : otherID).font(.subheadline.weight(.semibold))
+                Text(otherID.isEmpty ? String(localized: "Choose", comment: "Button: choose a second translation to compare")
+                     : candidates.first { $0.id == otherID }?.abbreviation ?? otherID).font(.subheadline.weight(.semibold))
             }
         }
     }
