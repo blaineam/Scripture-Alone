@@ -871,6 +871,6 @@
     <string name="translations_summary_quoting">引用</string>
     <string name="translations_quoting_public_domain">パブリックドメイン — 制限なし</string>
     <string name="translations_quoting_unrecognised">不明 — 最大%1$d節</string>
-    <string name="translations_quoting_terms_limit">%1$sの規定 — 最大%2$d節</string>
-    <string name="translations_quoting_terms_unlimited">%1$sの規定 — 節数の制限なし</string>
+    <string name="translations_quoting_terms_limit">出版社の規定 — 最大 %1$d 節</string>
+    <string name="translations_quoting_terms_unlimited">出版社の規定 — 節数の制限なし</string>
 </resources>

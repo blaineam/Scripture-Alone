@@ -211,6 +211,12 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
                 selectTranslation(preferred)
             }
         }
+        viewModelScope.launch {
+            // Reading the online copy of what is now imported: carry on in the imported one.
+            TranslationLibrary.state.collect {
+                TranslationLibrary.importedReplacing(translationId)?.let(::selectTranslation)
+            }
+        }
         awaitedTranslation?.let { awaited ->
             viewModelScope.launch {
                 // A pack is listed from the start (and fetched by selecting it); an online translation
@@ -968,7 +974,7 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
      * an internal name ("IMPORT-NN0XUW"), so it shows the abbreviation its file gave.
      */
     fun translationLabel(id: String): String =
-        com.blainemiller.scripturealone.data.translations.TranslationLibrary.imported(id)?.info?.abbreviation ?: id
+        TranslationLibrary.imported(id)?.info?.abbreviation ?: id
 
     /** The translations the switcher lists — see [menuTranslations]. */
     fun translationChoices(): List<String> = menuTranslations(translationId)

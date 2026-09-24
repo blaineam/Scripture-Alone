@@ -8,7 +8,9 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -303,7 +305,10 @@ private fun MainPage(
                         if (i > 0) CellDivider(palette)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(Modifier.weight(1f)) {
-                                TranslationRow(entry.info.name, entry.info.abbreviation, entry.info.copyright, palette, entry.id == reader.translationId) {
+                                TranslationRow(
+                                    entry.info.name, entry.info.abbreviation, entry.info.copyright, palette, entry.id == reader.translationId,
+                                    onLongClick = { onRemove(entry) },
+                                ) {
                                     reader.selectTranslation(entry.id)
                                 }
                             }
@@ -335,10 +340,22 @@ private fun MainPage(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TranslationRow(name: String, abbreviation: String, note: String?, palette: ReaderPalette, selected: Boolean, onClick: () -> Unit) {
+private fun TranslationRow(
+    name: String,
+    abbreviation: String,
+    note: String?,
+    palette: ReaderPalette,
+    selected: Boolean,
+    onLongClick: (() -> Unit)? = null,
+    onClick: () -> Unit,
+) {
     Row(
-        Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick).padding(horizontal = 16.dp, vertical = 11.dp),
+        // A long press offers what the row's own button does (removing an import), as iOS's context
+        // menu does beside its swipe.
+        Modifier.fillMaxWidth().combinedClickable(role = Role.Button, onLongClick = onLongClick, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
@@ -709,8 +726,8 @@ internal fun quotingTerms(result: BibleImportResult): String {
     if (TranslationRights.isPublicDomain(license, copyright)) return AppText.get(R.string.translations_quoting_public_domain)
     val terms = TranslationRights.publisherTerms(license, copyright, identity.abbreviation, identity.name)
         ?: return AppText.get(R.string.translations_quoting_unrecognised, TranslationRights.QUOTATION_VERSE_LIMIT.toInt())
-    val limit = terms.maxVerses ?: return AppText.get(R.string.translations_quoting_terms_unlimited, terms.abbreviation)
-    return AppText.get(R.string.translations_quoting_terms_limit, terms.abbreviation, limit)
+    val limit = terms.maxVerses ?: return AppText.get(R.string.translations_quoting_terms_unlimited)
+    return AppText.get(R.string.translations_quoting_terms_limit, limit)
 }
 
 // ---- Overlays ---------------------------------------------------------------------------------------

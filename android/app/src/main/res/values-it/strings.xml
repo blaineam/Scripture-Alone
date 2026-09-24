@@ -871,6 +871,6 @@
     <string name="translations_summary_quoting">Citazioni</string>
     <string name="translations_quoting_public_domain">Pubblico dominio — nessun limite</string>
     <string name="translations_quoting_unrecognised">Non riconosciuta — fino a %1$d versetti</string>
-    <string name="translations_quoting_terms_limit">Condizioni di %1$s — fino a %2$d versetti</string>
-    <string name="translations_quoting_terms_unlimited">Condizioni di %1$s — nessun limite di versetti</string>
+    <string name="translations_quoting_terms_limit">Condizioni dell’editore — fino a %1$d versetti</string>
+    <string name="translations_quoting_terms_unlimited">Condizioni dell’editore — nessun limite di versetti</string>
 </resources>

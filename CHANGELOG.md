@@ -19,6 +19,9 @@
   sharing where it allows none from an app, and the exact notice with every copy (the short form
   on a verse image, where the publisher accepts one). The import summary says which terms apply,
   and imported translations show their abbreviation, not an internal id, in the pickers.
+- On Android, a translation you've imported is used in place of the same translation behind an
+  online key, which no longer shows beside it, and an import can be removed with a long press as
+  well as with its delete button.
 - An imported English translation whose file doesn't mark the words of Christ gets them from
   the BSB (or KJV) on the device: each verse is matched word for word, and only the words that
   line up with red ones turn red — "Jesus said to him" stays black, "I am the way" turns red. A

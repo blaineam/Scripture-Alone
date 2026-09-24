@@ -1606,6 +1606,6 @@
     <string name="translations_summary_quoting">Quoting</string>
     <string name="translations_quoting_public_domain">Public domain — no limit</string>
     <string name="translations_quoting_unrecognised">Not recognised — up to %1$d verses</string>
-    <string name="translations_quoting_terms_limit">%1$s terms — up to %2$d verses</string>
-    <string name="translations_quoting_terms_unlimited">%1$s terms — no verse limit</string>
+    <string name="translations_quoting_terms_limit">Publisher’s terms — up to %1$d verses</string>
+    <string name="translations_quoting_terms_unlimited">Publisher’s terms — no verse limit</string>
 </resources>

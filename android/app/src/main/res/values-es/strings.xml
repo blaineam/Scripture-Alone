@@ -871,6 +871,6 @@
     <string name="translations_summary_quoting">Citas</string>
     <string name="translations_quoting_public_domain">Dominio público: sin límite</string>
     <string name="translations_quoting_unrecognised">No reconocida: hasta %1$d versículos</string>
-    <string name="translations_quoting_terms_limit">Condiciones de %1$s: hasta %2$d versículos</string>
-    <string name="translations_quoting_terms_unlimited">Condiciones de %1$s: sin límite de versículos</string>
+    <string name="translations_quoting_terms_limit">Condiciones de la editorial: hasta %1$d versículos</string>
+    <string name="translations_quoting_terms_unlimited">Condiciones de la editorial: sin límite de versículos</string>
 </resources>

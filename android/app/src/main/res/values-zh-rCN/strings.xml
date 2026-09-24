@@ -871,6 +871,6 @@
     <string name="translations_summary_quoting">引用</string>
     <string name="translations_quoting_public_domain">公有领域 — 无限制</string>
     <string name="translations_quoting_unrecognised">未识别 — 最多 %1$d 节</string>
-    <string name="translations_quoting_terms_limit">%1$s 条款 — 最多 %2$d 节</string>
-    <string name="translations_quoting_terms_unlimited">%1$s 条款 — 无经节数限制</string>
+    <string name="translations_quoting_terms_limit">出版方条款 — 最多 %1$d 节</string>
+    <string name="translations_quoting_terms_unlimited">出版方条款 — 无节数限制</string>
 </resources>

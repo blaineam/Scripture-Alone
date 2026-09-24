@@ -871,6 +871,6 @@
     <string name="translations_summary_quoting">Zitieren</string>
     <string name="translations_quoting_public_domain">Gemeinfrei – keine Begrenzung</string>
     <string name="translations_quoting_unrecognised">Nicht erkannt – bis zu %1$d Verse</string>
-    <string name="translations_quoting_terms_limit">Bedingungen von %1$s – bis zu %2$d Verse</string>
-    <string name="translations_quoting_terms_unlimited">Bedingungen von %1$s – keine Versbegrenzung</string>
+    <string name="translations_quoting_terms_limit">Bedingungen des Verlags – höchstens %1$d Verse</string>
+    <string name="translations_quoting_terms_unlimited">Bedingungen des Verlags – ohne Versbegrenzung</string>
 </resources>

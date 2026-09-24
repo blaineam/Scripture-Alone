@@ -871,6 +871,6 @@
     <string name="translations_summary_quoting">인용</string>
     <string name="translations_quoting_public_domain">퍼블릭 도메인 — 제한 없음</string>
     <string name="translations_quoting_unrecognised">인식되지 않음 — 최대 %1$d절</string>
-    <string name="translations_quoting_terms_limit">%1$s 조건 — 최대 %2$d절</string>
-    <string name="translations_quoting_terms_unlimited">%1$s 조건 — 절 수 제한 없음</string>
+    <string name="translations_quoting_terms_limit">출판사 이용 조건 — 최대 %1$d개 구절</string>
+    <string name="translations_quoting_terms_unlimited">출판사 이용 조건 — 구절 수 제한 없음</string>
 </resources>
