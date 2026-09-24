@@ -9,6 +9,8 @@
   an imported ESV now matches 2,045 of its 2,047 red verses (a PDF 2,028) with none marked
   wrongly. A book in another language, or without English quotation marks, is matched word by
   word as before. Re-import a translation to get it.
+- Android reads an import's quotation marks for the words of Christ the same way, with the same
+  results: the ESV 2,045 of the BSB's 2,047 red verses, the PDF 2,028, none marked wrongly.
 - Compare names an imported translation by its abbreviation, not its internal file name.
 - "Find my notes", "Show my notes" or "Pull up my notes in Scripture Alone" makes Siri show the
   notes it found, each opening in the app with a tap, instead of only saying how many.
