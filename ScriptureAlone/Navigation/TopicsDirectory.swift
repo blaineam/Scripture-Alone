@@ -111,9 +111,14 @@ struct TopicsDirectoryView: View {
 
     @ViewBuilder
     private var searchResults: some View {
-        let themes = catalog.search(query, limit: catalog.themes.count)
-        let topics = TopicsLibrary.visibleIndex?.search(query, limit: 60) ?? []
-        if themes.isEmpty, topics.isEmpty {
+        let crisis = CrisisSupport.isCrisis(query)
+        // The crisis card stands alone: "want to die" would otherwise also list Death & Dying.
+        let themes = crisis ? [] : catalog.search(query, limit: catalog.themes.count)
+        let topics = crisis ? [] : TopicsLibrary.visibleIndex?.search(query, limit: 60) ?? []
+        if crisis {
+            Section { CrisisCard().listRowInsets(EdgeInsets()) }
+        }
+        if themes.isEmpty, topics.isEmpty, !crisis {
             ContentUnavailableView.search(text: query)
         }
         if !themes.isEmpty {
@@ -391,5 +396,67 @@ struct IndexTopicView: View {
         if range.start.chapterKey == range.end.chapterKey { return "\(start)–\(range.end.verse)" }
         if range.start.book == range.end.book { return "\(start)–\(range.end.chapter):\(range.end.verse)" }
         return "\(start)–\(range.end.book.abbreviation) \(range.end.chapter):\(range.end.verse)"
+    }
+}
+
+/// Shown above everything else when a search reads as someone thinking of ending their life
+/// (`CrisisSupport`): a crisis line for their country to call — or text, where it takes messages —
+/// the directory of every other country's lines, and passages for a dark day.
+struct CrisisCard: View {
+    private let helpline = CrisisSupport.helpline(forRegion: Locale.current.region?.identifier)
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label {
+                Text("You’re Not Alone", comment: "Title of the card shown when a search suggests someone may be thinking of suicide.")
+                    .font(.headline)
+            } icon: {
+                Image(systemName: "heart.fill").foregroundStyle(.pink)
+            }
+            Text("If you’re thinking about ending your life, please reach out to someone now. You matter, and talking can help.",
+                 comment: "Body of the crisis card shown when a search suggests someone may be thinking of suicide.")
+                .font(.subheadline)
+                .fixedSize(horizontal: false, vertical: true)
+            if let helpline {
+                Text(verbatim: helpline.name).font(.subheadline.weight(.semibold))
+                HStack(spacing: 8) {
+                    if let call = helpline.callURL {
+                        Link(destination: call) {
+                            Label(String(localized: "Call \(helpline.display)", comment: "Crisis card button. %@ is a crisis line's phone number, e.g. “988”."),
+                                  systemImage: "phone.fill")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    if let text = helpline.textURL {
+                        Link(destination: text) {
+                            Label(String(localized: "Text \(helpline.display)", comment: "Crisis card button: send a text message to a crisis line. %@ is its number, e.g. “988”."),
+                                  systemImage: "message.fill")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
+            }
+            Link(destination: CrisisSupport.directoryURL) {
+                Label(helpline == nil
+                      ? String(localized: "Find a Helpline", comment: "Crisis card button opening an international directory of crisis lines, where the app knows none for the reader's country.")
+                      : String(localized: "Helplines in Other Countries", comment: "Crisis card link to an international directory of crisis lines."),
+                      systemImage: "globe")
+            }
+            .font(.subheadline)
+            NavigationLink(value: TopicsRoute.theme("hope")) {
+                Label(String(localized: "Passages of Hope", comment: "Crisis card link to the Hope topic's passages."), systemImage: "sunrise")
+            }
+            .font(.subheadline)
+            Text("In danger right now? Call your local emergency number.",
+                 comment: "Crisis card footnote for someone in immediate danger.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.pink.opacity(0.1), in: .rect(cornerRadius: 16))
+        .accessibilityElement(children: .contain)
     }
 }

@@ -7090,6 +7090,66 @@
         }
       }
     },
+    "Call %@" : {
+      "comment" : "Crisis card button. %@ is a crisis line's phone number, e.g. “988”.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ anrufen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Call %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Llamar al %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appeler le %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiama il %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ に電話"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@에 전화"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ligar para %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拨打 %@"
+          }
+        }
+      }
+    },
     "Calvin, Gill and Jamieson-Fausset-Brown — about %lld MB, downloaded once and kept." : {
       "comment" : "Describes the commentary download; the names are commentators. %lld is a size in megabytes.",
       "localizations" : {
@@ -12907,6 +12967,66 @@
         }
       }
     },
+    "Find a Helpline" : {
+      "comment" : "Crisis card button opening an international directory of crisis lines, where the app knows none for the reader's country.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hilfetelefon finden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Find a Helpline"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar una línea de ayuda"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trouver une ligne d’écoute"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trova una linea d’ascolto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相談窓口を探す"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상담전화 찾기"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encontrar uma linha de apoio"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查找求助热线"
+          }
+        }
+      }
+    },
     "Find a place" : {
       "localizations" : {
         "de" : {
@@ -14695,6 +14815,66 @@
         }
       }
     },
+    "Helplines in Other Countries" : {
+      "comment" : "Crisis card link to an international directory of crisis lines.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hilfetelefone in anderen Ländern"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Helplines in Other Countries"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Líneas de ayuda en otros países"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lignes d’écoute dans d’autres pays"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linee d’ascolto in altri paesi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ほかの国の相談窓口"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 나라의 상담전화"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linhas de apoio em outros países"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其他国家的求助热线"
+          }
+        }
+      }
+    },
     "Here’s %@." : {
       "comment" : "Siri presents a verse image. %@ is the passage reference.",
       "localizations" : {
@@ -15269,6 +15449,66 @@
         }
       }
     },
+    "If you’re thinking about ending your life, please reach out to someone now. You matter, and talking can help." : {
+      "comment" : "Body of the crisis card shown when a search suggests someone may be thinking of suicide.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn du daran denkst, dir das Leben zu nehmen, wende dich bitte jetzt an jemanden. Du bist wichtig, und reden kann helfen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "If you’re thinking about ending your life, please reach out to someone now. You matter, and talking can help."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si estás pensando en quitarte la vida, por favor habla con alguien ahora. Tú importas, y hablar puede ayudar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si vous pensez à mettre fin à vos jours, parlez-en à quelqu’un dès maintenant. Vous comptez, et en parler peut aider."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se stai pensando di toglierti la vita, per favore parlane con qualcuno adesso. Tu conti, e parlarne può aiutare."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "命を絶つことを考えているなら、どうか今、誰かに話してください。あなたは大切な存在です。話すことが助けになります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "삶을 끝내려는 생각이 든다면, 지금 누군가에게 꼭 이야기해 주세요. 당신은 소중한 사람이고, 이야기하는 것이 도움이 될 수 있습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se você está pensando em tirar a própria vida, por favor, fale com alguém agora. Você importa, e conversar pode ajudar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果你正在考虑结束自己的生命，请现在就向人倾诉。你很重要，说出来会有帮助。"
+          }
+        }
+      }
+    },
     "Import a File…" : {
       "localizations" : {
         "de" : {
@@ -15317,6 +15557,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "导入文件…"
+          }
+        }
+      }
+    },
+    "In danger right now? Call your local emergency number." : {
+      "comment" : "Crisis card footnote for someone in immediate danger.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akute Gefahr? Ruf den Notruf an."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "In danger right now? Call your local emergency number."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿En peligro ahora mismo? Llama al número de emergencias."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En danger immédiat ? Appelez les urgences."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In pericolo adesso? Chiama il numero di emergenza."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今すぐ危険な状態なら、緊急通報番号に電話してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지금 위험한 상황이라면 긴급 전화번호로 연락하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Em perigo agora? Ligue para o número de emergência."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果现在有危险，请拨打当地的紧急电话。"
           }
         }
       }
@@ -24721,6 +25021,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "经文出自 %@。"
+          }
+        }
+      }
+    },
+    "Passages of Hope" : {
+      "comment" : "Crisis card link to the Hope topic's passages.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worte der Hoffnung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Passages of Hope"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasajes de esperanza"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passages d’espérance"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passi di speranza"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "希望のみことば"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "소망의 말씀"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passagens de esperança"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "盼望的经文"
           }
         }
       }
@@ -34549,6 +34909,66 @@
         }
       }
     },
+    "Text %@" : {
+      "comment" : "Crisis card button: send a text message to a crisis line. %@ is its number, e.g. “988”.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SMS an %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Text %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enviar SMS al %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Envoyer un SMS au %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SMS al %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ にメッセージ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@에 문자"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensagem para %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发短信至 %@"
+          }
+        }
+      }
+    },
     "Text Size" : {
       "localizations" : {
         "de" : {
@@ -40488,6 +40908,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你将不再收到更新，此副本也会被移除。对方可以再次邀请你。"
+          }
+        }
+      }
+    },
+    "You’re Not Alone" : {
+      "comment" : "Title of the card shown when a search suggests someone may be thinking of suicide.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du bist nicht allein"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "You’re Not Alone"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No estás solo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous n’êtes pas seul"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non sei solo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "あなたはひとりではありません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "당신은 혼자가 아닙니다"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Você não está sozinho"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你并不孤单"
           }
         }
       }

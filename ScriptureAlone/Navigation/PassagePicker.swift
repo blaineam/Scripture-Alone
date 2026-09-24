@@ -25,13 +25,15 @@ struct PassagePicker: View {
 
     /// Life themes the words speak to — "anxious" is Anxiety. Only for words, not a reference.
     private var matchingThemes: [LifeTheme] {
-        guard passage == nil else { return [] }
+        // Someone in crisis gets the crisis card, not whatever topic their words happen to match
+        // ("want to die" is also Death & Dying).
+        guard passage == nil, !CrisisSupport.isCrisis(query) else { return [] }
         return LifeThemeCatalog.shared.search(query, limit: 3)
     }
 
     /// A Nave's topic named exactly what was typed ("prayer", "Abraham"), for English readers.
     private var matchingIndexTopic: IndexTopic? {
-        guard passage == nil, query.count >= 3 else { return nil }
+        guard passage == nil, query.count >= 3, !CrisisSupport.isCrisis(query) else { return nil }
         return TopicsLibrary.visibleIndex?.topic(named: query)
     }
 
@@ -240,6 +242,7 @@ struct PassagePicker: View {
     /// "Topic: Anxiety & Worry" — offered above the verses when the words name a topic.
     @ViewBuilder
     private var topicMatches: some View {
+        if CrisisSupport.isCrisis(query) { CrisisCard() }
         let themes = matchingThemes
         if !themes.isEmpty || matchingIndexTopic != nil {
             VStack(spacing: 8) {
@@ -350,7 +353,7 @@ struct PassagePicker: View {
                 }
             }
         } else if passage == nil, suggestedBooks.isEmpty, matchingThemes.isEmpty, matchingIndexTopic == nil,
-                  query.count >= Self.minimumSearchLength(query) {
+                  !CrisisSupport.isCrisis(query), query.count >= Self.minimumSearchLength(query) {
             ContentUnavailableView.search(text: query)
         }
     }
