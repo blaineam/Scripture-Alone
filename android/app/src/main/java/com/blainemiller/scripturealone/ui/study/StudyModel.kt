@@ -23,6 +23,7 @@ import com.blainemiller.scripturealone.data.context.MapLabel
 import com.blainemiller.scripturealone.data.context.Place
 import com.blainemiller.scripturealone.data.context.TimelineEvent
 import com.blainemiller.scripturealone.data.sql.BundledSqlSource
+import com.blainemiller.scripturealone.data.study.ImportedStudyLibrary
 import com.blainemiller.scripturealone.data.study.InterlinearStore
 import com.blainemiller.scripturealone.data.study.StudyStore
 import com.blainemiller.scripturealone.text.AppLanguage
@@ -42,10 +43,12 @@ enum class StudyTab(@StringRes private val titleRes: Int, @StringRes private val
 
     companion object {
         /**
-         * The tabs this reader gets — `StudyTab.available`: the commentary (Calvin, Gill, JFB) is
-         * English-only, so it is offered only in English (docs/localization.md, owner's decision).
+         * The tabs this reader gets — `StudyTab.available`: the bundled commentary (Calvin, Gill, JFB)
+         * is English-only, so it is offered only in English (docs/localization.md, owner's decision) —
+         * unless the reader imported study material of their own, which is in whatever language they chose.
          */
-        val available: List<StudyTab> get() = if (AppLanguage.isEnglish) entries else entries.filter { it != COMMENTARY }
+        val available: List<StudyTab>
+            get() = if (AppLanguage.isEnglish || !ImportedStudyLibrary.isEmpty) entries else entries.filter { it != COMMENTARY }
 
         /** [tab] if this reader gets it, else the first tab. */
         fun offered(tab: StudyTab): StudyTab = if (tab in available) tab else CROSS_REFERENCES

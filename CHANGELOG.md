@@ -8,6 +8,10 @@
   letters wherever the stylesheet colors them), every import is judged by the same quality gate
   and refused with its score when it reads too poorly, and a study Bible titled for itself is
   recognised from its copyright page.
+- On Android too, an imported study Bible brings its notes into the Commentary picker (each
+  note on every verse it covers, in any language), its book introductions with each book's first
+  chapter, its essays at the verse they stand beside, and its maps and pictures under Maps &
+  Images in the Context tab, full size on a tap. They go when the translation is removed.
 - An imported English translation whose file doesn't mark the words of Christ gets them from
   the BSB (or KJV) on the device: each verse is matched word for word, and only the words that
   line up with red ones turn red — "Jesus said to him" stays black, "I am the way" turns red. A

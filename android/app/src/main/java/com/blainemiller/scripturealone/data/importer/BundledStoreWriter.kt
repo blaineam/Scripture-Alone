@@ -35,6 +35,7 @@ class BundledStoreWriter private constructor(private val connection: SQLiteConne
         is Long -> bindLong(position, value)
         is Int -> bindLong(position, value.toLong())
         is String -> bindText(position, value)
+        is ByteArray -> bindBlob(position, value)
         else -> throw IllegalArgumentException("Unsupported bind type ${value::class.simpleName}")
     }
 

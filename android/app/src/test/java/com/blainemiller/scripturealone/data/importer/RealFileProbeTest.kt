@@ -1,6 +1,9 @@
 package com.blainemiller.scripturealone.data.importer
 
+import com.blainemiller.scripturealone.data.TranslationInfo
 import com.blainemiller.scripturealone.data.canon.BookID
+import com.blainemiller.scripturealone.data.study.ImportedStudyStore
+import com.blainemiller.scripturealone.data.study.JdbcSqlSource
 import org.junit.Assume.assumeTrue
 import org.junit.Test
 import java.io.File
@@ -58,5 +61,15 @@ class RealFileProbeTest {
         if (identity.copyright.isBlank()) identity = identity.copy(copyright = "probe")
         val result = ImportFixtures.importer().importBible(file, identity, directory)
         println("PROBE store: ${result.storeFile} — ${result.report.summary}")
+        val info = TranslationInfo(identity.id, identity.name, identity.abbreviation, identity.copyright, identity.license)
+        JdbcSqlSource(result.storeFile).use { source ->
+            val store = ImportedStudyStore.open(source, info) ?: return
+            println("PROBE study source: ${store.source.name} (${store.source.shortName}) — ${store.source.attribution}")
+            for (entry in store.commentary(ref(BookID.JOHN, 3, 16).key)) println("PROBE JOHN 3:16 ${entry.range}: ${entry.text.take(160)}")
+            store.introduction(BookID.GENESIS.number, 1)?.let { println("PROBE GEN INTRO ${it.text.take(200)}") }
+            for (image in store.images(BookID.GENESIS.number, 10)) {
+                println("PROBE GEN 10 IMAGE ${image.caption} ${store.imageData(image.id)?.size ?: 0} bytes")
+            }
+        }
     }
 }

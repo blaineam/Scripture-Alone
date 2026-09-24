@@ -255,7 +255,7 @@
     <string name="translations_gap_verses_other">%1$d개 절</string>
     <string name="translations_progress_downloading">%1$s 다운로드 중…</string>
     <string name="translations_progress_reading">%1$s 읽는 중…</string>
-    <string name="translations_progress_note">성경 전체는 몇 초 걸립니다.</string>
+    <string name="translations_progress_note">성경 전체는 1~2분 걸릴 수 있으며, 연구 노트가 있거나 PDF에서 가져오면 더 오래 걸립니다.</string>
     <string name="notes_title">노트</string>
     <string name="notes_scope_all">전체 노트</string>
     <string name="notes_scope_chapter">이 장</string>
@@ -862,4 +862,6 @@
     <string name="assistant_favorites_1">즐겨찾기</string>
     <string name="assistant_favorites_2">즐겨찾는 구절</string>
     <string name="data_import_poor_quality">이 파일은 사용할 수 있을 만큼 깔끔하게 읽히지 않았습니다(100점 중 %1$d점). 아무것도 추가되지 않았습니다.</string>
+    <string name="context_imported_images">지도와 이미지</string>
+    <string name="context_image_untitled">그림</string>
 </resources>

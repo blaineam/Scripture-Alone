@@ -184,6 +184,7 @@ fun ContextTab(chapter: ChapterRef, verse: Int?, study: StudyModel, reader: Read
                 study.push(StudyRoute.Viewer(StudyRoute.ViewerTab.CHARTS))
             }
         }
+        ImportedImagesSection(chapter, palette)
         AccentButton(stringResource(R.string.study_sources_credits), palette, icon = Icons.Outlined.Info, fontSize = StudyStyle.footnote) {
             study.push(StudyRoute.Credits)
         }

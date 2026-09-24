@@ -479,8 +479,7 @@
     <string name="translations_progress_downloading">Downloading %1$s…</string>
     <!-- %1$s is the translation’s or file’s name. -->
     <string name="translations_progress_reading">Reading %1$s…</string>
-    <string name="translations_progress_note">This takes a few seconds for a whole Bible.</string>
-
+    <string name="translations_progress_note">A whole Bible can take a minute or two, longer with study notes or from a PDF.</string>
     <!-- Notes panel -->
     <!-- Panel title; also the export title for several notes. -->
     <string name="notes_title">Notes</string>
@@ -1598,4 +1597,6 @@
     <string name="assistant_favorites_1">favorites</string>
     <string name="assistant_favorites_2">favorite verses</string>
     <string name="data_import_poor_quality">That file couldn’t be read cleanly enough to use (it scored %1$d of 100). Nothing was added.</string>
+    <string name="context_imported_images">Maps &amp; Images</string>
+    <string name="context_image_untitled">Picture</string>
 </resources>

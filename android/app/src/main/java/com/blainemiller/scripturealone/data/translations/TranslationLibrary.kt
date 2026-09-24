@@ -25,6 +25,7 @@ import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.search.SearchHit
 import com.blainemiller.scripturealone.data.search.VerseSearch
 import com.blainemiller.scripturealone.data.sql.BundledSqlSource
+import com.blainemiller.scripturealone.data.study.ImportedStudyLibrary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -131,6 +132,8 @@ object TranslationLibrary {
         openImported.values.forEach { it.close() }
         openImported.clear()
         _state.value = _state.value.copy(imported = imported)
+        // A study Bible's notes and pictures live in its store: they come and go with it.
+        ImportedStudyLibrary.reload(imported)
     }
 
     @Synchronized

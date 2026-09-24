@@ -255,7 +255,7 @@
     <string name="translations_gap_verses_other">%1$d 节</string>
     <string name="translations_progress_downloading">正在下载 %1$s…</string>
     <string name="translations_progress_reading">正在读取 %1$s…</string>
-    <string name="translations_progress_note">整本圣经需要几秒钟。</string>
+    <string name="translations_progress_note">整本圣经可能需要一两分钟；带研读注释或来自 PDF 时会更久。</string>
     <string name="notes_title">笔记</string>
     <string name="notes_scope_all">全部笔记</string>
     <string name="notes_scope_chapter">本章</string>
@@ -862,4 +862,6 @@
     <string name="assistant_favorites_1">收藏</string>
     <string name="assistant_favorites_2">收藏的经文</string>
     <string name="data_import_poor_quality">该文件无法被足够清晰地读取以供使用（得分 %1$d/100）。未添加任何内容。</string>
+    <string name="context_imported_images">地图与图片</string>
+    <string name="context_image_untitled">图片</string>
 </resources>

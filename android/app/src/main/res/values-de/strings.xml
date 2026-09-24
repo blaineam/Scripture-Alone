@@ -255,7 +255,7 @@
     <string name="translations_gap_verses_other">%1$d Verse</string>
     <string name="translations_progress_downloading">%1$s wird geladen…</string>
     <string name="translations_progress_reading">%1$s wird gelesen…</string>
-    <string name="translations_progress_note">Bei einer ganzen Bibel dauert das ein paar Sekunden.</string>
+    <string name="translations_progress_note">Eine ganze Bibel kann ein bis zwei Minuten dauern, mit Studienanmerkungen oder aus einem PDF länger.</string>
     <string name="notes_title">Notizen</string>
     <string name="notes_scope_all">Alle Notizen</string>
     <string name="notes_scope_chapter">Dieses Kapitel</string>
@@ -862,4 +862,6 @@
     <string name="assistant_favorites_1">favoriten</string>
     <string name="assistant_favorites_2">Lieblingsverse</string>
     <string name="data_import_poor_quality">Diese Datei ließ sich nicht sauber genug lesen, um sie zu verwenden (sie erreichte %1$d von 100). Es wurde nichts hinzugefügt.</string>
+    <string name="context_imported_images">Karten &amp; Bilder</string>
+    <string name="context_image_untitled">Bild</string>
 </resources>
