@@ -1,0 +1,64 @@
+name: play-listing
+
+# Google Play store listing: title, short and full description for every Play locale from
+# android/play-metadata*.md, and — with `images` — the screenshots / feature graphic / icon, in ONE
+# Play edit (scripts/play-listing.mjs). Manual only; a release (android.yml) never touches the
+# listing, only the release notes.
+#
+#   dry_run (default on) → validates the files, opens an edit, prints what WOULD change (to the log
+#                          and the run summary), deletes the edit. Nothing is committed.
+#   dry_run off          → the same changes, validated by Play and committed in one edit.
+#
+# Images come from the folder in the PLAY_LISTING_IMAGES repo variable (default android/play-assets):
+# <root>/<locale>/<type>/*.png, <type> = phoneScreenshots|sevenInchScreenshots|tenInchScreenshots|
+# wearScreenshots|featureGraphic|icon (or phone|tablet-7in|tablet-10in|wear|feature-graphic|icon);
+# for en-US, <root> itself when <root>/en-US is absent. See the header of scripts/play-listing.mjs.
+#
+# Secret: PLAY_SERVICE_ACCOUNT_JSON (the one android.yml uses; it needs "Manage store presence").
+# Without it the run only validates the files, and says so.
+
+on:
+  workflow_dispatch:
+    inputs:
+      images:
+        description: "Also replace the listing images (screenshots, feature graphic, icon) from PLAY_LISTING_IMAGES"
+        type: boolean
+        default: false
+      dry_run:
+        description: "Validate and list what would change; commit nothing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  listing:
+    # Play allows ONE open edit per package that can commit — the same group as android.yml's publish.
+    concurrency:
+      group: android-play-publish
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Play listing
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          IMAGES: ${{ inputs.images }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          IMAGES_DIR: ${{ vars.PLAY_LISTING_IMAGES || 'android/play-assets' }}
+        run: |
+          set -euo pipefail
+          args=()
+          [ "$IMAGES" = true ] && args+=(--images "$IMAGES_DIR")
+          if [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::notice title=Play listing not sent::PLAY_SERVICE_ACCOUNT_JSON is not set (docs/RELEASING.md › One-time setup) — validating the files only."
+            node scripts/play-listing.mjs --validate-only "${args[@]}"
+            exit 0
+          fi
+          [ "$DRY_RUN" = true ] && args+=(--dry-run)
+          node scripts/play-listing.mjs "${args[@]}"

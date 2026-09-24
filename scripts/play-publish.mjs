@@ -22,6 +22,7 @@
  * them from android/play-metadata*.md `## release_notes` and enforces Play's 500-character cap).
  *
  * Credentials: env PLAY_SERVICE_ACCOUNT_JSON (the JSON key's contents), or --key-file <path>.
+ * Auth, the API client and the edit lifecycle live in scripts/play-api.mjs (shared with play-listing.mjs).
  * Package: --package (default com.blainemiller.scripturealone).
  *
  * Track ids (https://developers.google.com/android-publisher/tracks): phone tracks are
@@ -30,24 +31,15 @@
  * named N in the Console is `wear:N`. (The API docs call internal "qa"; this app's tracks.list
  * answers "internal" and "wear:internal" — verified 2026-09-23 — so the listing is the authority.)
  */
-import { readFileSync, existsSync, readdirSync, statSync, appendFileSync } from 'node:fs';
-import { createSign } from 'node:crypto';
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { UPLOAD, die, fail, log, summary, output, useServiceAccount, api, base, openEdit, deleteEdit } from './play-api.mjs';
 
-const API = 'https://androidpublisher.googleapis.com/androidpublisher/v3/applications';
-const UPLOAD = 'https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications';
 // The Wear OS app numbers from 1,000,000 up, the phone below it. A single sequential counter was
 // tried (2026-09-23) and can't work: Play refuses a watch build numbered below the one already on
 // its track ("does not allow any existing users to upgrade"), and Wear 1,000,004 is there.
 const WEAR_FLOOR = 1_000_000;
 
-const die = (m) => { console.error(`✗ ${m}`); summary(`- ❌ Play: ${m}`); process.exit(1); };
-// Inside an open edit, fail by THROWING so `finally` deletes the edit (process.exit would skip it).
-const fail = (m) => { throw new Error(m); };
-const log = (m) => console.log(`• ${m}`);
-const summary = (line) => { if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + '\n'); };
-const output = (k, v) => { if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `${k}=${v}\n`); };
-const b64url = (b) => Buffer.from(b).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const list = (s) => (s || '').split(',').map((x) => x.trim()).filter(Boolean);
 
 function parseArgs(argv) {
@@ -76,58 +68,6 @@ function parseArgs(argv) {
 	if (!['completed', 'inProgress', 'draft', 'halted'].includes(a.status)) die(`--status ${a.status} is not a Play release status`);
 	return a;
 }
-
-// ── auth ──────────────────────────────────────────────────────────────────────────────
-function serviceAccount(a) {
-	let raw = process.env.PLAY_SERVICE_ACCOUNT_JSON || '';
-	if (!raw && a.keyFile) raw = readFileSync(a.keyFile, 'utf8');
-	if (!raw) die('no credentials — set PLAY_SERVICE_ACCOUNT_JSON (the service-account JSON) or pass --key-file');
-	if (!raw.trim().startsWith('{')) raw = Buffer.from(raw.trim(), 'base64').toString('utf8'); // tolerate base64
-	let j; try { j = JSON.parse(raw); } catch { die('PLAY_SERVICE_ACCOUNT_JSON is not JSON'); }
-	if (!j.client_email || !j.private_key) die('service-account JSON lacks client_email / private_key');
-	return j;
-}
-
-let SA = null, TOKEN = null, TOKEN_AT = 0;
-async function token() {
-	if (TOKEN && Date.now() - TOKEN_AT < 45 * 60_000) return TOKEN;
-	const now = Math.floor(Date.now() / 1000);
-	const input = `${b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))}.${b64url(JSON.stringify({
-		iss: SA.client_email, scope: 'https://www.googleapis.com/auth/androidpublisher',
-		aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600,
-	}))}`;
-	const sig = createSign('RSA-SHA256').update(input).sign(SA.private_key);
-	const res = await fetch('https://oauth2.googleapis.com/token', {
-		method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
-		body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: `${input}.${b64url(sig)}` }),
-	});
-	const j = await res.json().catch(() => ({}));
-	if (!res.ok) die(`Google OAuth refused the service account: ${j.error_description || j.error || res.status}`);
-	TOKEN = j.access_token; TOKEN_AT = Date.now();
-	return TOKEN;
-}
-
-async function api(method, url, body, { headers = {}, raw = false, retries = 3 } = {}) {
-	for (let attempt = 0; ; attempt++) {
-		const res = await fetch(url, {
-			method,
-			headers: { authorization: `Bearer ${await token()}`, ...(body && !raw ? { 'content-type': 'application/json' } : {}), ...headers },
-			body: body == null ? undefined : raw ? body : JSON.stringify(body),
-			...(raw ? { duplex: 'half' } : {}),
-		}).catch((e) => ({ ok: false, status: 0, headers: new Headers(), text: async () => String(e) }));
-		if (res.ok) return raw === 'response' ? res : (res.status === 204 ? null : res.json().catch(() => null));
-		const text = await res.text();
-		let msg = text; try { msg = JSON.parse(text).error?.message || text; } catch { /* */ }
-		if ((res.status === 0 || res.status === 429 || res.status >= 500) && attempt < retries && !raw) {
-			await new Promise((r) => setTimeout(r, 5000 * (attempt + 1))); continue;
-		}
-		const err = new Error(`${method} ${url.replace(/^https:\/\/[^/]+/, '')} → ${res.status}: ${msg}`); err.status = res.status; throw err;
-	}
-}
-
-const base = (a) => `${API}/${encodeURIComponent(a.pkg)}`;
-const openEdit = async (a) => (await api('POST', `${base(a)}/edits`, {})).id;
-const deleteEdit = (a, id) => api('DELETE', `${base(a)}/edits/${id}`).catch(() => {});
 
 async function snapshot(a, editId) {
 	const tracks = (await api('GET', `${base(a)}/edits/${editId}/tracks`))?.tracks || [];
@@ -201,7 +141,7 @@ async function uploadBundle(a, editId, file, expectCode) {
 
 async function main() {
 	const a = parseArgs(process.argv);
-	SA = serviceAccount(a);
+	useServiceAccount(a.keyFile);
 	const editId = await openEdit(a);
 	let committed = false;
 	try {

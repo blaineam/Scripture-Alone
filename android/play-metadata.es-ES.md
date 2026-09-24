@@ -6,43 +6,46 @@
 Scripture Alone: Biblia
 
 ## short_description
-Biblia sin conexión y privada: estudio, notas de sermón y mapas. Sin cuenta.
+Biblia privada y sin conexión: temas para días difíciles, estudio y notas.
 
 ## full_description
-Scripture Alone es una Biblia para teléfonos, tabletas Android y Wear OS, hecha con un solo propósito: estudiar la Palabra de Dios sin nada que estorbe. Sin anuncios. Sin rastreadores. Sin cuentas. La aplicación está por completo en español y tu Biblia se lee sin conexión, así que leer, buscar, subrayar y tomar notas funciona en cualquier parte del mundo.
+Scripture Alone es una Biblia para teléfonos y tabletas Android y Wear OS, hecha con un solo propósito: estudiar la Palabra de Dios sin nada que estorbe. Sin anuncios. Sin rastreadores. Sin cuentas. La aplicación está por completo en español y, tras el primer inicio, todo funciona sin conexión.
 
 Lee toda la Biblia, sin conexión
-La Reina-Valera 1909 se descarga la primera vez que abres la aplicación y desde entonces se lee sin conexión, con sus nombres de libros y su numeración de versículos de siempre. También están disponibles en inglés la American Standard Version, la Berean Standard Bible y la King James Version. Todas tienen búsqueda de texto completo. Las palabras de Cristo aparecen en rojo, la poesía se ve como poesía, y los títulos de sección y las notas al pie están a un toque.
+La Reina-Valera 1909 se descarga la primera vez que abres la aplicación y desde entonces se lee sin conexión, con sus nombres de libros y su numeración de siempre. En inglés también están la American Standard Version, la Berean Standard Bible y la King James Version. Búsqueda de texto completo, las Palabras de Cristo en rojo, la poesía como poesía y las notas a un toque.
 
-Trae tu propia versión
-Explora las traducciones de licencia abierta de eBible.org, primero las de tu idioma, o importa un USFM o un ePub sin DRM que ya tengas. Nada se descarga hasta que tú lo elijas, y lo que añades se queda en tu dispositivo.
+Lo que la Biblia dice de lo que estás viviendo
+Temas reúne pasajes para 72 temas de la vida —ansiedad, duelo, soledad, miedo, matrimonio, espera y más— en la traducción que lees. Escribe un sentimiento como «ansioso» en Ir a y aparece su tema. En inglés, además, la Nave's Topical Bible de la A a la Z.
+
+Trae tus propias Biblias
+Importa un ePub sin DRM, un PDF de la Biblia con capa de texto o un archivo USFM que tengas, o explora las traducciones de licencia abierta de eBible.org. Una Biblia de estudio trae sus notas, introducciones, artículos y mapas; las Palabras de Cristo siguen en rojo; y lo importado sustituye a la misma traducción leída con una clave en línea. Tus importaciones se quedan en tu dispositivo.
 
 Ponlo cómodo
-Siete tipografías, tamaño e interlineado ajustables, cinco temas (Automático, Claro, Sepia, Oscuro y Negro), en párrafos o versículo por versículo, y el tamaño de letra de tu teléfono. El desplazamiento automático mueve el texto sin manos y sigue en el capítulo siguiente.
+Siete tipografías, tamaño e interlineado ajustables, cinco aspectos, en párrafos o versículo por versículo, y desplazamiento automático hasta el capítulo siguiente.
 
 Ve directo al pasaje
-Escribe «jn 3 16» o «rom 8:28-39» para saltar a un pasaje, o busca cualquier palabra o frase. Los capítulos que has leído y las palabras que has buscado te esperan la próxima vez que la abras.
+Escribe «jn 3 16» o «rom 8:28-39» para saltar a un pasaje, o busca cualquier palabra.
 
 Subraya, anota y guarda favoritos
-Subraya en cinco colores, marca como favoritos los versículos a los que vuelves y adjunta notas a uno o varios pasajes: el sermón del domingo sobre Romanos 8:1-17, por ejemplo. Las notas aparecen junto al versículo y en un panel de Notas con búsqueda. Expórtalas en PDF, Markdown o texto sin formato, o trae tus notas desde Life Bible o una lista pegada.
+Subraya en cinco colores, marca como favoritos los versículos a los que vuelves y adjunta notas a uno o varios pasajes: el sermón del domingo sobre Romanos 8:1-17, por ejemplo. La lista Subrayados reúne cada versículo subrayado en orden bíblico, y Notas, Subrayados y Favoritas se limitan a un libro o capítulo. Exporta tus notas en PDF, Markdown o texto, o tráelas desde Life Bible.
 
 Fotografía la diapositiva del sermón
-Fotografía la diapositiva en la iglesia y Scripture Alone empieza tu nota: con el título del sermón, enlazada a todos sus pasajes y con sus puntos listos para completar. La foto se lee en tu dispositivo y nunca se sube.
+Fotografía la diapositiva en la iglesia y Scripture Alone empieza tu nota: con título, enlazada a todos sus pasajes y con sus puntos listos para completar. La foto se lee en tu dispositivo y nunca se sube.
 
 Escucha
-Escucha cualquier capítulo en voz alta con las voces de tu teléfono, con el versículo hablado señalado al avanzar. Sigue leyendo con la pantalla apagada, con controles en la pantalla de bloqueo y en los auriculares, y temporizador para dormir.
+Escucha cualquier capítulo en voz alta con las voces de tu teléfono, con el versículo señalado al avanzar: con la pantalla apagada, desde la pantalla de bloqueo o los auriculares, y con temporizador.
 
 Modo de estudio, a un toque
-Referencias cruzadas ordenadas por relevancia, el hebreo y el griego originales palabra por palabra con su análisis morfológico y sus números de Strong, y el contexto de cada capítulo: su época en una línea de tiempo de los períodos bíblicos, un mapa sin conexión de los lugares que nombra, y cuadros de los reyes de Israel y Judá, los viajes de Pablo, las doce tribus y las fiestas de Israel. Se descarga la primera vez que lo abres.
+Referencias cruzadas por relevancia, el hebreo y el griego palabra por palabra con análisis morfológico y números de Strong, y el Contexto de cada capítulo: un resumen, un mapa de los lugares que nombra, su época en una cronología y tablas de los reyes, los viajes de Pablo, las tribus y las fiestas de Israel.
 
 Comparte con belleza
-Diseña la imagen de un versículo en tu teléfono a partir de ocho plantillas, o comparte un enlace que la reconstruye en cualquier navegador por sí solo: no se guarda nada en un servidor.
+Diseña la imagen de un versículo con ocho plantillas, o comparte un enlace que la reconstruye en cualquier navegador: no se guarda nada en un servidor.
 
 En tu muñeca y en tu pantalla de inicio
-Widgets de Versículo del Día y de Favoritos y Notas, y una aplicación para Wear OS con su propia Biblia sin conexión, un mosaico y una complicación con la referencia del día.
+Widgets de Versículo del día y de Favoritas y Notas, y una aplicación para Wear OS con mosaico y complicación que lee sin conexión y lleva tus traducciones importadas, subrayados, favoritos y notas, en el color de acento que elegiste en el teléfono.
 
 Una Biblia para dejar en herencia
-Crea una Biblia de Recuerdo: un archivo con tus subrayados, tus notas y una dedicatoria, que tu familia puede abrir y leer tal como tú la marcaste: la «Biblia de papá» en digital. Se abre igual en Android y iPhone.
+Crea una Biblia de recuerdo: un archivo con tus subrayados, tus notas y una dedicatoria, que tu familia puede abrir y leer tal como tú la marcaste: la «Biblia de papá» en digital. Se abre igual en Android y iPhone.
 
 Privada por diseño
 Tus subrayados, notas y favoritos se quedan en tu dispositivo. No hay servidor ni cuenta, y el desarrollador nunca ve tus datos. Scripture Alone es de código abierto bajo la licencia AGPL, así que cualquiera puede leer exactamente lo que hace.

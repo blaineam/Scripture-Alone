@@ -2,6 +2,10 @@
 
 ## After 1.0.0
 
+- The App Store and Google Play listings, in all nine languages, now describe Topics, importing
+  your own Bibles (ePub, PDF, study-Bible material), the Highlights list, Study's Context and what
+  the watch carries. `play-listing.yml` (`scripts/play-listing.mjs`) uploads the Play listing text,
+  and optionally its screenshots, for every locale in one edit; it is a dry run unless told not to be.
 - The Verse of the Day complication on the watch face reads in the translation the watch is reading, an imported one included.
 - On Android, every translation you import is sent to your Wear OS watch too (when its terms
   allow keeping it offline), listed in the watch's translation picker by its abbreviation, and

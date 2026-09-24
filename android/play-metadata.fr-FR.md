@@ -6,43 +6,46 @@
 Bible Scripture Alone
 
 ## short_description
-Bible hors ligne : étude, notes de prédication, cartes. Privée, sans compte.
+Bible hors ligne et privée : thèmes pour les jours difficiles, étude, notes.
 
 ## full_description
-Scripture Alone est une Bible pour téléphones, tablettes Android et Wear OS, conçue pour une seule chose : étudier la Parole de Dieu sans rien entre elle et vous. Aucun traceur, aucun compte. L'application est entièrement en français, et la Louis Segond 1910 se télécharge au premier lancement, puis se lit hors ligne : lecture, recherche, surlignage et notes fonctionnent partout dans le monde. Les données des langues originales se téléchargent à leur première ouverture, pour que l'application reste légère.
+Scripture Alone est une Bible pour téléphones et tablettes Android et pour Wear OS, conçue pour une seule chose : étudier la Parole de Dieu sans rien entre elle et vous. Aucun traceur, aucun compte. L'application est entièrement en français et, après le premier lancement, tout fonctionne sans connexion.
 
 Lire toute la Bible, hors ligne
-La Louis Segond 1910 se lit entièrement hors ligne, avec ses noms de livres et sa numérotation des versets. L'American Standard Version, la Berean Standard Bible et la King James Version sont aussi disponibles, en anglais. Toutes ont la recherche en texte intégral. Les paroles du Christ sont en rouge, la poésie est mise en page comme telle, et les titres de section et les notes sont à portée de doigt.
+La Louis Segond 1910 se télécharge au premier lancement, puis se lit hors ligne, avec ses noms de livres et sa numérotation. En anglais, l'American Standard Version, la Berean Standard Bible et la King James Version sont aussi disponibles. Recherche plein texte, Paroles du Christ en rouge, poésie mise en forme, notes à portée de doigt.
 
-Apportez votre traduction
-Parcourez les traductions sous licence libre d'eBible.org, dans votre langue d'abord, ou importez un fichier USFM ou un ePub sans DRM. Rien ne se télécharge avant votre choix, et ce que vous ajoutez reste sur votre appareil.
+Ce que la Bible dit de ce que vous traversez
+Thèmes rassemble des passages pour 72 thèmes de vie — anxiété, deuil, solitude, peur, mariage, attente… — dans la traduction que vous lisez. Tapez un sentiment comme « anxieux » dans Aller à, et le thème apparaît. En anglais, la Nave's Topical Bible de A à Z en plus.
+
+Apportez vos Bibles
+Importez un ePub sans DRM, un PDF de Bible avec couche texte ou un fichier USFM qui vous appartient, ou parcourez les traductions sous licence libre d'eBible.org. Une Bible d'étude apporte ses notes, introductions, articles et cartes ; les Paroles du Christ restent en rouge ; et un import remplace la même traduction lue avec une clé en ligne. Vos imports restent sur votre appareil.
 
 Lisez confortablement
-Sept polices, taille et interligne réglables, cinq thèmes (Auto, Clair, Sépia, Sombre, Noir), lecture en paragraphes ou verset par verset, et la taille de police de votre téléphone. Le défilement automatique fait avancer le texte sans les mains, jusqu'au chapitre suivant.
+Sept polices, taille et interligne réglables, cinq apparences, en paragraphes ou verset par verset, et défilement automatique jusqu'au chapitre suivant.
 
 Allez droit au passage
-Tapez « jn 3 16 » ou « rom 8:28-39 » pour ouvrir un passage, ou cherchez un mot ou une expression. Les chapitres lus et les mots cherchés vous attendent à l'ouverture suivante.
+Tapez « jn 3 16 » ou « rom 8:28-39 » pour ouvrir un passage, ou cherchez un mot.
 
 Surlignez, annotez, mettez en favori
-Surlignez en cinq couleurs, mettez en favori les versets auxquels vous revenez, attachez des notes à un ou plusieurs passages — une prédication du dimanche sur Romains 8:1-17, par exemple. Les notes apparaissent à côté du verset et dans un panneau Notes consultable. Exportez-les en PDF, Markdown ou texte brut, ou importez celles de Life Bible ou d'une liste collée.
+Surlignez en cinq couleurs, mettez en favori les versets auxquels vous revenez, attachez des notes à un ou plusieurs passages — une prédication sur Romains 8:1-17, par exemple. La liste Surlignages réunit chaque verset surligné dans l'ordre biblique, et Notes, Surlignages et Favoris se limitent à un livre ou un chapitre. Exportez vos notes en PDF, Markdown ou texte, ou importez-les de Life Bible.
 
 La diapositive de la prédication, en photo
-Photographiez la diapositive à l'église et Scripture Alone commence votre note : titrée du titre de la prédication, reliée à chaque passage affiché, ses points prêts à remplir. La photo est lue sur votre appareil, jamais envoyée.
+Photographiez-la à l'église et Scripture Alone commence votre note : titrée, reliée à chaque passage affiché, ses points prêts à remplir. La photo est lue sur l'appareil, jamais envoyée.
 
 Écoutez
-Écoutez n'importe quel chapitre lu à voix haute par les voix de votre téléphone, le verset prononcé étant signalé. La lecture continue écran éteint, avec les commandes sur l'écran de verrouillage et sur votre casque, et une minuterie.
+Faites lire n'importe quel chapitre par les voix de votre téléphone, le verset lu étant signalé — écran éteint, depuis l'écran de verrouillage ou le casque, avec minuterie.
 
 Le mode Étude, à un geste
-Des références croisées classées par pertinence, l'hébreu et le grec mot à mot avec l'analyse grammaticale et les numéros Strong, et le contexte de chaque chapitre : son époque sur une frise des périodes bibliques, une carte hors ligne des lieux qu'il nomme, des tableaux des rois d'Israël et de Juda, des voyages de Paul, des douze tribus et des fêtes d'Israël.
+Des renvois classés par pertinence, l'hébreu et le grec mot à mot avec analyse grammaticale et numéros Strong, et le Contexte de chaque chapitre : un aperçu, une carte des lieux qu'il nomme, son époque sur une chronologie et des tableaux des rois, des voyages de Paul, des tribus et des fêtes d'Israël.
 
 Partagez de beaux versets
-Composez une image de verset à partir de huit modèles, ou partagez un lien qui la reconstruit à lui seul dans un navigateur : rien n'est conservé sur un serveur.
+Composez une image de verset à partir de huit modèles, ou partagez un lien qui la reconstruit dans n'importe quel navigateur : rien n'est conservé sur un serveur.
 
 Au poignet et sur l'écran d'accueil
-Des widgets Verset du jour et Favoris et notes, et une application Wear OS avec sa propre Bible hors ligne, une tuile et une complication portant la référence du jour.
+Des widgets Verset du jour et Favoris et notes, et une application Wear OS avec tuile et complication, qui lit hors ligne et emporte vos traductions importées, surlignages, favoris et notes, dans la couleur d'accent choisie sur votre téléphone.
 
 Une Bible à transmettre
-Créez une Bible souvenir : un fichier de vos surlignages et de vos notes, avec une dédicace, que votre famille pourra lire telle que vous l'avez annotée — une « Bible de papa » numérique. Ils s'ouvrent sur Android comme sur iPhone.
+Créez une Bible souvenir : un fichier de vos surlignages et de vos notes, avec une dédicace, que votre famille pourra lire telle que vous l'avez annotée — une « Bible de papa » numérique. Elle s'ouvre sur Android comme sur iPhone.
 
 Privée par conception
 Vos surlignages, notes et favoris restent sur votre appareil : ni serveur, ni compte, et le développeur ne voit jamais vos données. Scripture Alone est open source sous licence AGPL : chacun peut lire exactement ce qu'elle fait.

@@ -24,9 +24,12 @@ It only talks to App Store Connect and Google Play.
 | `.github/workflows/cut-release.yml` | Actions ▸ cut-release ▸ Run workflow (on `main`) | Checks the notes, stamps `MARKETING_VERSION` into `project.yml` + `ScriptureAlone.xcodeproj/project.pbxproj`, pushes the tag, and dispatches the other two at the tag ref. |
 | `.github/workflows/android.yml` | `v*` tags, manual dispatch | Resolves the tracks, asks Play for the next versionCodes, builds `:app:bundleRelease` + `:wear:bundleRelease`, checks 16 KB page alignment, publishes both bundles in **one** Play edit. |
 | `.github/workflows/apple-store.yml` | `v*` tags, manual dispatch | `scripts/asc-autosubmit.mjs`: finds the build, sets What's New, attaches the build + asset packs, submits, then bumps `main`. |
+| `.github/workflows/play-listing.yml` | Manual dispatch only | `scripts/play-listing.mjs`: the Play store listing — title, short and full description for all nine locales, and optionally the images — in **one** Play edit. Dry run by default. See [Play store listing](#play-store-listing). |
 
 Scripts: `scripts/asc-autosubmit.mjs` (App Store Connect), `scripts/play-publish.mjs` (Play
-Developer API), `scripts/check-16kb-pages.py` (native-library alignment in an AAB).
+bundles and tracks), `scripts/play-listing.mjs` (Play store listing), both on the Play Developer
+API client in `scripts/play-api.mjs`, and `scripts/check-16kb-pages.py` (native-library alignment
+in an AAB).
 
 ## Cutting a release candidate
 
@@ -141,6 +144,42 @@ reviewSubmission as the version. It's added as a `backgroundAssetVersion` item. 
 - Locally, with the same credentials rocket uses:
   `node scripts/asc-autosubmit.mjs --version 1.1.0 --commit <sha> --dry-run`.
 
+### Play store listing
+
+A release sets only Play's release notes. The listing itself — `## title` (≤ 30),
+`## short_description` (≤ 80) and `## full_description` (≤ 4000) in `android/play-metadata.md`
+(en-US) and the eight `android/play-metadata.<locale>.md` — goes up with **play-listing.yml**:
+
+```sh
+# dry run (the default): validate, open an edit, list what would change, delete the edit
+gh workflow run play-listing.yml -R blaineam/Scripture-Alone --ref main
+# text only, for real
+gh workflow run play-listing.yml -R blaineam/Scripture-Alone --ref main -f dry_run=false
+# text and images, for real
+gh workflow run play-listing.yml -R blaineam/Scripture-Alone --ref main -f dry_run=false -f images=true
+```
+
+- Inputs: `images` (boolean, default off) and `dry_run` (boolean, default **on**). A dry run
+  prints each change (a language's changed fields, or an image type with the count on Play and in
+  the files) to the log and the run summary, and commits nothing.
+- Everything goes into one edit, validated and committed together; on any error the edit is
+  deleted and Play is unchanged. It shares android.yml's `android-play-publish` concurrency group,
+  because Play allows only one open edit per app.
+- Limits are counted in characters (code points), and the price-word rule above applies. Any
+  problem stops the run before Play is contacted. Locally, with no credentials:
+  `node scripts/play-listing.mjs --validate-only [--images android/play-assets]`.
+- Images come from the `PLAY_LISTING_IMAGES` folder (default `android/play-assets`), laid out as
+  `<root>/<locale>/<type>/*.png` and uploaded in file-name order. `<type>` is `phoneScreenshots`
+  (2–8), `sevenInchScreenshots`, `tenInchScreenshots`, `wearScreenshots` (square), `featureGraphic`
+  (1024×500) or `icon` (512×512 PNG). The short names `phone`, `tablet-7in`, `tablet-10in`,
+  `wear`, `feature-graphic`, `icon` work too, and the feature graphic and icon may be single files
+  (`feature-graphic.png`, `icon-512.png`) in the locale folder. For en-US, when `<root>/en-US` is
+  missing, `<root>` itself is read. A type with no folder is left alone, a locale with no folder
+  keeps its images, and a type whose files already match Play's (same SHA-256s, same order) is
+  not re-uploaded.
+- The service account also needs **Manage store presence** for Scripture Alone (Play Console ▸
+  Users and permissions).
+
 ### Moving a tag
 
 Moving a tag re-fires every `v*` workflow. Cancel any lane that already shipped: Play uploads and
@@ -160,7 +199,7 @@ or stores their values. Paths below are placeholders.
 | `ANDROID_KEYSTORE_PASSWORD` | Keystore password | `SA_UPLOAD_STORE_PASSWORD` in the same file |
 | `ANDROID_KEY_ALIAS` | Key alias | `SA_UPLOAD_KEY_ALIAS` |
 | `ANDROID_KEY_PASSWORD` | Key password | `SA_UPLOAD_KEY_PASSWORD` |
-| `PLAY_SERVICE_ACCOUNT_JSON` | Play Developer API service-account JSON key | The **same service account Haven uses**. It also needs access to Scripture Alone: Play Console ▸ Users and permissions ▸ the service account's email ▸ App permissions ▸ add *Scripture Alone*, with "Release to production, exclude devices, and use Play App Signing", "Release apps to testing tracks" and "Manage testing tracks and edit tester lists". |
+| `PLAY_SERVICE_ACCOUNT_JSON` | Play Developer API service-account JSON key | The **same service account Haven uses**. It also needs access to Scripture Alone: Play Console ▸ Users and permissions ▸ the service account's email ▸ App permissions ▸ add *Scripture Alone*, with "Release to production, exclude devices, and use Play App Signing", "Release apps to testing tracks" and "Manage testing tracks and edit tester lists" — plus "Manage store presence" for play-listing.yml. |
 
 In CI the keystore secrets become the `ORG_GRADLE_PROJECT_SA_UPLOAD_*` properties, the same names
 the local build reads, so local signing through `~/.gradle/gradle.properties` is unchanged.
@@ -205,6 +244,7 @@ All of these are optional (`gh variable set NAME -R blaineam/Scripture-Alone --b
 | `PLAY_TRACK` | (tag decides) | Pins every **plain** tag's phone track. rc tags ignore it. |
 | `PLAY_USER_FRACTION` | (full) | Staged production rollout, e.g. `0.2`. |
 | `PLAY_RELEASE_STATUS` | `completed` / `inProgress` | `draft` while Play still treats the app as a draft. |
+| `PLAY_LISTING_IMAGES` | `android/play-assets` | Image root play-listing.yml reads when `images` is on. |
 | `APPLE_STORE_SUBMIT` | (submit) | `false` sets the notes and attaches the build but doesn't press Submit. Asset packs are added at submit time, so none are attached. |
 
 ### Before the first automated production release

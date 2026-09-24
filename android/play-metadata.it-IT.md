@@ -6,46 +6,49 @@
 Scripture Alone: Bibbia
 
 ## short_description
-Bibbia offline e privata con strumenti di studio, note e mappe. Senza account.
+Bibbia offline e privata: argomenti per i giorni difficili, studio e note.
 
 ## full_description
-Scripture Alone è una Bibbia per telefoni, tablet e Wear OS, pensata per una cosa sola: studiare la Parola di Dio senza nulla che si metta in mezzo. Nessuna pubblicità. Nessun tracciamento. Nessun account. L'app è interamente in italiano. La Riveduta 1927 si scarica al primo avvio e da lì in poi si legge offline: lettura, ricerca, evidenziazioni e note funzionano ovunque, con o senza connessione. I dati delle lingue originali si scaricano solo la prima volta che li apri, così l'app resta leggera.
+Scripture Alone è una Bibbia per telefoni, tablet e Wear OS, pensata per una cosa sola: studiare la Parola di Dio senza nulla che si metta in mezzo. Nessuna pubblicità. Nessun tracciamento. Nessun account. L'app è interamente in italiano e, dopo il primo avvio, tutto funziona anche senza connessione.
 
 Leggi tutta la Bibbia, offline
-La Riveduta 1927 arriva al primo avvio, con i nomi dei libri e la numerazione dei versetti in italiano. Ci sono anche tre traduzioni in inglese — American Standard Version, Berean Standard Bible e King James Version — che si scaricano quando le scegli. Tutte hanno la ricerca sul testo completo. Le parole di Cristo in rosso dove la traduzione lo prevede, la poesia impaginata come poesia, titoli di sezione e note a un tocco.
+La Riveduta 1927 si scarica al primo avvio e poi si legge offline, con i nomi dei libri e la numerazione dei versetti in italiano. In inglese ci sono anche American Standard Version, Berean Standard Bible e King James Version. Ricerca sul testo completo, Parole di Cristo in rosso, poesia impaginata come poesia, note a un tocco.
 
-Porta la tua traduzione
-Sfoglia le traduzioni a licenza aperta di eBible.org, prima quelle in italiano, oppure importa un file USFM o un ePub senza DRM che già possiedi. Niente si scarica finché non lo scegli tu, e ciò che aggiungi resta sul dispositivo.
+Che cosa dice la Bibbia di ciò che stai vivendo
+Argomenti raccoglie passi per 72 temi di vita — ansia, lutto, solitudine, paura, matrimonio, attesa e altro — nella traduzione che leggi. Scrivi uno stato d'animo come "ansioso" in Vai a e compare l'argomento. In inglese c'è anche la Nave's Topical Bible dalla A alla Z.
+
+Porta le tue Bibbie
+Importa un ePub senza DRM, un PDF della Bibbia con livello di testo o un file USFM che possiedi, oppure sfoglia le traduzioni a licenza aperta di eBible.org. Una Bibbia di studio porta con sé note, introduzioni, saggi e mappe; le Parole di Cristo restano in rosso; e un'importazione prende il posto della stessa traduzione letta con una chiave online. Ciò che importi resta sul dispositivo.
 
 Rendila comoda
-Sette caratteri tipografici, dimensione e interlinea regolabili, cinque temi (Automatico, Chiaro, Seppia, Scuro e Nero), testo a paragrafi o versetto per versetto, e la dimensione del testo di sistema. Lo scorrimento automatico avanza senza mani e prosegue nel capitolo successivo.
+Sette caratteri, dimensione e interlinea regolabili, cinque temi grafici, a paragrafi o versetto per versetto, e scorrimento automatico fino al capitolo successivo.
 
 Vai dritto al passo
-Scrivi "gv 3 16" o "rom 8:28-39" per aprire un passo, oppure cerca una parola o una frase. I capitoli letti e le ricerche fatte ti aspettano alla riapertura.
+Scrivi "gv 3 16" o "rom 8:28-39" per aprire un passo, oppure cerca una parola.
 
 Evidenzia, annota, metti tra i preferiti
-Evidenzia in cinque colori, salva i versetti a cui torni, e allega note a uno o più passi: una predica su Romani 8:1-17, per esempio. Le note appaiono accanto al versetto e in un pannello Note con ricerca. Esportale in PDF, Markdown o testo semplice, oppure importa le note da Life Bible o da un elenco incollato.
+Evidenzia in cinque colori, salva i versetti a cui torni e allega note a uno o più passi: una predica su Romani 8:1-17, per esempio. L'elenco Evidenziazioni raccoglie ogni versetto evidenziato in ordine biblico, e Note, Evidenziazioni e Preferiti si restringono a un libro o a un capitolo. Esporta le note in PDF, Markdown o testo, oppure importale da Life Bible.
 
 Fotografa la slide della predica
-Fotografa la slide in chiesa e Scripture Alone comincia la nota: con il titolo della predica, collegata a ogni passo della slide e con i punti pronti da completare. La foto viene letta sul dispositivo e non viene mai caricata online.
+Fotografa la slide in chiesa e Scripture Alone comincia la nota: con il titolo, collegata a ogni passo della slide e con i punti pronti da completare. La foto viene letta sul dispositivo e mai caricata online.
 
 Ascolta
-Ascolta qualsiasi capitolo ad alta voce con le voci del telefono, ogni Bibbia nella sua lingua, con il versetto in lettura evidenziato. Continua a schermo spento, con i comandi sulla schermata di blocco e sugli auricolari, e un timer di spegnimento.
+Ascolta qualsiasi capitolo con le voci del telefono, con il versetto in lettura evidenziato: a schermo spento, dalla schermata di blocco o dagli auricolari, con timer di spegnimento.
 
 Modalità studio, a un tocco
-Riferimenti incrociati ordinati per rilevanza, l'ebraico e il greco parola per parola con l'analisi grammaticale e i numeri di Strong, e il contesto di ogni capitolo: la sua epoca su una linea del tempo dei periodi biblici, una mappa offline dei luoghi che nomina, e schemi sui re di Israele e di Giuda, i viaggi di Paolo, le dodici tribù e le feste d'Israele.
+Rimandi ordinati per rilevanza, l'ebraico e il greco parola per parola con analisi grammaticale e numeri di Strong, e il Contesto di ogni capitolo: una panoramica, una mappa dei luoghi che nomina, la sua epoca su una cronologia e grafici su re, viaggi di Paolo, tribù e feste d'Israele.
 
 Condividi con bellezza
-Componi l'immagine di un versetto sul telefono, con otto modelli, oppure condividi un link che la ricostruisce in qualsiasi browser dal link stesso: nulla viene salvato su un server.
+Componi l'immagine di un versetto con otto modelli, oppure condividi un link che la ricostruisce in qualsiasi browser: nulla viene salvato su un server.
 
 Al polso e nella schermata Home
-I widget Versetto del giorno e Preferiti e note, e un'app per Wear OS con la sua Bibbia offline, un riquadro e una complicazione con il riferimento del giorno.
+I widget Versetto del giorno e Preferiti e note, e un'app per Wear OS con riquadro e complicazione che legge offline e porta con sé le traduzioni importate, evidenziazioni, preferiti e note, nel colore principale scelto sul telefono.
 
 Una Bibbia da tramandare
-Crea una Bibbia Ricordo: un file con le tue evidenziazioni e note, con una dedica, che la tua famiglia potrà aprire e leggere come l'hai segnata tu — una "Bibbia di papà" digitale. I Ricordi si aprono su Android e iPhone.
+Crea una Bibbia ricordo: un file con le tue evidenziazioni e note, con una dedica, che la tua famiglia potrà aprire e leggere come l'hai segnata tu — una "Bibbia di papà" digitale. Si apre su Android e su iPhone.
 
 Privata per costruzione
-Evidenziazioni, note e preferiti restano sul tuo dispositivo. Non c'è nessun server e nessun account, e lo sviluppatore non vede mai i tuoi dati. Scripture Alone è open source con licenza AGPL: chiunque può leggere esattamente che cosa fa.
+Evidenziazioni, note e preferiti restano sul tuo dispositivo. Nessun server, nessun account, e lo sviluppatore non vede mai i tuoi dati. Scripture Alone è open source con licenza AGPL: chiunque può leggere esattamente che cosa fa.
 
 Nata per aiutare le persone a studiare la Parola di Dio e a crescere nella vicinanza a Cristo.
 

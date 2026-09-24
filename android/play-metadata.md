@@ -9,46 +9,49 @@ Scripture Alone Bible
 
 ## short_description
 <!-- Play flags price/promotion words here ("free", "no ads") and may then not feature the app. -->
-A private, offline Bible with study tools, sermon notes and maps. No account.
+A private, offline Bible: topics for hard days, study tools, sermon notes.
 
 ## full_description
-Scripture Alone is a Bible for Android phones, tablets and Wear OS, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. Two complete translations arrive with the app, and a third is a tap away, so reading, searching, highlighting and notes work anywhere in the world, with or without a connection. The large study add-ons — the commentary and the original-language data — download the first time you open them, so the app itself stays small.
+Scripture Alone is a Bible for Android phones, tablets and Wear OS, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. Reading, searching, highlighting and notes work anywhere, with or without a connection.
 
 Read the whole Bible, offline
-The American Standard Version and the Berean Standard Bible arrive with the app. The King James Version downloads once, the first time you choose it, and reads offline from then on. All three have full-text search. The words of Christ appear in red, poetry is set as poetry, and section headings and footnotes are a tap away.
+The American Standard Version and the Berean Standard Bible arrive with the app; the King James Version downloads once, when you first choose it. Full-text search, the words of Christ in red, poetry set as poetry, and footnotes a tap away.
 
-Bring your own translation
-Browse the openly licensed translations eBible.org publishes, in your own language first, or import a USFM file or a DRM-free ePub you already own. Nothing downloads until you choose it, and what you add stays on your device.
+What the Bible says about what you're going through
+Topics gathers passages for 72 themes — anxiety, grief, loneliness, fear, marriage, waiting and more — in the translation you read. Type a feeling like "anxious" in Go To and its topic comes up. In English, Nave's Topical Bible is there too, A to Z.
+
+Bring your own Bibles
+Import a DRM-free ePub, a Bible PDF with a text layer or a USFM file you own, or browse the openly licensed translations on eBible.org. A study Bible brings its notes, introductions, essays and maps; the words of Christ carry over in red; and an import takes the place of the same translation read with an online key. Imports stay on your device.
 
 Make it comfortable
-Seven typefaces, adjustable size and line spacing, five themes (Auto, Light, Sepia, Dark and Black), paragraphs or verse by verse, and your phone's font size. Auto-scroll keeps the text moving hands-free and carries on into the next chapter.
+Seven typefaces, adjustable size and spacing, five themes, paragraphs or verse by verse, and auto-scroll into the next chapter.
 
 Go straight there
-Type "jn 3 16" or "rom 8:28-39" to jump to a passage, or search any word or phrase. The chapters you have read and the words you have searched are waiting the next time you open it.
+Type "jn 3 16" or "rom 8:28-39" to jump to a passage, or search any word or phrase.
 
 Highlight, note and favorite
-Highlight in five colors, favorite the verses you return to, and attach notes to one or more passages — a Sunday sermon on Romans 8:1–17, say. Notes appear beside the verse and in a searchable Notes panel. Export them as a PDF, Markdown or plain text, or bring notes in from Life Bible or a pasted list.
+Highlight in five colors, favorite the verses you return to, and attach notes to one or more passages — a Sunday sermon on Romans 8:1–17, say. The Highlights list gathers every marked verse in Bible order, and Notes, Highlights and Favorites narrow to one book or chapter. Export notes as PDF, Markdown or text, or bring them in from Life Bible.
 
 Snap the sermon slide
-Photograph the slide at church and Scripture Alone starts your note: titled with the sermon title, linked to every passage on the slide, with its points ready to fill in. The photo is read on your device and never uploaded.
+Photograph the slide at church and Scripture Alone starts your note: titled, linked to every passage on the slide, its points ready to fill in. The photo is read on your device, never uploaded.
 
 Listen
-Hear any chapter read aloud with the voices on your phone, with the spoken verse marked as it goes. It keeps reading with the screen off, with controls on the lock screen and your headset, and a sleep timer.
+Hear any chapter read aloud with your phone's voices, the spoken verse marked as it goes — screen off, from the lock screen or headset, with a sleep timer.
 
 Study mode, a toggle away
-Ranked cross-references, classic commentary from John Calvin, John Gill and Jamieson-Fausset-Brown, the original Hebrew and Greek word by word with a lexicon, and the context of every chapter: its era on a timeline of the biblical periods, an offline map of the places it names, and charts of the kings of Israel and Judah, Paul's journeys, the twelve tribes and the feasts of Israel.
+Ranked cross-references, commentary from Calvin, Gill and Jamieson-Fausset-Brown, the Hebrew and Greek word by word with a lexicon, and Context for every chapter: an overview, a map of the places it names, its era on a timeline, and charts of the kings, Paul's journeys, the tribes and the feasts.
 
 Share beautifully
-Design a verse image right on your phone from eight templates, or share a link that rebuilds it in any browser from the link itself — nothing is stored on a server.
+Design a verse image from eight templates, or share a link that rebuilds it in any browser — nothing is stored on a server.
 
 On your wrist and home screen
-Verse of the Day and Favorites & Notes widgets, and a Wear OS app with its own offline Bible, a tile and a complication with the day's reference.
+Verse of the Day and Favorites & Notes widgets, and a Wear OS app with a tile and a complication that reads offline and carries your imported translations, highlights, favorites and notes, in the accent color you chose on your phone.
 
 A Bible to hand down
 Make a Keepsake Bible: a file of your highlights and notes, with a dedication, that your family can open and read as you marked it — a digital "Dad's Bible". Keepsakes open on Android and iPhone alike.
 
 Private by design
-Your highlights, notes and favorites stay on your device. There is no server and no account, and the developer never sees your data. Scripture Alone is open source under the AGPL, so anyone can read exactly what it does.
+Your highlights, notes and favorites stay on your device. No server, no account, and the developer never sees your data. Scripture Alone is open source under the AGPL, so anyone can read exactly what it does.
 
 Built to help people study God's word and grow closer to Christ.
 
