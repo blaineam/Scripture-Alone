@@ -96,6 +96,7 @@ import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.search.SearchEmphasis
 import com.blainemiller.scripturealone.data.search.SearchHit
 import com.blainemiller.scripturealone.data.search.VerseSearch
+import com.blainemiller.scripturealone.data.topics.CrisisSupport
 import com.blainemiller.scripturealone.data.topics.LifeThemeCatalog
 import com.blainemiller.scripturealone.data.topics.TopicsLibrary
 import com.blainemiller.scripturealone.text.AppLanguage
@@ -148,8 +149,10 @@ fun GoToSheet(
     /** Words, not a reference: what iOS sends to the search. */
     val isWordSearch = VerseSearch.isLongEnough(query) && passage == null
     /** Life themes the words speak to — "anxious" is Anxiety — and a Nave's topic named exactly them. */
-    val matchedThemes = remember(query, topicCatalog) { if (passage != null) emptyList() else topicCatalog?.search(query).orEmpty() }
-    val matchedTopic = remember(query, topicIndex) { if (passage != null || query.length < 3) null else topicIndex?.topic(query) }
+    /** Someone in crisis gets the crisis card, not whatever topic their words happen to match ("want to die" is also Death & Dying). */
+    val crisis = remember(query) { passage == null && CrisisSupport.isCrisis(query) }
+    val matchedThemes = remember(query, topicCatalog) { if (passage != null || crisis) emptyList() else topicCatalog?.search(query).orEmpty() }
+    val matchedTopic = remember(query, topicIndex) { if (passage != null || crisis || query.length < 3) null else topicIndex?.topic(query) }
 
     // A reference navigates; anything else searches the text — after 180 ms, as iOS waits, so a
     // search isn't run for every keystroke of a word still being typed.
@@ -279,6 +282,9 @@ fun GoToSheet(
                     passage?.let { p ->
                         full("goto") { GoToCard(p.clamped.display, palette, onClick = ::submit) }
                     }
+                    if (crisis) {
+                        full("crisis") { CrisisCard(palette) { openTopic(TopicRoute.Theme("hope")) } }
+                    }
                     for (theme in matchedThemes) {
                         full("topic-${theme.id}") {
                             TopicCard(theme.localizedName, theme.localizedDescription, palette) { openTopic(TopicRoute.Theme(theme.id)) }
@@ -302,7 +308,7 @@ fun GoToSheet(
                             UnsearchableNotice(model.translationAbbreviation, palette) { id -> model.selectTranslation(id) }
                         }
                         results.isNotEmpty() -> resultsSection(results, query, palette, ::openResult)
-                        isWordSearch && suggested.isEmpty() && matchedThemes.isEmpty() && matchedTopic == null && answered == query -> full("empty") {
+                        isWordSearch && !crisis && suggested.isEmpty() && matchedThemes.isEmpty() && matchedTopic == null && answered == query -> full("empty") {
                             NoResults(query, palette)
                         }
                     }

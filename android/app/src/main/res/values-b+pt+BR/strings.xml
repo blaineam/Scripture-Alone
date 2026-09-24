@@ -888,4 +888,12 @@
     <string name="data_import_drm_pdf_password">Esse PDF está bloqueado por senha.</string>
     <string name="data_import_drm_pdf_copy_protected">O proprietário desse PDF não permite copiar o texto.</string>
     <string name="data_import_detail_pdf_unreadable">não foi possível abrir o PDF</string>
+    <string name="crisis_title">Você não está sozinho</string>
+    <string name="crisis_body">Se você está pensando em tirar a própria vida, por favor, fale com alguém agora. Você importa, e conversar pode ajudar.</string>
+    <string name="crisis_call">Ligar para %1$s</string>
+    <string name="crisis_text">Mensagem para %1$s</string>
+    <string name="crisis_find_helpline">Encontrar uma linha de apoio</string>
+    <string name="crisis_other_countries">Linhas de apoio em outros países</string>
+    <string name="crisis_passages_of_hope">Passagens de esperança</string>
+    <string name="crisis_emergency">Em perigo agora? Ligue para o número de emergência.</string>
 </resources>

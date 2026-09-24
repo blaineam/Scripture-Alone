@@ -888,4 +888,12 @@
     <string name="data_import_drm_pdf_password">Ce PDF est verrouillé par un mot de passe.</string>
     <string name="data_import_drm_pdf_copy_protected">Le propriétaire de ce PDF n’autorise pas la copie de son texte.</string>
     <string name="data_import_detail_pdf_unreadable">le PDF n’a pas pu être ouvert</string>
+    <string name="crisis_title">Vous n’êtes pas seul</string>
+    <string name="crisis_body">Si vous pensez à mettre fin à vos jours, parlez-en à quelqu’un dès maintenant. Vous comptez, et en parler peut aider.</string>
+    <string name="crisis_call">Appeler le %1$s</string>
+    <string name="crisis_text">Envoyer un SMS au %1$s</string>
+    <string name="crisis_find_helpline">Trouver une ligne d’écoute</string>
+    <string name="crisis_other_countries">Lignes d’écoute dans d’autres pays</string>
+    <string name="crisis_passages_of_hope">Passages d’espérance</string>
+    <string name="crisis_emergency">En danger immédiat ? Appelez les urgences.</string>
 </resources>

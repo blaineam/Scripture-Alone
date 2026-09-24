@@ -888,4 +888,12 @@
     <string name="data_import_drm_pdf_password">此 PDF 已用密码锁定。</string>
     <string name="data_import_drm_pdf_copy_protected">此 PDF 的所有者不允许复制其文本。</string>
     <string name="data_import_detail_pdf_unreadable">无法打开该 PDF</string>
+    <string name="crisis_title">你并不孤单</string>
+    <string name="crisis_body">如果你正在考虑结束自己的生命，请现在就向人倾诉。你很重要，说出来会有帮助。</string>
+    <string name="crisis_call">拨打 %1$s</string>
+    <string name="crisis_text">发短信至 %1$s</string>
+    <string name="crisis_find_helpline">查找求助热线</string>
+    <string name="crisis_other_countries">其他国家的求助热线</string>
+    <string name="crisis_passages_of_hope">盼望的经文</string>
+    <string name="crisis_emergency">如果现在有危险，请拨打当地的紧急电话。</string>
 </resources>

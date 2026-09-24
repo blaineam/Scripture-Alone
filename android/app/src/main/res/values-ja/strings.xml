@@ -888,4 +888,12 @@
     <string name="data_import_drm_pdf_password">この PDF はパスワードでロックされています。</string>
     <string name="data_import_drm_pdf_copy_protected">この PDF の所有者はテキストのコピーを許可していません。</string>
     <string name="data_import_detail_pdf_unreadable">PDF を開けませんでした</string>
+    <string name="crisis_title">あなたはひとりではありません</string>
+    <string name="crisis_body">命を絶つことを考えているなら、どうか今、誰かに話してください。あなたは大切な存在です。話すことが助けになります。</string>
+    <string name="crisis_call">%1$s に電話</string>
+    <string name="crisis_text">%1$s にメッセージ</string>
+    <string name="crisis_find_helpline">相談窓口を探す</string>
+    <string name="crisis_other_countries">ほかの国の相談窓口</string>
+    <string name="crisis_passages_of_hope">希望のみことば</string>
+    <string name="crisis_emergency">今すぐ危険な状態なら、緊急通報番号に電話してください。</string>
 </resources>

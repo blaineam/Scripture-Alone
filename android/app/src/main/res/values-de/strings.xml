@@ -888,4 +888,12 @@
     <string name="data_import_drm_pdf_password">Dieses PDF ist mit einem Passwort gesperrt.</string>
     <string name="data_import_drm_pdf_copy_protected">Der Inhaber dieses PDFs erlaubt nicht, den Text zu kopieren.</string>
     <string name="data_import_detail_pdf_unreadable">das PDF konnte nicht geöffnet werden</string>
+    <string name="crisis_title">Du bist nicht allein</string>
+    <string name="crisis_body">Wenn du daran denkst, dir das Leben zu nehmen, wende dich bitte jetzt an jemanden. Du bist wichtig, und reden kann helfen.</string>
+    <string name="crisis_call">%1$s anrufen</string>
+    <string name="crisis_text">SMS an %1$s</string>
+    <string name="crisis_find_helpline">Hilfetelefon finden</string>
+    <string name="crisis_other_countries">Hilfetelefone in anderen Ländern</string>
+    <string name="crisis_passages_of_hope">Worte der Hoffnung</string>
+    <string name="crisis_emergency">Akute Gefahr? Ruf den Notruf an.</string>
 </resources>

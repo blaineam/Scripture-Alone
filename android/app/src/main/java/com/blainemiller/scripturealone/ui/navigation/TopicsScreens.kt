@@ -1,6 +1,8 @@
 package com.blainemiller.scripturealone.ui.navigation
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -32,13 +34,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material.icons.automirrored.rounded.Message
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.FormatQuote
+import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.Phone
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SubdirectoryArrowRight
+import androidx.compose.material.icons.rounded.WbTwilight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -62,6 +68,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
@@ -80,6 +87,7 @@ import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.ChapterVerse
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.rights.TranslationRights
+import com.blainemiller.scripturealone.data.topics.CrisisSupport
 import com.blainemiller.scripturealone.data.topics.IndexEntry
 import com.blainemiller.scripturealone.data.topics.IndexTopic
 import com.blainemiller.scripturealone.data.topics.LifeTheme
@@ -92,6 +100,7 @@ import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
 import com.blainemiller.scripturealone.ui.reader.SheetColors
 import com.blainemiller.scripturealone.ui.study.StudyStyle
 import com.blainemiller.scripturealone.ui.study.serifStyle
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -245,9 +254,18 @@ internal fun TopicsDirectory(
                     }
                 }
             } else {
-                val themes = catalog.search(query, limit = catalog.themes.size)
-                val topics = index?.search(query, limit = 60).orEmpty()
-                if (themes.isEmpty() && topics.isEmpty()) {
+                val crisis = CrisisSupport.isCrisis(query)
+                // The crisis card stands alone: "want to die" would otherwise also list Death & Dying.
+                val themes = if (crisis) emptyList() else catalog.search(query, limit = catalog.themes.size)
+                val topics = if (crisis) emptyList() else index?.search(query, limit = 60).orEmpty()
+                if (crisis) {
+                    item("crisis") {
+                        Box(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)) {
+                            CrisisCard(palette) { onRoute(TopicRoute.Theme("hope")) }
+                        }
+                    }
+                }
+                if (themes.isEmpty() && topics.isEmpty() && !crisis) {
                     item("empty") { NoTopics(query, palette) }
                 }
                 if (themes.isNotEmpty()) {
@@ -564,4 +582,97 @@ internal fun topicTitle(route: TopicRoute, catalog: LifeThemeCatalog?, index: To
     TopicRoute.Directory -> topics
     is TopicRoute.Theme -> catalog?.theme(route.id)?.localizedName ?: topics
     is TopicRoute.Index -> index?.topic(route.id)?.name ?: topics
+}
+
+/**
+ * Shown above everything else when a search reads as someone thinking of ending their life
+ * ([CrisisSupport]): a crisis line for their country to call — or text, where it takes messages —
+ * the directory of every other country's lines, and passages for a dark day. `CrisisCard` in
+ * `TopicsDirectory.swift`. Call opens the dialer with the number filled in; it never places the call.
+ */
+@Composable
+internal fun CrisisCard(palette: ReaderPalette, onPassagesOfHope: () -> Unit) {
+    val context = LocalContext.current
+    val helpline = remember { CrisisSupport.helpline(Locale.getDefault().country) }
+    val pink = if (palette.isDark) Color(0xFFFF375F) else Color(0xFFFF2D55)
+    fun open(intent: Intent) {
+        try {
+            context.startActivity(intent)
+        } catch (_: ActivityNotFoundException) {
+            // A tablet with no dialer or messaging app: the number is on the button to read.
+        }
+    }
+    Column(
+        Modifier.fillMaxWidth().padding(bottom = 4.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(pink.copy(alpha = 0.1f))
+            .padding(16.dp)
+            .semantics { isTraversalGroup = true },
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Rounded.Favorite, null, tint = pink, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(
+                stringResource(R.string.crisis_title), color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.semantics { heading() },
+            )
+        }
+        Text(stringResource(R.string.crisis_body), color = palette.ink, fontSize = 15.sp, lineHeight = 20.sp)
+        if (helpline != null) {
+            Text(helpline.name, color = palette.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                CrisisButton(
+                    stringResource(R.string.crisis_call, helpline.display), Icons.Rounded.Phone,
+                    fill = palette.accent, content = if (palette.isDark) Color.Black else Color.White, modifier = Modifier.weight(1f),
+                ) { open(Intent(Intent.ACTION_DIAL, Uri.parse(helpline.callUri))) }
+                helpline.textUri?.let { sms ->
+                    CrisisButton(
+                        stringResource(R.string.crisis_text, helpline.display), Icons.AutoMirrored.Rounded.Message,
+                        fill = palette.accent.copy(alpha = 0.15f), content = palette.accent, modifier = Modifier.weight(1f),
+                    ) { open(Intent(Intent.ACTION_SENDTO, Uri.parse(sms))) }
+                }
+            }
+        }
+        CrisisLink(
+            stringResource(if (helpline == null) R.string.crisis_find_helpline else R.string.crisis_other_countries),
+            Icons.Rounded.Language, palette,
+        ) { open(Intent(Intent.ACTION_VIEW, Uri.parse(CrisisSupport.DIRECTORY_URL))) }
+        CrisisLink(stringResource(R.string.crisis_passages_of_hope), Icons.Rounded.WbTwilight, palette, onPassagesOfHope)
+        Text(stringResource(R.string.crisis_emergency), color = palette.secondary, fontSize = 13.sp)
+    }
+}
+
+@Composable
+private fun CrisisButton(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    fill: Color,
+    content: Color,
+    modifier: Modifier,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier.clip(RoundedCornerShape(12.dp)).background(fill)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 11.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, null, tint = content, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(6.dp))
+        Text(label, color = content, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+@Composable
+private fun CrisisLink(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, palette: ReaderPalette, onClick: () -> Unit) {
+    Row(
+        Modifier.clickable(role = Role.Button, onClick = onClick).padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, null, tint = palette.accent, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(label, color = palette.accent, fontSize = 15.sp)
+    }
 }

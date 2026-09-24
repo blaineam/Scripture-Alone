@@ -6,6 +6,9 @@
   morir", "死にたい" and the like, in all nine languages — shows a crisis card first: a crisis
   line for your country to call (or text, where it takes messages), a directory of lines
   everywhere else, passages of hope, and a reminder to call emergency services if in danger.
+- Android: the same crisis card at the top of Go To and the Topics search — call opens the dialer
+  with the number filled in, text opens Messages where the line takes texts — with the same
+  phrases, helplines and findahelpline.com fallback as iPhone and Mac.
 - Android: a PDF page set as a table, each line ending in a count tabbed to the edge of the column
   ("his sons, and his relatives — 12"), no longer mistakes the count for a verse number, so the
   verses after it are no longer lost (a PDF now gives all 31,086 verses, as on iPhone and Mac).

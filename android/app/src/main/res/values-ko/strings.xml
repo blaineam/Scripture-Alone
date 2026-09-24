@@ -888,4 +888,12 @@
     <string name="data_import_drm_pdf_password">이 PDF는 암호로 잠겨 있습니다.</string>
     <string name="data_import_drm_pdf_copy_protected">이 PDF의 소유자가 텍스트 복사를 허용하지 않습니다.</string>
     <string name="data_import_detail_pdf_unreadable">PDF를 열 수 없습니다</string>
+    <string name="crisis_title">당신은 혼자가 아닙니다</string>
+    <string name="crisis_body">삶을 끝내려는 생각이 든다면, 지금 누군가에게 꼭 이야기해 주세요. 당신은 소중한 사람이고, 이야기하는 것이 도움이 될 수 있습니다.</string>
+    <string name="crisis_call">%1$s에 전화</string>
+    <string name="crisis_text">%1$s에 문자</string>
+    <string name="crisis_find_helpline">상담전화 찾기</string>
+    <string name="crisis_other_countries">다른 나라의 상담전화</string>
+    <string name="crisis_passages_of_hope">소망의 말씀</string>
+    <string name="crisis_emergency">지금 위험한 상황이라면 긴급 전화번호로 연락하세요.</string>
 </resources>

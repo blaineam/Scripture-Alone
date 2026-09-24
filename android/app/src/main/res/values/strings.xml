@@ -1634,4 +1634,20 @@
     <string name="data_import_drm_pdf_password">That PDF is locked with a password.</string>
     <string name="data_import_drm_pdf_copy_protected">That PDF’s owner doesn’t allow its text to be copied.</string>
     <string name="data_import_detail_pdf_unreadable">the PDF could not be opened</string>
+    <!-- Title of the card shown when a search suggests someone may be thinking of suicide. -->
+    <string name="crisis_title">You’re Not Alone</string>
+    <!-- Body of the crisis card. -->
+    <string name="crisis_body">If you’re thinking about ending your life, please reach out to someone now. You matter, and talking can help.</string>
+    <!-- Crisis card button. %1$s is a crisis line’s phone number, e.g. “988”. -->
+    <string name="crisis_call">Call %1$s</string>
+    <!-- Crisis card button: send a text message to a crisis line. %1$s is its number. -->
+    <string name="crisis_text">Text %1$s</string>
+    <!-- Crisis card button opening an international directory of crisis lines, where the app knows none for the reader’s country. -->
+    <string name="crisis_find_helpline">Find a Helpline</string>
+    <!-- Crisis card link to an international directory of crisis lines. -->
+    <string name="crisis_other_countries">Helplines in Other Countries</string>
+    <!-- Crisis card link to the Hope topic’s passages. -->
+    <string name="crisis_passages_of_hope">Passages of Hope</string>
+    <!-- Crisis card footnote for someone in immediate danger. -->
+    <string name="crisis_emergency">In danger right now? Call your local emergency number.</string>
 </resources>
