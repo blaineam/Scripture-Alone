@@ -2,6 +2,9 @@
 
 ## After 1.0.0
 
+- A printing that leaves out a verse with only a footnote mark, then runs the next verse on
+  without its number, imports that next verse as its own again (a PDF now gives all 31,086
+  verses a modern translation prints).
 - Opening the iPhone app no longer risks the watch briefly dropping, then downloading again,
   the translations you imported.
 - The import summary no longer repeats, under Gaps, verses it already lists as left out by the

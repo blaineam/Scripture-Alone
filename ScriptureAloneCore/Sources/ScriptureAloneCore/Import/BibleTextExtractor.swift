@@ -914,6 +914,7 @@ struct Assembler {
 
     mutating func finish() {
         closeBlock()
+        bible.recoverVersesAfterOmissions()
         bible.tidy()
         bible.outOfOrderChapters = outOfOrder
         bible.bridgedVerses = bridged

@@ -317,6 +317,94 @@ public struct ExtractedBible: Sendable {
         verses[ref] = existing
     }
 
+    /// Gives back a verse a printing ran on without its number, where a translation leaves out
+    /// the verse before it. Some print the omitted verse only as a footnote marker and then carry
+    /// straight on with the next verse's words, unnumbered: "…and so we apprehended him.ᵃ By
+    /// examining him yourself…". When a known omission (`ImportCoverageReport.textualVariants`)
+    /// and the verse after it are both absent, the verse after that is present, and the verse
+    /// before ends with a footnote marker followed by a new sentence, the words after the marker
+    /// are the missing verse.
+    mutating func recoverVersesAfterOmissions() {
+        for omitted in ImportCoverageReport.textualVariants.sorted(by: { $0.key < $1.key }) where verses[omitted] == nil {
+            let before = VerseRef(omitted.book, omitted.chapter, omitted.verse - 1)
+            let after = VerseRef(omitted.book, omitted.chapter, omitted.verse + 1)
+            let following = VerseRef(omitted.book, omitted.chapter, omitted.verse + 2)
+            guard omitted.verse > 1, let verse = verses[before], verses[after] == nil, verses[following] != nil,
+                  var chapterBlocks = blocks[omitted.chapterKey] else { continue }
+            // The last fragment of the verse before, which is where its words ran on.
+            var located: (block: Int, fragment: Int)?
+            for blockIndex in chapterBlocks.indices.reversed() where located == nil {
+                if let index = chapterBlocks[blockIndex].fragments.lastIndex(where: { $0.verse == before.verse }) {
+                    located = (blockIndex, index)
+                }
+            }
+            guard let located else { continue }
+            let fragment = chapterBlocks[located.block].fragments[located.fragment]
+            guard let split = Self.splitAfterFootnote(fragment, as: after.verse) else { continue }
+            // The flat text must end with exactly the words being moved, or it is left alone.
+            let tail = split.tail.text
+            guard verse.text.trimmingCharacters(in: .whitespaces).hasSuffix(tail) else { continue }
+            chapterBlocks[located.block].fragments.replaceSubrange(located.fragment...located.fragment,
+                                                                 with: [split.head, split.tail])
+            blocks[omitted.chapterKey] = chapterBlocks
+
+            let trimmed = verse.text.trimmingCharacters(in: .whitespaces)
+            let lead = verse.text.unicodeScalars.count - String(verse.text.drop(while: \.isWhitespace)).unicodeScalars.count
+            let cut = lead + trimmed.unicodeScalars.count - tail.unicodeScalars.count
+            let scalars = Array(verse.text.unicodeScalars)
+            var kept = verse
+            kept.text = String(String.UnicodeScalarView(scalars[..<cut])).trimmingCharacters(in: .whitespaces)
+            kept.red = verse.red.compactMap { span in
+                span.start < cut ? ScalarSpan(start: span.start, length: min(span.length, cut - span.start)) : nil
+            }
+            verses[before] = kept
+            var recovered = ExtractedVerse(ref: after, text: tail)
+            recovered.red = verse.red.compactMap { span in
+                let end = span.start + span.length
+                guard end > cut else { return nil }
+                let start = max(span.start, cut)
+                return ScalarSpan(start: start - cut, length: end - start)
+            }
+            verses[after] = recovered
+        }
+    }
+
+    /// A fragment cut at its last footnote marker that sits after a sentence's end and before
+    /// a new sentence: the head keeps the verse, the tail becomes verse `number`, numbered.
+    static func splitAfterFootnote(_ fragment: ExtractedFragment, as number: Int)
+        -> (head: ExtractedFragment, tail: ExtractedFragment)? {
+        let scalars = Array(fragment.text.unicodeScalars)
+        for note in fragment.footnotes.sorted(by: { $0.position > $1.position }) {
+            let position = note.position
+            guard position > 0, position < scalars.count else { continue }
+            let head = String(String.UnicodeScalarView(scalars[..<position]))
+            let rest = String(String.UnicodeScalarView(scalars[position...]))
+            let lead = rest.unicodeScalars.count - String(rest.drop(while: \.isWhitespace)).unicodeScalars.count
+            let tail = String(rest.drop(while: \.isWhitespace)).trimmingCharacters(in: .whitespaces)
+            guard let ending = head.trimmingCharacters(in: .whitespaces).last, ".?!”’\"'".contains(ending),
+                  let opening = tail.first, opening.isUppercase || "“‘\"'".contains(opening),
+                  tail.split(separator: " ").count >= 3 else { continue }
+            let start = position + lead
+            var first = fragment
+            first.text = head
+            first.spans = fragment.spans.compactMap { span in
+                span.start < position ? StyledSpan(start: span.start, length: min(span.length, position - span.start), style: span.style) : nil
+            }
+            first.footnotes = fragment.footnotes.filter { $0.position <= position }
+            var second = ExtractedFragment(verse: number, numbered: true, text: tail)
+            second.spans = fragment.spans.compactMap { span in
+                let end = span.start + span.length
+                guard end > start else { return nil }
+                let from = max(span.start, start)
+                return StyledSpan(start: from - start, length: end - from, style: span.style)
+            }
+            second.footnotes = fragment.footnotes.filter { $0.position > position }
+                .map { ExtractedFootnote(position: $0.position - start, text: $0.text) }
+            return (first, second)
+        }
+        return nil
+    }
+
     /// Trims trailing space and merges touching red spans, so stored text matches what the bundled
     /// translations look like.
     mutating func tidy() {

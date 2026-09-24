@@ -132,4 +132,44 @@ import Testing
         #expect(throws: BibleImportError.self) { try ImportedBibleBuilder.write(bible, identity: identity, to: url) }
         #expect(ImportCoverageReport(bible).quality.score < ImportQuality.minimum)
     }
+
+    @Test func aVersePrintedWithoutItsNumberAfterAnOmittedVerseIsRecovered() {
+        // An omitted verse printed only as a footnote marker, the next verse's words running on
+        // after it with no number.
+        var bible = ExtractedBible()
+        let chapter = ChapterRef(.acts, 24)
+        let six = "He even tried to desecrate the temple, and so we apprehended him. By examining him yourself you will be able to discern the truth."
+        let marker = "He even tried to desecrate the temple, and so we apprehended him.".unicodeScalars.count
+        bible.append(ExtractedBlock(kind: .paragraph, fragments: [
+            ExtractedFragment(verse: 6, numbered: true, text: six, footnotes: [ExtractedFootnote(position: marker, text: "Other mss add verse 7")]),
+            ExtractedFragment(verse: 9, numbered: true, text: "The Jews also joined in the attack."),
+        ]), to: chapter)
+        bible.appendVerseText(six, red: [], to: VerseRef(.acts, 24, 6))
+        bible.appendVerseText("The Jews also joined in the attack.", red: [], to: VerseRef(.acts, 24, 9))
+
+        bible.recoverVersesAfterOmissions()
+
+        #expect(bible.verses[VerseRef(.acts, 24, 6)]?.text == "He even tried to desecrate the temple, and so we apprehended him.")
+        #expect(bible.verses[VerseRef(.acts, 24, 8)]?.text == "By examining him yourself you will be able to discern the truth.")
+        #expect(bible.verses[VerseRef(.acts, 24, 7)] == nil)
+        let fragments = bible.blocks(for: chapter).flatMap(\.fragments)
+        #expect(fragments.map(\.verse) == [6, 8, 9])
+        #expect(fragments[1].numbered)
+    }
+
+    @Test func aFootnoteMidSentenceIsNotTakenForAMissingVerse() {
+        var bible = ExtractedBible()
+        let chapter = ChapterRef(.acts, 24)
+        let six = "He even tried to desecrate the temple and so we apprehended him before he could flee."
+        bible.append(ExtractedBlock(kind: .paragraph, fragments: [
+            ExtractedFragment(verse: 6, numbered: true, text: six, footnotes: [ExtractedFootnote(position: 27, text: "Or profane")]),
+        ]), to: chapter)
+        bible.appendVerseText(six, red: [], to: VerseRef(.acts, 24, 6))
+        bible.appendVerseText("The Jews also joined in.", red: [], to: VerseRef(.acts, 24, 9))
+
+        bible.recoverVersesAfterOmissions()
+
+        #expect(bible.verses[VerseRef(.acts, 24, 8)] == nil)
+        #expect(bible.verses[VerseRef(.acts, 24, 6)]?.text == six)
+    }
 }
