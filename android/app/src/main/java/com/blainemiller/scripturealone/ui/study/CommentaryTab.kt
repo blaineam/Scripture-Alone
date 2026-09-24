@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,7 +56,9 @@ import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.reference.ReferenceDetector
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.study.CommentaryEntry
+import com.blainemiller.scripturealone.data.study.ImportedStudyLibrary
 import com.blainemiller.scripturealone.data.study.StudySource
+import com.blainemiller.scripturealone.text.AppLanguage
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
 
@@ -74,10 +77,12 @@ private class LoadedCommentary(
 @Composable
 fun CommentaryTab(verse: VerseRef, study: StudyModel, reader: ReaderViewModel, palette: ReaderPalette) {
     // Commentary is an on-demand asset pack; cross references and context are in the app, so only
-    // this tab waits on a download — iOS's `commentaryDownload`.
+    // this tab waits on a download — iOS's `commentaryDownload`. A study Bible the reader imported
+    // needs no pack, and speaks whatever language it was written in.
+    val imported by ImportedStudyLibrary.sources.collectAsState()
     val ready = packReady(AssetPack.COMMENTARY)
-    val sources = loaded(ready) { context -> StudyLibrary.commentary(context)?.commentarySources }
-    if (sources == null) {
+    val bundled = if (AppLanguage.isEnglish) loaded(ready) { context -> StudyLibrary.commentary(context)?.commentarySources } else emptyList()
+    if (bundled == null && imported.isEmpty()) {
         if (!ready) {
             PackDownload(AssetPack.COMMENTARY, stringResource(R.string.study_commentary_download_failed), palette)
             return
@@ -88,14 +93,27 @@ fun CommentaryTab(verse: VerseRef, study: StudyModel, reader: ReaderViewModel, p
         }
         return
     }
+    val sources = bundled.orEmpty() + imported
     val source = sources.firstOrNull { it.id == study.commentarySource } ?: sources.firstOrNull() ?: return
     val commentary = loaded(source.id to verse.key) { context ->
-        val store = StudyLibrary.commentary(context) ?: return@loaded null
-        val entries = store.commentary(source.id, verse.key)
-        val intro = store.introduction(source.id, verse.book, verse.chapter)
+        val store = StudyLibrary.commentary(context)
+        val own = ImportedStudyLibrary.store(source.id)
+        val entries: List<CommentaryEntry>
+        val intro: CommentaryEntry?
+        if (own != null) {
+            entries = own.commentary(verse.key)
+            intro = own.introduction(verse.book, verse.chapter)
+        } else {
+            store ?: return@loaded null
+            entries = store.commentary(source.id, verse.key)
+            intro = store.introduction(source.id, verse.book, verse.chapter)
+        }
         val alternatives = if (entries.isEmpty()) {
-            val commenting = store.sourcesCommenting(verse.key)
-            sources.filter { it.id != source.id && it.id in commenting }
+            val commenting = store?.sourcesCommenting(verse.key).orEmpty()
+            sources.filter { other ->
+                other.id != source.id &&
+                    (other.id in commenting || ImportedStudyLibrary.store(other.id)?.comments(verse.key) == true)
+            }
         } else {
             emptyList()
         }
@@ -143,7 +161,7 @@ private fun Reading(loaded: LoadedCommentary, source: StudySource, study: StudyM
         ) {
             Column {
                 Text(source.name, color = palette.ink, fontSize = StudyStyle.headline, fontWeight = FontWeight.SemiBold)
-                Text(source.author, color = palette.secondary, fontSize = StudyStyle.caption)
+                if (source.author.isNotEmpty()) Text(source.author, color = palette.secondary, fontSize = StudyStyle.caption)
             }
             loaded.introduction?.let { intro ->
                 Column {

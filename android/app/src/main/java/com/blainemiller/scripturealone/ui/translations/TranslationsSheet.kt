@@ -8,7 +8,9 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -89,12 +91,14 @@ import com.blainemiller.scripturealone.data.importer.BibleImportResult
 import com.blainemiller.scripturealone.data.importer.BundledStoreWriter
 import com.blainemiller.scripturealone.data.importer.ImportCoverageReport
 import com.blainemiller.scripturealone.data.importer.ImportedTranslationIdentity
+import com.blainemiller.scripturealone.data.importer.PdfBoxTextSource
 import com.blainemiller.scripturealone.data.online.APIBibleClient
 import com.blainemiller.scripturealone.data.online.APIBibleTranslation
 import com.blainemiller.scripturealone.data.online.OnlineEntry
 import com.blainemiller.scripturealone.data.online.OnlineProvider
 import com.blainemiller.scripturealone.data.rights.TranslationRights
 import com.blainemiller.scripturealone.data.translations.ImportedTranslation
+import com.blainemiller.scripturealone.data.translations.RedLetterReference
 import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
@@ -124,7 +128,7 @@ private enum class Page { MAIN, CATALOG, KEYS }
 /**
  * Every translation on the device, and the ways to add one — `TranslationsView.swift`: the three
  * that ship; the online ones the reader's keys unlock; the ones they added; then Browse Free
- * Translations (eBible.org), Import a File (a USFM zip or a DRM-free ePub, through the system file
+ * Translations (eBible.org), Import a File (a USFM zip, a DRM-free ePub or a PDF, through the system file
  * picker) and Online Translations (their own ESV / API.Bible key). About This Translation — which
  * iOS shows in its Appearance sheet — closes the list, with what the translation's terms allow.
  */
@@ -146,8 +150,10 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
         scope.launch {
             val result = withContext(Dispatchers.IO) {
                 runCatching {
-                    BibleFileImporter(BundledStoreWriter.opener)
-                        .importBible(file, identity, TranslationLibrary.importedDirectory(context))
+                    // A file that marks no words of Christ can take them from a translation that
+                    // does, when one is on the device (only verses that align closely are marked).
+                    BibleFileImporter(BundledStoreWriter.opener, openPdf = PdfBoxTextSource.opener(context))
+                        .importBible(file, identity, TranslationLibrary.importedDirectory(context), RedLetterReference.lookup(context))
                 }.also {
                     if (cleanUp) file.delete()
                     TranslationLibrary.reloadImported()
@@ -214,7 +220,7 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
             else -> MainPage(
                 reader, palette, onClose,
                 onCatalog = { page = Page.CATALOG },
-                onImport = { picker.launch(arrayOf("application/zip", "application/epub+zip", "application/x-zip-compressed", "application/octet-stream")) },
+                onImport = { picker.launch(arrayOf("application/zip", "application/epub+zip", "application/x-zip-compressed", "application/pdf", "application/octet-stream")) },
                 onKeys = { page = Page.KEYS },
                 onRemove = { pendingRemoval = it },
             )
@@ -300,7 +306,10 @@ private fun MainPage(
                         if (i > 0) CellDivider(palette)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(Modifier.weight(1f)) {
-                                TranslationRow(entry.info.name, entry.info.abbreviation, entry.info.copyright, palette, entry.id == reader.translationId) {
+                                TranslationRow(
+                                    entry.info.name, entry.info.abbreviation, entry.info.copyright, palette, entry.id == reader.translationId,
+                                    onLongClick = { onRemove(entry) },
+                                ) {
                                     reader.selectTranslation(entry.id)
                                 }
                             }
@@ -332,10 +341,22 @@ private fun MainPage(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TranslationRow(name: String, abbreviation: String, note: String?, palette: ReaderPalette, selected: Boolean, onClick: () -> Unit) {
+private fun TranslationRow(
+    name: String,
+    abbreviation: String,
+    note: String?,
+    palette: ReaderPalette,
+    selected: Boolean,
+    onLongClick: (() -> Unit)? = null,
+    onClick: () -> Unit,
+) {
     Row(
-        Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick).padding(horizontal = 16.dp, vertical = 11.dp),
+        // A long press offers what the row's own button does (removing an import), as iOS's context
+        // menu does beside its swipe.
+        Modifier.fillMaxWidth().combinedClickable(role = Role.Button, onLongClick = onLongClick, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
@@ -639,6 +660,8 @@ private fun ImportSummary(result: BibleImportResult, palette: ReaderPalette, onD
                 LabeledCell(palette, stringResource(R.string.translations_summary_books), NumberFormat.getIntegerInstance().format(report.books.size))
                 CellDivider(palette)
                 LabeledCell(palette, stringResource(R.string.translations_summary_verses), NumberFormat.getIntegerInstance().format(report.totalVerses))
+                CellDivider(palette)
+                LabeledCell(palette, stringResource(R.string.translations_summary_quoting), quotingTerms(result))
             }
             if (gaps.isEmpty() && report.booksMissing.isEmpty()) {
                 GroupedSection(palette) {
@@ -691,6 +714,21 @@ internal fun gapSummary(book: ImportCoverageReport.BookCoverage): String {
     val shown = refs.take(4).joinToString(", ")
     return if (extra > 0) AppText.get(R.string.translations_summary_missing_more, shown, extra)
     else AppText.get(R.string.translations_summary_missing, shown)
+}
+
+/**
+ * Which publisher's terms copying and sharing will follow, so a reader can see the importer recognised
+ * the translation — or that it didn't, and the cautious default applies.
+ */
+internal fun quotingTerms(result: BibleImportResult): String {
+    val identity = result.identity
+    val license = identity.license
+    val copyright = identity.copyright
+    if (TranslationRights.isPublicDomain(license, copyright)) return AppText.get(R.string.translations_quoting_public_domain)
+    val terms = TranslationRights.publisherTerms(license, copyright, identity.abbreviation, identity.name)
+        ?: return AppText.get(R.string.translations_quoting_unrecognised, TranslationRights.QUOTATION_VERSE_LIMIT.toInt())
+    val limit = terms.maxVerses ?: return AppText.get(R.string.translations_quoting_terms_unlimited)
+    return AppText.get(R.string.translations_quoting_terms_limit, limit)
 }
 
 // ---- Overlays ---------------------------------------------------------------------------------------

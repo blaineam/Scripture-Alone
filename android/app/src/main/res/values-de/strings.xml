@@ -210,7 +210,7 @@
     <string name="translations_online_note">Über das Netzwerk lesen</string>
     <string name="translations_section_added">Von dir hinzugefügt</string>
     <string name="translations_section_add">Übersetzung hinzufügen</string>
-    <string name="translations_section_add_footer">Kostenlose Übersetzungen kommen von eBible.org, und nichts wird geladen, bis du eine auswählst. Eine Datei kann ein USFM-Zip oder ein ePub sein, das dir gehört — Kopiergeschütztes wird abgelehnt. ESV, CSB, NASB und NKJV darf niemand weitergeben, daher werden sie mit deinem eigenen kostenlosen Schlüssel über das Netzwerk gelesen.</string>
+    <string name="translations_section_add_footer">Kostenlose Übersetzungen kommen von eBible.org, und nichts wird heruntergeladen, bevor du eine auswählst. Eine Datei kann ein USFM-ZIP, ein ePub oder ein PDF sein, das dir gehört – alles Kopiergeschützte wird abgelehnt. Übersetzungen, die niemand weitergeben darf, werden mit deinem eigenen kostenlosen Schlüssel über das Netz gelesen.</string>
     <string name="translations_browse_free">Kostenlose Übersetzungen durchsuchen…</string>
     <string name="translations_import_file">Datei importieren…</string>
     <string name="translations_online_keys">Online-Übersetzungen…</string>
@@ -255,7 +255,7 @@
     <string name="translations_gap_verses_other">%1$d Verse</string>
     <string name="translations_progress_downloading">%1$s wird geladen…</string>
     <string name="translations_progress_reading">%1$s wird gelesen…</string>
-    <string name="translations_progress_note">Bei einer ganzen Bibel dauert das ein paar Sekunden.</string>
+    <string name="translations_progress_note">Eine ganze Bibel kann ein bis zwei Minuten dauern, mit Studienanmerkungen oder aus einem PDF länger.</string>
     <string name="notes_title">Notizen</string>
     <string name="notes_scope_all">Alle Notizen</string>
     <string name="notes_scope_chapter">Dieses Kapitel</string>
@@ -755,7 +755,7 @@
     <string name="data_import_not_an_epub">Diese Datei ist kein lesbares ePub: %1$s</string>
     <string name="data_import_unsupported_format">Diese App kann diese Datei nicht lesen: %1$s</string>
     <string name="data_import_protected_by_drm">%1$s Diese App kann geschützte Dateien nicht öffnen.</string>
-    <string name="data_import_no_scripture_found">In diesem ePub wurde kein Bibeltext gefunden.</string>
+    <string name="data_import_no_scripture_found">In dieser Datei wurde kein Bibeltext gefunden.</string>
     <string name="data_import_missing_copyright">Dieses ePub enthält keinen Copyright-Hinweis. Gib den Copyright-Hinweis des Verlags ein, um fortzufahren.</string>
     <string name="data_import_database_write">Importierter Text konnte nicht gespeichert werden: %1$s</string>
     <string name="data_import_drm_encryption_manifest">Dieses ePub ist verschlüsselt (es enthält ein Verschlüsselungs-Manifest).</string>
@@ -861,4 +861,19 @@
     <string name="assistant_new_note_2">notiz erstellen</string>
     <string name="assistant_favorites_1">favoriten</string>
     <string name="assistant_favorites_2">Lieblingsverse</string>
+    <string name="data_import_poor_quality">Diese Datei ließ sich nicht sauber genug lesen, um sie zu verwenden (sie erreichte %1$d von 100). Es wurde nichts hinzugefügt.</string>
+    <string name="context_imported_images">Karten &amp; Bilder</string>
+    <string name="context_image_untitled">Bild</string>
+    <string name="reader_quote_whole_book">%1$s darf nicht als ganzes Buch zitiert werden. Wähle weniger aus %2$s aus, um zu kopieren oder zu teilen.</string>
+    <string name="reader_quote_share_of_book">%1$s erlaubt bis zu %2$d %% von %3$s in einem Zitat. Wähle weniger Verse aus, um zu kopieren oder zu teilen.</string>
+    <string name="reader_share_no_images">Der Verlag von %1$s erlaubt keine Versbilder</string>
+    <string name="reader_share_not_allowed">Der Verlag von %1$s erlaubt kein Teilen aus einer App</string>
+    <string name="translations_summary_quoting">Zitieren</string>
+    <string name="translations_quoting_public_domain">Gemeinfrei – keine Begrenzung</string>
+    <string name="translations_quoting_unrecognised">Nicht erkannt – bis zu %1$d Verse</string>
+    <string name="translations_quoting_terms_limit">Bedingungen des Verlags – höchstens %1$d Verse</string>
+    <string name="translations_quoting_terms_unlimited">Bedingungen des Verlags – ohne Versbegrenzung</string>
+    <string name="data_import_drm_pdf_password">Dieses PDF ist mit einem Passwort gesperrt.</string>
+    <string name="data_import_drm_pdf_copy_protected">Der Inhaber dieses PDFs erlaubt nicht, den Text zu kopieren.</string>
+    <string name="data_import_detail_pdf_unreadable">das PDF konnte nicht geöffnet werden</string>
 </resources>

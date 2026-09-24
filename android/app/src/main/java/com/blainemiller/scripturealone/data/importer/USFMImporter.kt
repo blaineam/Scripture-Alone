@@ -8,8 +8,8 @@ import java.io.File
 import java.io.IOException
 
 /**
- * What a USFM zip says about itself: eBible.org ships `copr.htm` (the copyright page) and often a DBL
- * `metadata.xml`. For an eBible text the licence line is frequently the only thing standing between
+ * What a USFM zip says about itself: a public USFM distribution ships `copr.htm` (the copyright page) and often a DBL
+ * `metadata.xml`. For such a text the licence line is frequently the only thing standing between
  * the app and a licence violation, so it is read first and carried all the way into the store's
  * `meta` row.
  */
@@ -28,7 +28,7 @@ data class USFMMetadata(
  * before anything is decompressed.
  */
 class USFMPackage internal constructor(private val zip: ZipReader) {
-    /** The `.usfm`/`.sfm` entries, sorted by name (eBible numbers them canonically). */
+    /** The `.usfm`/`.sfm` entries, sorted by name (distributions number them canonically). */
     val files: List<String>
     val metadata: USFMMetadata
 
@@ -195,9 +195,9 @@ class USFMPackage internal constructor(private val zip: ZipReader) {
 }
 
 /**
- * Reads a zip of USFM books — the shape eBible.org publishes — into the same rows the ePub path
+ * Reads a zip of USFM books — the shape public USFM distributions take — into the same rows the ePub path
  * produces, so both front-ends feed one [ImportedBibleBuilder]. Ported from `Import/USFMImporter.swift`,
- * itself a port of `Tools/build_bibles.py`, which compiles the bundled ASV, BSB and KJV — so an
+ * itself a port of `Tools/build_bibles.py`, which compiles the bundled translations — so an
  * imported translation renders identically to a bundled one.
  *
  * Two USFM shapes need a decision, and here they are:
@@ -673,7 +673,7 @@ internal class USFMBookParser(private val options: BibleTextExtractor.Options, p
             "wj" to StyledSpan.Style.WORDS_OF_CHRIST, "add" to StyledSpan.Style.SUPPLIED, "nd" to StyledSpan.Style.SMALL_CAPS,
         )
 
-        private val verseSeparators = listOf('-', '‐', '‑', '‒', '–', '—', ',')
+        private val verseSeparators = listOf('-', '\u2010', '\u2011', '\u2012', '–', '—', ',')
 
         /** The `\id` code at the top of a USFM file. */
         fun bookCode(source: String): String? {

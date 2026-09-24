@@ -3,6 +3,7 @@ package com.blainemiller.scripturealone.data
 import android.content.Context
 import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.layout.ChapterLayout
+import com.blainemiller.scripturealone.data.rights.PublisherTerms
 import com.blainemiller.scripturealone.data.rights.TranslationRights
 import com.blainemiller.scripturealone.data.rights.rights
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
@@ -22,9 +23,10 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
 
 /**
- * Who a translation is, as the reader shows it: the id in the switcher, the copyright in the footer —
- * and what its terms let the reader do with it ([rights]: a signed package's own grant, else the
- * licence line's), the one value the copy and share gates ask.
+ * Who a translation is, as the reader shows it: the abbreviation in the switcher, the copyright in the
+ * footer — and what its terms let the reader do with it ([rights]: a signed package's own grant, then
+ * the publisher's own published terms for a translation the app recognises, else the licence line's),
+ * the one value the copy and share gates ask.
  */
 data class TranslationInfo(
     val id: String,
@@ -32,10 +34,19 @@ data class TranslationInfo(
     val abbreviation: String,
     val copyright: String,
     val license: String = "",
-    val rights: TranslationRights = TranslationRights.of(license, copyright),
+    val rights: TranslationRights = TranslationRights.of(license, copyright, abbreviation = abbreviation, name = name),
     /** The language the text is written in (a BCP 47 tag, from `meta.language`), when the store says. */
     val language: String? = null,
-)
+) {
+    /**
+     * The publisher terms this translation is held to, when it is one the app knows. Only the bundled
+     * ASV arrives as a signed package, and it is public domain, so a grant never needs to outrank these.
+     */
+    val publisherTerms: PublisherTerms? get() = TranslationRights.publisherTerms(license, copyright, abbreviation, name)
+
+    /** The line that must travel with a quotation from this translation, or null when none is required. */
+    val attributionNotice: String? get() = TranslationRights.attributionNotice(license, copyright, abbreviation, name)
+}
 
 /** One verse's text and its words-of-Christ ranges, still in **Unicode scalars** as stored. */
 data class ChapterVerse(val ref: VerseRef, val text: String, val red: List<ScalarRange>)
@@ -91,6 +102,12 @@ interface ChapterSource {
      * packages, imports, the online cache — number as the KJV does.
      */
     val numbering: VerseNumbering get() = VerseNumbering.IDENTITY
+
+    /**
+     * How many verses [ref] has, when the source can say without reading the chapter — a store's
+     * `chapters` table — else 0. The whole-book and share-of-a-book quotation rules read it.
+     */
+    fun verseCount(ref: ChapterRef): Int = 0
 }
 
 /**
@@ -160,6 +177,11 @@ object StoreChapters {
     fun layoutJson(db: SqlSource, ref: ChapterRef): String? =
         db.query("SELECT layout FROM chapters WHERE book = ? AND chapter = ?", ref.book, ref.chapter) { it.text(0) }
             .firstOrNull()
+
+    /** The chapter's highest verse number, from the `chapters` table; 0 when the store lacks the chapter. */
+    fun verseCount(db: SqlSource, ref: ChapterRef): Int =
+        db.query("SELECT verses FROM chapters WHERE book = ? AND chapter = ?", ref.book, ref.chapter) { it.long(0).toInt() }
+            .firstOrNull() ?: 0
 
     /** Verses with keys in `first..last`, in order. */
     fun verses(db: SqlSource, first: Int, last: Int): List<ChapterVerse> =

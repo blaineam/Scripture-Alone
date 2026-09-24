@@ -130,7 +130,7 @@ fun CompareSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: () ->
         Box(Modifier.fillMaxWidth().height(60.dp).padding(horizontal = 14.dp)) {
             Box(Modifier.align(Alignment.CenterStart)) { GlassTextButton(stringResource(R.string.common_close), palette, surface, onClick = onClose) }
             Box(Modifier.align(Alignment.Center)) {
-                Picker(left, other, candidates, palette) {
+                Picker(left, other, candidates, palette, reader::translationLabel) {
                     otherId = it
                     prefs.edit().putString("compareTranslation", it).apply()
                 }
@@ -190,10 +190,10 @@ private fun Side(text: String?, size: Float, palette: ReaderPalette) {
 
 /** "BSB ⇄ KJV" — the right-hand translation is a menu of every other one. */
 @Composable
-private fun Picker(left: String, right: String?, candidates: List<String>, palette: ReaderPalette, onPick: (String) -> Unit) {
+private fun Picker(left: String, right: String?, candidates: List<String>, palette: ReaderPalette, label: (String) -> String, onPick: (String) -> Unit) {
     var open by remember { mutableStateOf(false) }
-    val description = if (right != null) stringResource(R.string.translations_compare_picker_description, left, right)
-    else stringResource(R.string.translations_compare_picker_description_none, left)
+    val description = if (right != null) stringResource(R.string.translations_compare_picker_description, label(left), label(right))
+    else stringResource(R.string.translations_compare_picker_description_none, label(left))
     Box {
         Row(
             Modifier.height(40.dp).glass(palette, CircleShape, SheetColors.surface(palette), lifted = true)
@@ -201,14 +201,14 @@ private fun Picker(left: String, right: String?, candidates: List<String>, palet
                 .semantics(mergeDescendants = true) { contentDescription = description },
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(left, color = palette.ink, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.SemiBold)
+            Text(label(left), color = palette.ink, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.SemiBold)
             Icon(Icons.AutoMirrored.Rounded.CompareArrows, null, tint = palette.secondary, modifier = Modifier.padding(horizontal = 6.dp).size(18.dp))
-            Text(right ?: stringResource(R.string.translations_compare_choose), color = palette.accent, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.SemiBold)
+            Text(right?.let(label) ?: stringResource(R.string.translations_compare_choose), color = palette.accent, fontSize = StudyStyle.subheadline, fontWeight = FontWeight.SemiBold)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             for (id in candidates) {
                 DropdownMenuItem(
-                    text = { Text(id, color = palette.ink) },
+                    text = { Text(label(id), color = palette.ink) },
                     trailingIcon = { if (id == right) Icon(Icons.Rounded.Check, stringResource(R.string.translations_selected), tint = palette.accent) },
                     onClick = { open = false; onPick(id) },
                 )

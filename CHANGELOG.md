@@ -13,6 +13,32 @@
 - The import summary lists verses a translation leaves out because the oldest manuscripts
   don't have them (such as Acts 8:37) under their own heading instead of as gaps, so a clean
   file of a modern translation reads as clean.
+- Android imports ePubs the way iPhone, iPad and Mac do: study-Bible shapes bring in the whole
+  Bible and nothing else (drop-cap chapters, each file's own title, headings above the verse they
+  introduce, notes pages, boxed essays, captions and "next book" links kept out of the text, red
+  letters wherever the stylesheet colors them), every import is judged by the same quality gate
+  and refused with its score when it reads too poorly, and a study Bible titled for itself is
+  recognised from its copyright page.
+- On Android too, an imported study Bible brings its notes into the Commentary picker (each
+  note on every verse it covers, in any language), its book introductions with each book's first
+  chapter, its essays at the verse they stand beside, and its maps and pictures under Maps &
+  Images in the Context tab, full size on a tap. They go when the translation is removed.
+- On Android, an imported translation whose file doesn't mark the words of Christ takes them,
+  verse by verse, from the BSB (or KJV) on the device, marking only words that line up closely.
+- Android copies and shares by each publisher's own terms too: the verse limit, the whole-book
+  and share-of-a-book rules, no verse images where the publisher licenses them separately, no
+  sharing where it allows none from an app, and the exact notice with every copy (the short form
+  on a verse image, where the publisher accepts one). The import summary says which terms apply,
+  and imported translations show their abbreviation, not an internal id, in the pickers.
+- On Android, a translation you've imported is used in place of the same translation behind an
+  online key, which no longer shows beside it, and an import can be removed with a long press as
+  well as with its delete button.
+- Android imports Bible PDFs with a text layer too, read from how they are typeset: sizes against
+  the file's own body type tell titles, drop caps, verse numbers, headings, footnotes and page
+  furniture apart; rows, word spaces and two-column reading order are rebuilt from where each
+  glyph sits; words broken across lines are joined (or keep their hyphen) from the book's own
+  vocabulary; small capitals come back as LORD; and each footnote finds its verse. Locked and
+  copy-protected PDFs are refused, and a PDF meets the same quality gate as any import.
 - An imported English translation whose file doesn't mark the words of Christ gets them from
   the BSB (or KJV) on the device: each verse is matched word for word, and only the words that
   line up with red ones turn red — "Jesus said to him" stays black, "I am the way" turns red. A

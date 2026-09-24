@@ -13,10 +13,14 @@ import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.Chapter
+import com.blainemiller.scripturealone.data.ChapterSource
 import com.blainemiller.scripturealone.data.ChapterVerse
+import com.blainemiller.scripturealone.data.canon.BookID
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.listen.AutoScroll
+import com.blainemiller.scripturealone.data.rights.QuotationRefusal
 import com.blainemiller.scripturealone.data.rights.TranslationRights
+import com.blainemiller.scripturealone.data.rights.quotationRefusal
 import com.blainemiller.scripturealone.data.share.AppCommand
 import com.blainemiller.scripturealone.data.share.AppLink
 import com.blainemiller.scripturealone.data.share.ShareLinkPayload
@@ -205,6 +209,12 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
             } else {
                 // Fetched while the ASV is read; the reader switches when it lands (or retries).
                 selectTranslation(preferred)
+            }
+        }
+        viewModelScope.launch {
+            // Reading the online copy of what is now imported: carry on in the imported one.
+            TranslationLibrary.state.collect {
+                TranslationLibrary.importedReplacing(translationId)?.let(::selectTranslation)
             }
         }
         awaitedTranslation?.let { awaited ->
@@ -429,7 +439,7 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
                 runCatching {
                     val source = opened.getOrThrow().first
                     searchable = source.isSearchable
-                    source.chapter(ref)
+                    source.chapter(ref).also { rememberBookSize(id, source, ref.book) }
                 }
             }
             if (ref != location || id != translationId) return@launch
@@ -484,6 +494,22 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
 
     fun verseCount(ref: ChapterRef): Int = verseCounts[ref] ?: 0
 
+    /**
+     * How many verses each book has, by translation, for the whole-book and share-of-a-book quotation
+     * rules — learned off the main thread when a chapter of the book opens, and only for a translation
+     * whose publisher sets such a rule.
+     */
+    private val bookSizes = java.util.concurrent.ConcurrentHashMap<Pair<String, Int>, Int>()
+
+    private fun rememberBookSize(id: String, source: ChapterSource, book: Int) {
+        val terms = source.info.publisherTerms ?: return
+        if (terms.allowsCompleteBook && terms.maxShareOfBook == null) return
+        if (bookSizes.containsKey(id to book)) return
+        val chapters = BookID.of(book)?.chapterCount ?: return
+        val total = runCatching { (1..chapters).sumOf { source.verseCount(ChapterRef(book, it)) } }.getOrDefault(0)
+        bookSizes[id to book] = total
+    }
+
     /** The selection as KJV ranges — what a highlight, note, favorite or link stores. */
     val selectedRanges: List<VerseRange>
         get() {
@@ -502,13 +528,22 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     /** What the translation being read permits; public domain until its chapter has loaded. */
     val rights: TranslationRights get() = chapter?.translation?.rights ?: TranslationRights.PUBLIC_DOMAIN
 
-    val translationAbbreviation: String get() = chapter?.translation?.abbreviation ?: translationId
+    val translationAbbreviation: String get() = chapter?.translation?.abbreviation ?: translationLabel(translationId)
 
     /**
      * Whether the selection may leave the device at all under this translation's terms. Selected keys
      * are always verses the text has, so their number is the quotation's verse count.
      */
-    fun mayQuote(): Boolean = rights.mayQuote(selection.size)
+    fun mayQuote(): Boolean = quotationRefusal() == null
+
+    /**
+     * Why the selection may not leave the device, or null when it may: too many verses, a whole book,
+     * or more of one book than the publisher allows (`PublisherTerms`).
+     */
+    fun quotationRefusal(): QuotationRefusal? {
+        val info = chapter?.translation ?: return null
+        return info.quotationRefusal(selection) { book -> bookSizes[info.id to book.number] ?: 0 }
+    }
 
     /**
      * The verses [ranges] — **KJV keys** — cover, in [translation], read chapter by chapter off the main
@@ -545,8 +580,9 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
      * lives where text becomes quotable, as on iOS.
      */
     suspend fun quotation(ranges: List<VerseRange> = selectedRanges): String {
-        if (!rights.mayQuote(selection.size)) return ""
-        return Selection.quotation(ranges.map(::displayRange), verses(ranges), translationAbbreviation)
+        if (!mayQuote()) return ""
+        // The notice the publisher requires travels with every quotation.
+        return Selection.quotation(ranges.map(::displayRange), verses(ranges), translationAbbreviation, chapter?.translation?.attributionNotice)
     }
 
     /**
@@ -576,7 +612,7 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         val displayRanges = if (id == translationId) ranges.map(::displayRange) else ranges
         return ShareSource(
             ranges = ranges, verses = verses, translation = info.abbreviation,
-            notice = TranslationRights.attributionNotice(info.license, info.copyright),
+            notice = info.attributionNotice, shortNotice = info.publisherTerms?.shortNotice,
             rights = info.rights, verseCount = ::verseCount, linkStyle = linkStyle, displayRanges = displayRanges,
         )
     }
@@ -932,6 +968,13 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
             SearchableFavorite(range.storageString, displayRange(range).display, text, translation, AppLink.openUrl(listOf(range)))
         }
     }
+
+    /**
+     * What the reader sees a translation called: its id for bundled and online texts; an import's id is
+     * an internal name ("IMPORT-NN0XUW"), so it shows the abbreviation its file gave.
+     */
+    fun translationLabel(id: String): String =
+        TranslationLibrary.imported(id)?.info?.abbreviation ?: id
 
     /** The translations the switcher lists — see [menuTranslations]. */
     fun translationChoices(): List<String> = menuTranslations(translationId)

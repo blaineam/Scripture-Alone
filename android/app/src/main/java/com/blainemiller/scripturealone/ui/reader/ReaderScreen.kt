@@ -1139,7 +1139,7 @@ private fun PillIcon(
 @Composable
 private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, onCompare: () -> Unit, onManageTranslations: () -> Unit) {
     var open by remember { mutableStateOf(false) }
-    val translationLabel = stringResource(R.string.reader_translation_label, model.translationId)
+    val translationLabel = stringResource(R.string.reader_translation_label, model.translationAbbreviation)
     Box {
         Box(
             Modifier.height(44.dp).clip(RoundedCornerShape(22.dp)).clickable(role = Role.DropdownList) { open = true }
@@ -1147,11 +1147,11 @@ private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, on
                 .padding(horizontal = 12.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Text(model.translationId, color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Text(model.translationAbbreviation, color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             for (id in model.translationChoices()) {
-                MenuChoice(id, selected = id == model.translationId, palette) {
+                MenuChoice(model.translationLabel(id), selected = id == model.translationId, palette) {
                     open = false
                     model.selectTranslation(id)
                 }

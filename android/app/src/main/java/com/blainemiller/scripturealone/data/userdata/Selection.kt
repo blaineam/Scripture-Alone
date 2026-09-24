@@ -136,9 +136,10 @@ object Selection {
      * "For God so loved…\n— John 3:16 (ASV)" — `ReaderModel.quotation(for:)`. One block per range,
      * verses numbered when a range has more than one, blocks separated by a blank line. [verses]
      * holds every verse the ranges cover (and may hold more); callers gate on the rights first.
+     * [notice], the publisher's required notice, closes the quotation when there is one.
      */
-    fun quotation(ranges: List<VerseRange>, verses: List<ChapterVerse>, abbreviation: String): String =
-        ranges.mapNotNull { range ->
+    fun quotation(ranges: List<VerseRange>, verses: List<ChapterVerse>, abbreviation: String, notice: String? = null): String {
+        val blocks = ranges.mapNotNull { range ->
             val inRange = verses.filter { range.contains(it.ref.key) }.sortedBy { it.ref.key }
             if (inRange.isEmpty()) return@mapNotNull null
             val text = if (inRange.size == 1) {
@@ -147,7 +148,10 @@ object Selection {
                 inRange.joinToString(" ") { "${it.ref.verse} ${it.text}" }
             }
             "$text\n— ${range.display} ($abbreviation)"
-        }.joinToString("\n\n")
+        }
+        val closing = if (blocks.isEmpty() || notice.isNullOrBlank()) emptyList() else listOf(notice)
+        return (blocks + closing).joinToString("\n\n")
+    }
 
     /** The heart is filled when every selected range is already a favorite — `FavoriteButton`. */
     fun isFavorite(ranges: List<VerseRange>, favorites: Collection<Favorite>): Boolean {

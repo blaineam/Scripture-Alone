@@ -67,9 +67,9 @@ data class ImportedTranslationIdentity(
 
         private val skippedWords = setOf("the", "of", "a", "an", "and", "holy", "version", "edition", "translation")
 
-        /** Letters of the significant words, so "Holman Christian Standard Bible" suggests "HCSB". */
+        /** Letters of the significant words, so "New Example Standard Bible" suggests "NESB". */
         fun abbreviation(name: String): String {
-            // "Bible" is kept: the B in CSB, BSB and ESV comes from it.
+            // "Bible" is kept: the B at the end of most abbreviations comes from it.
             val initials = SwiftText.split(name.lowercase()) { chars, i -> !chars.isLetter(i) && !chars.isNumber(i) }
                 .filter { it !in skippedWords }
                 .map { word -> SwiftCharacters(word).string(0).uppercase() }
@@ -82,7 +82,7 @@ data class ImportedTranslationIdentity(
             return if (letters.isEmpty()) "IMP" else SwiftText.prefix(letters, 4)
         }
 
-        /** A stable, filename-safe id (FNV-1a over UTF-8). Imported stores never collide with a bundled ASV/BSB/KJV. */
+        /** A stable, filename-safe id (FNV-1a over UTF-8). Imported stores never collide with a bundled one. */
         fun identifier(seed: String): String {
             var hash = 0xcbf2_9ce4_8422_2325uL
             for (byte in seed.toByteArray(Charsets.UTF_8)) {
@@ -105,7 +105,7 @@ interface ImportedStoreWriter : AutoCloseable {
     /** Runs one SQL statement, discarding any rows it returns (a `PRAGMA journal_mode` returns one). */
     fun execute(sql: String)
 
-    /** Prepares [sql] once and runs it for every row of positional arguments (String, Long, Int or null). */
+    /** Prepares [sql] once and runs it for every row of positional arguments (String, Long, Int, ByteArray or null). */
     fun insert(sql: String, rows: Sequence<List<Any?>>)
 
     /** Opens (creating if needed) a read-write database at a path. */
@@ -132,6 +132,7 @@ object ImportedBibleBuilder {
         if (bible.isEmpty) throw BibleImportError.NoScriptureFound()
         if (SwiftText.trimWhitespaceAndNewlines(identity.copyright).isEmpty()) throw BibleImportError.MissingCopyright()
         val report = ImportCoverageReport(bible)
+        if (!report.quality.isAcceptable) throw BibleImportError.PoorQuality(report.quality.score)
 
         val directory = file.absoluteFile.parentFile
         directory?.mkdirs()
@@ -159,6 +160,8 @@ object ImportedBibleBuilder {
                 writeBooks(db, bible)
                 writeChapters(db, bible)
                 writeVerses(db, bible)
+                if (!bible.study.isEmpty) writeStudy(db, bible.study, identity.name)
+                if (bible.redLettersInferred) db.execute("INSERT OR REPLACE INTO meta VALUES ('red_letters', 'inferred')")
                 db.execute("COMMIT")
                 db.execute("INSERT INTO verses_fts(verses_fts) VALUES ('rebuild')")
                 db.execute("INSERT INTO verses_fts(verses_fts) VALUES ('optimize')")
@@ -278,6 +281,49 @@ object ImportedBibleBuilder {
             encoded.add(JsonObject(mapOf("k" to JsonPrimitive(block.kind.rawValue), "f" to JsonArray(fragments))))
         }
         return JsonObject(mapOf("b" to JsonArray(encoded))).toString()
+    }
+
+    // MARK: - Study material
+
+    /**
+     * A study Bible's own material, in tables of its own beside the text (`ImportedStudyStore` reads
+     * them). The store is removed as one file, so the notes go wherever the translation goes and
+     * nowhere else.
+     */
+    val STUDY_SCHEMA: List<String> = listOf(
+        "CREATE TABLE study_notes (start_key INTEGER NOT NULL, end_key INTEGER NOT NULL, body TEXT NOT NULL)",
+        "CREATE INDEX study_notes_start ON study_notes (start_key)",
+        "CREATE TABLE study_articles (kind TEXT NOT NULL, book INTEGER NOT NULL, anchor_key INTEGER,\n" +
+            "                             title TEXT NOT NULL, body TEXT NOT NULL)",
+        "CREATE TABLE study_images (id INTEGER PRIMARY KEY, book INTEGER, anchor_key INTEGER,\n" +
+            "                           caption TEXT NOT NULL, media_type TEXT NOT NULL, data BLOB NOT NULL)",
+    )
+
+    private fun writeStudy(db: ImportedStoreWriter, study: ExtractedStudy, name: String) {
+        for (statement in STUDY_SCHEMA) db.execute(statement)
+        db.insert(
+            "INSERT OR REPLACE INTO meta VALUES (?1, ?2)",
+            listOf("study_name" to name, "study_publisher" to (study.publisher ?: ""))
+                .filter { it.second.isNotEmpty() }.asSequence().map { listOf(it.first, it.second) },
+        )
+        db.insert(
+            "INSERT INTO study_notes VALUES (?1, ?2, ?3)",
+            study.orderedNotes.asSequence().filter { it.text.isNotEmpty() }
+                .map { listOf(it.start.key.toLong(), it.end.key.toLong(), it.text) },
+        )
+        db.insert(
+            "INSERT INTO study_articles VALUES (?1, ?2, ?3, ?4, ?5)",
+            study.articles.asSequence().map {
+                listOf(it.kind.rawValue, it.book.number.toLong(), it.anchor?.key?.toLong(), it.title, it.text)
+            },
+        )
+        db.insert(
+            "INSERT INTO study_images (book, anchor_key, caption, media_type, data) VALUES (?1, ?2, ?3, ?4, ?5)",
+            study.images.asSequence().mapNotNull { image ->
+                val data = image.data ?: return@mapNotNull null
+                listOf(image.book?.number?.toLong(), image.anchor?.key?.toLong(), image.caption, image.mediaType, data)
+            },
+        )
     }
 
     private fun ints(vararg values: Int): JsonArray = JsonArray(values.map { JsonPrimitive(it) })

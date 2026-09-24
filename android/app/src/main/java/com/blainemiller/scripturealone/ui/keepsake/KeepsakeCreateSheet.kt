@@ -136,7 +136,7 @@ fun KeepsakeCreateSheet(model: ReaderViewModel, palette: ReaderPalette, onBack: 
                 legacy.remember(LegacySession.KEY_DEDICATION, value)
             }
             PanelSeparator(palette)
-            FormPicker(stringResource(R.string.keepsake_create_translation), translations, translations.firstOrNull { it.id == translation }, { "${it.id} — ${it.name}" }, palette) {
+            FormPicker(stringResource(R.string.keepsake_create_translation), translations, translations.firstOrNull { it.id == translation }, { "${it.abbreviation} — ${it.name}" }, palette) {
                 changed { translation = it.id }
                 legacy.remember(LegacySession.KEY_TRANSLATION, it.id)
             }

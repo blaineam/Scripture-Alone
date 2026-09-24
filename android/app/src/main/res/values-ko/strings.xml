@@ -210,7 +210,7 @@
     <string name="translations_online_note">네트워크로 읽기</string>
     <string name="translations_section_added">직접 추가함</string>
     <string name="translations_section_add">번역본 추가</string>
-    <string name="translations_section_add_footer">무료 번역본은 eBible.org에서 제공되며, 선택하기 전까지는 아무것도 다운로드되지 않습니다. 파일은 USFM zip 또는 본인이 소유한 ePub이면 되고, 복사 방지된 파일은 사용할 수 없습니다. ESV, CSB, NASB, NKJV는 누구도 배포할 수 없으므로 본인의 무료 키로 네트워크를 통해 읽습니다.</string>
+    <string name="translations_section_add_footer">무료 번역본은 eBible.org에서 제공되며, 선택하기 전에는 아무것도 다운로드되지 않습니다. 파일은 직접 소유한 USFM zip, ePub 또는 PDF일 수 있으며, 복사 방지된 파일은 거부됩니다. 누구도 배포할 수 없는 번역본은 본인의 무료 키로 네트워크를 통해 읽습니다.</string>
     <string name="translations_browse_free">무료 번역본 둘러보기…</string>
     <string name="translations_import_file">파일 가져오기…</string>
     <string name="translations_online_keys">온라인 번역본…</string>
@@ -255,7 +255,7 @@
     <string name="translations_gap_verses_other">%1$d개 절</string>
     <string name="translations_progress_downloading">%1$s 다운로드 중…</string>
     <string name="translations_progress_reading">%1$s 읽는 중…</string>
-    <string name="translations_progress_note">성경 전체는 몇 초 걸립니다.</string>
+    <string name="translations_progress_note">성경 전체는 1~2분 걸릴 수 있으며, 연구 노트가 있거나 PDF에서 가져오면 더 오래 걸립니다.</string>
     <string name="notes_title">노트</string>
     <string name="notes_scope_all">전체 노트</string>
     <string name="notes_scope_chapter">이 장</string>
@@ -755,7 +755,7 @@
     <string name="data_import_not_an_epub">해당 파일은 읽을 수 있는 ePub이 아닙니다: %1$s</string>
     <string name="data_import_unsupported_format">이 앱은 해당 파일을 읽을 수 없습니다: %1$s</string>
     <string name="data_import_protected_by_drm">%1$s 이 앱은 보호된 파일을 열 수 없습니다.</string>
-    <string name="data_import_no_scripture_found">해당 ePub에서 성경 본문을 찾을 수 없습니다.</string>
+    <string name="data_import_no_scripture_found">이 파일에서 성경 본문을 찾을 수 없습니다.</string>
     <string name="data_import_missing_copyright">해당 ePub에 저작권 표시가 없습니다. 계속하려면 출판사의 저작권 고지를 입력하세요.</string>
     <string name="data_import_database_write">가져온 본문을 저장할 수 없습니다: %1$s</string>
     <string name="data_import_drm_encryption_manifest">해당 ePub은 암호화되어 있습니다(암호화 매니페스트 포함).</string>
@@ -861,4 +861,19 @@
     <string name="assistant_new_note_2">노트 만들기</string>
     <string name="assistant_favorites_1">즐겨찾기</string>
     <string name="assistant_favorites_2">즐겨찾는 구절</string>
+    <string name="data_import_poor_quality">이 파일은 사용할 수 있을 만큼 깔끔하게 읽히지 않았습니다(100점 중 %1$d점). 아무것도 추가되지 않았습니다.</string>
+    <string name="context_imported_images">지도와 이미지</string>
+    <string name="context_image_untitled">그림</string>
+    <string name="reader_quote_whole_book">%1$s은(는) 한 권 전체를 한 번에 인용할 수 없습니다. 복사하거나 공유하려면 %2$s에서 더 적게 선택하세요.</string>
+    <string name="reader_quote_share_of_book">%1$s은(는) 한 번의 인용에 %3$s의 %2$d%%까지 허용합니다. 복사하거나 공유하려면 절을 더 적게 선택하세요.</string>
+    <string name="reader_share_no_images">%1$s의 출판사는 구절 이미지를 허용하지 않습니다</string>
+    <string name="reader_share_not_allowed">%1$s의 출판사는 앱에서의 공유를 허용하지 않습니다</string>
+    <string name="translations_summary_quoting">인용</string>
+    <string name="translations_quoting_public_domain">퍼블릭 도메인 — 제한 없음</string>
+    <string name="translations_quoting_unrecognised">인식되지 않음 — 최대 %1$d절</string>
+    <string name="translations_quoting_terms_limit">출판사 이용 조건 — 최대 %1$d개 구절</string>
+    <string name="translations_quoting_terms_unlimited">출판사 이용 조건 — 구절 수 제한 없음</string>
+    <string name="data_import_drm_pdf_password">이 PDF는 암호로 잠겨 있습니다.</string>
+    <string name="data_import_drm_pdf_copy_protected">이 PDF의 소유자가 텍스트 복사를 허용하지 않습니다.</string>
+    <string name="data_import_detail_pdf_unreadable">PDF를 열 수 없습니다</string>
 </resources>

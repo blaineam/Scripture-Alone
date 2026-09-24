@@ -1,7 +1,9 @@
 package com.blainemiller.scripturealone.ui.reader
 
 import androidx.compose.ui.text.font.FontFamily
+import com.blainemiller.scripturealone.data.canon.BookID
 import com.blainemiller.scripturealone.data.layout.ChapterLayout
+import com.blainemiller.scripturealone.data.rights.QuotationRefusal
 import com.blainemiller.scripturealone.data.layout.ChapterLayout.Kind
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.userdata.HighlightColor
@@ -75,11 +77,18 @@ class ChapterMarksTest {
 
     @Test
     fun quotationNoticeNamesTheLimit() {
-        val licensed = com.blainemiller.scripturealone.data.rights.TranslationRights.LICENSED_DEFAULT
         assertEquals(
             "ESV allows up to 500 verses in one quotation. Select fewer to copy or share.",
-            quotationLimitNotice(licensed, "ESV"),
+            quotationLimitNotice(QuotationRefusal.TooManyVerses(500), "ESV"),
         )
-        assertEquals("ESV can’t be quoted outside the app.", quotationLimitNotice(licensed.copy(maxQuotationVerses = 0), "ESV"))
+        assertEquals("ESV can’t be quoted outside the app.", quotationLimitNotice(QuotationRefusal.NotPermitted, "ESV"))
+        assertEquals(
+            "CSB can’t be quoted a whole book at a time. Select less of Jude to copy or share.",
+            quotationLimitNotice(QuotationRefusal.WholeBook(BookID.JUDE), "CSB"),
+        )
+        assertEquals(
+            "ESV allows up to 50% of Jude in one quotation. Select fewer verses to copy or share.",
+            quotationLimitNotice(QuotationRefusal.TooMuchOfBook(BookID.JUDE, 50), "ESV"),
+        )
     }
 }

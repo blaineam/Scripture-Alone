@@ -91,8 +91,21 @@ class EPUBPackage internal constructor(private val zip: ZipReader) {
         spine = order.filter { it.isXHTML && zip.contains(it.path) }
     }
 
+    /** The raw bytes of any file in the archive — a picture a document shows. */
+    fun data(path: String): ByteArray = zip.data(path)
+
     /** The decoded text of one document in the archive. */
     fun document(item: EPUBManifestItem): String = text(zip.data(item.path))
+
+    /** Every stylesheet the manifest lists, decoded. Unreadable ones are skipped: styling is a hint. */
+    val stylesheets: List<String>
+        get() = manifest.filter { it.mediaType == "text/css" }.mapNotNull {
+            try {
+                document(it)
+            } catch (_: BibleImportError) {
+                null
+            }
+        }
 
     /** Every file name in the archive, for diagnostics. Reading a name decompresses nothing. */
     val entryNames: List<String> get() = zip.names

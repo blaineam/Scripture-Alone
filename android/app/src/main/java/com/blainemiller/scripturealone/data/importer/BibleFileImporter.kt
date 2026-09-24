@@ -1,20 +1,25 @@
 package com.blainemiller.scripturealone.data.importer
 
 import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.data.rights.PublisherTerms
 import com.blainemiller.scripturealone.text.AppText
 import java.io.File
 import java.io.IOException
 
 /**
- * The kinds of file the engine reads. Both are ZIP containers, and both are refused outright if they
- * carry any protection artifact.
+ * The kinds of file the engine reads. Each is refused outright if it carries any protection: an ePub
+ * or USFM zip by its archive's artifacts, a PDF by its password or copy permission.
  */
 enum class ImportedFileFormat(val rawValue: String, val label: String) {
     /** A DRM-free ePub the user already owns. */
     EPUB("epub", "ePub"),
 
-    /** A zip of USFM books — the shape eBible.org publishes. */
+    /** A zip of USFM books — the shape public USFM distributions take. */
     USFM_ZIP("usfmZip", "USFM"),
+
+    /** A typeset PDF with a text layer, read by its type sizes ([PDFBibleReader]). */
+    PDF("pdf", "PDF"),
 }
 
 /** What a file turned out to be, and what it says about itself, without parsing its scripture. */
@@ -25,7 +30,7 @@ data class BibleImportPreview(
      * copyright line; nothing here is trusted.
      */
     val identity: ImportedTranslationIdentity,
-    /** Spine documents (ePub) or USFM books (zip). */
+    /** Spine documents (ePub), USFM books (zip) or pages (PDF). */
     val documentCount: Int,
 ) {
     /**
@@ -46,47 +51,76 @@ data class BibleImportResult(
  * One entry point: hand it a file and it works out what the file is, reads it, and writes a store the
  * reader can open. Ported from `Import/BibleFileImporter.swift`.
  *
- * Nothing here touches the main thread or the network. Importing a whole Bible takes seconds, so call
- * it from a background dispatcher. The engine writes one local store file and nothing else: no
- * export, no sharing, no sync. An imported text is for the user who imported it, on the device they
- * imported it to.
+ * Nothing here touches the main thread or the network. Importing a whole Bible takes a minute or two,
+ * so call it from a background dispatcher. The engine writes one local store file and nothing else:
+ * no export, no sharing, no sync. An imported text is for the user who imported it, on the device
+ * they imported it to.
  *
- * [openStore] is how the store gets written — [BundledStoreWriter.opener] in the app. It is a
- * parameter (Swift links SQLite directly) so the JVM tests can write through JDBC.
+ * [openStore] is how the store gets written — [BundledStoreWriter.opener] in the app — and [openPdf]
+ * how a PDF's text layer is read — [PdfBoxTextSource.opener]. They are parameters (Swift links SQLite
+ * and PDFKit directly) so the JVM tests can use JDBC and desktop PDFBox. Without [openPdf] a PDF is an
+ * unsupported format.
  */
 class BibleFileImporter(
     val openStore: ImportedStoreWriter.Opener,
     val options: BibleTextExtractor.Options = BibleTextExtractor.Options(),
+    val openPdf: PdfTextSource.Opener? = null,
 ) {
     /** Looks at the file and says what it is. Refuses protected files before reading any content. */
-    fun preview(file: File): BibleImportPreview = preview(open(file))
+    fun preview(file: File): BibleImportPreview {
+        if (isPDF(file)) {
+            return openPDF(file).use { source ->
+                BibleImportPreview(ImportedFileFormat.PDF, suggestedIdentity(source, file), source.pageCount)
+            }
+        }
+        return preview(open(file))
+    }
 
     /**
      * Reads the file's scripture without writing anything — for callers that want to show the coverage
      * report before committing.
      */
     fun read(file: File): Pair<ExtractedBible, BibleImportPreview> {
+        if (isPDF(file)) {
+            return openPDF(file).use { source ->
+                val bible = PDFBibleReader(options).extract(source)
+                bible to BibleImportPreview(ImportedFileFormat.PDF, suggestedIdentity(source, file), source.pageCount)
+            }
+        }
         val zip = open(file)
         return when (format(zip)) {
             ImportedFileFormat.EPUB -> {
                 val pkg = EPUBPackage(zip)
                 val bible = BibleTextExtractor(options).extract(pkg)
-                bible to BibleImportPreview(ImportedFileFormat.EPUB, ImportedTranslationIdentity.suggested(pkg.metadata), pkg.spine.size)
+                bible.study.publisher = pkg.metadata.publisher
+                bible to BibleImportPreview(ImportedFileFormat.EPUB, suggestedIdentity(pkg), pkg.spine.size)
             }
             ImportedFileFormat.USFM_ZIP -> {
                 val pkg = USFMPackage(zip)
                 val bible = USFMImporter(options).extract(pkg)
                 bible to BibleImportPreview(ImportedFileFormat.USFM_ZIP, ImportedTranslationIdentity.suggested(pkg.metadata), pkg.files.size)
             }
+            // `format` reads ZIP containers only; a PDF is caught before a ZIP is opened.
+            ImportedFileFormat.PDF -> throw BibleImportError.NotAZipArchive()
         }
     }
 
     /**
      * Reads the file and writes the store. [identity] overrides what the file said about itself — the
      * import sheet is expected to pass the name and copyright line the user confirmed.
+     *
+     * [redLetters] reads a verse (text and red spans, in scalars) from a translation that marks the
+     * words of Christ, to carry them over when the file marks none of its own ([inferRedLetters]).
+     * Verses that don't align with it are left as they are.
      */
-    fun importBible(file: File, identity: ImportedTranslationIdentity? = null, directory: File): BibleImportResult {
+    fun importBible(
+        file: File,
+        identity: ImportedTranslationIdentity? = null,
+        directory: File,
+        redLetters: ((VerseRef) -> Pair<String, List<ScalarSpan>>?)? = null,
+    ): BibleImportResult {
         val (bible, preview) = read(file)
+        if (redLetters != null && options.redLetters) bible.inferRedLetters(redLetters)
         val chosen = identity ?: preview.identity
         val storeFile = File(directory, storeFilename(chosen))
         val report = ImportedBibleBuilder.write(bible, chosen, storeFile, openStore)
@@ -102,19 +136,25 @@ class BibleFileImporter(
         return ZipReader(data)
     }
 
+    private fun openPDF(file: File): PdfTextSource {
+        val opener = openPdf ?: throw BibleImportError.UnsupportedFormat(AppText.get(R.string.data_import_detail_pdf_unreadable))
+        return opener.open(file)
+    }
+
     private fun preview(zip: ZipReader): BibleImportPreview = when (format(zip)) {
         ImportedFileFormat.EPUB -> {
             val pkg = EPUBPackage(zip)
-            BibleImportPreview(ImportedFileFormat.EPUB, ImportedTranslationIdentity.suggested(pkg.metadata), pkg.spine.size)
+            BibleImportPreview(ImportedFileFormat.EPUB, suggestedIdentity(pkg), pkg.spine.size)
         }
         ImportedFileFormat.USFM_ZIP -> {
             val pkg = USFMPackage(zip)
             BibleImportPreview(ImportedFileFormat.USFM_ZIP, ImportedTranslationIdentity.suggested(pkg.metadata), pkg.files.size)
         }
+        ImportedFileFormat.PDF -> throw BibleImportError.NotAZipArchive()
     }
 
     companion object {
-        /** `IMPORT-XXXX.sqlite`, beside the bundled `ASV.sqlite` naming but never colliding with it. */
+        /** `IMPORT-XXXX.sqlite`, named like the bundled stores but never colliding with one. */
         fun storeFilename(identity: ImportedTranslationIdentity): String {
             val characters = SwiftCharacters(identity.id)
             val safe = buildString {
@@ -125,6 +165,85 @@ class BibleFileImporter(
                 }
             }
             return safe.ifEmpty { "IMPORT" } + ".sqlite"
+        }
+
+        // MARK: - Recognising the translation
+
+        /**
+         * What the file says about itself, plus the translation its copyright page names.
+         *
+         * A study Bible is titled for the study Bible rather than the translation, and its metadata often
+         * says only "All rights reserved"; the translation — and so the terms a quotation from it is held
+         * to — is named on the copyright page. The name is kept; the abbreviation becomes the
+         * translation's, and a generic rights line gives way to the publisher's own notice.
+         */
+        internal fun suggestedIdentity(pkg: EPUBPackage): ImportedTranslationIdentity {
+            val identity = ImportedTranslationIdentity.suggested(pkg.metadata)
+            if (PublisherTerms.matching(identity.abbreviation, identity.name, identity.copyright) != null) return identity
+            val terms = recognizedTerms(pkg) ?: return identity
+            return identity.copy(
+                abbreviation = terms.abbreviation,
+                copyright = if (SwiftText.characterCount(identity.copyright) < 60) terms.notice else identity.copyright,
+            )
+        }
+
+        private val tags = Regex("<[^>]+>")
+
+        /**
+         * The first front-matter page naming a known translation: pages whose file name says
+         * "copyright" or "rights" first, then the opening pages of the book.
+         */
+        internal fun recognizedTerms(pkg: EPUBPackage): PublisherTerms? {
+            val front = pkg.spine.take(16)
+            val likely = front.filter { item ->
+                val name = item.path.lowercase()
+                name.contains("copy") || name.contains("rights") || name.contains("legal")
+            }
+            for (item in likely + front.filter { it !in likely }) {
+                val xhtml = try {
+                    pkg.document(item)
+                } catch (_: BibleImportError) {
+                    continue
+                }
+                val text = xhtml.replace(tags, " ")
+                if (!text.contains("copyright", ignoreCase = true) && !text.contains('©')) continue
+                PublisherTerms.matching(text)?.let { return it }
+            }
+            return null
+        }
+
+        // MARK: - PDF
+
+        /** By content, not extension: a PDF starts with "%PDF-". */
+        internal fun isPDF(file: File): Boolean = try {
+            file.inputStream().use { input ->
+                val head = ByteArray(5)
+                input.read(head) == 5 && String(head, Charsets.US_ASCII) == "%PDF-"
+            }
+        } catch (_: IOException) {
+            false
+        }
+
+        /**
+         * A PDF rarely names itself usefully (its title is often the layout file's). The translation its
+         * copyright page names is the better name; the document title, then the file name, follow.
+         */
+        internal fun suggestedIdentity(source: PdfTextSource, file: File): ImportedTranslationIdentity {
+            val front = PDFBibleReader.frontMatter(source)
+            val title = source.title?.let(SwiftText::trimWhitespaceAndNewlines)?.ifEmpty { null }
+            val terms = PublisherTerms.matching(front)
+            val name = terms?.markers?.first() ?: title ?: file.nameWithoutExtension.replace("_", " ")
+            val copyrightLine = front.split('\n')
+                .map { SwiftText.trimWhitespace(it.replace("\u00AD", "")) }
+                .firstOrNull { it.contains('©') || it.contains("copyright ", ignoreCase = true) }
+            return ImportedTranslationIdentity(
+                id = ImportedTranslationIdentity.identifier((title ?: "") + name + (terms?.abbreviation ?: "")),
+                name = name,
+                abbreviation = terms?.abbreviation ?: ImportedTranslationIdentity.abbreviation(name),
+                copyright = terms?.notice ?: copyrightLine ?: "",
+                license = ImportedTranslationIdentity.UNKNOWN_LICENSE,
+                source = "Imported PDF",
+            )
         }
 
         /**

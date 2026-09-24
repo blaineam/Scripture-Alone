@@ -125,7 +125,7 @@ fun NotesExportSheet(
             SwitchRow(stringResource(R.string.export_include_verses), includeVerses && allowed, palette, enabled = allowed) { includeVerses = it }
             if (includeVerses && allowed) {
                 PanelSeparator(palette)
-                FormPicker(stringResource(R.string.export_translation), translations, info, { "${it.id} — ${it.name}" }, palette) { translation = it.id }
+                FormPicker(stringResource(R.string.export_translation), translations, info, { "${it.abbreviation} — ${it.name}" }, palette) { translation = it.id }
             }
         }
         if (allowed) {
@@ -136,7 +136,7 @@ fun NotesExportSheet(
                 palette,
             )
             PanelGroup(palette, Modifier.padding(top = 14.dp)) {
-                FormPicker(stringResource(R.string.export_translation), translations, info, { "${it.id} — ${it.name}" }, palette) { translation = it.id }
+                FormPicker(stringResource(R.string.export_translation), translations, info, { "${it.abbreviation} — ${it.name}" }, palette) { translation = it.id }
             }
         }
 
@@ -185,7 +185,7 @@ internal fun build(context: Context, notes: List<KeepsakeNote>, title: String, f
     } else {
         { null }
     }
-    val notice = quoted?.let { TranslationRights.attributionNotice(it.license, it.copyright) }
+    val notice = quoted?.attributionNotice
     val options = NotesTextExport.Options(title = title, translation = quoted?.abbreviation, notice = notice)
     val base = ExportSupport.safeName(title)
     return when (format) {

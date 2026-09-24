@@ -25,6 +25,7 @@ import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.search.SearchHit
 import com.blainemiller.scripturealone.data.search.VerseSearch
 import com.blainemiller.scripturealone.data.sql.BundledSqlSource
+import com.blainemiller.scripturealone.data.study.ImportedStudyLibrary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -130,7 +131,9 @@ object TranslationLibrary {
         // A store replaced by a re-import must be re-opened, not read through its old connection.
         openImported.values.forEach { it.close() }
         openImported.clear()
-        _state.value = _state.value.copy(imported = imported)
+        publish(imported, allOnline)
+        // A study Bible's notes and pictures live in its store: they come and go with it.
+        ImportedStudyLibrary.reload(imported)
     }
 
     @Synchronized
@@ -163,7 +166,35 @@ object TranslationLibrary {
             if (keys.hasKey(OnlineProvider.CROSSWAY)) add(OnlineEntry.ESV)
             if (keys.hasKey(OnlineProvider.API_BIBLE)) addAll(rememberedPicks())
         }.filter { it.id !in BundledTranslations.bundled }.distinctBy { it.id }
-        _state.value = _state.value.copy(online = online)
+        publish(_state.value.imported, online)
+    }
+
+    /** Every online translation the reader's keys unlock, including any an import now stands in for. */
+    private var allOnline: List<OnlineEntry> = emptyList()
+
+    /**
+     * A translation the reader imported is theirs, on the device, with nothing to fetch: the same
+     * translation behind an online key isn't offered beside it (`ReaderModel.rebuildTranslations`).
+     */
+    @Synchronized
+    private fun publish(imported: List<ImportedTranslation>, online: List<OnlineEntry>) {
+        allOnline = online
+        _state.value = State(imported, online.filter { entry -> imported.none { sameTranslation(it.info, entry) } })
+    }
+
+    /** The imported translation that now stands in for online translation [id], when one does. */
+    fun importedReplacing(id: String): String? {
+        val hidden = allOnline.firstOrNull { it.id == id } ?: return null
+        if (_state.value.online.any { it.id == id }) return null
+        return _state.value.imported.firstOrNull { sameTranslation(it.info, hidden) }?.id
+    }
+
+    /** Two entries for one translation: the same abbreviation, or the same name. */
+    fun sameTranslation(imported: TranslationInfo, online: OnlineEntry): Boolean {
+        fun key(text: String) = text.uppercase().filter { it.isLetterOrDigit() }
+        val abbreviation = key(imported.abbreviation)
+        return (abbreviation.isNotEmpty() && abbreviation == key(online.translation.abbreviation)) ||
+            imported.name.equals(online.name, ignoreCase = true)
     }
 
     /**
@@ -273,6 +304,8 @@ class FileChapterSource(
     override fun contains(ref: ChapterRef): Boolean = StoreChapters.layoutJson(source, ref) != null
 
     override fun chapter(ref: ChapterRef): Chapter = StoreChapters.chapter(source, info, ref)
+
+    override fun verseCount(ref: ChapterRef): Int = StoreChapters.verseCount(source, ref)
 
     /** The FTS5 index the importer wrote (`BundledStoreWriter`), the same one a bundled store carries. */
     override fun search(query: String, limit: Int): List<SearchHit> =
