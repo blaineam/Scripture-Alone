@@ -260,12 +260,18 @@ dependencies {
     implementation("androidx.camera:camera-view:$cameraX")
     implementation("androidx.camera:camera-mlkit-vision:$cameraX")
     implementation("com.google.mlkit:text-recognition:16.0.1")
+    // PDF import (data/importer/PDFBibleReader.kt): the text layer of a Bible PDF — each glyph with its
+    // font, size and position — which Android has no API for. Apache PDFBox's Android port, Apache-2.0,
+    // pure Java; only text extraction is used. The JVM tests read the same glyphs through PDFBox itself.
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     // Reads ASV.sqlite — the plaintext the sealed ASV was built from — as the tests' ground truth.
     testImplementation("org.xerial:sqlite-jdbc:3.46.1.3")
+    // The PDF reader's glyphs on the JVM: the PDFBox release pdfbox-android is ported from.
+    testImplementation("org.apache.pdfbox:pdfbox:2.0.27")
     androidTestImplementation(composeBom)
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")

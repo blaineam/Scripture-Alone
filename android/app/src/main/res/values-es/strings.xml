@@ -210,7 +210,7 @@
     <string name="translations_online_note">Leer por la red</string>
     <string name="translations_section_added">Añadidas por ti</string>
     <string name="translations_section_add">Añadir una traducción</string>
-    <string name="translations_section_add_footer">Las traducciones gratuitas provienen de eBible.org y no se descarga nada hasta que eliges una. Un archivo puede ser un zip USFM o un ePub de tu propiedad; se rechaza todo lo protegido contra copia. Nadie puede regalar la ESV, CSB, NASB ni NKJV, así que se leen por la red con tu propia clave gratuita.</string>
+    <string name="translations_section_add_footer">Las traducciones gratuitas proceden de eBible.org y no se descarga nada hasta que eliges una. Un archivo puede ser un zip USFM, un ePub o un PDF de tu propiedad; se rechaza todo lo que tenga protección anticopia. Las traducciones que nadie puede regalar se leen por la red con tu propia clave gratuita.</string>
     <string name="translations_browse_free">Ver traducciones gratuitas…</string>
     <string name="translations_import_file">Importar un archivo…</string>
     <string name="translations_online_keys">Traducciones en línea…</string>
@@ -755,7 +755,7 @@
     <string name="data_import_not_an_epub">Ese archivo no es un ePub legible: %1$s</string>
     <string name="data_import_unsupported_format">Esta app no puede leer ese archivo: %1$s</string>
     <string name="data_import_protected_by_drm">%1$s Esta app no puede abrir archivos protegidos.</string>
-    <string name="data_import_no_scripture_found">No se encontró texto bíblico en ese ePub.</string>
+    <string name="data_import_no_scripture_found">No se encontró texto bíblico en ese archivo.</string>
     <string name="data_import_missing_copyright">Ese ePub no incluye línea de copyright. Introduce el aviso de copyright de la editorial para continuar.</string>
     <string name="data_import_database_write">No se pudo guardar el texto importado: %1$s</string>
     <string name="data_import_drm_encryption_manifest">Ese ePub está cifrado (incluye un manifiesto de cifrado).</string>
@@ -873,4 +873,7 @@
     <string name="translations_quoting_unrecognised">No reconocida: hasta %1$d versículos</string>
     <string name="translations_quoting_terms_limit">Condiciones de la editorial: hasta %1$d versículos</string>
     <string name="translations_quoting_terms_unlimited">Condiciones de la editorial: sin límite de versículos</string>
+    <string name="data_import_drm_pdf_password">Ese PDF está bloqueado con contraseña.</string>
+    <string name="data_import_drm_pdf_copy_protected">El propietario de ese PDF no permite copiar su texto.</string>
+    <string name="data_import_detail_pdf_unreadable">no se pudo abrir el PDF</string>
 </resources>

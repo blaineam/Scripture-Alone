@@ -642,10 +642,10 @@ internal class DocumentScanner(
             val output = StringBuilder(raw.length)
             var pendingSpace = false
             for (i in 0 until characters.count) {
-                // A soft hyphen is a hint for where a line may break, not text. Left in, "be­ginning"
+                // A soft hyphen is a hint for where a line may break, not text. Left in, "be\u00ADginning"
                 // no longer matches a search for "beginning" (FTS5's tokenizer splits on it).
-                if (characters.isChar(i, '­')) continue
-                if (characters.isWhitespace(i) || characters.isChar(i, ' ')) {
+                if (characters.isChar(i, '\u00AD')) continue
+                if (characters.isWhitespace(i) || characters.isChar(i, '\u00A0')) {
                     pendingSpace = true
                     continue
                 }
@@ -699,7 +699,7 @@ internal class DocumentScanner(
             return output.toString()
         }
 
-        private val bridgeSeparators = setOf('-', '‐', '‑', '‒', '–', '—')
+        private val bridgeSeparators = setOf('-', '\u2010', '\u2011', '\u2012', '–', '—')
 
         /**
          * "12", "[12]", "1-2", "1–2" — a verse number, and the last number of a bridged pair. A dangling
@@ -738,7 +738,7 @@ internal class DocumentScanner(
             return label.lowercase() !in setOf("st", "nd", "rd", "th")
         }
 
-        private const val NUMBER_TRIM = "  [](){}.,:;·•*​\n\t"
+        private const val NUMBER_TRIM = " \u00A0[](){}.,:;\u00B7\u2022*\u200B\n\t"
 
         private fun isNumberTrim(cp: Int): Boolean = cp < 0x10000 && NUMBER_TRIM.indexOf(cp.toChar()) >= 0
 

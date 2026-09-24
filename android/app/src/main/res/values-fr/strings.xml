@@ -210,7 +210,7 @@
     <string name="translations_online_note">Lecture via le réseau</string>
     <string name="translations_section_added">Ajoutées par vous</string>
     <string name="translations_section_add">Ajouter une traduction</string>
-    <string name="translations_section_add_footer">Les traductions gratuites proviennent d\'eBible.org, et rien n\'est téléchargé avant votre choix. Un fichier peut être un zip USFM ou un ePub vous appartenant — tout contenu protégé contre la copie est refusé. L\'ESV, la CSB, la NASB et la NKJV ne peuvent être cédées par personne : elles se lisent via le réseau avec votre propre clé gratuite.</string>
+    <string name="translations_section_add_footer">Les traductions gratuites proviennent d’eBible.org, et rien n’est téléchargé avant que vous en choisissiez une. Un fichier peut être un zip USFM, un ePub ou un PDF qui vous appartient — tout ce qui est protégé contre la copie est refusé. Les traductions que personne ne peut distribuer sont lues par le réseau avec votre propre clé gratuite.</string>
     <string name="translations_browse_free">Parcourir les traductions gratuites…</string>
     <string name="translations_import_file">Importer un fichier…</string>
     <string name="translations_online_keys">Traductions en ligne…</string>
@@ -755,7 +755,7 @@
     <string name="data_import_not_an_epub">Ce fichier n\'est pas un ePub lisible : %1$s</string>
     <string name="data_import_unsupported_format">Cette app ne peut pas lire ce fichier : %1$s</string>
     <string name="data_import_protected_by_drm">%1$s Cette app ne peut pas ouvrir de fichiers protégés.</string>
-    <string name="data_import_no_scripture_found">Aucun texte biblique trouvé dans cet ePub.</string>
+    <string name="data_import_no_scripture_found">Aucun texte biblique n’a été trouvé dans ce fichier.</string>
     <string name="data_import_missing_copyright">Cet ePub ne porte aucune mention de copyright. Saisissez celle de l\'éditeur pour continuer.</string>
     <string name="data_import_database_write">Impossible d\'enregistrer le texte importé : %1$s</string>
     <string name="data_import_drm_encryption_manifest">Cet ePub est chiffré (il porte un manifeste de chiffrement).</string>
@@ -873,4 +873,7 @@
     <string name="translations_quoting_unrecognised">Non reconnue — jusqu’à %1$d versets</string>
     <string name="translations_quoting_terms_limit">Conditions de l’éditeur — au maximum %1$d versets</string>
     <string name="translations_quoting_terms_unlimited">Conditions de l’éditeur — sans limite de versets</string>
+    <string name="data_import_drm_pdf_password">Ce PDF est verrouillé par un mot de passe.</string>
+    <string name="data_import_drm_pdf_copy_protected">Le propriétaire de ce PDF n’autorise pas la copie de son texte.</string>
+    <string name="data_import_detail_pdf_unreadable">le PDF n’a pas pu être ouvert</string>
 </resources>

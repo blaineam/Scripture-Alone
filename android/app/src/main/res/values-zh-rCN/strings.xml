@@ -210,7 +210,7 @@
     <string name="translations_online_note">通过网络阅读</string>
     <string name="translations_section_added">你添加的</string>
     <string name="translations_section_add">添加译本</string>
-    <string name="translations_section_add_footer">免费译本来自 eBible.org，在你选择之前不会下载任何内容。文件可以是 USFM 压缩包或你拥有的 ePub —— 带版权保护的文件会被拒绝。ESV、CSB、NASB 和 NKJV 任何人都无权分发，因此需用你自己的免费密钥通过网络阅读。</string>
+    <string name="translations_section_add_footer">免费译本来自 eBible.org，在你选择之前不会下载任何内容。文件可以是你拥有的 USFM 压缩包、ePub 或 PDF——任何有复制保护的文件都会被拒绝。任何人都不能分发的译本，会用你自己的免费密钥通过网络读取。</string>
     <string name="translations_browse_free">浏览免费译本…</string>
     <string name="translations_import_file">导入文件…</string>
     <string name="translations_online_keys">在线译本…</string>
@@ -755,7 +755,7 @@
     <string name="data_import_not_an_epub">该文件不是可读取的 ePub：%1$s</string>
     <string name="data_import_unsupported_format">此应用无法读取该文件：%1$s</string>
     <string name="data_import_protected_by_drm">%1$s 此应用无法打开受保护的文件。</string>
-    <string name="data_import_no_scripture_found">该 ePub 中未找到圣经文本。</string>
+    <string name="data_import_no_scripture_found">未在此文件中找到圣经文本。</string>
     <string name="data_import_missing_copyright">该 ePub 未包含版权声明。请输入出版方的版权声明以继续。</string>
     <string name="data_import_database_write">无法保存导入的文本：%1$s</string>
     <string name="data_import_drm_encryption_manifest">该 ePub 已加密（含有加密清单）。</string>
@@ -873,4 +873,7 @@
     <string name="translations_quoting_unrecognised">未识别 — 最多 %1$d 节</string>
     <string name="translations_quoting_terms_limit">出版方条款 — 最多 %1$d 节</string>
     <string name="translations_quoting_terms_unlimited">出版方条款 — 无节数限制</string>
+    <string name="data_import_drm_pdf_password">此 PDF 已用密码锁定。</string>
+    <string name="data_import_drm_pdf_copy_protected">此 PDF 的所有者不允许复制其文本。</string>
+    <string name="data_import_detail_pdf_unreadable">无法打开该 PDF</string>
 </resources>

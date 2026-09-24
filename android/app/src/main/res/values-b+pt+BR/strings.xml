@@ -210,7 +210,7 @@
     <string name="translations_online_note">Leitura pela rede</string>
     <string name="translations_section_added">Adicionadas por você</string>
     <string name="translations_section_add">Adicionar tradução</string>
-    <string name="translations_section_add_footer">As traduções gratuitas vêm do eBible.org, e nada é baixado até você escolher uma. O arquivo pode ser um zip USFM ou um ePub seu — qualquer coisa com proteção de cópia é recusada. ESV, CSB, NASB e NKJV não podem ser distribuídas por ninguém, então são lidas pela rede com sua própria chave gratuita.</string>
+    <string name="translations_section_add_footer">As traduções gratuitas vêm do eBible.org, e nada é baixado até você escolher uma. Um arquivo pode ser um zip USFM, um ePub ou um PDF seu — qualquer coisa protegida contra cópia é recusada. Traduções que ninguém pode distribuir são lidas pela rede com a sua própria chave gratuita.</string>
     <string name="translations_browse_free">Ver traduções gratuitas…</string>
     <string name="translations_import_file">Importar arquivo…</string>
     <string name="translations_online_keys">Traduções online…</string>
@@ -755,7 +755,7 @@
     <string name="data_import_not_an_epub">Esse arquivo não é um ePub legível: %1$s</string>
     <string name="data_import_unsupported_format">Este app não consegue ler esse arquivo: %1$s</string>
     <string name="data_import_protected_by_drm">%1$s Este app não abre arquivos protegidos.</string>
-    <string name="data_import_no_scripture_found">Nenhum texto bíblico foi encontrado nesse ePub.</string>
+    <string name="data_import_no_scripture_found">Nenhum texto bíblico foi encontrado nesse arquivo.</string>
     <string name="data_import_missing_copyright">Esse ePub não traz linha de copyright. Digite o aviso de copyright da editora para continuar.</string>
     <string name="data_import_database_write">Não foi possível salvar o texto importado: %1$s</string>
     <string name="data_import_drm_encryption_manifest">Esse ePub está criptografado (traz um manifesto de criptografia).</string>
@@ -873,4 +873,7 @@
     <string name="translations_quoting_unrecognised">Não reconhecida — até %1$d versículos</string>
     <string name="translations_quoting_terms_limit">Termos da editora — até %1$d versículos</string>
     <string name="translations_quoting_terms_unlimited">Termos da editora — sem limite de versículos</string>
+    <string name="data_import_drm_pdf_password">Esse PDF está bloqueado por senha.</string>
+    <string name="data_import_drm_pdf_copy_protected">O proprietário desse PDF não permite copiar o texto.</string>
+    <string name="data_import_detail_pdf_unreadable">não foi possível abrir o PDF</string>
 </resources>

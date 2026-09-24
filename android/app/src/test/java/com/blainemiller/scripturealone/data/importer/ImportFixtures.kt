@@ -214,7 +214,8 @@ object ImportFixtures {
     /** The store writer the tests use: JDBC, where the app uses the bundled driver. */
     val jdbcWriter = ImportedStoreWriter.Opener { file -> JdbcStoreWriter(file) }
 
-    fun importer(options: BibleTextExtractor.Options = BibleTextExtractor.Options()) = BibleFileImporter(jdbcWriter, options)
+    fun importer(options: BibleTextExtractor.Options = BibleTextExtractor.Options()) =
+        BibleFileImporter(jdbcWriter, options, JvmPdfTextSource.opener)
 }
 
 /** [ImportedStoreWriter] over JDBC (sqlite-jdbc bundles FTS5, as the app's bundled driver does). */

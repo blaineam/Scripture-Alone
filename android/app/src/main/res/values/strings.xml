@@ -407,7 +407,7 @@
     <!-- Section header: translations the reader imported or downloaded. -->
     <string name="translations_section_added">Added by You</string>
     <string name="translations_section_add">Add a Translation</string>
-    <string name="translations_section_add_footer">Free translations come from eBible.org, and nothing is downloaded until you choose one. A file can be a USFM zip or an ePub you own — anything copy-protected is refused. The ESV, CSB, NASB and NKJV can\'t be given away by anyone, so they\'re read over the network with your own free key.</string>
+    <string name="translations_section_add_footer">Free translations come from eBible.org, and nothing is downloaded until you choose one. A file can be a USFM zip, an ePub or a PDF you own — anything copy-protected is refused. Translations that can\'t be given away are read over the network with your own free key.</string>
     <string name="translations_browse_free">Browse Free Translations…</string>
     <string name="translations_import_file">Import a File…</string>
     <!-- Row that opens the page for the reader’s own API keys. -->
@@ -1395,7 +1395,7 @@
     <string name="data_import_unsupported_format">This app can’t read that file: %1$s</string>
     <!-- Error. %1$s is a sentence saying how the file is protected. -->
     <string name="data_import_protected_by_drm">%1$s This app cannot open protected files.</string>
-    <string name="data_import_no_scripture_found">No Bible text was found in that ePub.</string>
+    <string name="data_import_no_scripture_found">No Bible text was found in that file.</string>
     <string name="data_import_missing_copyright">That ePub carries no copyright line. Enter the publisher’s copyright notice to continue.</string>
     <!-- Error. %1$s is a technical detail. -->
     <string name="data_import_database_write">Couldn’t save the imported text: %1$s</string>
@@ -1608,4 +1608,7 @@
     <string name="translations_quoting_unrecognised">Not recognised — up to %1$d verses</string>
     <string name="translations_quoting_terms_limit">Publisher’s terms — up to %1$d verses</string>
     <string name="translations_quoting_terms_unlimited">Publisher’s terms — no verse limit</string>
+    <string name="data_import_drm_pdf_password">That PDF is locked with a password.</string>
+    <string name="data_import_drm_pdf_copy_protected">That PDF’s owner doesn’t allow its text to be copied.</string>
+    <string name="data_import_detail_pdf_unreadable">the PDF could not be opened</string>
 </resources>

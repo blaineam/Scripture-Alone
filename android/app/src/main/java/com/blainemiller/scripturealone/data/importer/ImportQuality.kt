@@ -65,7 +65,7 @@ class ImportQuality internal constructor(bible: ExtractedBible, books: List<Impo
 
         fun looksClean(text: String): Boolean {
             if (text.isEmpty() || SwiftText.characterCount(text) > 1500) return false
-            if (text.contains('­') || text.contains('�') || text.contains("  ")) return false
+            if (text.contains('\u00AD') || text.contains('\uFFFD') || text.contains("  ")) return false
             var index = 0
             while (index < text.length) {
                 val cp = text.codePointAt(index)

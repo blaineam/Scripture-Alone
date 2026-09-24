@@ -93,7 +93,13 @@ enum class DRMEvidence(val rawValue: String, @StringRes private val explanationR
     APPLE_FAIRPLAY("appleFairPlay", R.string.data_import_drm_apple_fairplay),
 
     /** The ZIP's own entry-encryption bit is set. */
-    ZIP_ENTRY_ENCRYPTION("zipEntryEncryption", R.string.data_import_drm_zip_entry_encryption);
+    ZIP_ENTRY_ENCRYPTION("zipEntryEncryption", R.string.data_import_drm_zip_entry_encryption),
+
+    /** A PDF that needs a password to open. */
+    PDF_PASSWORD("pdfPassword", R.string.data_import_drm_pdf_password),
+
+    /** A PDF whose owner forbids copying its text. */
+    PDF_COPY_PROTECTED("pdfCopyProtected", R.string.data_import_drm_pdf_copy_protected);
 
     /** Why the file is refused, in the reader's language. */
     val explanation: String get() = AppText.get(explanationRes)

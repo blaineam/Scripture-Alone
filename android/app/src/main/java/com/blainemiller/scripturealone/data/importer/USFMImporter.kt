@@ -673,7 +673,7 @@ internal class USFMBookParser(private val options: BibleTextExtractor.Options, p
             "wj" to StyledSpan.Style.WORDS_OF_CHRIST, "add" to StyledSpan.Style.SUPPLIED, "nd" to StyledSpan.Style.SMALL_CAPS,
         )
 
-        private val verseSeparators = listOf('-', '‐', '‑', '‒', '–', '—', ',')
+        private val verseSeparators = listOf('-', '\u2010', '\u2011', '\u2012', '–', '—', ',')
 
         /** The `\id` code at the top of a USFM file. */
         fun bookCode(source: String): String? {

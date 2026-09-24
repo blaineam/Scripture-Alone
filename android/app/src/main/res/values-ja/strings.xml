@@ -210,7 +210,7 @@
     <string name="translations_online_note">ネットワーク経由で読む</string>
     <string name="translations_section_added">自分で追加</string>
     <string name="translations_section_add">翻訳を追加</string>
-    <string name="translations_section_add_footer">無料の翻訳は eBible.org から提供され、選ぶまで何もダウンロードされません。ファイルは USFM の zip か、所有する ePub が使えます。コピー保護されたものは受け付けません。ESV、CSB、NASB、NKJV は誰も配布できないため、ご自身の無料キーでネットワーク経由で読みます。</string>
+    <string name="translations_section_add_footer">無料の翻訳は eBible.org から提供され、選ぶまで何もダウンロードされません。ファイルは USFM の zip、ePub、または PDF で、あなたが所有するものです。コピー保護されたものは受け付けません。誰も配布できない翻訳は、あなた自身の無料キーを使ってネットワーク経由で読み込みます。</string>
     <string name="translations_browse_free">無料の翻訳を見る…</string>
     <string name="translations_import_file">ファイルを読み込む…</string>
     <string name="translations_online_keys">オンライン翻訳…</string>
@@ -755,7 +755,7 @@
     <string name="data_import_not_an_epub">このファイルは読み取れる ePub ではありません: %1$s</string>
     <string name="data_import_unsupported_format">このファイルは読み込めません: %1$s</string>
     <string name="data_import_protected_by_drm">%1$s 保護されたファイルは開けません。</string>
-    <string name="data_import_no_scripture_found">この ePub に聖書本文が見つかりませんでした。</string>
+    <string name="data_import_no_scripture_found">このファイルに聖書本文が見つかりませんでした。</string>
     <string name="data_import_missing_copyright">この ePub には著作権表示がありません。続けるには発行元の著作権表示を入力してください。</string>
     <string name="data_import_database_write">読み込んだ本文を保存できませんでした: %1$s</string>
     <string name="data_import_drm_encryption_manifest">この ePub は暗号化されています（暗号化マニフェストがあります）。</string>
@@ -873,4 +873,7 @@
     <string name="translations_quoting_unrecognised">不明 — 最大%1$d節</string>
     <string name="translations_quoting_terms_limit">出版社の規定 — 最大 %1$d 節</string>
     <string name="translations_quoting_terms_unlimited">出版社の規定 — 節数の制限なし</string>
+    <string name="data_import_drm_pdf_password">この PDF はパスワードでロックされています。</string>
+    <string name="data_import_drm_pdf_copy_protected">この PDF の所有者はテキストのコピーを許可していません。</string>
+    <string name="data_import_detail_pdf_unreadable">PDF を開けませんでした</string>
 </resources>

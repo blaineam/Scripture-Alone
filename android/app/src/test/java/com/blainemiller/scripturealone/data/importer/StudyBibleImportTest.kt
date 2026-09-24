@@ -263,7 +263,7 @@ class StudyBibleImportTest {
 
     @Test fun cleanTextIsTold() {
         assertTrue(ImportQuality.looksClean("In the beginning God created the heaven and the earth."))
-        assertFalse(ImportQuality.looksClean("In the begin­ning"))
+        assertFalse(ImportQuality.looksClean("In the begin\u00ADning"))
         assertFalse(ImportQuality.looksClean("the earth.And God"))
         assertFalse(ImportQuality.looksClean("the  earth"))
         assertFalse(ImportQuality.looksClean("the heavenAnd the earth"))

@@ -91,6 +91,7 @@ import com.blainemiller.scripturealone.data.importer.BibleImportResult
 import com.blainemiller.scripturealone.data.importer.BundledStoreWriter
 import com.blainemiller.scripturealone.data.importer.ImportCoverageReport
 import com.blainemiller.scripturealone.data.importer.ImportedTranslationIdentity
+import com.blainemiller.scripturealone.data.importer.PdfBoxTextSource
 import com.blainemiller.scripturealone.data.online.APIBibleClient
 import com.blainemiller.scripturealone.data.online.APIBibleTranslation
 import com.blainemiller.scripturealone.data.online.OnlineEntry
@@ -127,7 +128,7 @@ private enum class Page { MAIN, CATALOG, KEYS }
 /**
  * Every translation on the device, and the ways to add one — `TranslationsView.swift`: the three
  * that ship; the online ones the reader's keys unlock; the ones they added; then Browse Free
- * Translations (eBible.org), Import a File (a USFM zip or a DRM-free ePub, through the system file
+ * Translations (eBible.org), Import a File (a USFM zip, a DRM-free ePub or a PDF, through the system file
  * picker) and Online Translations (their own ESV / API.Bible key). About This Translation — which
  * iOS shows in its Appearance sheet — closes the list, with what the translation's terms allow.
  */
@@ -151,7 +152,7 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
                 runCatching {
                     // A file that marks no words of Christ can take them from a translation that
                     // does, when one is on the device (only verses that align closely are marked).
-                    BibleFileImporter(BundledStoreWriter.opener)
+                    BibleFileImporter(BundledStoreWriter.opener, openPdf = PdfBoxTextSource.opener(context))
                         .importBible(file, identity, TranslationLibrary.importedDirectory(context), RedLetterReference.lookup(context))
                 }.also {
                     if (cleanUp) file.delete()
@@ -219,7 +220,7 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
             else -> MainPage(
                 reader, palette, onClose,
                 onCatalog = { page = Page.CATALOG },
-                onImport = { picker.launch(arrayOf("application/zip", "application/epub+zip", "application/x-zip-compressed", "application/octet-stream")) },
+                onImport = { picker.launch(arrayOf("application/zip", "application/epub+zip", "application/x-zip-compressed", "application/pdf", "application/octet-stream")) },
                 onKeys = { page = Page.KEYS },
                 onRemove = { pendingRemoval = it },
             )
