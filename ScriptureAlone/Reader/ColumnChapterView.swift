@@ -12,7 +12,8 @@ enum ReaderColumns {
         guard height >= 360 else { return 1 }
         let column = fontSize * 18
         let fitted = Int(((width - margin * 2 + gutter) / (column + gutter)).rounded(.down))
-        return min(3, max(1, fitted))
+        // Two at most, like an open Bible's page: three read as a newspaper, not a Bible.
+        return min(2, max(1, fitted))
     }
 }
 
