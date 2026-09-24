@@ -1,7 +1,7 @@
 import SwiftUI
 import ScriptureAloneCore
 
-/// The Study mode tabs. `.context` (maps, timelines, charts) is drawn by `StudyContextView`.
+/// The Study mode tabs. `.context` (maps, timelines, charts) is drawn by `StudyContextBrowser`.
 enum StudyTab: String, CaseIterable, Identifiable {
     case crossReferences, commentary, context
 
@@ -179,7 +179,7 @@ struct StudyPanel: View {
         if study.tab == .commentary, study.store == nil, ImportedStudyLibrary.shared.isEmpty {
             commentaryDownload
         } else if study.tab == .context {
-            StudyContextView(chapter: study.verse?.chapterKey ?? model.location, verse: study.verse?.verse)
+            StudyContextBrowser(chapter: study.verse?.chapterKey ?? model.location, verse: study.verse?.verse)
         } else if let verse = study.verse {
             switch study.tab {
             case .crossReferences: CrossReferencesView(verse: verse)

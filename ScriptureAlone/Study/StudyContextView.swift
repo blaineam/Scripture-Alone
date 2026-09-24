@@ -82,6 +82,52 @@ struct StudyContextView: View {
     }
 }
 
+/// Study mode's Context tab: the same four views as the Maps & Timeline viewer — the chapter's
+/// overview, the map to explore, the whole timeline and the charts — switched in place, so the
+/// Study sheet holds all of it and the reader needs no separate map button.
+struct StudyContextBrowser: View {
+    let chapter: ChapterRef
+    let verse: Int?
+    @State private var tab = ContextViewerRequest.Tab.overview
+    /// A chart the overview asked for, opened on top.
+    @State private var chart: String?
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Picker("View", selection: $tab) {
+                ForEach(ContextViewerRequest.Tab.allCases) { tab in Text(tab.title).tag(tab) }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            Group {
+                switch tab {
+                case .overview:
+                    StudyContextView(chapter: chapter, verse: verse)
+                        .environment(\.contextViewerHandler, ContextViewerHandler { next in
+                            tab = next.tab
+                            chart = next.chartID
+                        })
+                case .map: ContextMapExplorer(chapter: chapter)
+                case .timeline: FullTimelineView(chapter: chapter)
+                case .charts: ChartsList(chapter: chapter)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .navigationDestination(for: String.self) { id in chartView(id) }
+        .navigationDestination(item: $chart) { id in chartView(id) }
+    }
+
+    @ViewBuilder
+    private func chartView(_ id: String) -> some View {
+        if let chart = ContextLibrary.shared.charts.first(where: { $0.id == id }) {
+            ChartView(chart: chart, chapter: chapter)
+        }
+    }
+}
+
 #Preview {
     StudyContextView(chapter: ChapterRef(.acts, 13), verse: nil)
 }

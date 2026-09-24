@@ -2,6 +2,10 @@
 
 ## After 1.0.0
 
+- On iPhone, Study's Context tab holds everything Maps & Timeline did — Overview, Map, Timeline
+  and Charts — so the reader's bottom bar loses its map button and sits balanced. The overview
+  map is a still picture (scrolling passes over it; a tap opens the Map view to explore). Study's
+  button is an open book.
 - Apple Watch wears the accent colour you chose on your iPhone, and has a Highlights list beside
   Favorites and Notes: every highlighted verse in Bible order, in its colour, a tap from reading.
 - The Verse of the Day widget reads in the translation you're reading even when it's one you

@@ -272,7 +272,7 @@ struct ReaderView: View {
                 study.turnOn(selection: model.selectedKJVKeys)
             }
         } label: {
-            Label("Study", systemImage: study.isOn ? "book.and.wrench.fill" : "book.and.wrench")
+            Label("Study", systemImage: study.isOn ? "book.pages.fill" : "book.pages")
         }
         .keyboardShortcut("s", modifiers: [.command, .option])
         .accessibilityValue(study.isOn ? "On" : "Off")

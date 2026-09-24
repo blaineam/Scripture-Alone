@@ -204,7 +204,7 @@ extension View {
     }
 }
 
-/// The reader's hooks into Study context: a "Maps & Timeline" toolbar button, keeping
+/// The reader's hooks into Study context: a "Maps & Timeline" toolbar button (iPad and Mac), keeping
 /// `ReadingFocus` current, and jumping when a map or chart asks to open a passage.
 struct ContextReaderHooks: ViewModifier {
     @Environment(ReaderModel.self) private var model
@@ -217,10 +217,11 @@ struct ContextReaderHooks: ViewModifier {
         content
             .toolbar {
                 #if os(iOS)
-                // A phone's top bar only has room for four controls beside the chapter name;
-                // a fifth squeezes the name out of the bar entirely, so Maps rides the bottom
-                // bar with the other reading tools there.
-                ToolbarItem(placement: horizontalSizeClass == .compact ? .bottomBar : .topBarTrailing) { button }
+                // On a phone the Study sheet's Context tab holds the maps, timeline and charts;
+                // iPad keeps the button, whose viewer opens in a window beside the text.
+                if horizontalSizeClass != .compact {
+                    ToolbarItem(placement: .topBarTrailing) { button }
+                }
                 #else
                 ToolbarItem(placement: .primaryAction) { button }
                 #endif

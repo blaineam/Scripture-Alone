@@ -64,6 +64,9 @@ struct BibleMapView: View {
     /// Change to re-frame the map on `content.fitRect`.
     var fitToken: AnyHashable = 0
     var showsControls = true
+    /// False for a map shown as a picture in a scrolling page: no panning or zooming to catch
+    /// the reader's scroll, no controls. Pins still answer a tap.
+    var interactive = true
     var onSelect: ((Int) -> Void)?
 
     @Environment(\.colorScheme) private var colorScheme
@@ -98,7 +101,7 @@ struct BibleMapView: View {
             }
         }
         .onChange(of: fitToken) { fit(animated: true) }
-        .gesture(pan.simultaneously(with: zoom))
+        .gesture(pan.simultaneously(with: zoom), including: interactive ? .all : .subviews)
         .simultaneousGesture(SpatialTapGesture().onEnded { value in
             if let id = hitTest(value.location) { onSelect?(id) }
         })
@@ -112,7 +115,7 @@ struct BibleMapView: View {
             }
         }
         .overlay(alignment: .bottomTrailing) {
-            if showsControls { controls.padding(10) }
+            if showsControls && interactive { controls.padding(10) }
         }
         .clipped()
     }

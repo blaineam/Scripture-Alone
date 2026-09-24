@@ -19,13 +19,15 @@ struct ContextWhereSection: View {
                 Button("Open the Map", systemImage: "map", action: openMap)
                     .font(.subheadline)
             } else {
+                // A picture of the chapter's places, so the page scrolls straight past it; the Map
+                // view is the one to pan and zoom, and a tap anywhere opens it.
                 BibleMapView(content: MapContent(pins: pins, selectedID: selectedPlace?.id,
                                                  fitRect: MapContent.fitRect(for: pins.filter { !$0.isArea || pins.count < 3 })),
-                             fitToken: chapter) { id in
-                    selectedPlace = mentions.first { $0.place.id == id }?.place
-                        ?? ((try? ContextLibrary.shared.store?.place(id: id)) ?? nil)
-                }
+                             fitToken: chapter, interactive: false)
                 .frame(height: 260)
+                .contentShape(.rect)
+                .onTapGesture(perform: openMap)
+                .accessibilityAddTraits(.isButton)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(alignment: .topTrailing) {
                     Button(action: openMap) {
