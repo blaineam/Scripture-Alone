@@ -161,6 +161,28 @@ struct StudyPanel: View {
         }
     }
 
+    /// The commentary pack offered in a single row, above an imported study Bible's notes.
+    private var commentaryDownloadBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "arrow.down.circle").foregroundStyle(.secondary)
+            Text(AssetPack.commentary.title).font(.callout)
+            Spacer(minLength: 8)
+            switch study.downloadState {
+            case .downloading(let fraction):
+                ProgressView(value: fraction).frame(width: 90)
+            case .failed:
+                Button("Try Again") { Task { await study.prepareStore() } }
+                    .buttonStyle(.bordered).controlSize(.small)
+            default:
+                Button("Download") { Task { await study.prepareStore() } }
+                    .buttonStyle(.bordered).controlSize(.small)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .background(.quaternary.opacity(0.5))
+    }
+
     @ViewBuilder
     private var content: some View {
         if study.tab == .commentary, study.store == nil, ImportedStudyLibrary.shared.isEmpty {
@@ -170,7 +192,13 @@ struct StudyPanel: View {
         } else if let verse = study.verse {
             switch study.tab {
             case .crossReferences: CrossReferencesView(verse: verse)
-            case .commentary: CommentaryView(verse: verse)
+            case .commentary:
+                VStack(spacing: 0) {
+                    // An imported study Bible fills this tab on its own; the bundled commentators
+                    // are still offered beside it until they are downloaded.
+                    if StudyLanguage.isEnglish, study.store == nil { commentaryDownloadBar }
+                    CommentaryView(verse: verse)
+                }
             case .context: EmptyView()
             }
         } else {

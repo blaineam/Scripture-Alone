@@ -2,6 +2,8 @@
 
 ## After 1.0.0
 
+- With an imported study Bible, the Commentary tab still offers the bundled commentators
+  (Calvin, Gill, and Jamieson, Fausset & Brown) to download, in a row above the study Bible's notes.
 - Fixed a crash opening Manage Translations on a Mac.
 - The iCloud record types for notes, highlights, favorites, family sharing and imported
   translations are now written down in `Tools/cloudkit/schema.ckdb`, to import with `cktool`.
