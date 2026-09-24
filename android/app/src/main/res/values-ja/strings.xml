@@ -255,6 +255,8 @@
     <string name="translations_summary_books">書</string>
     <string name="translations_summary_verses">節</string>
     <string name="translations_summary_clean">すべての書を正常に読み込みました。</string>
+    <string name="translations_summary_left_out">この翻訳が省いている節</string>
+    <string name="translations_summary_left_out_footer">これらの節は最古の写本にはありません。多くの現代訳では脚注にのみ記されているため、ファイルに欠けているものはありません。</string>
     <string name="translations_summary_gaps">欠落</string>
     <string name="translations_summary_gaps_footer">意図的に節を省く翻訳もあれば、ファイルが単に不完全な場合もあります。どちらの場合も取り込んだ分は読めます。</string>
     <string name="translations_summary_missing">このファイルにありません: %1$s</string>

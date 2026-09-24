@@ -255,6 +255,8 @@
     <string name="translations_summary_books">권</string>
     <string name="translations_summary_verses">절</string>
     <string name="translations_summary_clean">모든 권을 온전히 읽었습니다.</string>
+    <string name="translations_summary_left_out">이 번역본에서 생략된 구절</string>
+    <string name="translations_summary_left_out_footer">이 구절들은 가장 오래된 사본에 없습니다. 대부분의 현대 번역본은 각주로만 싣기 때문에, 파일에서 빠진 것은 없습니다.</string>
     <string name="translations_summary_gaps">누락</string>
     <string name="translations_summary_gaps_footer">일부 번역본은 실제로 절을 생략하며, 일부 파일은 그저 불완전합니다. 어느 쪽이든 가져온 내용은 읽을 수 있습니다.</string>
     <string name="translations_summary_missing">이 파일에 없음: %1$s</string>

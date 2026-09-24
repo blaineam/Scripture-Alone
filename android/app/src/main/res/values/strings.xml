@@ -483,6 +483,9 @@
     <!-- Row label: the number of verses imported. -->
     <string name="translations_summary_verses">Verses</string>
     <string name="translations_summary_clean">Every book read cleanly.</string>
+    <!-- Section header: verses the oldest manuscripts lack, which the imported translation prints only as footnotes. -->
+    <string name="translations_summary_left_out">Left Out by This Translation</string>
+    <string name="translations_summary_left_out_footer">These verses aren’t in the oldest manuscripts. Most modern translations print them only as footnotes, so nothing is missing from your file.</string>
     <!-- Section header: books missing chapters or verses. -->
     <string name="translations_summary_gaps">Gaps</string>
     <string name="translations_summary_gaps_footer">Some translations genuinely omit verses, and some files are simply incomplete. You can read what imported either way.</string>

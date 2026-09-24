@@ -9,6 +9,7 @@ import org.apache.pdfbox.pdmodel.encryption.StandardProtectionPolicy
 import org.apache.pdfbox.pdmodel.font.PDType1Font
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -246,5 +247,55 @@ class PDFImportTest {
     @Test fun aPdfIsKnownByItsContentNotItsName() {
         assertTrue(BibleFileImporter.isPDF(pdf("named.zip")))
         assertFalse(BibleFileImporter.isPDF(ImportFixtures.write(ImportFixtures.zip(listOf(ImportFixtures.ZipEntry("a.txt", "x"))), "a.pdf")))
+    }
+
+    @Test fun aVersePrintedWithoutItsNumberAfterAnOmittedVerseIsRecovered() {
+        // An omitted verse printed only as a footnote marker, the next verse's words running on
+        // after it with no number.
+        val bible = ExtractedBible()
+        val chapter = ChapterRef(BookID.ACTS, 24)
+        val six = "He even tried to desecrate the temple, and so we apprehended him. By examining him yourself you will be able to discern the truth."
+        val marker = SwiftText.scalarCount("He even tried to desecrate the temple, and so we apprehended him.")
+        bible.append(
+            ExtractedBlock(
+                ExtractedBlock.Kind.PARAGRAPH,
+                fragments = listOf(
+                    ExtractedFragment(6, true, six, footnotes = listOf(ExtractedFootnote(marker, "Other mss add verse 7"))),
+                    ExtractedFragment(9, true, "The Jews also joined in the attack."),
+                ),
+            ),
+            chapter,
+        )
+        bible.appendVerseText(six, emptyList(), ref(BookID.ACTS, 24, 6))
+        bible.appendVerseText("The Jews also joined in the attack.", emptyList(), ref(BookID.ACTS, 24, 9))
+
+        bible.recoverVersesAfterOmissions()
+
+        assertEquals("He even tried to desecrate the temple, and so we apprehended him.", bible.verses[ref(BookID.ACTS, 24, 6)]?.text)
+        assertEquals("By examining him yourself you will be able to discern the truth.", bible.verses[ref(BookID.ACTS, 24, 8)]?.text)
+        assertNull(bible.verses[ref(BookID.ACTS, 24, 7)])
+        val fragments = bible.blocks(chapter).flatMap { it.fragments }
+        assertEquals(listOf(6, 8, 9), fragments.map { it.verse })
+        assertTrue(fragments[1].numbered)
+    }
+
+    @Test fun aFootnoteMidSentenceIsNotTakenForAMissingVerse() {
+        val bible = ExtractedBible()
+        val chapter = ChapterRef(BookID.ACTS, 24)
+        val six = "He even tried to desecrate the temple and so we apprehended him before he could flee."
+        bible.append(
+            ExtractedBlock(
+                ExtractedBlock.Kind.PARAGRAPH,
+                fragments = listOf(ExtractedFragment(6, true, six, footnotes = listOf(ExtractedFootnote(27, "Or profane")))),
+            ),
+            chapter,
+        )
+        bible.appendVerseText(six, emptyList(), ref(BookID.ACTS, 24, 6))
+        bible.appendVerseText("The Jews also joined in.", emptyList(), ref(BookID.ACTS, 24, 9))
+
+        bible.recoverVersesAfterOmissions()
+
+        assertNull(bible.verses[ref(BookID.ACTS, 24, 8)])
+        assertEquals(six, bible.verses[ref(BookID.ACTS, 24, 6)]?.text)
     }
 }

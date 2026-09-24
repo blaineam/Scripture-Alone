@@ -2,6 +2,9 @@
 
 ## After 1.0.0
 
+- Android: the same fix for a verse run on without its number after a verse the translation
+  leaves out, and the import summary now lists verses left out by the translation on their own,
+  apart from Gaps.
 - A printing that leaves out a verse with only a footnote mark, then runs the next verse on
   without its number, imports that next verse as its own again (a PDF now gives all 31,086
   verses a modern translation prints).

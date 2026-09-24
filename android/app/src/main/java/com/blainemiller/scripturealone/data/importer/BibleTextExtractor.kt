@@ -972,6 +972,7 @@ internal class Assembler(private val options: BibleTextExtractor.Options) {
 
     fun finish() {
         closeBlock()
+        bible.recoverVersesAfterOmissions()
         bible.tidy()
         bible.outOfOrderChapters = outOfOrder.toSet()
         bible.bridgedVerses = bridged.toMap()

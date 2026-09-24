@@ -255,6 +255,8 @@
     <string name="translations_summary_books">Livres</string>
     <string name="translations_summary_verses">Versets</string>
     <string name="translations_summary_clean">Tous les livres lus sans erreur.</string>
+    <string name="translations_summary_left_out">Omis par cette traduction</string>
+    <string name="translations_summary_left_out_footer">Ces versets ne figurent pas dans les plus anciens manuscrits. La plupart des traductions modernes ne les donnent qu’en note, il ne manque donc rien à votre fichier.</string>
     <string name="translations_summary_gaps">Lacunes</string>
     <string name="translations_summary_gaps_footer">Certaines traductions omettent réellement des versets, et certains fichiers sont simplement incomplets. Vous pouvez lire ce qui a été importé dans les deux cas.</string>
     <string name="translations_summary_missing">Absent de ce fichier : %1$s</string>

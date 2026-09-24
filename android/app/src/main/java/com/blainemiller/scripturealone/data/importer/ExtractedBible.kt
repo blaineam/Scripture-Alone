@@ -253,6 +253,69 @@ class ExtractedBible {
     }
 
     /**
+     * Gives back a verse a printing ran on without its number, where a translation leaves out the
+     * verse before it. Some print the omitted verse only as a footnote marker and then carry straight
+     * on with the next verse's words, unnumbered: "…and so we apprehended him.ᵃ By examining him
+     * yourself…". When a known omission ([ImportCoverageReport.textualVariants]) and the verse after
+     * it are both absent, the verse after that is present, and the verse before ends with a footnote
+     * marker followed by a new sentence, the words after the marker are the missing verse.
+     */
+    internal fun recoverVersesAfterOmissions() {
+        for (omitted in ImportCoverageReport.textualVariants.sortedBy { it.key }) {
+            if (verseMap.containsKey(omitted) || omitted.verse <= 1) continue
+            val before = VerseRef(omitted.book, omitted.chapter, omitted.verse - 1)
+            val after = VerseRef(omitted.book, omitted.chapter, omitted.verse + 1)
+            val following = VerseRef(omitted.book, omitted.chapter, omitted.verse + 2)
+            val verse = verseMap[before] ?: continue
+            if (verseMap.containsKey(after) || !verseMap.containsKey(following)) continue
+            val book = BookID.of(omitted.book) ?: continue
+            val chapter = ChapterRef(book, omitted.chapter)
+            val chapterBlocks = blockMap[chapter] ?: continue
+            // The last fragment of the verse before, which is where its words ran on.
+            var blockIndex = -1
+            var fragmentIndex = -1
+            for (index in chapterBlocks.indices.reversed()) {
+                val found = chapterBlocks[index].fragments.indexOfLast { it.verse == before.verse }
+                if (found >= 0) {
+                    blockIndex = index
+                    fragmentIndex = found
+                    break
+                }
+            }
+            if (blockIndex < 0) continue
+            val block = chapterBlocks[blockIndex]
+            val split = splitAfterFootnote(block.fragments[fragmentIndex], after.verse) ?: continue
+            // The flat text must end with exactly the words being moved, or it is left alone.
+            val tail = split.second.text
+            val trimmed = SwiftText.trimWhitespace(verse.text)
+            if (!trimmed.endsWith(tail)) continue
+            val fragments = block.fragments.toMutableList()
+            fragments[fragmentIndex] = split.first
+            fragments.add(fragmentIndex + 1, split.second)
+            blockMap[chapter] = chapterBlocks.toMutableList().also { it[blockIndex] = block.copy(fragments = fragments) }
+
+            val lead = SwiftText.scalarCount(verse.text) - SwiftText.scalarCount(SwiftText.dropLeadingWhitespace(verse.text))
+            val cut = lead + SwiftText.scalarCount(trimmed) - SwiftText.scalarCount(tail)
+            val kept = SwiftText.trimWhitespace(verse.text.substring(0, verse.text.offsetByCodePoints(0, cut)))
+            verseMap[before] = verse.copy(
+                text = kept,
+                red = verse.red.mapNotNull { span ->
+                    if (span.start < cut) ScalarSpan(span.start, minOf(span.length, cut - span.start)) else null
+                },
+            )
+            verseMap[after] = ExtractedVerse(
+                after, tail,
+                verse.red.mapNotNull { span ->
+                    val end = span.start + span.length
+                    if (end <= cut) return@mapNotNull null
+                    val start = maxOf(span.start, cut)
+                    ScalarSpan(start - cut, end - start)
+                },
+            )
+        }
+    }
+
+    /**
      * Trims trailing space and merges touching red spans, so stored text matches what the bundled
      * translations look like.
      */
@@ -300,6 +363,55 @@ class ExtractedBible {
     }
 
     companion object {
+        private const val SENTENCE_ENDS = ".?!\u201D\u2019\"'"
+        private const val OPENING_QUOTES = "\u201C\u2018\"'"
+
+        /**
+         * A fragment cut at its last footnote marker that sits after a sentence's end and before a
+         * new sentence: the head keeps the verse, the tail becomes verse [number], numbered.
+         */
+        internal fun splitAfterFootnote(fragment: ExtractedFragment, number: Int): Pair<ExtractedFragment, ExtractedFragment>? {
+            val text = fragment.text
+            val count = SwiftText.scalarCount(text)
+            for (note in fragment.footnotes.sortedByDescending { it.position }) {
+                val position = note.position
+                if (position <= 0 || position >= count) continue
+                val offset = text.offsetByCodePoints(0, position)
+                val head = text.substring(0, offset)
+                val rest = text.substring(offset)
+                val lead = SwiftText.scalarCount(rest) - SwiftText.scalarCount(SwiftText.dropLeadingWhitespace(rest))
+                val tail = SwiftText.trimWhitespace(SwiftText.dropLeadingWhitespace(rest))
+                val ending = SwiftCharacters(SwiftText.trimWhitespace(head)).let { if (it.count == 0) null else it.string(it.count - 1) }
+                if (ending == null || ending.length != 1 || ending[0] !in SENTENCE_ENDS) continue
+                if (tail.isEmpty()) continue
+                val opening = SwiftCharacters(tail).string(0)
+                val upper = Character.isUpperCase(opening.codePointAt(0))
+                if (!upper && !(opening.length == 1 && opening[0] in OPENING_QUOTES)) continue
+                if (tail.split(' ').count { it.isNotEmpty() } < 3) continue
+                val start = position + lead
+                val first = fragment.copy(
+                    text = head,
+                    spans = fragment.spans.mapNotNull { span ->
+                        if (span.start < position) StyledSpan(span.start, minOf(span.length, position - span.start), span.style) else null
+                    },
+                    footnotes = fragment.footnotes.filter { it.position <= position },
+                )
+                val second = ExtractedFragment(
+                    verse = number, numbered = true, text = tail,
+                    spans = fragment.spans.mapNotNull { span ->
+                        val end = span.start + span.length
+                        if (end <= start) return@mapNotNull null
+                        val from = maxOf(span.start, start)
+                        StyledSpan(from - start, end - from, span.style)
+                    },
+                    footnotes = fragment.footnotes.filter { it.position > position }
+                        .map { ExtractedFootnote(it.position - start, it.text) },
+                )
+                return first to second
+            }
+            return null
+        }
+
         /** Drops trailing whitespace and pulls the spans and footnote positions back inside the text. */
         fun trimTrailing(fragment: ExtractedFragment): ExtractedFragment {
             val text = SwiftText.dropTrailingWhitespace(fragment.text)

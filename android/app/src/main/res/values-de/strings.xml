@@ -255,6 +255,8 @@
     <string name="translations_summary_books">Bücher</string>
     <string name="translations_summary_verses">Verse</string>
     <string name="translations_summary_clean">Jedes Buch fehlerfrei gelesen.</string>
+    <string name="translations_summary_left_out">Von dieser Übersetzung ausgelassen</string>
+    <string name="translations_summary_left_out_footer">Diese Verse stehen nicht in den ältesten Handschriften. Die meisten modernen Übersetzungen bringen sie nur als Fußnote – in deiner Datei fehlt also nichts.</string>
     <string name="translations_summary_gaps">Lücken</string>
     <string name="translations_summary_gaps_footer">Manche Übersetzungen lassen Verse bewusst weg, manche Dateien sind einfach unvollständig. Du kannst in beiden Fällen lesen, was importiert wurde.</string>
     <string name="translations_summary_missing">Nicht in dieser Datei: %1$s</string>

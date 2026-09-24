@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.data.importer
 
 import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookID
 import com.blainemiller.scripturealone.text.AppText
 
@@ -75,6 +76,25 @@ class ImportCoverageReport(bible: ExtractedBible) {
                 R.string.data_import_summary_one, R.string.data_import_summary_other, books,
                 books, totalChapters, totalVerses, percent,
             )
+        }
+
+    /** Verses missing only because the translation leaves them out ([textualVariants]), by book. */
+    val omittedByTranslation: List<Pair<BookID, List<VerseRef>>>
+        get() = books.mapNotNull { book ->
+            val omitted = book.chaptersWithGaps.flatMap { chapter ->
+                chapter.missingVerses.map { verseRef(book.book, chapter.chapter, it) }
+            }.filter { it in textualVariants }
+            if (omitted.isEmpty()) null else book.book to omitted
+        }
+
+    /** Books with something wrong beyond verses the translation leaves out. */
+    val booksWithRealGaps: List<BookCoverage>
+        get() = books.filter { book ->
+            book.missingChapters.isNotEmpty() || book.unexpectedChapters.isNotEmpty() ||
+                book.chaptersWithGaps.any { chapter ->
+                    chapter.outOfOrder || chapter.versesFound == 0 ||
+                        chapter.missingVerses.any { verseRef(book.book, chapter.chapter, it) !in textualVariants }
+                }
         }
 
     /** Short lines describing everything incomplete, worst first. */
@@ -175,6 +195,21 @@ class ImportCoverageReport(bible: ExtractedBible) {
     }
 
     companion object {
+        /**
+         * The New Testament verses the oldest manuscripts don't contain. Translations made from them
+         * print these only as footnotes, so their absence is the translation, not a damaged file.
+         */
+        val textualVariants: Set<VerseRef> = setOf(
+            verseRef(BookID.MATTHEW, 12, 47), verseRef(BookID.MATTHEW, 17, 21), verseRef(BookID.MATTHEW, 18, 11),
+            verseRef(BookID.MATTHEW, 23, 14),
+            verseRef(BookID.MARK, 7, 16), verseRef(BookID.MARK, 9, 44), verseRef(BookID.MARK, 9, 46),
+            verseRef(BookID.MARK, 11, 26), verseRef(BookID.MARK, 15, 28),
+            verseRef(BookID.LUKE, 17, 36), verseRef(BookID.LUKE, 23, 17), verseRef(BookID.JOHN, 5, 4),
+            verseRef(BookID.ACTS, 8, 37), verseRef(BookID.ACTS, 15, 34), verseRef(BookID.ACTS, 24, 7),
+            verseRef(BookID.ACTS, 28, 29),
+            verseRef(BookID.ROMANS, 16, 24),
+        )
+
         /** "1–3, 7, 19–21" */
         fun condense(numbers: List<Int>): String {
             val runs = ArrayList<String>()

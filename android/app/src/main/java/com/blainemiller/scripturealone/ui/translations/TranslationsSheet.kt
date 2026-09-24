@@ -80,6 +80,7 @@ import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.TranslationInfo
+import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.catalog.CatalogCuration
 import com.blainemiller.scripturealone.data.catalog.CatalogDownloader
 import com.blainemiller.scripturealone.data.catalog.CatalogLanguageMatch
@@ -650,7 +651,10 @@ private fun KeyField(value: String, label: String, palette: ReaderPalette, onCha
 private fun ImportSummary(result: BibleImportResult, palette: ReaderPalette, onDone: () -> Unit) {
     val surface = SheetColors.surface(palette)
     val report = result.report
-    val gaps = report.books.filter { !it.isComplete }
+    // Verses the translation itself leaves out are listed on their own, not as damage
+    // (`ImportCoverageReport.textualVariants`).
+    val gaps = report.booksWithRealGaps
+    val omitted = report.omittedByTranslation
     Column(Modifier.fillMaxSize()) {
         SheetTopBar(stringResource(R.string.translations_summary_title), palette, trailing = { GlassTextButton(stringResource(R.string.common_done), palette, surface, bold = true, tint = palette.accent, onClick = onDone) })
         Column(Modifier.fillMaxSize().background(StudyStyle.groupedBackground(palette)).verticalScroll(rememberScrollState())) {
@@ -662,6 +666,20 @@ private fun ImportSummary(result: BibleImportResult, palette: ReaderPalette, onD
                 LabeledCell(palette, stringResource(R.string.translations_summary_verses), NumberFormat.getIntegerInstance().format(report.totalVerses))
                 CellDivider(palette)
                 LabeledCell(palette, stringResource(R.string.translations_summary_quoting), quotingTerms(result))
+            }
+            if (omitted.isNotEmpty()) {
+                GroupedSection(
+                    palette, header = stringResource(R.string.translations_summary_left_out),
+                    footer = stringResource(R.string.translations_summary_left_out_footer),
+                ) {
+                    omitted.forEachIndexed { i, (book, verses) ->
+                        if (i > 0) CellDivider(palette)
+                        Column(Modifier.padding(horizontal = 16.dp, vertical = 9.dp)) {
+                            Text(book.displayName, color = palette.ink, fontSize = StudyStyle.body)
+                            Text(verses.joinToString(", ") { "${it.chapter}:${it.verse}" }, color = palette.secondary, fontSize = StudyStyle.caption)
+                        }
+                    }
+                }
             }
             if (gaps.isEmpty() && report.booksMissing.isEmpty()) {
                 GroupedSection(palette) {
@@ -698,8 +716,9 @@ private fun ImportSummary(result: BibleImportResult, palette: ReaderPalette, onD
 }
 
 /**
- * Says what is actually absent. A book can be flagged with every chapter present — the WEB omits
- * verses like Luke 17:36 — and "24 of 24 chapters" under a "Gaps" heading reads as a bug.
+ * Says what is actually absent. A book can be flagged with every chapter present — a translation
+ * may omit a verse like Luke 17:36 — and "24 of 24 chapters" under a "Gaps" heading reads as a bug.
+ * Verses the translation leaves out are listed on their own; only the rest are gaps.
  */
 internal fun gapSummary(book: ImportCoverageReport.BookCoverage): String {
     if (book.missingChapters.isNotEmpty()) {
@@ -708,7 +727,10 @@ internal fun gapSummary(book: ImportCoverageReport.BookCoverage): String {
             book.chaptersExpected, book.chaptersFound, book.chaptersExpected,
         )
     }
-    val refs = book.chaptersWithGaps.flatMap { c -> c.missingVerses.map { "${c.chapter}:$it" } }
+    val refs = book.chaptersWithGaps.flatMap { c ->
+        c.missingVerses.filter { VerseRef(book.book.number, c.chapter, it) !in ImportCoverageReport.textualVariants }
+            .map { "${c.chapter}:$it" }
+    }
     if (refs.isEmpty()) return AppText.plural(R.string.translations_gap_verses_one, R.string.translations_gap_verses_other, book.versesFound, book.versesFound)
     val extra = refs.size - minOf(refs.size, 4)
     val shown = refs.take(4).joinToString(", ")

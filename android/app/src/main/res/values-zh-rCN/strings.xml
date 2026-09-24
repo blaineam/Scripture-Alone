@@ -255,6 +255,8 @@
     <string name="translations_summary_books">书卷</string>
     <string name="translations_summary_verses">经文节数</string>
     <string name="translations_summary_clean">每卷书都完整导入。</string>
+    <string name="translations_summary_left_out">此译本省略的经文</string>
+    <string name="translations_summary_left_out_footer">这些经文不见于最古老的抄本。多数现代译本只把它们放在脚注中，所以你的文件并没有缺漏。</string>
     <string name="translations_summary_gaps">缺失</string>
     <string name="translations_summary_gaps_footer">有些译本本身就略去部分经节，有些文件则确实不完整。无论哪种情况，已导入的内容都可正常阅读。</string>
     <string name="translations_summary_missing">此文件中没有：%1$s</string>
