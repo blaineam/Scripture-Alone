@@ -4,13 +4,15 @@ import WatchConnectivity
 import ScriptureAloneCore
 
 /// The phone's end of WatchConnectivity: tells the watch which translation the reader is using,
-/// and sends the watch an edition of a translation the reader imported.
+/// and keeps the watch holding every translation the reader imported.
 ///
 /// The watch already bundles compact editions of the ASV, BSB and KJV, so for those only the
-/// choice is sent. An imported translation has no bundled edition; this writes one with
-/// `WatchEdition` (about a third of the full store's size) and transfers it — but only when the
-/// translation's terms allow offline storage, and only when the watch reports it doesn't already
-/// hold it. An online translation is never sent: its terms forbid storing it, and it has no file.
+/// choice is sent. Each imported translation is written as a `WatchEdition` (about a third of the
+/// full store's size) and transferred — only when its terms allow offline storage, and only when
+/// the watch reports it doesn't already hold that version. The list of imports travels too, so one
+/// removed on the phone (or on another device, through iCloud) is removed from the watch. A
+/// language Bible is sent when it is the one being read. An online translation is never sent: its
+/// terms forbid storing it, and it has no file.
 ///
 /// See `WatchPhoneLink` on the watch for why the choice travels as application context and the
 /// edition as a file transfer.
@@ -22,6 +24,8 @@ final class WatchLink: NSObject {
     private let defaults = UserDefaults.standard
     /// The latest translation to report, held until the session is ready to carry it.
     private var pending: TranslationEntry?
+    /// Every imported translation, as the library last reported them.
+    private var imports: [TranslationEntry] = []
 
     func activate() {
         guard let session, session.delegate == nil else { return }
@@ -47,20 +51,40 @@ final class WatchLink: NSObject {
     private func send(_ entry: TranslationEntry) {
         guard let session, session.activationState == .activated,
               session.isPaired, session.isWatchAppInstalled else { return }
-        let changedAt = defaults.double(forKey: Self.changedAtKey)
-        try? session.updateApplicationContext([
-            WatchLinkKeys.translation: entry.id,
-            WatchLinkKeys.changedAt: changedAt,
-        ])
+        updateContext()
         sendEditionIfNeeded(entry)
     }
 
-    private func sendEditionIfNeeded(_ entry: TranslationEntry) {
+    /// The reader's imports changed — one added or removed here, or arriving through iCloud.
+    func importsChanged(_ entries: [TranslationEntry]) {
+        imports = entries.filter { WatchLinkKeys.isSafeID($0.id) }
+        updateContext()
+        for entry in imports { sendEditionIfNeeded(entry) }
+    }
+
+    /// Application context holds one dictionary, replaced whole on every update, so every key the
+    /// watch reads is written every time.
+    private func updateContext() {
         guard let session, session.activationState == .activated,
+              session.isPaired, session.isWatchAppInstalled else { return }
+        var context: [String: Any] = [WatchLinkKeys.imports: imports.map(\.id)]
+        if let pending {
+            context[WatchLinkKeys.translation] = pending.id
+            context[WatchLinkKeys.changedAt] = defaults.double(forKey: Self.changedAtKey)
+        }
+        try? session.updateApplicationContext(context)
+    }
+
+    private func sendEditionIfNeeded(_ entry: TranslationEntry) {
+        guard let session, session.activationState == .activated, session.isPaired, session.isWatchAppInstalled,
               let url = entry.url, Self.isImported(url) || Self.isLocaleBible(entry.id),
               WatchLinkKeys.isSafeID(entry.id) else { return }
-        let held = session.receivedApplicationContext[WatchLinkKeys.editions] as? [String] ?? []
-        guard !held.contains(entry.id) else { return }
+        let context = session.receivedApplicationContext
+        let held = context[WatchLinkKeys.editions] as? [String] ?? []
+        let versions = context[WatchLinkKeys.editionVersions] as? [String: String]
+        let imported = Self.isImported(url)
+        // An older watch app reports ids only; then holding the translation at all is enough.
+        guard !held.contains(entry.id) || (imported && versions != nil) else { return }
         // Already on its way: don't queue a second copy of the same few megabytes.
         let inFlight = session.outstandingFileTransfers.contains {
             $0.file.metadata?[WatchLinkKeys.translation] as? String == entry.id
@@ -68,21 +92,27 @@ final class WatchLink: NSObject {
         guard !inFlight else { return }
 
         let id = entry.id
+        let heldVersion = versions?[id]
         Task.detached(priority: .utility) {
             guard let store = try? BibleStore(url: url), store.info.rights.allowOfflineStorage else { return }
+            let version = imported ? ImportedBibleSync.fingerprint(of: url) : nil
+            if let version, version == heldVersion { return }
             let edition = URL.cachesDirectory.appending(path: "WatchEditions/\(id)-Watch.sqlite")
             do {
                 try WatchEdition.write(from: url, to: edition)
             } catch {
                 return
             }
-            await self.transfer(edition, id: id)
+            var metadata: [String: String] = [WatchLinkKeys.translation: id]
+            if imported { metadata[WatchLinkKeys.kind] = WatchLinkKeys.importKind }
+            if let version { metadata[WatchLinkKeys.version] = version }
+            await self.transfer(edition, metadata: metadata)
         }
     }
 
-    private func transfer(_ edition: URL, id: String) {
+    private func transfer(_ edition: URL, metadata: [String: String]) {
         guard let session, session.activationState == .activated else { return }
-        _ = session.transferFile(edition, metadata: [WatchLinkKeys.translation: id])
+        _ = session.transferFile(edition, metadata: metadata)
     }
 
     /// The big-8 locales' Bibles (docs/localization.md) aren't bundled on the watch — it carries the
@@ -104,6 +134,7 @@ extension WatchLink: WCSessionDelegate {
                              error: Error?) {
         Task { @MainActor in
             if let pending = self.pending { self.send(pending) }
+            self.importsChanged(self.imports)
         }
     }
 
@@ -112,7 +143,23 @@ extension WatchLink: WCSessionDelegate {
     nonisolated func session(_ session: WCSession, didReceiveApplicationContext context: [String: Any]) {
         Task { @MainActor in
             if let pending = self.pending { self.sendEditionIfNeeded(pending) }
+            for entry in self.imports { self.sendEditionIfNeeded(entry) }
         }
+    }
+
+    /// A transfer that failed (the watch app was being installed, storage was full) is tried again
+    /// the next time anything prompts a check; one that succeeded is reported back by the watch.
+    nonisolated func session(_ session: WCSession, didFinish fileTransfer: WCSessionFileTransfer, error: (any Error)?) {
+        guard error != nil else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(30))
+            for entry in self.imports { self.sendEditionIfNeeded(entry) }
+        }
+    }
+
+    /// The watch app was installed (or removed) — send it what it should hold.
+    nonisolated func sessionWatchStateDidChange(_ session: WCSession) {
+        Task { @MainActor in self.importsChanged(self.imports) }
     }
 
     nonisolated func sessionDidBecomeInactive(_ session: WCSession) {}

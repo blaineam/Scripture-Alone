@@ -43,11 +43,22 @@ final class WatchPhoneLink: NSObject {
         bible?.phoneChose(choice.id, at: choice.at)
     }
 
-    /// Tells the phone which received editions the watch holds.
+    /// The imports the phone offers, when its context says (an older phone app doesn't).
+    fileprivate nonisolated static func phoneImports(in context: [String: Any]) -> [String]? {
+        context[WatchLinkKeys.imports] as? [String]
+    }
+
+    fileprivate func applyImports(_ imports: [String]?) {
+        guard let imports, let bible else { return }
+        if bible.removeImports(notIn: Set(imports)) { reportEditions() }
+    }
+
+    /// Tells the phone which received editions the watch holds, and which version of each.
     fileprivate func reportEditions() {
         guard let session, session.activationState == .activated, let bible else { return }
         let received = bible.editions.filter { !$0.bundled }.map(\.id)
-        try? session.updateApplicationContext([WatchLinkKeys.editions: received])
+        try? session.updateApplicationContext([WatchLinkKeys.editions: received,
+                                               WatchLinkKeys.editionVersions: WatchBible.receivedVersions()])
     }
 }
 
@@ -56,15 +67,21 @@ extension WatchPhoneLink: WCSessionDelegate {
                              error: Error?) {
         // Whatever the phone set while the watch app wasn't running is waiting here.
         let choice = Self.phoneChoice(in: session.receivedApplicationContext)
+        let imports = Self.phoneImports(in: session.receivedApplicationContext)
         Task { @MainActor in
             self.apply(choice)
+            self.applyImports(imports)
             self.reportEditions()
         }
     }
 
     nonisolated func session(_ session: WCSession, didReceiveApplicationContext context: [String: Any]) {
         let choice = Self.phoneChoice(in: context)
-        Task { @MainActor in self.apply(choice) }
+        let imports = Self.phoneImports(in: context)
+        Task { @MainActor in
+            self.apply(choice)
+            self.applyImports(imports)
+        }
     }
 
     nonisolated func session(_ session: WCSession, didReceive file: WCSessionFile) {
@@ -75,6 +92,8 @@ extension WatchPhoneLink: WCSessionDelegate {
         let destination = WatchBible.receivedURL(for: id)
         try? FileManager.default.removeItem(at: destination)
         guard (try? FileManager.default.moveItem(at: file.fileURL, to: destination)) != nil else { return }
+        WatchBible.recordReceived(id, version: file.metadata?[WatchLinkKeys.version] as? String,
+                                  isImport: file.metadata?[WatchLinkKeys.kind] as? String == WatchLinkKeys.importKind)
         Task { @MainActor in
             self.bible?.reloadEditions()
             self.reportEditions()
@@ -95,7 +114,7 @@ struct WatchTranslationsView: View {
                     } label: {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(edition.id).font(.headline)
+                                Text(edition.abbreviation).font(.headline)
                                 Text(edition.name).font(.caption2).foregroundStyle(.secondary).lineLimit(2)
                             }
                             Spacer()

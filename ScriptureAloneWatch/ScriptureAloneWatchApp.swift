@@ -107,8 +107,15 @@ final class WatchBible {
     struct Edition: Identifiable, Hashable {
         let id: String
         let name: String
+        /// What the reader calls it — an import's id is an internal name ("IMPORT-NN0XUW").
+        let abbreviation: String
         let url: URL
         let bundled: Bool
+    }
+
+    /// The translation being read, as the reader calls it.
+    var translationAbbreviation: String {
+        editions.first { $0.id == translation }?.abbreviation ?? translation
     }
 
     private(set) var editions: [Edition] = []
@@ -139,7 +146,7 @@ final class WatchBible {
         let bundled = Self.bundledIDs.compactMap { id -> Edition? in
             guard let url = Bundle.main.url(forResource: "\(id)-Watch", withExtension: "sqlite"),
                   let store = open(id: id, url: url) else { return nil }
-            return Edition(id: id, name: store.info.name, url: url, bundled: true)
+            return Edition(id: id, name: store.info.name, abbreviation: store.info.abbreviation, url: url, bundled: true)
         }
         let files = (try? FileManager.default.contentsOfDirectory(
             at: Self.receivedDirectory, includingPropertiesForKeys: nil)) ?? []
@@ -149,7 +156,7 @@ final class WatchBible {
                 let id = String(url.lastPathComponent.dropLast("-Watch.sqlite".count))
                 // A bundled translation always reads from the bundle; a stray copy is ignored.
                 guard !Self.bundledIDs.contains(id), let store = open(id: id, url: url) else { return nil }
-                return Edition(id: id, name: store.info.name, url: url, bundled: false)
+                return Edition(id: id, name: store.info.name, abbreviation: store.info.abbreviation, url: url, bundled: false)
             }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         editions = bundled + received
@@ -176,8 +183,57 @@ final class WatchBible {
         guard !edition.bundled else { return }
         stores[edition.id] = nil
         try? FileManager.default.removeItem(at: edition.url)
+        Self.forgetReceived(edition.id)
         reloadEditions()
     }
+
+    /// Removes imported editions the phone no longer offers. Returns true when any went.
+    func removeImports(notIn offered: Set<String>) -> Bool {
+        let gone = editions.filter { !$0.bundled && Self.receivedImports().contains($0.id) && !offered.contains($0.id) }
+        for edition in gone {
+            stores[edition.id] = nil
+            try? FileManager.default.removeItem(at: edition.url)
+            Self.forgetReceived(edition.id)
+        }
+        if !gone.isEmpty { reloadEditions() }
+        return !gone.isEmpty
+    }
+
+    // MARK: Received ledger
+
+    /// What each received edition is: its version, and whether it is an import (which the phone's
+    /// list governs) rather than a language Bible (which stays until removed here).
+    private nonisolated struct Received: Codable {
+        var versions: [String: String] = [:]
+        var imports: Set<String> = []
+    }
+
+    private nonisolated static var ledgerURL: URL { receivedDirectory.appending(path: "received.json") }
+
+    private nonisolated static func ledger() -> Received {
+        (try? Data(contentsOf: ledgerURL)).flatMap { try? JSONDecoder().decode(Received.self, from: $0) } ?? Received()
+    }
+
+    private nonisolated static func save(_ ledger: Received) {
+        if let data = try? JSONEncoder().encode(ledger) { try? data.write(to: ledgerURL, options: .atomic) }
+    }
+
+    nonisolated static func recordReceived(_ id: String, version: String?, isImport: Bool) {
+        var ledger = ledger()
+        ledger.versions[id] = version
+        if isImport { ledger.imports.insert(id) } else { ledger.imports.remove(id) }
+        save(ledger)
+    }
+
+    nonisolated static func forgetReceived(_ id: String) {
+        var ledger = ledger()
+        ledger.versions[id] = nil
+        ledger.imports.remove(id)
+        save(ledger)
+    }
+
+    nonisolated static func receivedVersions() -> [String: String] { ledger().versions }
+    nonisolated static func receivedImports() -> Set<String> { ledger().imports }
 
     private func resolve() {
         let available = Set(editions.map(\.id))

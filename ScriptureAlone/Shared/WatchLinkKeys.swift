@@ -12,6 +12,17 @@ enum WatchLinkKeys {
     /// Watch → phone, application context: identifiers of the editions the phone has sent that the
     /// watch still holds.
     nonisolated static let editions = "editions"
+    /// Watch → phone, application context: identifier → `version` of each edition it holds, so a
+    /// translation re-imported on the phone is sent again.
+    nonisolated static let editionVersions = "editionVersions"
+    /// Phone → watch, application context: every imported translation the phone offers the watch.
+    /// A received import missing from it was removed on the phone, and the watch removes it too.
+    nonisolated static let imports = "imports"
+    /// Phone → watch, file metadata: a fingerprint of the store the edition was made from.
+    nonisolated static let version = "version"
+    /// Phone → watch, file metadata: "import" for a translation the reader imported, otherwise absent.
+    nonisolated static let kind = "kind"
+    nonisolated static let importKind = "import"
 
     /// A received file is saved under its translation's identifier, so the identifier has to be a
     /// safe file name: no separators, no dots, nothing that could climb out of the directory.

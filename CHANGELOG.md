@@ -5,6 +5,9 @@
 - Translations you import follow you: each one is kept in your own private iCloud and appears on
   your other iPhone, iPad and Mac when it arrives — nothing is shared with anyone else, launch
   never waits on it, and removing one removes it everywhere.
+- Every translation you import goes to your Apple Watch too, not only the one you're reading,
+  when its publisher's terms allow keeping it offline. A re-imported translation is sent again,
+  one removed on the phone leaves the watch, and the watch lists imports by abbreviation.
 - Copying and sharing follow each translation's own published terms. The app knows the
   permissions pages of the ESV, CSB, HCSB, NIV, NKJV, NASB, AMP, LSB, NLT, The Message, NRSV,
   NRSVue, RSV, NET and CEB: its verse limit, whether a whole book or more than half of one may be

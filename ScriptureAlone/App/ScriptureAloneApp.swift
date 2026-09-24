@@ -85,8 +85,13 @@ private struct RootView: View {
                 model.setOnlineTranslations(OnlineCatalog.restored(keys: onlineKeys))
             }
             // Translations imported on another of the reader's devices, as they arrive.
-            .onChange(of: library.entries) {
+            .onChange(of: library.entries, initial: true) {
                 model.refreshTranslations(imported: library.entries.map { ($0.info, $0.url) })
+                #if os(iOS)
+                WatchLink.shared.importsChanged(library.entries.map {
+                    TranslationEntry(id: $0.info.id, name: $0.info.name, url: $0.url, abbreviation: $0.info.abbreviation)
+                })
+                #endif
             }
             // Settings that arrived from iCloud after launch — on a reinstall, usually a moment
             // after the first frame. `@AppStorage` views follow on their own; the translation list

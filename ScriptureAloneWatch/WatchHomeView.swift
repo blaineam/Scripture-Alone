@@ -30,7 +30,7 @@ struct WatchHomeView: View {
                     HStack {
                         Label("Translation", systemImage: "character.book.closed.fill")
                         Spacer()
-                        Text(bible.translation).foregroundStyle(.secondary)
+                        Text(bible.translationAbbreviation).foregroundStyle(.secondary)
                     }
                 }
             }
