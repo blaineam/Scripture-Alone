@@ -6,6 +6,7 @@ import ScriptureAloneCore
 struct TranslationsView: View {
     @Environment(ReaderModel.self) private var model
     @Environment(ImportedLibrary.self) private var library
+    @Environment(OnlineTranslationKeys.self) private var onlineKeys
     @Environment(\.dismiss) private var dismiss
 
     @State private var showFileImporter = false
@@ -82,6 +83,7 @@ struct TranslationsView: View {
         .sheet(isPresented: $showKeys) {
             OnlineKeysView()
                 .environment(model)
+                .environment(onlineKeys)
                 #if os(macOS)
                 .frame(minWidth: 520, minHeight: 560)
                 #endif

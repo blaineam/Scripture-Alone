@@ -12,6 +12,9 @@ import ScriptureAloneCore
 /// Runs once per install on a development build run from Xcode on a real device (debug builds
 /// talk to the development environment; TestFlight and App Store builds use production). Pass
 /// `-bootstrapCloudKitSchema` to run it again. Results go to the Xcode console.
+///
+/// `Tools/cloudkit/schema.ckdb` holds the same schema (plus `ImportedBible`) for
+/// `xcrun cktool import-schema`, which needs no device.
 nonisolated enum CloudKitSchemaBootstrap {
     private static let doneKey = "debug.cloudKitSchemaBootstrapped.v1"
 

@@ -2,6 +2,9 @@
 
 ## After 1.0.0
 
+- Fixed a crash opening Manage Translations on a Mac.
+- The iCloud record types for notes, highlights, favorites, family sharing and imported
+  translations are now written down in `Tools/cloudkit/schema.ckdb`, to import with `cktool`.
 - On a wide screen — an iPhone on its side, an iPad, a wide Mac window — the reader lays a
   chapter out in two or three columns, like a printed Bible, and turns page by page with a
   swipe (or the arrow keys, space bar or trackpad on a Mac); swiping past the last page moves

@@ -12,6 +12,8 @@ struct ReaderPopover: Identifiable {
 
 struct ReaderView: View {
     @Environment(ReaderModel.self) private var model
+    @Environment(ImportedLibrary.self) private var library
+    @Environment(OnlineTranslationKeys.self) private var onlineKeys
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var context
     @Environment(LegacySession.self) private var legacy
@@ -149,6 +151,8 @@ struct ReaderView: View {
         .sheet(isPresented: $showTranslations) {
             TranslationsView()
                 .environment(model)
+                .environment(library)
+                .environment(onlineKeys)
                 #if os(macOS)
                 .frame(minWidth: 520, minHeight: 560)
                 #endif
