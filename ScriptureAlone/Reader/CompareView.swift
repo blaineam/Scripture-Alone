@@ -65,11 +65,11 @@ struct CompareView: View {
     private var picker: some View {
         Menu {
             Picker("Compare With", selection: $otherID) {
-                ForEach(candidates) { Text("\($0.id) — \($0.name)").tag($0.id) }
+                ForEach(candidates) { Text("\($0.abbreviation) — \($0.name)").tag($0.id) }
             }
         } label: {
             HStack(spacing: 4) {
-                Text(model.translationID).font(.subheadline.weight(.semibold))
+                Text(model.translationAbbreviation).font(.subheadline.weight(.semibold))
                 Image(systemName: "arrow.left.arrow.right").font(.caption)
                 Text(otherID.isEmpty ? String(localized: "Choose", comment: "Button: choose a second translation to compare") : otherID).font(.subheadline.weight(.semibold))
             }

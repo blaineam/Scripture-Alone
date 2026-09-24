@@ -17,6 +17,9 @@ struct TranslationEntry: Identifiable, Hashable {
     let id: String
     let name: String
     let source: Source
+    /// What the reader sees it called. The id for bundled and online texts; an import's id is an
+    /// internal name ("IMPORT-NN0XUW"), so it carries the abbreviation its file gave ("ESV").
+    let abbreviation: String
 
     var url: URL? {
         if case .local(let url) = source { return url }
@@ -33,14 +36,15 @@ struct TranslationEntry: Identifiable, Hashable {
         return false
     }
 
-    init(id: String, name: String, url: URL) {
-        self.init(id: id, name: name, source: .local(url))
+    init(id: String, name: String, url: URL, abbreviation: String? = nil) {
+        self.init(id: id, name: name, source: .local(url), abbreviation: abbreviation)
     }
 
-    init(id: String, name: String, source: Source) {
+    init(id: String, name: String, source: Source, abbreviation: String? = nil) {
         self.id = id
         self.name = name
         self.source = source
+        self.abbreviation = abbreviation ?? id
     }
 }
 
@@ -183,7 +187,8 @@ final class ReaderModel {
     /// Adds the imported translations to the pickers. Called after an import or a removal, so
     /// the toolbar menu and the Translations screen agree without either owning the other's list.
     func refreshTranslations(imported: [(TranslationInfo, URL)]) {
-        importedEntries = imported.map { TranslationEntry(id: $0.0.id, name: $0.0.name, url: $0.1) }
+        importedEntries = imported.map { TranslationEntry(id: $0.0.id, name: $0.0.name, url: $0.1,
+                                                          abbreviation: $0.0.abbreviation) }
         rebuildTranslations()
     }
 
@@ -623,6 +628,11 @@ final class ReaderModel {
     /// the same way whatever kind of translation is open.
     var rights: TranslationRights { translationInfo?.rights ?? .publicDomain }
 
+    /// The open translation as the reader knows it — "ESV", never an import's internal id.
+    var translationAbbreviation: String {
+        translations.first { $0.id == translationID }?.abbreviation ?? translationInfo?.abbreviation ?? translationID
+    }
+
     /// How many verses the current selection would quote.
     func verseCount(in ranges: [VerseRange]) -> Int {
         guard let source else { return 0 }
@@ -630,8 +640,13 @@ final class ReaderModel {
     }
 
     /// Whether this selection may leave the device at all, under this translation's terms.
-    func mayQuote(_ ranges: [VerseRange]) -> Bool {
-        rights.mayQuote(verseCount: verseCount(in: ranges))
+    func mayQuote(_ ranges: [VerseRange]) -> Bool { quotationRefusal(for: ranges) == nil }
+
+    /// Why this selection may not leave the device, or nil when it may: too many verses, a whole
+    /// book, or more of one book than the publisher allows (`PublisherTerms`).
+    func quotationRefusal(for ranges: [VerseRange]) -> QuotationRefusal? {
+        guard let source else { return nil }
+        return source.quotationRefusal(for: ranges)
     }
 
     /// "“For God so loved…” John 3:16 ASV" — numbered verses when more than one.
@@ -649,6 +664,8 @@ final class ReaderModel {
                 : verses.map { "\($0.ref.verse) \($0.text)" }.joined(separator: " ")
             return "\(text)\n— \(displayRange(range).display) (\(store.info.abbreviation))"
         }
-        return blocks.joined(separator: "\n\n")
+        // The notice the publisher requires travels with every quotation.
+        let notice = store.info.attributionNotice.map { [$0] } ?? []
+        return (blocks + (blocks.isEmpty ? [] : notice)).joined(separator: "\n\n")
     }
 }

@@ -92,9 +92,19 @@ struct ShareMenu: View {
         let source = model.source.flatMap { ShareSource(source: $0, ranges: ranges) }
         let link = source?.link(style: ShareStyle(template: template, aspect: aspect, family: family, redLetters: redLetters))
         Menu {
+            // Each kind of sharing asks the translation's terms: some publishers license verse art
+            // separately, and some allow no sharing from an app at all (`PublisherTerms`).
             Button("Share Image…", systemImage: "photo.on.rectangle") { coordinator.designer = source }
-                .disabled(source == nil)
-            ShareLink(item: quotation) { Label("Share Text", systemImage: "text.quote") }
+                .disabled(source == nil || !model.rights.permits(\.allowVerseImages))
+            if model.rights.permits(\.allowShare) {
+                ShareLink(item: quotation) { Label("Share Text", systemImage: "text.quote") }
+            } else {
+                Button("Share Text", systemImage: "text.quote") {}
+                    .disabled(true)
+            }
+            if !model.rights.permits(\.allowShare) || !model.rights.permits(\.allowVerseImages) {
+                Text(shareTermsNotice)
+            }
             if let link {
                 Button("Copy Link", systemImage: "link") { copy(link) }
             } else {
@@ -109,6 +119,13 @@ struct ShareMenu: View {
         .menuIndicator(.hidden)
         .buttonStyle(.plain)
         .accessibilityLabel("Share")
+    }
+
+    private var shareTermsNotice: String {
+        let name = model.translationInfo?.abbreviation ?? ""
+        return model.rights.permits(\.allowShare)
+            ? String(localized: "\(name)'s publisher doesn't allow verse images", comment: "%@ is a translation abbreviation, e.g. “NIV”.")
+            : String(localized: "\(name)'s publisher doesn't allow sharing from an app", comment: "%@ is a translation abbreviation, e.g. “NRSV”.")
     }
 
     private func copy(_ url: URL) {

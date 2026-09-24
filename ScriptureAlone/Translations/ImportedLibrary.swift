@@ -4,11 +4,11 @@ import ScriptureAloneCore
 
 /// The translations the reader has added themselves.
 ///
-/// Imported texts live in Application Support, outside the iCloud-synced containers: an imported
-/// translation belongs to the person who imported it, on the device they imported it to. The one
-/// place a copy goes is that same person's paired Apple Watch, as a compact edition, when it is the
-/// translation they are reading and its terms allow offline storage (`WatchLink`). Never to iCloud,
-/// never into a keepsake, never into a share link.
+/// Imported texts live in Application Support and belong to the person who imported them. They
+/// follow that person to their own other devices through their private iCloud database
+/// (`ImportedBibleSync`), and to their paired Apple Watch as a compact edition when it is the
+/// translation they are reading and its terms allow offline storage (`WatchLink`). Never to anyone
+/// else's account, never into a keepsake, never into a share link.
 @MainActor
 @Observable
 final class ImportedLibrary {
@@ -22,16 +22,23 @@ final class ImportedLibrary {
     /// Set while an import is running, for the sheet's progress.
     private(set) var busy: String?
 
-    static let directoryName = "Translations"
+    nonisolated static let directoryName = "Translations"
 
     /// `~/Library/Application Support/Translations`, created on first use.
-    static var directory: URL {
+    nonisolated static var directory: URL {
         let base = URL.applicationSupportDirectory.appending(path: directoryName)
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         return base
     }
 
-    init() { reload() }
+    init() {
+        reload()
+        // A translation arrived from, or was removed on, another of the reader's devices.
+        NotificationCenter.default.addObserver(forName: ImportedBibleSync.changedNotification, object: nil,
+                                               queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.reload() }
+        }
+    }
 
     func reload() {
         let files = (try? FileManager.default.contentsOfDirectory(
@@ -63,12 +70,15 @@ final class ImportedLibrary {
             try BibleFileImporter().importBible(at: url, as: identity, into: directory)
         }.value
         reload()
+        await ImportedBibleSync.shared.storeWritten(at: result.storeURL)
         return result
     }
 
     func remove(_ entry: Entry) {
         try? FileManager.default.removeItem(at: entry.url)
         reload()
+        let url = entry.url
+        Task { await ImportedBibleSync.shared.storeRemoved(at: url) }
     }
 
     func contains(_ id: String) -> Bool { entries.contains { $0.info.id == id } }

@@ -311,14 +311,14 @@ struct ReaderView: View {
         Menu {
             Picker("Translation", selection: Binding(get: { model.translationID }, set: { model.selectTranslation($0) })) {
                 ForEach(model.translations) { entry in
-                    Text("\(entry.id) — \(entry.name)").tag(entry.id)
+                    Text("\(entry.abbreviation) — \(entry.name)").tag(entry.id)
                 }
             }
             Divider()
             Button("Compare Translations…", systemImage: "rectangle.split.2x1") { showCompare = true }
             Button("Manage Translations…", systemImage: "books.vertical") { showTranslations = true }
         } label: {
-            Text(model.translationID).font(.subheadline.weight(.semibold))
+            Text(model.translationAbbreviation).font(.subheadline.weight(.semibold))
         }
         .accessibilityLabel("Translation")
     }

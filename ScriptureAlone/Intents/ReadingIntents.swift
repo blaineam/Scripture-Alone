@@ -128,7 +128,7 @@ struct GetVersesIntent: AppIntent {
         guard let source = IntentLibrary.source(for: id) else { throw ScriptureIntentError.translationUnavailable(id) }
         let resolved = try IntentLibrary.resolve(passage, in: source)
         let info = source.info
-        guard info.rights.mayQuote(verseCount: IntentLibrary.verseCount(resolved, in: source)), info.mayCopy else {
+        guard source.quotationRefusal(for: resolved.map(\.kjv)) == nil, info.mayCopy else {
             throw ScriptureIntentError.quotationNotPermitted(info.abbreviation)
         }
         let quotation = IntentLibrary.quotation(resolved, in: source)
@@ -184,8 +184,7 @@ struct CreateVerseImageIntent: AppIntent {
         let resolved = try IntentLibrary.resolve(passage, in: source)
         let info = source.info
         // The designer's own gate: a verse image is a quotation that leaves the app.
-        guard info.mayRenderVerseImage,
-              info.rights.mayQuote(verseCount: IntentLibrary.verseCount(resolved, in: source)) else {
+        guard info.mayRenderVerseImage, source.quotationRefusal(for: resolved.map(\.kjv)) == nil else {
             throw ScriptureIntentError.imageNotPermitted(info.abbreviation)
         }
         guard let share = ShareSource(source: source, ranges: resolved.map(\.kjv)) else {

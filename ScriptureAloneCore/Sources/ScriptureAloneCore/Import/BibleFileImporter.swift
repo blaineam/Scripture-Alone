@@ -75,7 +75,7 @@ public struct BibleFileImporter: Sendable {
             let package = try EPUBPackage(zip: zip)
             let bible = try BibleTextExtractor(options: options).extract(from: package)
             return (bible, BibleImportPreview(format: .epub,
-                                              identity: .suggested(from: package.metadata),
+                                              identity: Self.suggestedIdentity(for: package),
                                               documentCount: package.spine.count))
         case .usfmZip:
             let package = try USFMPackage(zip: zip)
@@ -104,6 +104,41 @@ public struct BibleFileImporter: Sendable {
         return (safe.isEmpty ? "IMPORT" : safe) + ".sqlite"
     }
 
+    // MARK: - Recognising the translation
+
+    /// What the file says about itself, plus the translation its copyright page names.
+    ///
+    /// A study Bible is titled for the study Bible ("The Reformation Study Bible") and its metadata
+    /// often says only "All rights reserved"; the translation — and so the terms a quotation from
+    /// it is held to — is named on the copyright page. The name is kept; the abbreviation becomes
+    /// the translation's, and a generic rights line gives way to the publisher's own notice.
+    static func suggestedIdentity(for package: EPUBPackage) -> ImportedTranslationIdentity {
+        var identity = ImportedTranslationIdentity.suggested(from: package.metadata)
+        guard PublisherTerms.matching(abbreviation: identity.abbreviation, name: identity.name,
+                                      copyright: identity.copyright) == nil,
+              let terms = recognizedTerms(in: package) else { return identity }
+        identity.abbreviation = terms.abbreviation
+        if identity.copyright.count < 60 { identity.copyright = terms.notice }
+        return identity
+    }
+
+    /// The first front-matter page naming a known translation: pages whose file name says
+    /// "copyright" or "rights" first, then the opening pages of the book.
+    static func recognizedTerms(in package: EPUBPackage) -> PublisherTerms? {
+        let front = package.spine.prefix(16)
+        let likely = front.filter { item in
+            let name = item.path.lowercased()
+            return name.contains("copy") || name.contains("rights") || name.contains("legal")
+        }
+        for item in likely + front.filter({ !likely.contains($0) }) {
+            guard let xhtml = try? package.document(item) else { continue }
+            let text = xhtml.replacing(/<[^>]+>/, with: " ")
+            guard text.localizedCaseInsensitiveContains("copyright") || text.contains("©") else { continue }
+            if let terms = PublisherTerms.matching(text: text) { return terms }
+        }
+        return nil
+    }
+
     // MARK: - Sniffing
 
     private func open(_ url: URL) throws -> ZipReader {
@@ -120,7 +155,7 @@ public struct BibleFileImporter: Sendable {
         switch try Self.format(of: zip) {
         case .epub:
             let package = try EPUBPackage(zip: zip)
-            return BibleImportPreview(format: .epub, identity: .suggested(from: package.metadata),
+            return BibleImportPreview(format: .epub, identity: Self.suggestedIdentity(for: package),
                                       documentCount: package.spine.count)
         case .usfmZip:
             let package = try USFMPackage(zip: zip)

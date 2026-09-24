@@ -2,6 +2,18 @@
 
 ## After 1.0.0
 
+- Translations you import follow you: each one is kept in your own private iCloud and appears on
+  your other iPhone, iPad and Mac when it arrives — nothing is shared with anyone else, launch
+  never waits on it, and removing one removes it everywhere.
+- Copying and sharing follow each translation's own published terms. The app knows the
+  permissions pages of the ESV, CSB, HCSB, NIV, NKJV, NASB, AMP, LSB, NLT, The Message, NRSV,
+  NRSVue, RSV, NET and CEB: its verse limit, whether a whole book or more than half of one may be
+  quoted, and the exact notice to carry, which now travels with every copy, share and Shortcut.
+  Publishers that license verse art separately (NIV, NKJV, NLT, The Message) have no verse
+  images; those that don't allow sharing from an app (NRSV, NRSVue, RSV, The Message) can still
+  be copied for your own use. An import is recognised from its copyright page — a study Bible
+  titled for itself still quotes as the ESV — and the import summary says which terms apply.
+  Imported translations show their abbreviation, not an internal id, in the picker.
 - Importing a study-Bible ePub brings in the whole Bible and nothing but the Bible. Chapters set
   as drop caps keep their first verse; each file's own title says which book it is; psalm titles,
   acrostic letters and section headings land above the verse they introduce; indented poetry

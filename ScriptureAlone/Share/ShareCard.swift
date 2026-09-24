@@ -79,8 +79,12 @@ enum ShareCardFitter {
                       shownVerses: shown, totalVerses: verses.count)
     }
 
-    /// Public-domain texts carry no notice; a licensed translation's `copyright` rides on the card.
-    static func noticeText(for info: TranslationInfo) -> String? { info.attributionNotice }
+    /// Public-domain texts carry no notice; a licensed translation's notice rides on the card — the
+    /// short form where its publisher accepts one in non-salable media ("(ESV)"), the full one otherwise.
+    static func noticeText(for info: TranslationInfo) -> String? {
+        guard let notice = info.attributionNotice else { return nil }
+        return info.publisherTerms?.shortNotice ?? notice
+    }
 
     private static func largestFittingSize(_ passage: SharePassageText, style: ShareStyle, metrics: ShareCardMetrics,
                                            height: CGFloat) -> CGFloat? {

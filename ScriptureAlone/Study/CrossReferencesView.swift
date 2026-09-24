@@ -142,7 +142,9 @@ private struct CrossReferenceRow: View {
             Button { study.jump(to: row.reference.target, reader: model) } label: {
                 Label("Go to \(row.reference.target.display)", systemImage: "arrow.right")
             }
-            Button { copy() } label: { Label("Copy", systemImage: "doc.on.doc") }
+            if model.rights.permits(\.allowCopy) {
+                Button { copy() } label: { Label("Copy", systemImage: "doc.on.doc") }
+            }
         } preview: {
             VStack(alignment: .leading, spacing: 8) {
                 Text(row.reference.target.display).font(.headline)
@@ -154,7 +156,8 @@ private struct CrossReferenceRow: View {
     }
 
     private func copy() {
-        let text = "\(row.text)\n— \(row.reference.target.display) (\(model.translationID))"
+        let notice = model.translationInfo?.attributionNotice.map { "\n\n" + $0 } ?? ""
+        let text = "\(row.text)\n— \(row.reference.target.display) (\(model.translationAbbreviation))\(notice)"
         #if os(iOS)
         UIPasteboard.general.string = text
         #else

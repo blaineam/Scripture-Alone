@@ -77,7 +77,7 @@ struct NotesExportSheet: View {
                     Toggle("Include Verse Text", isOn: $includeVerses)
                     if includeVerses {
                         Picker("Translation", selection: $translation) {
-                            ForEach(model.translations) { Text("\($0.id) — \($0.name)").tag($0.id) }
+                            ForEach(model.translations) { Text("\($0.abbreviation) — \($0.name)").tag($0.id) }
                         }
                     }
                 } footer: {

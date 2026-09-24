@@ -141,6 +141,7 @@
 		EA448292B7A20B8D57D45331 /* FamilyCloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5C2F62B17B60C2195108C1F /* FamilyCloud.swift */; };
 		EB1582D26EAC997CB1ACE4C6 /* SlideCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E2E509013C8910CB37D5245 /* SlideCapture.swift */; };
 		EB6E25A2A5BCF50CE7B02050 /* ShareExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B03CE75511938642A77DD8B /* ShareExport.swift */; };
+		EC750938A3FCAC99AA441252 /* ImportedBibleSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99AE4A67B166D962CA7ED4C9 /* ImportedBibleSync.swift */; };
 		ED0CD84CD8558CC12E1798C4 /* SlideRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47828284C13AF1383A413F5F /* SlideRecognizer.swift */; };
 		EDA9187C1468F98845A72E2E /* SharedStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EE9C9FB37C5372A6951DA60 /* SharedStore.swift */; };
 		EE73B1F165ECF6F9788E2B5C /* VerseStyling.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0BEC0687ECE009ECE357AB /* VerseStyling.swift */; };
@@ -318,6 +319,7 @@
 		93FAE7B8C1A17A1BAD1F94B7 /* Entities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entities.swift; sourceTree = "<group>"; };
 		94BF719AE320CC291255FBE5 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
 		961828BA63931539A77621BD /* ChapterTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterTextView.swift; sourceTree = "<group>"; };
+		99AE4A67B166D962CA7ED4C9 /* ImportedBibleSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedBibleSync.swift; sourceTree = "<group>"; };
 		9AF91EB082450DA041248BE6 /* ShareSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSupport.swift; sourceTree = "<group>"; };
 		9DB385840CA261E1F5B13852 /* ScriptureAloneWatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ScriptureAloneWatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9DE766724AEE6AA9844B429B /* StudyPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyPanel.swift; sourceTree = "<group>"; };
@@ -674,6 +676,7 @@
 				3FCF3BC4B64741451E8DC375 /* CatalogDownloader.swift */,
 				CE740C0009D2087C316AAC0A /* CatalogTranslation+Identity.swift */,
 				392230810B0A26093991E9F3 /* CatalogView.swift */,
+				99AE4A67B166D962CA7ED4C9 /* ImportedBibleSync.swift */,
 				B428BCAE12449F8C77B44484 /* ImportedLibrary.swift */,
 				516CA9EE0C2D72ED9057AC6E /* OnlineKeysView.swift */,
 				B979A47FCB565BD87D575D13 /* OnlineTextLoader.swift */,
@@ -1234,6 +1237,7 @@
 				83CCE3E5C6E32BA29D68C9B9 /* FamilySharingView.swift in Sources */,
 				C67DEDA793A56D2E57E364E9 /* FavoriteButton.swift in Sources */,
 				37FEC9F94DD87B26AB164FF6 /* FavoritesSection.swift in Sources */,
+				EC750938A3FCAC99AA441252 /* ImportedBibleSync.swift in Sources */,
 				31C68B8F127E821D23A383BD /* ImportedLibrary.swift in Sources */,
 				09AEBD0E10988629C66DB223 /* IntentLibrary.swift in Sources */,
 				51067F02DBFC89BBCD92F9F8 /* InterlinearView.swift in Sources */,

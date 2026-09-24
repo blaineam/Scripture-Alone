@@ -78,10 +78,15 @@ private struct RootView: View {
                 model.onlineSearch = { entry, query in try await loader.search(entry, query) }
 
                 model.refreshTranslations(imported: library.entries.map { ($0.info, $0.url) })
+                await ImportedBibleSync.shared.start()
                 // A Crossway key is enough to offer the ESV; API.Bible's picks are remembered
                 // when they are made, so they come back here without a network call and without
                 // the reader having to open the keys screen again.
                 model.setOnlineTranslations(OnlineCatalog.restored(keys: onlineKeys))
+            }
+            // Translations imported on another of the reader's devices, as they arrive.
+            .onChange(of: library.entries) {
+                model.refreshTranslations(imported: library.entries.map { ($0.info, $0.url) })
             }
             // Settings that arrived from iCloud after launch — on a reinstall, usually a moment
             // after the first frame. `@AppStorage` views follow on their own; the translation list

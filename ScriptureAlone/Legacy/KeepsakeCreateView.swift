@@ -47,7 +47,7 @@ struct KeepsakeCreateView: View {
                         .accessibilityLabel("Dedication")
                 }
                 Picker("Translation", selection: $translation) {
-                    ForEach(model.translations) { Text("\($0.id) — \($0.name)").tag($0.id) }
+                    ForEach(model.translations) { Text("\($0.abbreviation) — \($0.name)").tag($0.id) }
                 }
             } header: {
                 Text("From You")

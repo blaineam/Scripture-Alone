@@ -98,16 +98,21 @@ public extension TranslationInfo {
         return copyright.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    /// The one value every gate asks. A signed package's policy if there is one; otherwise the
-    /// licence line, read the way the app has always read it.
+    /// The one value every gate asks. A signed package's policy if there is one; then the
+    /// publisher's own published terms, for a translation the app recognises (`PublisherTerms`);
+    /// otherwise the licence line, read the way the app has always read it.
     var rights: TranslationRights {
-        grantedRights ?? (isPublicDomain ? .publicDomain : .licensedDefault)
+        if let grantedRights { return grantedRights }
+        if isPublicDomain { return .publicDomain }
+        return publisherTerms?.rights ?? .licensedDefault
     }
 
     /// The line that must travel with a quotation from this translation, or nil when none is
-    /// required.
+    /// required: the publisher's own notice when the app knows it, the file's copyright line
+    /// otherwise.
     var attributionNotice: String? {
-        isPublicDomain ? nil : copyright.trimmingCharacters(in: .whitespacesAndNewlines)
+        if isPublicDomain { return nil }
+        return publisherTerms?.notice ?? copyright.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// Publishers' standard permissions converge on a few hundred verses before written

@@ -112,11 +112,13 @@ enum IntentLibrary {
     /// "“For God so loved…” — John 3:16 (ASV)", numbered verses when more than one — the same
     /// form the reader copies.
     static func quotation(_ passages: [Resolved], in source: any ChapterTextSource) -> String {
-        passages.compactMap { passage -> String? in
+        let blocks = passages.compactMap { passage -> String? in
             guard let verses = try? source.verses(in: passage.kjv), !verses.isEmpty else { return nil }
             return "\(text(of: verses))\n— \(passage.native.display) (\(source.info.abbreviation))"
         }
-        .joined(separator: "\n\n")
+        // The notice the publisher requires travels with every quotation.
+        let notice = blocks.isEmpty ? [] : (source.info.attributionNotice.map { [$0] } ?? [])
+        return (blocks + notice).joined(separator: "\n\n")
     }
 
     static func text(of verses: [VerseText]) -> String {

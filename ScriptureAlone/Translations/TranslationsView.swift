@@ -194,6 +194,22 @@ private struct ImportSummaryView: View {
         return String(localized: "Not in this file: \(shown)", comment: "Import coverage. %@ is a list of verse references like “17:36, 23:17”.")
     }
 
+    /// Which publisher's terms copying and sharing will follow, so a reader can see the importer
+    /// recognised the translation — or that it didn't, and the cautious default applies.
+    private var quotingTerms: String {
+        let info = TranslationInfo(id: result.identity.id, name: result.identity.name,
+                                   abbreviation: result.identity.abbreviation,
+                                   copyright: result.identity.copyright, license: result.identity.license)
+        if info.isPublicDomain { return String(localized: "Public domain — no limit", comment: "Import summary: an imported translation that needs no permission to quote.") }
+        guard let terms = info.publisherTerms else {
+            return String(localized: "Not recognised — up to \(info.rights.maxQuotationVerses) verses", comment: "Import summary: the translation's publisher terms weren't recognised, so a cautious verse limit applies. %lld is a number of verses.")
+        }
+        if let limit = terms.maxVerses {
+            return String(localized: "\(terms.abbreviation) terms — up to \(limit) verses", comment: "Import summary: quoting follows this publisher's terms. %1$@ is a translation abbreviation like “ESV”; %2$lld is a number of verses.")
+        }
+        return String(localized: "\(terms.abbreviation) terms — no verse limit", comment: "Import summary: quoting follows this publisher's terms, which set no verse count. %@ is a translation abbreviation like “NET”.")
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -201,6 +217,7 @@ private struct ImportSummaryView: View {
                     LabeledContent("Translation", value: result.identity.name)
                     LabeledContent("Books", value: "\(result.report.books.count)")
                     LabeledContent("Verses", value: result.report.totalVerses.formatted())
+                    LabeledContent("Quoting", value: quotingTerms)
                 } footer: {
                     Text(result.identity.copyright)
                 }

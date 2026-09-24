@@ -555,6 +555,126 @@
         }
       }
     },
+    "%@ allows up to %lld%% of %@ in one quotation. Select fewer verses to copy or share." : {
+      "comment" : "%1$@ is a translation abbreviation, e.g. “ESV”; %2$lld is a percentage; %3$@ is a book of the Bible.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ erlaubt pro Zitat höchstens %2$lld %% von %3$@. Wähle weniger Verse aus, um zu kopieren oder zu teilen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ allows up to %2$lld%% of %3$@ in one quotation. Select fewer verses to copy or share."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ permite citar hasta el %2$lld %% de %3$@ a la vez. Selecciona menos versículos para copiar o compartir."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ autorise au maximum %2$lld %% de %3$@ par citation. Sélectionnez moins de versets pour copier ou partager."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La %1$@ consente fino al %2$lld%% di %3$@ per citazione. Seleziona meno versetti per copiare o condividere."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ の引用は一度に %3$@ の %2$lld%% までです。節の選択を減らしてコピーまたは共有してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@은(는) 한 번에 %3$@의 최대 %2$lld%%까지 인용할 수 있습니다. 구절을 더 적게 선택해 복사하거나 공유하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A %1$@ permite até %2$lld%% de %3$@ por citação. Selecione menos versículos para copiar ou compartilhar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 每次引用最多为%3$@的 %2$lld%%。请减少经文选择后再复制或分享。"
+          }
+        }
+      }
+    },
+    "%@ can't be quoted a whole book at a time. Select less of %@ to copy or share." : {
+      "comment" : "%1$@ is a translation abbreviation, e.g. “ESV”; %2$@ is a book of the Bible.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ darf nicht als ganzes Buch zitiert werden. Wähle weniger aus %2$@ aus, um zu kopieren oder zu teilen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ can't be quoted a whole book at a time. Select less of %2$@ to copy or share."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ no permite citar un libro completo. Selecciona menos de %2$@ para copiar o compartir."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ ne peut pas être cité un livre entier à la fois. Sélectionnez moins de %2$@ pour copier ou partager."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La %1$@ non consente di citare un libro intero. Seleziona meno di %2$@ per copiare o condividere."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ は書全体を一度に引用できません。%2$@ の選択を減らしてコピーまたは共有してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@은(는) 책 전체를 한 번에 인용할 수 없습니다. %2$@에서 더 적게 선택해 복사하거나 공유하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A %1$@ não permite citar um livro inteiro. Selecione menos de %2$@ para copiar ou compartilhar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 不允许一次引用整卷书。请减少%2$@的选择后再复制或分享。"
+          }
+        }
+      }
+    },
     "%@ can't be quoted outside the app." : {
       "comment" : "%@ is a translation abbreviation, e.g. “ESV”, or “This translation”.",
       "localizations" : {
@@ -1363,6 +1483,126 @@
         }
       }
     },
+    "%@ terms — no verse limit" : {
+      "comment" : "Import summary: quoting follows this publisher's terms, which set no verse count. %@ is a translation abbreviation like “NET”.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bedingungen der %@ – ohne Versbegrenzung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%@ terms — no verse limit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condiciones de la %@: sin límite de versículos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions de la %@ — sans limite de versets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condizioni della %@ — nessun limite di versetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ の規定 — 節数の制限なし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 이용 조건 — 구절 수 제한 없음"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termos da %@ — sem limite de versículos"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 条款 — 无节数限制"
+          }
+        }
+      }
+    },
+    "%@ terms — up to %lld verses" : {
+      "comment" : "Import summary: quoting follows this publisher's terms. %1$@ is a translation abbreviation like “ESV”; %2$lld is a number of verses.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bedingungen der %1$@ – höchstens %2$lld Verse"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ terms — up to %2$lld verses"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condiciones de la %1$@: hasta %2$lld versículos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions de la %1$@ — au maximum %2$lld versets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condizioni della %1$@ — fino a %2$lld versetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ の規定 — 最大 %2$lld 節"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 이용 조건 — 최대 %2$lld개 구절"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termos da %1$@ — até %2$lld versículos"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 条款 — 最多 %2$lld 节"
+          }
+        }
+      }
+    },
     "%@ theme" : {
       "localizations" : {
         "de" : {
@@ -1691,6 +1931,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ — %2$@"
+          }
+        }
+      }
+    },
+    "%@'s publisher doesn't allow sharing from an app" : {
+      "comment" : "%@ is a translation abbreviation, e.g. “NRSV”.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Verlag der %@ erlaubt kein Teilen aus einer App"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%@'s publisher doesn't allow sharing from an app"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La editorial de la %@ no permite compartir desde una app"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’éditeur de la %@ n’autorise pas le partage depuis une app"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’editore della %@ non consente la condivisione da un’app"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ の出版社はアプリからの共有を許可していません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 출판사는 앱에서 공유하는 것을 허용하지 않습니다"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A editora da %@ não permite compartilhar a partir de um app"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 的出版方不允许从应用中分享"
+          }
+        }
+      }
+    },
+    "%@'s publisher doesn't allow verse images" : {
+      "comment" : "%@ is a translation abbreviation, e.g. “NIV”.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Verlag der %@ erlaubt keine Versbilder"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%@'s publisher doesn't allow verse images"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La editorial de la %@ no permite imágenes de versículos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’éditeur de la %@ n’autorise pas les images de versets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’editore della %@ non consente immagini di versetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ の出版社は聖句画像を許可していません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 출판사는 구절 이미지를 허용하지 않습니다"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A editora da %@ não permite imagens de versículos"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 的出版方不允许制作经文图片"
           }
         }
       }
@@ -20715,6 +21075,66 @@
         }
       }
     },
+    "Not recognised — up to %lld verses" : {
+      "comment" : "Import summary: the translation's publisher terms weren't recognised, so a cautious verse limit applies. %lld is a number of verses.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht erkannt – höchstens %lld Verse"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not recognised — up to %lld verses"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No reconocida: hasta %lld versículos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non reconnue — au maximum %lld versets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non riconosciuta — fino a %lld versetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不明 — 最大 %lld 節"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인되지 않음 — 최대 %lld개 구절"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não reconhecida — até %lld versículos"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未能识别 — 最多 %lld 节"
+          }
+        }
+      }
+    },
     "Not set" : {
       "comment" : "No name or dedication has been entered",
       "localizations" : {
@@ -25587,6 +26007,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用口令保护"
+          }
+        }
+      }
+    },
+    "Public domain — no limit" : {
+      "comment" : "Import summary: an imported translation that needs no permission to quote.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemeinfrei – ohne Begrenzung"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Public domain — no limit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dominio público: sin límite"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Domaine public — sans limite"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pubblico dominio — nessun limite"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パブリックドメイン — 制限なし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "퍼블릭 도메인 — 제한 없음"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Domínio público — sem limite"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公有领域 — 无限制"
+          }
+        }
+      }
+    },
+    "Quoting" : {
+      "comment" : "Import summary row label: which terms govern quoting this translation.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zitieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Quoting"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Citas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Citations"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Citazioni"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "引用"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "인용"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Citações"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "引用"
           }
         }
       }
