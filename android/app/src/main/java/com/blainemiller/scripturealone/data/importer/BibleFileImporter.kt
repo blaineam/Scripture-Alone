@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.data.importer
 
 import com.blainemiller.scripturealone.R
+import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.rights.PublisherTerms
 import com.blainemiller.scripturealone.text.AppText
 import java.io.File
@@ -86,9 +87,19 @@ class BibleFileImporter(
     /**
      * Reads the file and writes the store. [identity] overrides what the file said about itself — the
      * import sheet is expected to pass the name and copyright line the user confirmed.
+     *
+     * [redLetters] reads a verse (text and red spans, in scalars) from a translation that marks the
+     * words of Christ, to carry them over when the file marks none of its own ([inferRedLetters]).
+     * Verses that don't align with it are left as they are.
      */
-    fun importBible(file: File, identity: ImportedTranslationIdentity? = null, directory: File): BibleImportResult {
+    fun importBible(
+        file: File,
+        identity: ImportedTranslationIdentity? = null,
+        directory: File,
+        redLetters: ((VerseRef) -> Pair<String, List<ScalarSpan>>?)? = null,
+    ): BibleImportResult {
         val (bible, preview) = read(file)
+        if (redLetters != null && options.redLetters) bible.inferRedLetters(redLetters)
         val chosen = identity ?: preview.identity
         val storeFile = File(directory, storeFilename(chosen))
         val report = ImportedBibleBuilder.write(bible, chosen, storeFile, openStore)

@@ -95,6 +95,7 @@ import com.blainemiller.scripturealone.data.online.OnlineEntry
 import com.blainemiller.scripturealone.data.online.OnlineProvider
 import com.blainemiller.scripturealone.data.rights.TranslationRights
 import com.blainemiller.scripturealone.data.translations.ImportedTranslation
+import com.blainemiller.scripturealone.data.translations.RedLetterReference
 import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
@@ -146,8 +147,10 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
         scope.launch {
             val result = withContext(Dispatchers.IO) {
                 runCatching {
+                    // A file that marks no words of Christ can take them from a translation that
+                    // does, when one is on the device (only verses that align closely are marked).
                     BibleFileImporter(BundledStoreWriter.opener)
-                        .importBible(file, identity, TranslationLibrary.importedDirectory(context))
+                        .importBible(file, identity, TranslationLibrary.importedDirectory(context), RedLetterReference.lookup(context))
                 }.also {
                     if (cleanUp) file.delete()
                     TranslationLibrary.reloadImported()

@@ -59,8 +59,29 @@ class RealFileProbeTest {
         val directory = File(out, "store").also { it.deleteRecursively(); it.mkdirs() }
         var identity = preview.identity
         if (identity.copyright.isBlank()) identity = identity.copy(copyright = "probe")
-        val result = ImportFixtures.importer().importBible(file, identity, directory)
+        val redStore = System.getenv("SA_IMPORT_PROBE_RED")?.let { JdbcSqlSource(File(it)) }
+        val redLetters: ((com.blainemiller.scripturealone.data.VerseRef) -> Pair<String, List<ScalarSpan>>?)? = redStore?.let { store ->
+            { ref ->
+                store.query("SELECT text, red FROM verses WHERE id = ?", ref.key) { row ->
+                    val red = if (row.isNull(1)) emptyList() else Regex("""\[\s*(\d+)\s*,\s*(\d+)\s*]""").findAll(row.text(1))
+                        .map { ScalarSpan(it.groupValues[1].toInt(), it.groupValues[2].toInt()) }.toList()
+                    row.text(0) to red
+                }.firstOrNull()
+            }
+        }
+        val result = ImportFixtures.importer().importBible(file, identity, directory, redLetters)
+        redStore?.close()
         println("PROBE store: ${result.storeFile} — ${result.report.summary}")
+        if (redLetters != null) {
+            ImportedStoreReader(result.storeFile).use { written ->
+                println("PROBE red letters: ${written.meta["red_letters"] ?: "the file's own"}")
+                for (verse in listOf(ref(BookID.JOHN, 3, 16), ref(BookID.JOHN, 14, 6), ref(BookID.MATTHEW, 5, 3), ref(BookID.JOHN, 3, 1))) {
+                    val row = written.verses(verse).firstOrNull() ?: continue
+                    val points = row.text.codePoints().toArray()
+                    println("PROBE RED $verse: " + row.red.joinToString(" | ") { String(points, it.start, it.length) })
+                }
+            }
+        }
         val info = TranslationInfo(identity.id, identity.name, identity.abbreviation, identity.copyright, identity.license)
         JdbcSqlSource(result.storeFile).use { source ->
             val store = ImportedStudyStore.open(source, info) ?: return

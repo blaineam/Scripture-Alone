@@ -12,6 +12,8 @@
   note on every verse it covers, in any language), its book introductions with each book's first
   chapter, its essays at the verse they stand beside, and its maps and pictures under Maps &
   Images in the Context tab, full size on a tap. They go when the translation is removed.
+- On Android, an imported translation whose file doesn't mark the words of Christ takes them,
+  verse by verse, from the BSB (or KJV) on the device, marking only words that line up closely.
 - An imported English translation whose file doesn't mark the words of Christ gets them from
   the BSB (or KJV) on the device: each verse is matched word for word, and only the words that
   line up with red ones turn red — "Jesus said to him" stays black, "I am the way" turns red. A
