@@ -267,7 +267,11 @@ public enum SlideParser {
 
     private static func classify(_ text: String) -> Kind {
         let letters = text.filter(\.isLetter).count
-        if letters < 3 { return .noise }
+        // A Chinese, Japanese or Korean word is whole in two or three characters (恩典, 好牧人,
+        // 선한 목자), so the length floors below that suit Latin text would throw a title away.
+        let cjk = text.unicodeScalars.contains { (0x3040...0x30FF).contains($0.value)
+            || (0x3400...0x9FFF).contains($0.value) || (0xAC00...0xD7AF).contains($0.value) }
+        if letters < (cjk ? 2 : 3) { return .noise }
         let lower = text.lowercased()
         func has(_ pattern: String) -> Bool { lower.range(of: pattern, options: .regularExpression) != nil }
 
@@ -280,7 +284,7 @@ public enum SlideParser {
         if isDateOrTime(lower) { return .noise }
         if has(#"^(slide|page)?\s*\d+\s*(/|of)\s*\d+$"#) { return .noise }
         if isChurchName(text) { return .noise }
-        if letters < 4 && text.count <= 4 { return .noise }
+        if !cjk && letters < 4 && text.count <= 4 { return .noise }
         return .content
     }
 

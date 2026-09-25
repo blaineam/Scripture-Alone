@@ -48,7 +48,13 @@ struct StudyPanel: View {
     /// the reader's floats over the commentary or the maps.
     var isSheet = false
 
-    @State private var detent: PresentationDetent = .fraction(0.45)
+    @State private var detent: PresentationDetent = {
+        #if DEBUG
+        // The maps screenshot: the sheet up, so the map has the room it has on a larger screen.
+        if ScreenshotScene.current == .maps { return .large }
+        #endif
+        return .fraction(0.45)
+    }()
     @State private var showSources = false
 
     var body: some View {

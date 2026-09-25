@@ -4,9 +4,9 @@
       "La Parole,",
       "rien d'autre"
     ],
-    "jump": [
-      "Allez partout,",
-      "d'un seul geste"
+    "topics": [
+      "La Parole pour",
+      "ce que vous vivez"
     ],
     "study": [
       "Renvois",
@@ -20,17 +20,25 @@
       "Le sermon,",
       "en une photo"
     ],
+    "highlights": [
+      "Vos surlignages,",
+      "tous réunis"
+    ],
     "listen": [
       "Écoutez",
       "chaque chapitre"
+    ],
+    "themes": [
+      "À votre façon,",
+      "jour et nuit"
     ],
     "share": [
       "Partagez un verset",
       "avec style"
     ],
-    "themes": [
-      "À votre façon,",
-      "jour et nuit"
+    "jump": [
+      "Allez partout,",
+      "d'un seul geste"
     ]
   },
   "ipad-13": {
@@ -38,9 +46,9 @@
       "La Parole,",
       "rien d'autre"
     ],
-    "jump": [
-      "Allez partout,",
-      "d'un seul geste"
+    "topics": [
+      "La Parole pour",
+      "ce que vous vivez"
     ],
     "study": [
       "Renvois",
@@ -54,17 +62,25 @@
       "Le sermon,",
       "en une photo"
     ],
+    "highlights": [
+      "Vos surlignages,",
+      "tous réunis"
+    ],
     "listen": [
       "Écoutez",
       "chaque chapitre"
+    ],
+    "themes": [
+      "À votre façon,",
+      "jour et nuit"
     ],
     "share": [
       "Partagez un verset",
       "avec style"
     ],
-    "themes": [
-      "À votre façon,",
-      "jour et nuit"
+    "jump": [
+      "Allez partout,",
+      "d'un seul geste"
     ]
   }
 }

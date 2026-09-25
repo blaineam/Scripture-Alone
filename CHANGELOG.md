@@ -2,6 +2,10 @@
 
 ## After 1.0.0
 
+- A sermon slide whose title is a short Chinese, Japanese or Korean word (好牧人) keeps it as the
+  note's title, instead of passing it over as too short and titling the note from a bullet line.
+- The map's place search reads "Find a place" in Spanish, French and Japanese (it said "find a
+  passage").
 - The App Store and Google Play listings, in all nine languages, now describe Topics, importing
   your own Bibles (ePub, PDF, study-Bible material), the Highlights list, Study's Context and what
   the watch carries. `play-listing.yml` (`scripts/play-listing.mjs`) uploads the Play listing text,

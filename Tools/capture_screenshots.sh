@@ -51,13 +51,15 @@ WATCH="Scripture Alone Shots Apple Watch Series 11 (46mm)|com.apple.CoreSimulato
 # The store story, in listing order: "<file>|<scene>|<extra launch args>".
 SCENES=(
     "01-reader|reader|-reader.theme light"
-    "02-jump|jump|-reader.theme light"
+    "02-topics|topics|-reader.theme light"
     "03-study|study|-reader.theme light"
     "04-maps|maps|-reader.theme light"
     "05-sermon-notes|sermon-notes|-reader.theme light"
-    "06-listen|listen|-reader.theme light"
-    "07-share|share|-reader.theme light -share.template dawn -share.aspect square"
+    "06-highlights|highlights|-reader.theme light"
+    "07-listen|listen|-reader.theme light"
     "08-themes|themes|-reader.theme black"
+    "09-share|share|-reader.theme light -share.template dawn -share.aspect square"
+    "10-jump|jump|-reader.theme light"
 )
 
 sim_udid() {  # sim_udid "<name>|<type>|<platform>" -> UDID, created on first use
@@ -139,7 +141,7 @@ capture_ios() {  # capture_ios "<sim spec>" <rawKey>
                 cap_launch "$udid" "$BUNDLE_ID" "$scene" screenshotScene
             # Scenes stage themselves ~0.7-3 s after launch; the listen scene needs a voice going.
             local settle=6
-            case "$scene" in listen|sermon-notes|maps) settle=9 ;; esac
+            case "$scene" in listen|sermon-notes|maps|topics) settle=9 ;; esac
             cap_screenshot "$udid" "$dir/$file.png" "$settle"
         done
     done
@@ -171,8 +173,9 @@ capture_watch() {
     local shots=(
         "01-today|"
         "02-verse|scripturealone://open?ref=43003016-43003017"
-        "03-favorites|favorites"
-        "04-notes|notes"
+        "03-highlights|highlights"
+        "04-favorites|favorites"
+        "05-notes|notes"
     )
     # A locale reader's watch reads the edition their phone sent it. The rig puts that edition
     # exactly where a phone transfer lands (Documents/Translations/<ID>-Watch.sqlite) and chooses

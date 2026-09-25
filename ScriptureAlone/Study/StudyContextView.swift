@@ -88,7 +88,13 @@ struct StudyContextView: View {
 struct StudyContextBrowser: View {
     let chapter: ChapterRef
     let verse: Int?
-    @State private var tab = ContextViewerRequest.Tab.overview
+    @State private var tab: ContextViewerRequest.Tab = {
+        #if DEBUG
+        // The maps screenshot: Study's Context tab, on the map.
+        if ScreenshotScene.current == .maps { return .map }
+        #endif
+        return .overview
+    }()
     /// A chart the overview asked for, opened on top.
     @State private var chart: String?
 

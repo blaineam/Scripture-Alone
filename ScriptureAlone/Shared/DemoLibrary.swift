@@ -3,7 +3,7 @@ import SwiftData
 import ScriptureAloneCore
 
 /// DEBUG-only demo content for simulator verification and screenshot rigs: launch with
-/// `-seedDemoLibrary` and an empty store gets a few favorites, highlights and two sermon notes —
+/// `-seedDemoLibrary` and an empty store gets a few favorites, a list of highlights and two sermon notes —
 /// no personal data, no taps needed. The App Store rig adds `-inMemoryStore` so every scene
 /// starts from exactly this library. Compiled into the phone/Mac app and the watch app.
 enum DemoLibrary {
@@ -30,6 +30,18 @@ enum DemoLibrary {
         context.insert(Highlight(verseKey: VerseRef(.philippians, 4, 13).key, color: .blue))
         context.insert(Highlight(verseKey: VerseRef(.psalms, 23, 1).key, color: .green))
         context.insert(Highlight(verseKey: VerseRef(.john, 14, 6).key, color: .purple))
+        // More for the Highlights lists (phone and watch screenshots): none of these chapters is
+        // on screen in another scene, so the reader scenes keep just the marks above.
+        let more: [(BookID, Int, ClosedRange<Int>, HighlightColor)] = [
+            (.proverbs, 3, 5...6, .pink),
+            (.isaiah, 40, 31...31, .blue),
+            (.lamentations, 3, 22...23, .yellow),
+            (.matthew, 11, 28...30, .green),
+            (.romans, 8, 28...28, .purple),
+        ]
+        for (book, chapter, verses, color) in more {
+            for verse in verses { context.insert(Highlight(verseKey: VerseRef(book, chapter, verse).key, color: color)) }
+        }
         let romans = Note(title: String(localized: "Sunday sermon: No condemnation", comment: "Sample note shown in App Store screenshots (demo mode)"),
                           body: String(localized: "Life in the Spirit. Verse 1 is the hinge — everything after it flows from “no condemnation.”", comment: "Sample note shown in App Store screenshots (demo mode)"),
                           anchors: [VerseRange(VerseRef(.romans, 8, 1), VerseRef(.romans, 8, 17))])

@@ -13,8 +13,13 @@ enum ScreenshotScene: String, CaseIterable {
     case jump
     /// Study mode following John 3:16: ranked cross references.
     case study
-    /// Maps & Timeline for Acts 13: Paul's first journey on the offline map.
+    /// Acts 13 on the offline map, Paul's first journey, in Study's Context tab: the sheet on
+    /// iPhone, the panel beside the text on iPad.
     case maps
+    /// Go To → Topics → Anxiety & Worry: the life theme's passages in the reader's own Bible.
+    case topics
+    /// Notes → Highlights: the demo library's highlighted verses, in Bible order and colour.
+    case highlights
     /// A sermon slide imported as a photo, read on device into a new note.
     case sermonNotes = "sermon-notes"
     /// John 14 read aloud with a system voice: the Listen bar and the spoken verse.

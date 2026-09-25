@@ -4,9 +4,9 @@
       "The Word,",
       "nothing in the way"
     ],
-    "jump": [
-      "Go anywhere",
-      "in a tap"
+    "topics": [
+      "Scripture for",
+      "what you carry"
     ],
     "study": [
       "Cross-references",
@@ -20,17 +20,25 @@
       "Snap the",
       "sermon slide"
     ],
+    "highlights": [
+      "Every highlight,",
+      "in one place"
+    ],
     "listen": [
       "Listen to",
       "any chapter"
+    ],
+    "themes": [
+      "Read your way,",
+      "day or night"
     ],
     "share": [
       "Share a verse,",
       "beautifully"
     ],
-    "themes": [
-      "Read your way,",
-      "day or night"
+    "jump": [
+      "Go anywhere",
+      "in a tap"
     ]
   },
   "ipad-13": {
@@ -38,9 +46,9 @@
       "The Word,",
       "nothing in the way"
     ],
-    "jump": [
-      "Go anywhere",
-      "in a tap"
+    "topics": [
+      "Scripture for",
+      "what you carry"
     ],
     "study": [
       "Cross-references",
@@ -54,17 +62,25 @@
       "Snap the",
       "sermon slide"
     ],
+    "highlights": [
+      "Every highlight,",
+      "in one place"
+    ],
     "listen": [
       "Listen to",
       "any chapter"
+    ],
+    "themes": [
+      "Read your way,",
+      "day or night"
     ],
     "share": [
       "Share a verse,",
       "beautifully"
     ],
-    "themes": [
-      "Read your way,",
-      "day or night"
+    "jump": [
+      "Go anywhere",
+      "in a tap"
     ]
   }
 }

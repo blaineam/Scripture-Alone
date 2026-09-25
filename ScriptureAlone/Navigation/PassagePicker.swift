@@ -103,6 +103,15 @@ struct PassagePicker: View {
             #if DEBUG
             // The jump screenshot shows the book grid, not a keyboard.
             if ScreenshotScene.current == .jump { return }
+            // The topics screenshot: a life theme's passages, not a keyboard.
+            if ScreenshotScene.current == .topics {
+                // Pushed once the sheet has finished coming up, as a tap would.
+                Task {
+                    try? await Task.sleep(for: .milliseconds(900))
+                    if path.isEmpty { path.append(TopicsRoute.theme("anxiety")) }
+                }
+                return
+            }
             #endif
             focused = true
         }

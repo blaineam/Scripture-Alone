@@ -158,6 +158,10 @@ struct NotesPanel: View {
             .slideCapture(slideCapture) { note in path = [note.uuid] }
             #if DEBUG
             .task {
+                // The highlights screenshot: the Highlights list, everywhere in the Bible.
+                if ScreenshotScene.current == .highlights { scope = .highlights }
+            }
+            .task {
                 // The sermon-notes screenshot: a sample slide through the photo-import path.
                 guard ScreenshotScene.current == .sermonNotes, let data = ScreenshotScene.sampleSlideData else { return }
                 try? await Task.sleep(for: .milliseconds(900))

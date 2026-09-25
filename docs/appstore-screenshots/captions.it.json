@@ -4,9 +4,9 @@
       "La Parola,",
       "senza distrazioni"
     ],
-    "jump": [
-      "Vai ovunque",
-      "con un tocco"
+    "topics": [
+      "La Parola per",
+      "ciò che vivi"
     ],
     "study": [
       "Rimandi biblici",
@@ -20,17 +20,25 @@
       "Fotografa",
       "e prendi appunti"
     ],
+    "highlights": [
+      "Evidenziazioni,",
+      "tutte in un posto"
+    ],
     "listen": [
       "Ascolta",
       "ogni capitolo"
+    ],
+    "themes": [
+      "Leggi come vuoi,",
+      "giorno e notte"
     ],
     "share": [
       "Condividi",
       "con stile"
     ],
-    "themes": [
-      "Leggi come vuoi,",
-      "giorno e notte"
+    "jump": [
+      "Vai ovunque",
+      "con un tocco"
     ]
   },
   "ipad-13": {
@@ -38,9 +46,9 @@
       "La Parola,",
       "senza distrazioni"
     ],
-    "jump": [
-      "Vai ovunque",
-      "con un tocco"
+    "topics": [
+      "La Parola per",
+      "ciò che vivi"
     ],
     "study": [
       "Rimandi biblici",
@@ -54,17 +62,25 @@
       "Fotografa",
       "e prendi appunti"
     ],
+    "highlights": [
+      "Evidenziazioni,",
+      "tutte in un posto"
+    ],
     "listen": [
       "Ascolta",
       "ogni capitolo"
+    ],
+    "themes": [
+      "Leggi come vuoi,",
+      "giorno e notte"
     ],
     "share": [
       "Condividi",
       "con stile"
     ],
-    "themes": [
-      "Leggi come vuoi,",
-      "giorno e notte"
+    "jump": [
+      "Vai ovunque",
+      "con un tocco"
     ]
   }
 }

@@ -4,9 +4,9 @@
       "La Palabra,",
       "sin distracciones"
     ],
-    "jump": [
-      "Ve adonde quieras",
-      "de un toque"
+    "topics": [
+      "La Palabra para",
+      "lo que vives"
     ],
     "study": [
       "Referencias",
@@ -20,17 +20,25 @@
       "Haz una foto",
       "a la diapositiva"
     ],
+    "highlights": [
+      "Tus subrayados,",
+      "todos a mano"
+    ],
     "listen": [
       "Escucha",
       "cualquier capítulo"
+    ],
+    "themes": [
+      "A tu manera,",
+      "de día o de noche"
     ],
     "share": [
       "Comparte un",
       "versículo precioso"
     ],
-    "themes": [
-      "A tu manera,",
-      "de día o de noche"
+    "jump": [
+      "Ve adonde quieras",
+      "de un toque"
     ]
   },
   "ipad-13": {
@@ -38,9 +46,9 @@
       "La Palabra,",
       "sin distracciones"
     ],
-    "jump": [
-      "Ve adonde quieras",
-      "de un toque"
+    "topics": [
+      "La Palabra para",
+      "lo que vives"
     ],
     "study": [
       "Referencias",
@@ -54,17 +62,25 @@
       "Haz una foto",
       "a la diapositiva"
     ],
+    "highlights": [
+      "Tus subrayados,",
+      "todos a mano"
+    ],
     "listen": [
       "Escucha",
       "cualquier capítulo"
+    ],
+    "themes": [
+      "A tu manera,",
+      "de día o de noche"
     ],
     "share": [
       "Comparte un",
       "versículo precioso"
     ],
-    "themes": [
-      "A tu manera,",
-      "de día o de noche"
+    "jump": [
+      "Ve adonde quieras",
+      "de un toque"
     ]
   }
 }

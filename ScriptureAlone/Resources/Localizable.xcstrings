@@ -13158,13 +13158,13 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buscar un pasaje"
+            "value" : "Buscar un lugar"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trouver un passage"
+            "value" : "Trouver un lieu"
           }
         },
         "it" : {
@@ -13176,7 +13176,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "箇所を探す"
+            "value" : "場所を探す"
           }
         },
         "ko" : {

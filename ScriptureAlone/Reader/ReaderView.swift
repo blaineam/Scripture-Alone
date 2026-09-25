@@ -420,8 +420,20 @@ struct ReaderView: View {
             study.tab = .crossReferences
             study.turnOn(selection: model.selectedKJVKeys)
         case .maps:
-            // ContextReaderHooks opens the viewer on the map.
+            // Study's Context tab on the map (StudyContextBrowser opens on it for this scene): the
+            // sheet on iPhone, the panel beside the text on iPad.
             model.show(ChapterRef(.acts, 13), verse: 1)
+            study.tab = .context
+            study.turnOn(selection: [])
+            study.follow(ScreenshotScene.key(.acts, 13, 4))
+        case .topics:
+            // PassagePicker opens the Anxiety & Worry theme for this scene.
+            model.show(john3, verse: 14)
+            showPicker = true
+        case .highlights:
+            // NotesPanel starts on Highlights for this scene.
+            model.show(john3, verse: 14)
+            showNotes = true
         case .sermonNotes:
             // NotesPanel imports the sample slide once it's up.
             model.show(ChapterRef(.john, 10), verse: 7)

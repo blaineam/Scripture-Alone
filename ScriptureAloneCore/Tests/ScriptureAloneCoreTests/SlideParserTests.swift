@@ -22,6 +22,19 @@ import Testing
         #expect(reading.bodyLines == ["Pastor Mark Ellis — Week 3 of \"I Am\""])
     }
 
+    /// A three-character Chinese title is a whole title, not noise too short to keep.
+    @Test func shortChineseTitleIsKept() {
+        let slide: [SlideLine] = [
+            SlideLine("好牧人", x: 0.10, y: 0.20, width: 0.25, height: 0.10),
+            SlideLine("他按着名叫自己的羊", x: 0.10, y: 0.45, width: 0.40, height: 0.04),
+            SlideLine("好牧人为羊舍命", x: 0.10, y: 0.52, width: 0.34, height: 0.04),
+            SlideLine("一群羊，一个牧人", x: 0.10, y: 0.59, width: 0.36, height: 0.04),
+        ]
+        let reading = SlideParser.read(slide)
+        #expect(reading.title == "好牧人")
+        #expect(reading.bodyLines.contains("好牧人为羊舍命"))
+    }
+
     @Test func pointSlideKeepsItsLinesInReadingOrder() {
         // A later slide: a heading, three points with a passage, a slide number.
         let slide: [SlideLine] = [

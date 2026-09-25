@@ -4,9 +4,9 @@
       "A Palavra,",
       "sem distrações"
     ],
-    "jump": [
-      "Num toque,",
-      "você está lá"
+    "topics": [
+      "A Palavra para",
+      "o que você vive"
     ],
     "study": [
       "Referências",
@@ -20,17 +20,25 @@
       "Fotografe o slide",
       "da pregação"
     ],
+    "highlights": [
+      "Seus destaques,",
+      "tudo num lugar"
+    ],
     "listen": [
       "Ouça qualquer",
       "capítulo"
+    ],
+    "themes": [
+      "Do seu jeito,",
+      "de dia ou à noite"
     ],
     "share": [
       "Compartilhe",
       "com beleza"
     ],
-    "themes": [
-      "Do seu jeito,",
-      "de dia ou à noite"
+    "jump": [
+      "Num toque,",
+      "você está lá"
     ]
   },
   "ipad-13": {
@@ -38,9 +46,9 @@
       "A Palavra,",
       "sem distrações"
     ],
-    "jump": [
-      "Num toque,",
-      "você está lá"
+    "topics": [
+      "A Palavra para",
+      "o que você vive"
     ],
     "study": [
       "Referências",
@@ -54,17 +62,25 @@
       "Fotografe o slide",
       "da pregação"
     ],
+    "highlights": [
+      "Seus destaques,",
+      "tudo num lugar"
+    ],
     "listen": [
       "Ouça qualquer",
       "capítulo"
+    ],
+    "themes": [
+      "Do seu jeito,",
+      "de dia ou à noite"
     ],
     "share": [
       "Compartilhe",
       "com beleza"
     ],
-    "themes": [
-      "Do seu jeito,",
-      "de dia ou à noite"
+    "jump": [
+      "Num toque,",
+      "você está lá"
     ]
   }
 }
