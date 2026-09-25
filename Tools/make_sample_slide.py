@@ -60,6 +60,11 @@ TEXT = {
 CJK_FONT = {"zh-Hans": ("Hiragino Sans GB.ttc", 0), "ja": ("Hiragino Sans GB.ttc", 0), "ko": ("AppleSDGothicNeo.ttc", 0)}
 
 
+# The simulator's text recognizer reads New York Regular's "H" in "Hirte" as "| l", titling the German
+# note "Der gute | lirte" (the Mac reads it fine). A heavier title weight gives it an unmistakable H.
+SEMIBOLD_TITLE = {"de-DE"}
+
+
 def slide(locale=None) -> Image.Image:
     title, passages, points, footer = TEXT[locale]
     top, bottom = (34, 35, 79), (104, 70, 110)  # the icon's indigo-to-plum dawn
@@ -74,6 +79,8 @@ def slide(locale=None) -> Image.Image:
         serif, sans, body, small = font(name, 120, index), font(name, 56, index), font(name, 52, index), font(name, 38, index)
     else:
         serif = font("NewYork.ttf", 132)
+        if locale in SEMIBOLD_TITLE:
+            serif.set_variation_by_name("Semibold")
         sans = font("Avenir Next.ttc", 60, index=5)   # Demi Bold
         body = font("Avenir Next.ttc", 54, index=0)   # Regular
         small = font("Avenir Next.ttc", 38, index=0)
