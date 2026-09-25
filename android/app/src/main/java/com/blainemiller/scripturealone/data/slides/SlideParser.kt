@@ -255,7 +255,10 @@ object SlideParser {
 
     private fun isContent(text: String): Boolean {
         val letters = text.count { it.isLetter() }
-        if (letters < 3) return false
+        // A Chinese, Japanese or Korean word is whole in two or three characters (恩典, 好牧人,
+        // 선한 목자), so the length floors below that suit Latin text would throw a title away.
+        val cjk = text.codePoints().anyMatch { it in 0x3040..0x30FF || it in 0x3400..0x9FFF || it in 0xAC00..0xD7AF }
+        if (letters < (if (cjk) 2 else 3)) return false
         val lower = text.lowercase()
         if (noiseLink.containsMatchIn(lower)) return false
         if (noiseLicense.containsMatchIn(lower)) return false
@@ -263,7 +266,7 @@ object SlideParser {
         if (isDateOrTime(lower)) return false
         if (slideNumber.containsMatchIn(lower)) return false
         if (isChurchName(text)) return false
-        if (letters < 4 && characterCount(text) <= 4) return false
+        if (!cjk && letters < 4 && characterCount(text) <= 4) return false
         return true
     }
 

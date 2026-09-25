@@ -34,6 +34,18 @@ class SlideParserTest {
         assertEquals(listOf("Pastor Mark Ellis — Week 3 of \"I Am\""), reading.bodyLines)
     }
 
+    /** A three-character Chinese title is a whole title, not noise too short to keep. */
+    @Test fun shortChineseTitleIsKept() {
+        val reading = SlideParser.read(listOf(
+            SlideLine("好牧人", 0.10, 0.20, 0.25, 0.10),
+            SlideLine("他按着名叫自己的羊", 0.10, 0.45, 0.40, 0.04),
+            SlideLine("好牧人为羊舍命", 0.10, 0.52, 0.34, 0.04),
+            SlideLine("一群羊，一个牧人", 0.10, 0.59, 0.36, 0.04),
+        ))
+        assertEquals("好牧人", reading.title)
+        assertTrue(reading.bodyLines.contains("好牧人为羊舍命"))
+    }
+
     @Test fun pointSlideKeepsItsLinesInReadingOrder() {
         val reading = SlideParser.read(listOf(
             SlideLine("The Shepherd Who Pursues", 0.05, 0.04, 0.35, 0.03),
