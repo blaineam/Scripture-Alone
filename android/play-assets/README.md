@@ -112,8 +112,8 @@ translation, the Phone, 7-inch tablet, 10-inch tablet and Wear OS screenshot sec
 
 ## Known
 
-- The German set's John 10 comes from LUT1912 as bundled, whose John 10:10 is split in two, so
-  "verse 11" there reads "Ich bin gekommen, daß sie das Leben…" and the good-shepherd sentence is
-  verse 12. The phone/tablet reader shots highlight what the data calls 10:11 and 10:14; they are
-  right again once the Bible is fixed and the German set re-shot (`… phone android/play-assets de-DE`, etc.).
+- A bundled Bible that changed since the build installed on the emulator is not re-copied: the
+  app copies each bundled database into `no_backup/bundled/` once and refreshes it only when the
+  versionCode changes. After rebuilding a Bible, delete it there first
+  (`adb shell rm /data/data/<package>/no_backup/bundled/<Bible>.sqlite`) or bump the versionCode.
 - pt-BR's Share Image title crowds the Done button ("Concluído"): the app's own layout, as shipped.
