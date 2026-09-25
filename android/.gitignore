@@ -13,6 +13,8 @@ app/src/main/assets/generated/
 packs/*/src/
 reference-ios/
 .kotlin/
-# Play listing working files: rendered screenshots/graphics and upload copies of bundles.
-play-assets/
+# Play listing working files: rendered screenshots/graphics and upload copies of bundles — all but
+# the README that says how they are made (tools/play_capture.py).
+play-assets/*
+!play-assets/README.md
 __pycache__/

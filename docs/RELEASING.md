@@ -179,6 +179,11 @@ gh workflow run play-listing.yml -R blaineam/Scripture-Alone --ref main -f dry_r
   not re-uploaded.
 - The service account also needs **Manage store presence** for Scripture Alone (Play Console ▸
   Users and permissions).
+- The screenshots themselves are made by `android/tools/play_capture.py` (every form factor, every
+  locale, the demo library of `play_seed.py`); `android/play-assets/README.md` says how. That
+  folder is git-ignored, so an `images=true` run of the workflow needs the sets committed or
+  `PLAY_LISTING_IMAGES` pointed at them; from a machine that has them, run the script locally with
+  `--key-file`.
 
 ### Moving a tag
 
