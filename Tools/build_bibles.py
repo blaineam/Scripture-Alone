@@ -515,6 +515,16 @@ strip_verse_prefix(Parser)
 USFM_CORRECTIONS = [
     ("NUM", "his sons:This", "his sons: This"),
     ("JER", "\u201cevenif you", "\u201ceven if you"),
+    # Luther 1912 (deu1912), John 10:10-12: the file starts verse 11 halfway through verse 10
+    # ("Ich bin gekommen, daß sie das Leben…") and runs verses 11 and 12 together, so "Ich bin der
+    # gute Hirte" came out as 10:12. Luther numbers it 10:11; 10:12 begins "Der Mietling aber".
+    # Applied in this order: fold the stray 11 into 10, renumber the good shepherd 11, start 12.
+    ("JHN", '\\v 11  \\w Ich|strong="G1473"\\w* bin \\w gekommen|strong="G2064"\\w*, daß sie das \\w Leben',
+            '\\w Ich|strong="G1473"\\w* bin \\w gekommen|strong="G2064"\\w*, daß sie das \\w Leben'),
+    ("JHN", '\\v 12  \\w Ich|strong="G1473"\\w* \\w bin|strong="G1510"\\w* der \\w gute|strong="G2570"\\w* \\w Hirte',
+            '\\v 11  \\w Ich|strong="G1473"\\w* \\w bin|strong="G1510"\\w* der \\w gute|strong="G2570"\\w* \\w Hirte'),
+    ("JHN", '\\w Schafe|strong="G4263"\\w*. Der \\w Mietling|strong="G3411"\\w*',
+            '\\w Schafe|strong="G4263"\\w*.\n\\v 12 Der \\w Mietling|strong="G3411"\\w*'),
 ]
 
 

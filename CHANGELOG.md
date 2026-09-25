@@ -2,6 +2,7 @@
 
 ## After 1.0.0
 
+- The German Luther Bible numbers John 10:10–12 as Luther does: "Ich bin der gute Hirte" is 10:11 again (the source text had split 10:10 and run 11 into 12).
 - A sermon slide whose title is a short Chinese, Japanese or Korean word (好牧人) keeps it as the
   note's title, instead of passing it over as too short and titling the note from a bullet line —
   on Android as well as iPhone, iPad and Mac.
