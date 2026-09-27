@@ -659,6 +659,8 @@
     <string name="camera_slide_photo_description">Foto der Predigtfolie</string>
     <string name="camera_remove_photo">Foto entfernen</string>
     <string name="camera_scanner_instructions">Auf die Folie richten. Tippe auf hervorgehobenen Text oder den Auslöser.</string>
+    <string name="camera_zoom_level">Zoom %1$s</string>
+    <string name="camera_zoom_in_on_screen">Zoome näher an den Bildschirm heran</string>
     <string name="camera_take_photo_description">Foto der Folie aufnehmen</string>
     <string name="camera_access_off_title">Kamerazugriff ist aus</string>
     <string name="camera_access_off_message">Scripture Alone liest Folien auf deinem Handy und lädt sie nie hoch. Aktiviere den Kamerazugriff in den Einstellungen oder wähle ein bereits aufgenommenes Foto.</string>
@@ -675,6 +677,7 @@
     <string name="camera_create_note">Notiz erstellen</string>
     <string name="camera_photo_of_slide">Foto der Folie</string>
     <string name="camera_keep_photo">Foto bei der Notiz behalten</string>
+    <string name="camera_crop_to_screen">Auf den Bildschirm zuschneiden</string>
     <string name="camera_photo_kept_footer">Das Foto wird mit der Notiz auf diesem Gerät gespeichert.</string>
     <string name="camera_photo_discarded_footer">Das Foto wurde auf diesem Gerät gelesen und wird verworfen – nur der Text unten bleibt erhalten.</string>
     <string name="camera_reading_slide">Folie wird gelesen …</string>

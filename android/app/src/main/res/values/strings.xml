@@ -1229,6 +1229,10 @@
     <!-- Button: remove the kept photo from the note. -->
     <string name="camera_remove_photo">Remove Photo</string>
     <string name="camera_scanner_instructions">Point at the slide. Tap any highlighted text or the shutter.</string>
+    <!-- Accessibility label of a camera zoom button; %1$s is the zoom, e.g. “2×”. -->
+    <string name="camera_zoom_level">Zoom %1$s</string>
+    <!-- Hint over the camera when the slide’s screen is small in the frame. -->
+    <string name="camera_zoom_in_on_screen">Zoom in on the screen</string>
     <!-- Accessibility label of the shutter button. -->
     <string name="camera_take_photo_description">Take photo of slide</string>
     <string name="camera_access_off_title">Camera Access Is Off</string>
@@ -1256,6 +1260,8 @@
     <string name="camera_photo_of_slide">Photo of the slide</string>
     <!-- Switch. -->
     <string name="camera_keep_photo">Keep this photo with the note</string>
+    <!-- Switch in slide review: read only the screen found in the photo, straightened. -->
+    <string name="camera_crop_to_screen">Crop to the screen</string>
     <string name="camera_photo_kept_footer">The photo is saved with the note, on this device.</string>
     <string name="camera_photo_discarded_footer">The photo was read on this device and will be discarded — only the text below is kept.</string>
     <string name="camera_reading_slide">Reading the slide…</string>

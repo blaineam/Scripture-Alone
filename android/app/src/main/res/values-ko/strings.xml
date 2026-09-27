@@ -659,6 +659,8 @@
     <string name="camera_slide_photo_description">설교 슬라이드 사진</string>
     <string name="camera_remove_photo">사진 삭제</string>
     <string name="camera_scanner_instructions">슬라이드를 비추세요. 강조된 텍스트나 셔터를 누르세요.</string>
+    <string name="camera_zoom_level">줌 %1$s</string>
+    <string name="camera_zoom_in_on_screen">화면을 확대하세요</string>
     <string name="camera_take_photo_description">슬라이드 사진 찍기</string>
     <string name="camera_access_off_title">카메라 접근 꺼짐</string>
     <string name="camera_access_off_message">Scripture Alone은 슬라이드를 기기에서 읽고 업로드하지 않습니다. 설정에서 카메라 접근을 켜거나 이미 찍은 사진을 선택하세요.</string>
@@ -675,6 +677,7 @@
     <string name="camera_create_note">노트 작성</string>
     <string name="camera_photo_of_slide">슬라이드 사진</string>
     <string name="camera_keep_photo">이 사진을 노트와 함께 보관</string>
+    <string name="camera_crop_to_screen">화면에 맞춰 자르기</string>
     <string name="camera_photo_kept_footer">사진은 노트와 함께 이 기기에 저장됩니다.</string>
     <string name="camera_photo_discarded_footer">사진은 이 기기에서만 읽고 삭제되며, 아래 텍스트만 저장됩니다.</string>
     <string name="camera_reading_slide">슬라이드 읽는 중…</string>

@@ -21,6 +21,12 @@ struct SlideReviewView: View {
     @State private var lines: [ReviewLine] = []
     @State private var passageText = ""
     @State private var keepPhoto = false
+    /// The screen the slide is on, straightened — nil until looked for, and when there's none.
+    @State private var screen: CGImage?
+    @State private var lookedForScreen = false
+    @State private var cropToScreen = true
+    /// Whether the reading on show is of the cropped screen; nil before the first.
+    @State private var readCropped: Bool?
     /// nil = a new note.
     @State private var destination: UUID?
     @State private var didSetDestination = false
@@ -32,6 +38,9 @@ struct SlideReviewView: View {
         var text: String
         var included = true
     }
+
+    /// The picture being read, and kept if asked: the screen when one was found, unless turned off.
+    private var photo: CGImage { cropToScreen ? screen ?? slide.image : slide.image }
 
     private var targetNote: Note? { destination.flatMap { id in notes.first { $0.uuid == id } } }
 
@@ -79,7 +88,7 @@ struct SlideReviewView: View {
                 }
             }
         }
-        .task { await read() }
+        .task(id: cropToScreen) { await read() }
         .onChange(of: destination) { markLinesTheNoteHas() }
         .onAppear {
             guard !didSetDestination else { return }
@@ -104,13 +113,17 @@ struct SlideReviewView: View {
 
     private var photoSection: some View {
         Section {
-            Image(decorative: slide.image, scale: 1)
+            Image(decorative: photo, scale: 1)
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: .infinity, maxHeight: 200)
                 .clipShape(.rect(cornerRadius: 10))
                 .accessibilityLabel("Photo of the slide")
                 .accessibilityAddTraits(.isImage)
+            if screen != nil {
+                Toggle("Crop to the screen", isOn: $cropToScreen)
+                    .disabled(phase == .reading)
+            }
             Toggle("Keep this photo with the note", isOn: $keepPhoto)
         } footer: {
             Text(keepPhoto
@@ -193,9 +206,16 @@ struct SlideReviewView: View {
     // MARK: Actions
 
     private func read() async {
-        guard phase == .reading else { return }
+        if slide.findsScreen, !lookedForScreen {
+            screen = await SlideScreen.straightened(slide.image)
+            lookedForScreen = true
+        }
+        let cropped = cropToScreen && screen != nil
+        guard readCropped != cropped else { return }
+        readCropped = cropped
+        phase = .reading
         do {
-            let (_, reading) = try await SlideRecognizer.read(slide.image)
+            let (_, reading) = try await SlideRecognizer.read(photo)
             apply(reading)
             phase = .ready
             let found = [reading.title.isEmpty ? nil : String(localized: "Title: \(reading.title)"),
@@ -240,7 +260,7 @@ struct SlideReviewView: View {
 
     private func save() {
         let heading = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let photo = keepPhoto ? SlideImage.jpeg(slide.image) : nil
+        let photo = keepPhoto ? SlideImage.jpeg(self.photo) : nil
         // The slide cites the congregation's own numbering — the translation being read; notes
         // store KJV keys (`VerseNumbering`). `ranges` stays native so the review shows the slide's.
         let stored = ranges.map(model.numbering.kjvRange)

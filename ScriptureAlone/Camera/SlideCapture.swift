@@ -8,10 +8,12 @@ import UIKit
 import AppKit
 #endif
 
-/// A photo of a slide, waiting to be read and reviewed.
+/// A photo of a slide, waiting to be read and reviewed. `findsScreen`: a photo of a room, where
+/// review looks for the screen the slide is on and reads just that — not a slide saved as a file.
 struct ScannedSlide: Identifiable {
     let id = UUID()
     let image: CGImage
+    var findsScreen = false
 }
 
 /// Gets a slide image from wherever the user has one — the camera, their photos, a file,
@@ -34,13 +36,13 @@ final class SlideCapture {
         #endif
     }
 
-    func accept(_ image: CGImage) {
-        slide = ScannedSlide(image: image)
+    func accept(_ image: CGImage, findsScreen: Bool = false) {
+        slide = ScannedSlide(image: image, findsScreen: findsScreen)
     }
 
-    func accept(data: Data) async {
+    func accept(data: Data, findsScreen: Bool = false) async {
         let image = await Task.detached(priority: .userInitiated) { SlideImage.decode(data) }.value
-        if let image { accept(image) } else { failure = String(localized: "That file doesn’t look like an image.") }
+        if let image { accept(image, findsScreen: findsScreen) } else { failure = String(localized: "That file doesn’t look like an image.") }
     }
 
     func loadPickedPhoto() async {
@@ -48,7 +50,7 @@ final class SlideCapture {
         photoItem = nil
         do {
             if let data = try await item.loadTransferable(type: Data.self) {
-                await accept(data: data)
+                await accept(data: data, findsScreen: true)
             } else {
                 failure = String(localized: "That photo couldn’t be opened.")
             }
@@ -80,7 +82,8 @@ final class SlideCapture {
         _ = provider.loadDataRepresentation(for: .image) { [weak self] data, _ in
             Task { @MainActor in
                 guard let self else { return }
-                if let data { await self.accept(data: data) } else { self.failure = String(localized: "That image couldn’t be read.") }
+                // Continuity Camera's photo, or a dropped one: a room, most likely, with the screen in it.
+                if let data { await self.accept(data: data, findsScreen: true) } else { self.failure = String(localized: "That image couldn’t be read.") }
             }
         }
         return true
@@ -168,7 +171,7 @@ private struct SlideCaptureHost: ViewModifier {
             .fullScreenCover(isPresented: $capture.showCamera) {
                 SlideCameraView { image in
                     capture.showCamera = false
-                    capture.accept(image)
+                    capture.accept(image, findsScreen: true)
                 }
             }
             #else

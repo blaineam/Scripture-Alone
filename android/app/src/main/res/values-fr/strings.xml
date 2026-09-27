@@ -659,6 +659,8 @@
     <string name="camera_slide_photo_description">Photo de la diapositive du sermon</string>
     <string name="camera_remove_photo">Supprimer la photo</string>
     <string name="camera_scanner_instructions">Visez la diapositive. Touchez un texte surligné ou le déclencheur.</string>
+    <string name="camera_zoom_level">Zoom %1$s</string>
+    <string name="camera_zoom_in_on_screen">Zoomez sur l’écran</string>
     <string name="camera_take_photo_description">Photographier la diapositive</string>
     <string name="camera_access_off_title">Accès à l\'appareil photo désactivé</string>
     <string name="camera_access_off_message">Scripture Alone lit les diapositives sur votre téléphone et ne les envoie jamais. Activez l\'accès à l\'appareil photo dans Réglages, ou choisissez une photo déjà prise.</string>
@@ -675,6 +677,7 @@
     <string name="camera_create_note">Créer une note</string>
     <string name="camera_photo_of_slide">Photo de la diapositive</string>
     <string name="camera_keep_photo">Conserver cette photo avec la note</string>
+    <string name="camera_crop_to_screen">Recadrer sur l’écran</string>
     <string name="camera_photo_kept_footer">La photo est enregistrée avec la note, sur cet appareil.</string>
     <string name="camera_photo_discarded_footer">La photo a été lue sur cet appareil et sera supprimée — seul le texte ci-dessous est conservé.</string>
     <string name="camera_reading_slide">Lecture de la diapositive…</string>

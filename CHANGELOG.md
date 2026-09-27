@@ -2,6 +2,13 @@
 
 ## After 1.0.0
 
+- The slide camera looks for the screen the slide is shown on. After the photo is taken, the
+  review finds the projector screen, TV or monitor, straightens it out and reads only that, so the
+  text in the room around it doesn't get mixed in. "Crop to the screen" in the review turns this
+  off to read the whole photo. Photos chosen from the library get the same treatment. The camera
+  also has 1×, 2×, 3× and 5× zoom steps to bring a far-off screen close. On Android the camera
+  outlines the screen as it finds it, says to zoom in when the screen is small in the frame, and
+  zooms with a pinch.
 - The German Luther Bible numbers John 10:10–12 as Luther does: "Ich bin der gute Hirte" is 10:11 again (the source text had split 10:10 and run 11 into 12).
 - A sermon slide whose title is a short Chinese, Japanese or Korean word (好牧人) keeps it as the
   note's title, instead of passing it over as too short and titling the note from a bullet line —

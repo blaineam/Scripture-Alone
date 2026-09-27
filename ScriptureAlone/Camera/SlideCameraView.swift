@@ -6,13 +6,17 @@ import UIKit
 
 /// The camera, full screen. Uses VisionKit's live scanner — text on the slide lights up as
 /// it's recognized, and tapping any of it (or the shutter) takes the picture — and falls back
-/// to the standard camera on devices without it.
+/// to the standard camera on devices without it. Zoom steps and pinching bring a far-off screen
+/// close; review then finds the screen in the photo and reads just that (`SlideScreen`).
 struct SlideCameraView: View {
     let onCapture: (CGImage) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var access = AVCaptureDevice.authorizationStatus(for: .video)
     @State private var scanner = ScannerHandle()
     @State private var capturing = false
+    @State private var zoom = 1.0
+
+    private static let zoomSteps: [Double] = [1, 2, 3, 5]
 
     private var useLiveScanner: Bool { DataScannerViewController.isSupported && DataScannerViewController.isAvailable }
 
@@ -44,25 +48,73 @@ struct SlideCameraView: View {
                     .padding(.top, 60)
             }
             .overlay(alignment: .bottom) {
-                HStack {
-                    Button("Cancel") { dismiss() }
-                        .buttonStyle(.glass)
-                    Spacer()
-                    Button(action: capture) {
-                        ZStack {
-                            Circle().strokeBorder(.white, lineWidth: 4).frame(width: 76, height: 76)
-                            Circle().fill(.white).frame(width: 62, height: 62)
-                            if capturing { ProgressView().tint(.black) }
+                VStack(spacing: 18) {
+                    zoomControl
+                    HStack {
+                        Button("Cancel") { dismiss() }
+                            .buttonStyle(.glass)
+                        Spacer()
+                        Button(action: capture) {
+                            ZStack {
+                                Circle().strokeBorder(.white, lineWidth: 4).frame(width: 76, height: 76)
+                                Circle().fill(.white).frame(width: 62, height: 62)
+                                if capturing { ProgressView().tint(.black) }
+                            }
                         }
+                        .disabled(capturing)
+                        .accessibilityLabel("Take photo of slide")
+                        Spacer()
+                        Color.clear.frame(width: 80, height: 1)
                     }
-                    .disabled(capturing)
-                    .accessibilityLabel("Take photo of slide")
-                    Spacer()
-                    Color.clear.frame(width: 80, height: 1)
+                    .padding(.horizontal, 24)
                 }
-                .padding(.horizontal, 24)
                 .padding(.bottom, 40)
             }
+            .task {
+                // Follow pinches, which change the scanner's zoom without telling anyone.
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .milliseconds(250))
+                    if let controller = scanner.controller, abs(controller.zoomFactor - zoom) > 0.01 { zoom = controller.zoomFactor }
+                }
+            }
+    }
+
+    /// The camera app's zoom steps, as far as the camera goes; the one in use shows the exact zoom.
+    @ViewBuilder private var zoomControl: some View {
+        let steps = Self.zoomSteps.filter { $0 <= (scanner.controller?.maxZoomFactor ?? 1) + 0.01 }
+        if steps.count > 1 {
+            let current = steps.last { zoom >= $0 - 0.05 } ?? steps[0]
+            HStack(spacing: 6) {
+                ForEach(steps, id: \.self) { step in
+                    let active = step == current
+                    Button { setZoom(step) } label: {
+                        Text(verbatim: Self.zoomLabel(active ? zoom : step))
+                            .font(active ? Font.footnote.weight(.semibold) : Font.caption.weight(.semibold))
+                            .monospacedDigit()
+                            .foregroundStyle(active ? Color.yellow : Color.white)
+                            .frame(width: active ? 42 : 34, height: active ? 42 : 34)
+                            .background(.black.opacity(0.45), in: .circle)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("Zoom \(Self.zoomLabel(step))"))
+                    .accessibilityAddTraits(active ? .isSelected : [])
+                }
+            }
+            .padding(4)
+            .background(.black.opacity(0.3), in: .capsule)
+        }
+    }
+
+    private func setZoom(_ factor: Double) {
+        guard let controller = scanner.controller else { return }
+        let clamped = min(max(factor, controller.minZoomFactor), controller.maxZoomFactor)
+        controller.zoomFactor = clamped
+        zoom = clamped
+    }
+
+    /// "2×", "2.4×".
+    private static func zoomLabel(_ factor: Double) -> String {
+        factor.formatted(.number.precision(.fractionLength(0...1))) + "×"
     }
 
     private var denied: some View {

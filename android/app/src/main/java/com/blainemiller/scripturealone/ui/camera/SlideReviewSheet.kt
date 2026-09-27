@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.ui.camera
 
 import com.blainemiller.scripturealone.ui.reader.takesTaps
+import android.graphics.Bitmap
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -161,6 +162,13 @@ internal fun SlideReviewSheet(
     val lines = remember { mutableStateListOf<ReviewLine>() }
     var passageText by remember { mutableStateOf("") }
     var keepPhoto by remember { mutableStateOf(false) }
+    /** The screen the slide is on, straightened — null until looked for, and when there's none. */
+    var screen by remember { mutableStateOf<Bitmap?>(null) }
+    var lookedForScreen by remember { mutableStateOf(false) }
+    var cropToScreen by remember { mutableStateOf(true) }
+    /** Whether the reading on show is of the cropped screen; null before the first. */
+    var readCropped by remember { mutableStateOf<Boolean?>(null) }
+    val photo = screen?.takeIf { cropToScreen } ?: slide.image
     /** null = a new note. */
     var destination by remember { mutableStateOf(appendTo?.id) }
     var saving by remember { mutableStateOf(false) }
@@ -192,9 +200,17 @@ internal fun SlideReviewSheet(
         markLinesTheNoteHas()
     }
 
-    LaunchedEffect(slide.id) {
+    LaunchedEffect(slide.id, cropToScreen) {
+        if (slide.findsScreen && !lookedForScreen) {
+            screen = withContext(Dispatchers.Default) { SlideImage.screen(slide.image) }
+            lookedForScreen = true
+        }
+        val cropped = cropToScreen && screen != null
+        if (readCropped == cropped) return@LaunchedEffect
+        readCropped = cropped
+        phase = Phase.Reading
         try {
-            val (_, reading) = SlideRecognizer.read(context, slide.image)
+            val (_, reading) = SlideRecognizer.read(context, if (cropped) screen!! else slide.image)
             apply(reading, resolve(model, reading.passages))
             phase = Phase.Ready
             val found = listOfNotNull(
@@ -232,8 +248,9 @@ internal fun SlideReviewSheet(
         val slideRanges = ranges.map(model.numbering::kjvRange)
         val slideLines = includedLines
         val target = targetNote
+        val picture = photo
         scope.launch {
-            val photo = if (keepPhoto) withContext(Dispatchers.Default) { SlideImage.jpeg(slide.image) } else null
+            val jpeg = if (keepPhoto) withContext(Dispatchers.Default) { SlideImage.jpeg(picture) } else null
             val now = Instant.now().truncatedTo(ChronoUnit.MILLIS)
             val note = if (target != null) {
                 val anchors = SlideParser.merging(target.anchors, slideRanges).sortedWith(RANGE_ORDER)
@@ -253,7 +270,7 @@ internal fun SlideReviewSheet(
                     createdAt = now, updatedAt = now, origin = "camera",
                 )
             }
-            model.userData.save(note, photo)
+            model.userData.save(note, jpeg)
             onSaved(note)
         }
     }
@@ -275,24 +292,15 @@ internal fun SlideReviewSheet(
             // The photo, and whether to keep it.
             PanelGroup(palette) {
                 Image(
-                    slide.image.asImageBitmap(), stringResource(R.string.camera_photo_of_slide), contentScale = ContentScale.Fit,
+                    photo.asImageBitmap(), stringResource(R.string.camera_photo_of_slide), contentScale = ContentScale.Fit,
                     modifier = Modifier.fillMaxWidth().heightIn(max = 200.dp).padding(horizontal = 18.dp, vertical = 12.dp).clip(RoundedCornerShape(10.dp)),
                 )
                 PanelSeparator(palette)
-                Row(
-                    Modifier.fillMaxWidth().clickable(role = Role.Button) { keepPhoto = !keepPhoto }.padding(start = 18.dp, end = 14.dp, top = 6.dp, bottom = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(stringResource(R.string.camera_keep_photo), color = palette.ink, fontSize = 17.sp, modifier = Modifier.weight(1f))
-                    Switch(
-                        keepPhoto, { keepPhoto = it },
-                        colors = SwitchDefaults.colors(
-                            checkedTrackColor = palette.accent, checkedThumbColor = Color.White, checkedBorderColor = palette.accent,
-                            uncheckedTrackColor = SheetColors.tertiaryFill(palette), uncheckedThumbColor = Color.White,
-                            uncheckedBorderColor = Color.Transparent,
-                        ),
-                    )
+                if (screen != null) {
+                    ReviewSwitch(stringResource(R.string.camera_crop_to_screen), cropToScreen, palette, enabled = phase != Phase.Reading) { cropToScreen = it }
+                    PanelSeparator(palette)
                 }
+                ReviewSwitch(stringResource(R.string.camera_keep_photo), keepPhoto, palette) { keepPhoto = it }
             }
             Footer(
                 stringResource(if (keepPhoto) R.string.camera_photo_kept_footer else R.string.camera_photo_discarded_footer),
@@ -431,6 +439,26 @@ private fun Footer(text: String, palette: ReaderPalette) {
 }
 
 /** "Save to": a new note, the note we came from, or one of the most recent — iOS's menu picker. */
+/** A row with a switch, the whole row a tap target — "Keep this photo with the note", "Crop to the screen". */
+@Composable
+private fun ReviewSwitch(title: String, checked: Boolean, palette: ReaderPalette, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clickable(enabled = enabled, role = Role.Switch) { onChange(!checked) }
+            .padding(start = 18.dp, end = 14.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(title, color = if (enabled) palette.ink else palette.secondary, fontSize = 17.sp, modifier = Modifier.weight(1f))
+        Switch(
+            checked, onChange, enabled = enabled,
+            colors = SwitchDefaults.colors(
+                checkedTrackColor = palette.accent, checkedThumbColor = Color.White, checkedBorderColor = palette.accent,
+                uncheckedTrackColor = SheetColors.tertiaryFill(palette), uncheckedThumbColor = Color.White,
+                uncheckedBorderColor = Color.Transparent,
+            ),
+        )
+    }
+}
+
 @Composable
 private fun DestinationPicker(choices: List<Note>, selected: Note?, palette: ReaderPalette, onSelect: (Note?) -> Unit) {
     var open by remember { mutableStateOf(false) }
