@@ -659,6 +659,8 @@
     <string name="camera_slide_photo_description">説教スライドの写真</string>
     <string name="camera_remove_photo">写真を削除</string>
     <string name="camera_scanner_instructions">スライドに向けてください。ハイライトされた文字かシャッターをタップ。</string>
+    <string name="camera_zoom_level">ズーム %1$s</string>
+    <string name="camera_zoom_in_on_screen">スクリーンにズームしてください</string>
     <string name="camera_take_photo_description">スライドを撮影</string>
     <string name="camera_access_off_title">カメラアクセスがオフです</string>
     <string name="camera_access_off_message">Scripture Alone はスライドを端末内で読み取り、アップロードしません。設定でカメラアクセスをオンにするか、撮影済みの写真を選んでください。</string>
@@ -675,6 +677,7 @@
     <string name="camera_create_note">ノートを作成</string>
     <string name="camera_photo_of_slide">スライドの写真</string>
     <string name="camera_keep_photo">写真をノートと一緒に保存</string>
+    <string name="camera_crop_to_screen">スクリーンに合わせて切り抜く</string>
     <string name="camera_photo_kept_footer">写真はノートとともにこの端末に保存されます。</string>
     <string name="camera_photo_discarded_footer">写真はこの端末で読み取られ、破棄されます。保存されるのは下のテキストのみです。</string>
     <string name="camera_reading_slide">スライドを読み取り中…</string>

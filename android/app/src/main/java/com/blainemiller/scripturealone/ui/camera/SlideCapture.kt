@@ -66,8 +66,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
-/** A photo of a slide, waiting to be read and reviewed. */
-class ScannedSlide(val image: Bitmap) {
+/**
+ * A photo of a slide, waiting to be read and reviewed. [findsScreen]: a photo of a room, where review
+ * looks for the screen the slide is on and reads just that — not a slide saved as an image file.
+ */
+class ScannedSlide(val image: Bitmap, val findsScreen: Boolean = false) {
     val id: UUID = UUID.randomUUID()
 }
 
@@ -88,8 +91,8 @@ class SlideCapture {
     var failure by mutableStateOf<String?>(null)
     var decoding by mutableStateOf(false)
 
-    fun accept(image: Bitmap) {
-        slide = ScannedSlide(image)
+    fun accept(image: Bitmap, findsScreen: Boolean = false) {
+        slide = ScannedSlide(image, findsScreen)
     }
 
     fun start(source: SlideSource) {
@@ -97,11 +100,13 @@ class SlideCapture {
     }
 
     /** Decodes a picked or pasted image off the main thread — `accept(data:)`. */
-    suspend fun accept(context: Context, uri: Uri, failureMessage: String = AppText.get(R.string.camera_not_an_image)) {
+    suspend fun accept(
+        context: Context, uri: Uri, failureMessage: String = AppText.get(R.string.camera_not_an_image), findsScreen: Boolean = false,
+    ) {
         decoding = true
         val image = withContext(Dispatchers.IO) { SlideImage.decode(context.contentResolver, uri) }
         decoding = false
-        if (image != null) accept(image) else failure = failureMessage
+        if (image != null) accept(image, findsScreen) else failure = failureMessage
     }
 
     companion object {
@@ -177,7 +182,7 @@ fun SlideCaptureHost(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val photos = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) scope.launch { capture.accept(context, uri, context.getString(R.string.camera_photo_unopenable)) }
+        if (uri != null) scope.launch { capture.accept(context, uri, context.getString(R.string.camera_photo_unopenable), findsScreen = true) }
     }
     val files = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) scope.launch { capture.accept(context, uri, context.getString(R.string.camera_file_unopenable)) }
@@ -196,7 +201,7 @@ fun SlideCaptureHost(
             palette,
             onCapture = { image ->
                 capture.showCamera = false
-                capture.accept(image)
+                capture.accept(image, findsScreen = true)
             },
             onChoosePhoto = {
                 capture.showCamera = false

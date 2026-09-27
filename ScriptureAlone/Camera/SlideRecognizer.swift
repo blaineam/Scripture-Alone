@@ -1,4 +1,6 @@
 import CoreGraphics
+import CoreImage
+import CoreImage.CIFilterBuiltins
 import Foundation
 import ImageIO
 import Vision
@@ -55,6 +57,54 @@ nonisolated enum SlideRecognizer {
     @concurrent static func read(_ image: CGImage, orientation: CGImagePropertyOrientation = .up) async throws -> (lines: [SlideLine], reading: SlideReading) {
         let lines = try await lines(in: image, orientation: orientation)
         return (lines, SlideParser.read(lines))
+    }
+}
+
+/// Finds the screen a slide was shown on — a projector screen, a TV, a monitor — in a photo of
+/// the room, and straightens it out to fill the picture, so the recognizer reads the slide and not
+/// the room around it. On device, like the recognizer.
+nonisolated enum SlideScreen {
+    /// The screen, straightened; nil when no screen is found, or when it already fills the photo
+    /// and there's nothing to cut away.
+    @concurrent static func straightened(_ image: CGImage) async -> CGImage? {
+        var request = DetectRectanglesRequest()
+        // Slides are 16:9 or 4:3; seen from the side of the room, narrower.
+        request.minimumAspectRatio = 0.3
+        request.maximumAspectRatio = 1
+        request.minimumSize = 0.25
+        request.minimumConfidence = 0.5
+        request.maximumObservations = 8
+        guard let observations = try? await request.perform(on: image) else { return nil }
+
+        // Vision's points and Core Image's both start at the lower left.
+        let size = CGSize(width: image.width, height: image.height)
+        func pixel(_ point: NormalizedPoint) -> CGPoint {
+            CGPoint(x: point.cgPoint.x * size.width, y: point.cgPoint.y * size.height)
+        }
+        // The biggest rectangle is the screen: boxes and pictures on the slide sit inside it.
+        let quads = observations.map { [$0.topLeft, $0.topRight, $0.bottomRight, $0.bottomLeft].map(pixel) }
+        guard let corners = quads.max(by: { area($0) < area($1) }) else { return nil }
+        let share = area(corners) / (size.width * size.height)
+        guard share > 0.1, share < 0.9 else { return nil }
+
+        let filter = CIFilter.perspectiveCorrection()
+        filter.inputImage = CIImage(cgImage: image)
+        filter.topLeft = corners[0]
+        filter.topRight = corners[1]
+        filter.bottomRight = corners[2]
+        filter.bottomLeft = corners[3]
+        guard let output = filter.outputImage else { return nil }
+        return CIContext().createCGImage(output, from: output.extent.integral)
+    }
+
+    /// A quadrilateral's area, by the shoelace formula.
+    private static func area(_ corners: [CGPoint]) -> Double {
+        var sum = 0.0
+        for index in corners.indices {
+            let a = corners[index], b = corners[(index + 1) % corners.count]
+            sum += a.x * b.y - b.x * a.y
+        }
+        return abs(sum) / 2
     }
 }
 

@@ -659,6 +659,8 @@
     <string name="camera_slide_photo_description">Foto della slide del sermone</string>
     <string name="camera_remove_photo">Rimuovi foto</string>
     <string name="camera_scanner_instructions">Inquadra la slide. Tocca il testo evidenziato o lo scatto.</string>
+    <string name="camera_zoom_level">Zoom %1$s</string>
+    <string name="camera_zoom_in_on_screen">Ingrandisci lo schermo</string>
     <string name="camera_take_photo_description">Scatta foto della slide</string>
     <string name="camera_access_off_title">Accesso alla fotocamera disattivato</string>
     <string name="camera_access_off_message">Scripture Alone legge le slide sul telefono e non le carica mai online. Attiva l\'accesso alla fotocamera in Impostazioni, oppure scegli una foto già scattata.</string>
@@ -675,6 +677,7 @@
     <string name="camera_create_note">Crea nota</string>
     <string name="camera_photo_of_slide">Foto della slide</string>
     <string name="camera_keep_photo">Conserva questa foto con la nota</string>
+    <string name="camera_crop_to_screen">Ritaglia sullo schermo</string>
     <string name="camera_photo_kept_footer">La foto viene salvata con la nota, su questo dispositivo.</string>
     <string name="camera_photo_discarded_footer">La foto è stata letta su questo dispositivo e verrà scartata: si conserva solo il testo qui sotto.</string>
     <string name="camera_reading_slide">Lettura della slide…</string>

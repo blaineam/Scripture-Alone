@@ -659,6 +659,8 @@
     <string name="camera_slide_photo_description">Foto do slide do sermão</string>
     <string name="camera_remove_photo">Remover foto</string>
     <string name="camera_scanner_instructions">Aponte para o slide. Toque em um texto destacado ou no obturador.</string>
+    <string name="camera_zoom_level">Zoom %1$s</string>
+    <string name="camera_zoom_in_on_screen">Aproxime o zoom da tela</string>
     <string name="camera_take_photo_description">Tirar foto do slide</string>
     <string name="camera_access_off_title">Acesso à câmera desativado</string>
     <string name="camera_access_off_message">O Scripture Alone lê os slides no seu celular e nunca os envia. Ative o acesso à câmera nos Ajustes ou escolha uma foto já tirada.</string>
@@ -675,6 +677,7 @@
     <string name="camera_create_note">Criar nota</string>
     <string name="camera_photo_of_slide">Foto do slide</string>
     <string name="camera_keep_photo">Manter esta foto com a nota</string>
+    <string name="camera_crop_to_screen">Recortar na tela</string>
     <string name="camera_photo_kept_footer">A foto é salva com a nota, neste dispositivo.</string>
     <string name="camera_photo_discarded_footer">A foto foi lida neste dispositivo e será descartada — só o texto abaixo é mantido.</string>
     <string name="camera_reading_slide">Lendo o slide…</string>
