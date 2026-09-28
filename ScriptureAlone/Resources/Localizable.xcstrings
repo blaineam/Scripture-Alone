@@ -26469,54 +26469,55 @@
         }
       }
     },
-    "Point at the slide. Tap any highlighted text or the shutter." : {
+    "Point at the slide, then take the photo." : {
+      "comment" : "Instruction over the slide camera.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Richte die Kamera auf die Folie. Tippe auf hervorgehobenen Text oder den Auslöser."
+            "value" : "Richte die Kamera auf die Folie und mach das Foto."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apunta a la diapositiva. Toca el texto resaltado o el disparador."
+            "value" : "Apunta a la diapositiva y toma la foto."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pointez la diapositive. Touchez un texte surligné ou le déclencheur."
+            "value" : "Visez la diapositive, puis prenez la photo."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inquadra la diapositiva. Tocca il testo evidenziato o l’otturatore."
+            "value" : "Inquadra la diapositiva, poi scatta la foto."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "スライドに向けてください。ハイライトされたテキストかシャッターをタップ。"
+            "value" : "スライドに向けて、写真を撮ってください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "슬라이드를 비추세요. 강조된 텍스트나 셔터 버튼을 탭하세요."
+            "value" : "슬라이드를 비춘 다음 사진을 찍으세요."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aponte para o slide. Toque em qualquer texto destacado ou no obturador."
+            "value" : "Aponte para o slide e tire a foto."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "对准幻灯片。轻点任意高亮文字或快门。"
+            "value" : "对准幻灯片，然后拍照。"
           }
         }
       }
