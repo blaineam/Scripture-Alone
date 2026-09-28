@@ -207,7 +207,9 @@ struct SlideReviewView: View {
 
     private func read() async {
         if slide.findsScreen, !lookedForScreen {
-            screen = await SlideScreen.straightened(slide.image)
+            // The whole photo's text says where the screen is.
+            let text = (try? await SlideRecognizer.lines(in: slide.image)) ?? []
+            screen = await SlideScreen.straightened(slide.image, around: text)
             lookedForScreen = true
         }
         let cropped = cropToScreen && screen != nil

@@ -61,40 +61,77 @@ nonisolated enum SlideRecognizer {
 }
 
 /// Finds the screen a slide was shown on — a projector screen, a TV, a monitor — in a photo of
-/// the room, and straightens it out to fill the picture, so the recognizer reads the slide and not
-/// the room around it. On device, like the recognizer.
+/// the room, and straightens it out to fill the picture, so the recognizer reads the slide close
+/// up and not the room around it. On device, like the recognizer.
 nonisolated enum SlideScreen {
-    /// The screen, straightened; nil when no screen is found, or when it already fills the photo
-    /// and there's nothing to cut away.
-    @concurrent static func straightened(_ image: CGImage) async -> CGImage? {
+    /// The screen, straightened. The screen is the rectangle that holds the slide's `text` — the
+    /// lines read from the whole photo — not the biggest one: in a room that's a doorway or a wall.
+    /// With no rectangle around the text, the text itself with room to spare. Nil when there's no
+    /// text, or the crop would be most of the photo anyway.
+    @concurrent static func straightened(_ image: CGImage, around text: [SlideLine]) async -> CGImage? {
+        let lines = text.filter { $0.confidence >= 0.5 && $0.text.count >= 2 }
+        guard !lines.isEmpty else { return nil }
+        let size = CGSize(width: image.width, height: image.height)
+        // Vision's points and Core Image's both start at the lower left; the lines', at the top.
+        let centers = lines.map {
+            CGPoint(x: ($0.box.x + $0.box.width / 2) * size.width, y: (1 - $0.box.midY) * size.height)
+        }
+
         var request = DetectRectanglesRequest()
-        // Slides are 16:9 or 4:3; seen from the side of the room, narrower.
+        // Slides are 16:9 or 4:3; seen from the side of the room, narrower. A screen across the
+        // room is small in the photo.
         request.minimumAspectRatio = 0.3
         request.maximumAspectRatio = 1
-        request.minimumSize = 0.25
-        request.minimumConfidence = 0.5
-        request.maximumObservations = 8
-        guard let observations = try? await request.perform(on: image) else { return nil }
-
-        // Vision's points and Core Image's both start at the lower left.
-        let size = CGSize(width: image.width, height: image.height)
+        request.minimumSize = 0.08
+        request.minimumConfidence = 0.3
+        request.maximumObservations = 24
+        let observations = (try? await request.perform(on: image)) ?? []
         func pixel(_ point: NormalizedPoint) -> CGPoint {
             CGPoint(x: point.cgPoint.x * size.width, y: point.cgPoint.y * size.height)
         }
-        // The biggest rectangle is the screen: boxes and pictures on the slide sit inside it.
-        let quads = observations.map { [$0.topLeft, $0.topRight, $0.bottomRight, $0.bottomLeft].map(pixel) }
-        guard let corners = quads.max(by: { area($0) < area($1) }) else { return nil }
-        let share = area(corners) / (size.width * size.height)
-        guard share > 0.1, share < 0.9 else { return nil }
+        // The most of the text, at least half of it; of those, the tightest.
+        let enough = max(1, (centers.count + 1) / 2)
+        let screen = observations
+            .map { [$0.topLeft, $0.topRight, $0.bottomRight, $0.bottomLeft].map(pixel) }
+            .map { corners in (corners: corners, holds: centers.filter { contains(corners, $0) }.count) }
+            .filter { $0.holds >= enough }
+            .min { $0.holds != $1.holds ? $0.holds > $1.holds : area($0.corners) < area($1.corners) }
+        let photoArea = size.width * size.height
 
-        let filter = CIFilter.perspectiveCorrection()
-        filter.inputImage = CIImage(cgImage: image)
-        filter.topLeft = corners[0]
-        filter.topRight = corners[1]
-        filter.bottomRight = corners[2]
-        filter.bottomLeft = corners[3]
-        guard let output = filter.outputImage else { return nil }
-        return CIContext().createCGImage(output, from: output.extent.integral)
+        if let corners = screen?.corners, area(corners) < 0.9 * photoArea {
+            let filter = CIFilter.perspectiveCorrection()
+            filter.inputImage = CIImage(cgImage: image)
+            filter.topLeft = corners[0]
+            filter.topRight = corners[1]
+            filter.bottomRight = corners[2]
+            filter.bottomLeft = corners[3]
+            guard let output = filter.outputImage else { return nil }
+            return CIContext().createCGImage(output, from: output.extent.integral)
+        }
+
+        // No rectangle around the text: the text, with a margin of a few lines' height all round.
+        let minX = lines.map(\.box.x).min()!, maxX = lines.map(\.box.maxX).max()!
+        let minY = lines.map(\.box.y).min()!, maxY = lines.map(\.box.maxY).max()!
+        let lineHeight = lines.map(\.box.height).max()!
+        let margin = max(lineHeight * 2, 0.03)
+        let rect = CGRect(x: max(0, minX - margin) * size.width,
+                          y: max(0, minY - margin) * size.height,
+                          width: (min(1, maxX + margin) - max(0, minX - margin)) * size.width,
+                          height: (min(1, maxY + margin) - max(0, minY - margin)) * size.height).integral
+        guard rect.width * rect.height < 0.8 * photoArea else { return nil }
+        return image.cropping(to: rect)
+    }
+
+    /// Whether a convex quadrilateral holds a point.
+    private static func contains(_ corners: [CGPoint], _ point: CGPoint) -> Bool {
+        var sign: CGFloat = 0
+        for index in corners.indices {
+            let a = corners[index], b = corners[(index + 1) % corners.count]
+            let cross = (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x)
+            if cross == 0 { continue }
+            if sign == 0 { sign = cross } else if (sign > 0) != (cross > 0) { return false }
+        }
+        return true
     }
 
     /// A quadrilateral's area, by the shoelace formula.
