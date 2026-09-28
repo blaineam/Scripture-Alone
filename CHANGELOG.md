@@ -19,6 +19,9 @@
   doorway, a wall). With no rectangle around the text, the review crops to the text itself.
 - The iPhone camera's zoom buttons show as soon as the camera does, instead of seconds later; a
   zoom tapped before the camera is ready is put through when it is.
+- The iPhone camera's zoom steps are the ones the Camera app shows on that iPhone (0.5×, 1×, 2×
+  and its telephoto's, e.g. 4× and 8×), not a fixed 1×/2×/3×/5×, and the camera starts the moment
+  it opens instead of seconds later.
 - The German Luther Bible numbers John 10:10–12 as Luther does: "Ich bin der gute Hirte" is 10:11 again (the source text had split 10:10 and run 11 into 12).
 - A sermon slide whose title is a short Chinese, Japanese or Korean word (好牧人) keeps it as the
   note's title, instead of passing it over as too short and titling the note from a bullet line —

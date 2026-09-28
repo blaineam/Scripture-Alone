@@ -15,14 +15,33 @@ struct SlideCameraView: View {
     @State private var scanner = ScannerHandle()
     @State private var capturing = false
     @State private var zoom = 1.0
-    /// How far the camera zooms; 0 until it says (it can take seconds to after the preview shows).
+    /// How far the camera zooms, each way; 0 until it says (it can take seconds after the preview shows).
     @State private var maxZoom = 0.0
+    @State private var minZoom = 0.0
     /// A zoom step tapped before the camera could go that far, put through once it can.
     @State private var wantedZoom: Double?
     /// The scanner is running: until then zooming does nothing and a photo is an unfocused frame.
     @State private var scanning = false
 
-    private static let zoomSteps: [Double] = [1, 2, 3, 5]
+    /// The Camera app's steps for this iPhone: 0.5× with an ultra wide, 1× and 2×, the telephoto's
+    /// own zoom, and twice that where the telephoto is 48 MP (8× beside 4×).
+    private static let zoomSteps: [Double] = {
+        let lenses = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInUltraWideCamera, .builtInTelephotoCamera], mediaType: .video, position: .back).devices
+        var steps: Set<Double> = [1, 2]
+        if lenses.contains(where: { $0.deviceType == .builtInUltraWideCamera }) { steps.insert(0.5) }
+        if let telephoto = lenses.first(where: { $0.deviceType == .builtInTelephotoCamera }),
+           let camera = AVCaptureDevice.default(.builtInTripleCamera, for: .video, position: .back)
+            ?? AVCaptureDevice.default(.builtInDualCamera, for: .video, position: .back),
+           let switchOver = camera.virtualDeviceSwitchOverVideoZoomFactors.last {
+            // Where the camera switches to the telephoto, in the zoom the Camera app shows.
+            let zoom = (switchOver.doubleValue * Double(camera.displayVideoZoomFactorMultiplier) * 10).rounded() / 10
+            steps.insert(zoom)
+            let pixels = telephoto.formats.flatMap(\.supportedMaxPhotoDimensions).map { Int($0.width) * Int($0.height) }.max() ?? 0
+            if pixels >= 40_000_000 { steps.insert(zoom * 2) }
+        }
+        return steps.sorted()
+    }()
 
     private var useLiveScanner: Bool { DataScannerViewController.isSupported && DataScannerViewController.isAvailable }
 
@@ -77,21 +96,19 @@ struct SlideCameraView: View {
                 .padding(.bottom, 40)
             }
             .task {
-                // Starting the scanner before it's on screen can fail without a word — the first time
-                // the camera opens, the permission prompt happens to wait long enough; after that it
-                // doesn't — so keep at it until it runs. Then follow pinches, which change the
-                // scanner's zoom without telling anyone.
-                var lastStart = ContinuousClock.now - .seconds(1)
+                // `ScannerContainer` starts the scanner as it appears; should that fail, try again now
+                // and then. Follow pinches, which change the scanner's zoom without telling anyone.
+                var lastStart = ContinuousClock.now
                 while !Task.isCancelled {
                     if let controller = scanner.controller {
-                        // Not every 100 ms: each attempt while the camera is still starting can set it back.
-                        if !controller.isScanning, ContinuousClock.now - lastStart > .milliseconds(500) {
+                        if !controller.isScanning, ContinuousClock.now - lastStart > .seconds(1) {
                             lastStart = .now
                             try? controller.startScanning()
                         }
                         if scanning != controller.isScanning { scanning = controller.isScanning }
                         let reach = controller.maxZoomFactor > 1.01 ? controller.maxZoomFactor : 0
                         if abs(reach - maxZoom) > 0.01 { maxZoom = reach }
+                        if reach > 0, abs(controller.minZoomFactor - minZoom) > 0.01 { minZoom = controller.minZoomFactor }
                         if let wanted = wantedZoom {
                             // Once the camera says how far it goes, as close as it gets.
                             if controller.isScanning, controller.maxZoomFactor >= wanted - 0.01 || reach > 0 {
@@ -111,7 +128,9 @@ struct SlideCameraView: View {
     /// The camera app's zoom steps, as far as the camera goes; the one in use shows the exact zoom.
     @ViewBuilder private var zoomControl: some View {
         // Shown straight away; once the camera says how far it goes, only the steps it reaches.
-        let steps = maxZoom > 0 ? Self.zoomSteps.filter { $0 <= maxZoom + 0.01 } : Self.zoomSteps
+        let steps = Self.zoomSteps.filter {
+            (maxZoom == 0 || $0 <= maxZoom + 0.01) && (minZoom == 0 || $0 >= minZoom - 0.01)
+        }
         if steps.count > 1 {
             let current = steps.last { zoom >= $0 - 0.05 } ?? steps[0]
             HStack(spacing: 6) {
@@ -187,22 +206,21 @@ private struct DataScannerRepresentable: UIViewControllerRepresentable {
     let handle: ScannerHandle
     let onTapText: () -> Void
 
-    func makeUIViewController(context: Context) -> DataScannerViewController {
-        let controller = DataScannerViewController(recognizedDataTypes: [.text()], qualityLevel: .accurate,
+    func makeUIViewController(context: Context) -> ScannerContainer {
+        // Balanced: the live highlights only say where to tap; the slide is read from the photo.
+        let controller = DataScannerViewController(recognizedDataTypes: [.text()], qualityLevel: .balanced,
                                                    recognizesMultipleItems: true, isHighFrameRateTrackingEnabled: false,
                                                    isPinchToZoomEnabled: true, isGuidanceEnabled: false,
                                                    isHighlightingEnabled: true)
         controller.delegate = context.coordinator
         handle.controller = controller
-        return controller
+        return ScannerContainer(scanner: controller)
     }
 
-    func updateUIViewController(_ controller: DataScannerViewController, context: Context) {
-        if !controller.isScanning { try? controller.startScanning() }
-    }
+    func updateUIViewController(_ container: ScannerContainer, context: Context) {}
 
-    static func dismantleUIViewController(_ controller: DataScannerViewController, coordinator: Coordinator) {
-        controller.stopScanning()
+    static func dismantleUIViewController(_ container: ScannerContainer, coordinator: Coordinator) {
+        container.scanner.stopScanning()
     }
 
     func makeCoordinator() -> Coordinator { Coordinator(onTapText: onTapText) }
@@ -212,6 +230,35 @@ private struct DataScannerRepresentable: UIViewControllerRepresentable {
         init(onTapText: @escaping () -> Void) { self.onTapText = onTapText }
 
         func dataScanner(_ dataScanner: DataScannerViewController, didTapOn item: RecognizedItem) { onTapText() }
+    }
+}
+
+/// Holds the scanner and starts it the moment it's on screen: any sooner, starting fails without a
+/// word, and waiting it out by polling left the camera black for seconds.
+final class ScannerContainer: UIViewController {
+    let scanner: DataScannerViewController
+
+    init(scanner: DataScannerViewController) {
+        self.scanner = scanner
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .black
+        addChild(scanner)
+        scanner.view.frame = view.bounds
+        scanner.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(scanner.view)
+        scanner.didMove(toParent: self)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if !scanner.isScanning { try? scanner.startScanning() }
     }
 }
 
