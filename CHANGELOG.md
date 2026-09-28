@@ -14,6 +14,9 @@
   buttons show right away, and the photo is in focus. The review no longer says a slide
   "couldn't be read" when its reading was only interrupted by the camera closing. When the crop to
   the screen finds no text, on either platform, the whole photo is read instead.
+- On iPhone the screen is found by the slide's own text: of the rectangles in the photo, the one
+  that holds the text is the screen, however small it is across the room, not the biggest one (a
+  doorway, a wall). With no rectangle around the text, the review crops to the text itself.
 - The German Luther Bible numbers John 10:10–12 as Luther does: "Ich bin der gute Hirte" is 10:11 again (the source text had split 10:10 and run 11 into 12).
 - A sermon slide whose title is a short Chinese, Japanese or Korean word (好牧人) keeps it as the
   note's title, instead of passing it over as too short and titling the note from a bullet line —
