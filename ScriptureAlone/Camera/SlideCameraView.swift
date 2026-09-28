@@ -15,7 +15,10 @@ struct SlideCameraView: View {
     @State private var scanner = ScannerHandle()
     @State private var capturing = false
     @State private var zoom = 1.0
-    @State private var maxZoom = 1.0
+    /// How far the camera zooms; 0 until it says (it can take seconds to after the preview shows).
+    @State private var maxZoom = 0.0
+    /// A zoom step tapped before the camera could go that far, put through once it can.
+    @State private var wantedZoom: Double?
     /// The scanner is running: until then zooming does nothing and a photo is an unfocused frame.
     @State private var scanning = false
 
@@ -78,22 +81,38 @@ struct SlideCameraView: View {
                 // the camera opens, the permission prompt happens to wait long enough; after that it
                 // doesn't — so keep at it until it runs. Then follow pinches, which change the
                 // scanner's zoom without telling anyone.
+                var lastStart = ContinuousClock.now - .seconds(1)
                 while !Task.isCancelled {
                     if let controller = scanner.controller {
-                        if !controller.isScanning { try? controller.startScanning() }
+                        // Not every 100 ms: each attempt while the camera is still starting can set it back.
+                        if !controller.isScanning, ContinuousClock.now - lastStart > .milliseconds(500) {
+                            lastStart = .now
+                            try? controller.startScanning()
+                        }
                         if scanning != controller.isScanning { scanning = controller.isScanning }
-                        if abs(controller.maxZoomFactor - maxZoom) > 0.01 { maxZoom = controller.maxZoomFactor }
-                        if abs(controller.zoomFactor - zoom) > 0.01 { zoom = controller.zoomFactor }
+                        let reach = controller.maxZoomFactor > 1.01 ? controller.maxZoomFactor : 0
+                        if abs(reach - maxZoom) > 0.01 { maxZoom = reach }
+                        if let wanted = wantedZoom {
+                            // Once the camera says how far it goes, as close as it gets.
+                            if controller.isScanning, controller.maxZoomFactor >= wanted - 0.01 || reach > 0 {
+                                controller.zoomFactor = max(min(wanted, controller.maxZoomFactor), controller.minZoomFactor)
+                                zoom = controller.zoomFactor
+                                wantedZoom = nil
+                            }
+                        } else if abs(controller.zoomFactor - zoom) > 0.01 {
+                            zoom = controller.zoomFactor
+                        }
                     }
-                    try? await Task.sleep(for: .milliseconds(scanning ? 250 : 100))
+                    try? await Task.sleep(for: .milliseconds(100))
                 }
             }
     }
 
     /// The camera app's zoom steps, as far as the camera goes; the one in use shows the exact zoom.
     @ViewBuilder private var zoomControl: some View {
-        let steps = Self.zoomSteps.filter { $0 <= maxZoom + 0.01 }
-        if scanning, steps.count > 1 {
+        // Shown straight away; once the camera says how far it goes, only the steps it reaches.
+        let steps = maxZoom > 0 ? Self.zoomSteps.filter { $0 <= maxZoom + 0.01 } : Self.zoomSteps
+        if steps.count > 1 {
             let current = steps.last { zoom >= $0 - 0.05 } ?? steps[0]
             HStack(spacing: 6) {
                 ForEach(steps, id: \.self) { step in
@@ -117,10 +136,14 @@ struct SlideCameraView: View {
     }
 
     private func setZoom(_ factor: Double) {
-        guard let controller = scanner.controller, controller.isScanning else { return }
-        let clamped = min(max(factor, controller.minZoomFactor), controller.maxZoomFactor)
-        controller.zoomFactor = clamped
-        zoom = clamped
+        zoom = factor
+        guard let controller = scanner.controller, controller.isScanning, controller.maxZoomFactor >= factor - 0.01 else {
+            // Not ready to go that far yet: the loop above puts it through when it is.
+            wantedZoom = factor
+            return
+        }
+        wantedZoom = nil
+        controller.zoomFactor = max(factor, controller.minZoomFactor)
     }
 
     /// "2×", "2.4×".
