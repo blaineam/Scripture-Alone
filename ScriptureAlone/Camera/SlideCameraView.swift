@@ -15,6 +15,9 @@ struct SlideCameraView: View {
     @State private var scanner = ScannerHandle()
     @State private var capturing = false
     @State private var zoom = 1.0
+    @State private var maxZoom = 1.0
+    /// The scanner is running: until then zooming does nothing and a photo is an unfocused frame.
+    @State private var scanning = false
 
     private static let zoomSteps: [Double] = [1, 2, 3, 5]
 
@@ -61,7 +64,7 @@ struct SlideCameraView: View {
                                 if capturing { ProgressView().tint(.black) }
                             }
                         }
-                        .disabled(capturing)
+                        .disabled(capturing || !scanning)
                         .accessibilityLabel("Take photo of slide")
                         Spacer()
                         Color.clear.frame(width: 80, height: 1)
@@ -71,18 +74,26 @@ struct SlideCameraView: View {
                 .padding(.bottom, 40)
             }
             .task {
-                // Follow pinches, which change the scanner's zoom without telling anyone.
+                // Starting the scanner before it's on screen can fail without a word — the first time
+                // the camera opens, the permission prompt happens to wait long enough; after that it
+                // doesn't — so keep at it until it runs. Then follow pinches, which change the
+                // scanner's zoom without telling anyone.
                 while !Task.isCancelled {
-                    try? await Task.sleep(for: .milliseconds(250))
-                    if let controller = scanner.controller, abs(controller.zoomFactor - zoom) > 0.01 { zoom = controller.zoomFactor }
+                    if let controller = scanner.controller {
+                        if !controller.isScanning { try? controller.startScanning() }
+                        if scanning != controller.isScanning { scanning = controller.isScanning }
+                        if abs(controller.maxZoomFactor - maxZoom) > 0.01 { maxZoom = controller.maxZoomFactor }
+                        if abs(controller.zoomFactor - zoom) > 0.01 { zoom = controller.zoomFactor }
+                    }
+                    try? await Task.sleep(for: .milliseconds(scanning ? 250 : 100))
                 }
             }
     }
 
     /// The camera app's zoom steps, as far as the camera goes; the one in use shows the exact zoom.
     @ViewBuilder private var zoomControl: some View {
-        let steps = Self.zoomSteps.filter { $0 <= (scanner.controller?.maxZoomFactor ?? 1) + 0.01 }
-        if steps.count > 1 {
+        let steps = Self.zoomSteps.filter { $0 <= maxZoom + 0.01 }
+        if scanning, steps.count > 1 {
             let current = steps.last { zoom >= $0 - 0.05 } ?? steps[0]
             HStack(spacing: 6) {
                 ForEach(steps, id: \.self) { step in
@@ -106,7 +117,7 @@ struct SlideCameraView: View {
     }
 
     private func setZoom(_ factor: Double) {
-        guard let controller = scanner.controller else { return }
+        guard let controller = scanner.controller, controller.isScanning else { return }
         let clamped = min(max(factor, controller.minZoomFactor), controller.maxZoomFactor)
         controller.zoomFactor = clamped
         zoom = clamped
@@ -133,7 +144,7 @@ struct SlideCameraView: View {
     }
 
     private func capture() {
-        guard !capturing, let controller = scanner.controller else { return }
+        guard !capturing, let controller = scanner.controller, controller.isScanning else { return }
         capturing = true
         Task {
             defer { capturing = false }

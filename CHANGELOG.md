@@ -9,6 +9,11 @@
   also has 1×, 2×, 3× and 5× zoom steps to bring a far-off screen close. On Android the camera
   outlines the screen as it finds it, says to zoom in when the screen is small in the frame, and
   zooms with a pinch.
+- The slide camera on iPhone works every time it opens, not just the first: it waits until the
+  scanner is really running before offering zoom and the shutter, so zooming works, the zoom
+  buttons show right away, and the photo is in focus. The review no longer says a slide
+  "couldn't be read" when its reading was only interrupted by the camera closing. When the crop to
+  the screen finds no text, on either platform, the whole photo is read instead.
 - The German Luther Bible numbers John 10:10–12 as Luther does: "Ich bin der gute Hirte" is 10:11 again (the source text had split 10:10 and run 11 into 12).
 - A sermon slide whose title is a short Chinese, Japanese or Korean word (好牧人) keeps it as the
   note's title, instead of passing it over as too short and titling the note from a bullet line —
