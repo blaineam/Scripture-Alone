@@ -62,7 +62,7 @@ kjv,asv,bsb,topical,anxiety,grief,comfort,commentary,devotional,sermon,notes,epu
 Find what the Bible says about what you're going through, bring your own Bibles, and study offline with commentary, maps and timelines. No ads, no accounts.
 
 ## whats_new
-The first release of Scripture Alone.
+1.1.0 — The first release of Scripture Alone.
 
 ## review_notes
 Scripture Alone is an open-source Bible app (AGPL-3.0, https://github.com/blaineam/Scripture-Alone). No account or login is required for any feature, and the app reads offline from its first launch.

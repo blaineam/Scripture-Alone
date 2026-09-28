@@ -64,7 +64,7 @@ Conçue pour aider à étudier la parole de Dieu et à se rapprocher du Christ.
 Trouvez ce que la Bible dit de ce que vous traversez, apportez vos propres Bibles et étudiez hors ligne avec cartes et chronologies. Sans pub, sans compte.
 
 ## whats_new
-La toute première version de Scripture Alone.
+1.1.0 — La toute première version de Scripture Alone.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

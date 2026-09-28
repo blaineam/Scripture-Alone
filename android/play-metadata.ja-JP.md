@@ -53,4 +53,4 @@ DRM フリーの ePub、テキストレイヤーのある聖書 PDF、USFM フ�
 神のことばを学び、キリストに近づく助けとなるように作られました。
 
 ## release_notes
-Scripture Alone、Android 版の最初のリリースです。
+1.1.0 — Scripture Alone、Android 版の最初のリリースです。

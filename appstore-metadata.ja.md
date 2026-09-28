@@ -70,7 +70,7 @@ Scripture Alone は隅々まで日本語です。メニューも設定も検索�
 いま抱えていることに聖書が何と語るかを見つけ、お手持ちの聖書を取り込み、地図や年表とともにオフラインで学べます。広告なし、アカウント登録も不要。
 
 ## whats_new
-Scripture Alone、初回リリースです。
+1.1.0 — Scripture Alone、初回リリースです。
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

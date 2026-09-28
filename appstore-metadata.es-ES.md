@@ -64,7 +64,7 @@ reina valera,escrituras,estudio bíblico,temas,ansiedad,duelo,consuelo,devociona
 Descubre lo que la Biblia dice de lo que estás viviendo, trae tus propias Biblias y estudia sin conexión con mapas y cronologías. Sin anuncios ni cuentas.
 
 ## whats_new
-Primera versión de Scripture Alone.
+1.1.0 — Primera versión de Scripture Alone.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

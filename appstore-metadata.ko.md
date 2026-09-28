@@ -70,7 +70,7 @@ DRM 없는 ePub, 텍스트 레이어가 있는 성경 PDF, USFM 파일처럼 이
 지금 겪는 일에 성경이 하는 말을 찾고, 가지고 있는 성경을 불러와, 지도와 연표로 오프라인에서 깊이 공부하세요. 광고도 계정도 없습니다.
 
 ## whats_new
-Scripture Alone의 첫 번째 버전입니다.
+1.1.0 — Scripture Alone의 첫 번째 버전입니다.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

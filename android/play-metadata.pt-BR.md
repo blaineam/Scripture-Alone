@@ -53,4 +53,4 @@ As suas marcações, notas e favoritos ficam no seu aparelho. Não há servidor 
 Feito para ajudar as pessoas a estudar a Palavra de Deus e a se aproximar de Cristo.
 
 ## release_notes
-Esta é a primeira versão do Scripture Alone para Android.
+1.1.0 — Esta é a primeira versão do Scripture Alone para Android.

@@ -53,4 +53,4 @@ Tus subrayados, notas y favoritos se quedan en tu dispositivo. No hay servidor n
 Hecha para ayudar a estudiar la Palabra de Dios y acercarse más a Cristo.
 
 ## release_notes
-Primera versión de Scripture Alone para Android.
+1.1.0 — Primera versión de Scripture Alone para Android.
