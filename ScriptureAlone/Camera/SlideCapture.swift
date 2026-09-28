@@ -27,6 +27,9 @@ final class SlideCapture {
     var showFileImporter = false
     var photoItem: PhotosPickerItem?
     var failure: String?
+    /// The camera's photo, held until the camera has gone: a review sheet presented while the
+    /// camera is still closing can be torn down and put back, cutting its reading short.
+    var cameraPhoto: CGImage?
 
     static var canTakePhoto: Bool {
         #if os(iOS)
@@ -168,10 +171,14 @@ private struct SlideCaptureHost: ViewModifier {
                 Task { await capture.importFile(result) }
             }
             #if os(iOS)
-            .fullScreenCover(isPresented: $capture.showCamera) {
+            .fullScreenCover(isPresented: $capture.showCamera, onDismiss: {
+                guard let image = capture.cameraPhoto else { return }
+                capture.cameraPhoto = nil
+                capture.accept(image, findsScreen: true)
+            }) {
                 SlideCameraView { image in
+                    capture.cameraPhoto = image
                     capture.showCamera = false
-                    capture.accept(image, findsScreen: true)
                 }
             }
             #else

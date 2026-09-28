@@ -215,7 +215,19 @@ struct SlideReviewView: View {
         readCropped = cropped
         phase = .reading
         do {
-            let (_, reading) = try await SlideRecognizer.read(photo)
+            let (recognized, reading) = try await SlideRecognizer.read(photo)
+            if Task.isCancelled {
+                readCropped = nil
+                return
+            }
+            if cropped, recognized.isEmpty {
+                // Whatever was taken for the screen held no text: it wasn't the screen. Read it all
+                // (as when reading the crop fails, below).
+                screen = nil
+                readCropped = nil
+                await read()
+                return
+            }
             apply(reading)
             phase = .ready
             let found = [reading.title.isEmpty ? nil : String(localized: "Title: \(reading.title)"),
@@ -223,6 +235,17 @@ struct SlideReviewView: View {
                          String(localized: "\(lines.count) other lines")].compactMap { $0 }
             AccessibilityNotification.Announcement(String(localized: "Slide read. \(found.joined(separator: ", "))")).post()
         } catch {
+            // Cut short (the sheet went away and came back): read again when it next asks.
+            if Task.isCancelled || error is CancellationError {
+                readCropped = nil
+                return
+            }
+            if cropped {
+                screen = nil
+                readCropped = nil
+                await read()
+                return
+            }
             phase = .failed(String(localized: "The text on this photo couldn’t be read. You can still type a title and passages."))
         }
     }

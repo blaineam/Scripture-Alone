@@ -210,7 +210,24 @@ internal fun SlideReviewSheet(
         readCropped = cropped
         phase = Phase.Reading
         try {
-            val (_, reading) = SlideRecognizer.read(context, if (cropped) screen!! else slide.image)
+            val first = if (cropped) {
+                try {
+                    SlideRecognizer.read(context, screen!!)
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    null
+                }
+            } else {
+                SlideRecognizer.read(context, slide.image)
+            }
+            // Whatever was taken for the screen held no text, or couldn't be read: it wasn't the
+            // screen. Read the whole photo.
+            val (_, reading) = first?.takeIf { !cropped || it.first.isNotEmpty() } ?: run {
+                screen = null
+                readCropped = false
+                SlideRecognizer.read(context, slide.image)
+            }
             apply(reading, resolve(model, reading.passages))
             phase = Phase.Ready
             val found = listOfNotNull(
