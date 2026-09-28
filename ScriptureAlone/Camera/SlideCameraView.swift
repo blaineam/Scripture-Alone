@@ -1,55 +1,26 @@
 #if os(iOS)
 import SwiftUI
 import AVFoundation
-import VisionKit
 import UIKit
 
-/// The camera, full screen. Uses VisionKit's live scanner — text on the slide lights up as
-/// it's recognized, and tapping any of it (or the shutter) takes the picture — and falls back
-/// to the standard camera on devices without it. Zoom steps and pinching bring a far-off screen
-/// close; review then finds the screen in the photo and reads just that (`SlideScreen`).
+/// The camera, full screen: a plain camera that opens at once, with the Camera app's zoom steps,
+/// pinch to zoom and tap to focus. Nothing is recognized live — review reads the slide from the
+/// photo after the shutter, finding the screen in it first (`SlideScreen`). Falls back to the
+/// standard camera where there's no back camera to run.
 struct SlideCameraView: View {
     let onCapture: (CGImage) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var access = AVCaptureDevice.authorizationStatus(for: .video)
-    @State private var scanner = ScannerHandle()
+    @State private var camera = SlideCamera()
     @State private var capturing = false
-    @State private var zoom = 1.0
-    /// How far the camera zooms, each way; 0 until it says (it can take seconds after the preview shows).
-    @State private var maxZoom = 0.0
-    @State private var minZoom = 0.0
-    /// A zoom step tapped before the camera could go that far, put through once it can.
-    @State private var wantedZoom: Double?
-    /// The scanner is running: until then zooming does nothing and a photo is an unfocused frame.
-    @State private var scanning = false
 
-    /// The Camera app's steps for this iPhone: 0.5× with an ultra wide, 1× and 2×, the telephoto's
-    /// own zoom, and twice that where the telephoto is 48 MP (8× beside 4×).
-    private static let zoomSteps: [Double] = {
-        let lenses = AVCaptureDevice.DiscoverySession(
-            deviceTypes: [.builtInUltraWideCamera, .builtInTelephotoCamera], mediaType: .video, position: .back).devices
-        var steps: Set<Double> = [1, 2]
-        if lenses.contains(where: { $0.deviceType == .builtInUltraWideCamera }) { steps.insert(0.5) }
-        if let telephoto = lenses.first(where: { $0.deviceType == .builtInTelephotoCamera }),
-           let camera = AVCaptureDevice.default(.builtInTripleCamera, for: .video, position: .back)
-            ?? AVCaptureDevice.default(.builtInDualCamera, for: .video, position: .back),
-           let switchOver = camera.virtualDeviceSwitchOverVideoZoomFactors.last {
-            // Where the camera switches to the telephoto, in the zoom the Camera app shows.
-            let zoom = (switchOver.doubleValue * Double(camera.displayVideoZoomFactorMultiplier) * 10).rounded() / 10
-            steps.insert(zoom)
-            let pixels = telephoto.formats.flatMap(\.supportedMaxPhotoDimensions).map { Int($0.width) * Int($0.height) }.max() ?? 0
-            if pixels >= 40_000_000 { steps.insert(zoom * 2) }
-        }
-        return steps.sorted()
-    }()
-
-    private var useLiveScanner: Bool { DataScannerViewController.isSupported && DataScannerViewController.isAvailable }
+    private var hasBackCamera: Bool { AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) != nil }
 
     var body: some View {
         Group {
             switch access {
             case .authorized:
-                if useLiveScanner { liveScanner } else { ImagePickerCamera(onCapture: onCapture, onCancel: { dismiss() }) }
+                if hasBackCamera { liveCamera } else { ImagePickerCamera(onCapture: onCapture, onCancel: { dismiss() }) }
             case .notDetermined:
                 Color.black.task {
                     _ = await AVCaptureDevice.requestAccess(for: .video)
@@ -62,11 +33,11 @@ struct SlideCameraView: View {
         .ignoresSafeArea()
     }
 
-    private var liveScanner: some View {
-        DataScannerRepresentable(handle: scanner, onTapText: capture)
+    private var liveCamera: some View {
+        CameraPreview(camera: camera)
             .ignoresSafeArea()
             .overlay(alignment: .top) {
-                Text("Point at the slide. Tap any highlighted text or the shutter.")
+                Text("Point at the slide, then take the photo.")
                     .font(.callout.weight(.medium))
                     .padding(.horizontal, 14).padding(.vertical, 8)
                     .glassEffect()
@@ -86,7 +57,7 @@ struct SlideCameraView: View {
                                 if capturing { ProgressView().tint(.black) }
                             }
                         }
-                        .disabled(capturing || !scanning)
+                        .disabled(capturing || camera.lenses == nil)
                         .accessibilityLabel("Take photo of slide")
                         Spacer()
                         Color.clear.frame(width: 80, height: 1)
@@ -95,48 +66,19 @@ struct SlideCameraView: View {
                 }
                 .padding(.bottom, 40)
             }
-            .task {
-                // `ScannerContainer` starts the scanner as it appears; should that fail, try again now
-                // and then. Follow pinches, which change the scanner's zoom without telling anyone.
-                var lastStart = ContinuousClock.now
-                while !Task.isCancelled {
-                    if let controller = scanner.controller {
-                        if !controller.isScanning, ContinuousClock.now - lastStart > .seconds(1) {
-                            lastStart = .now
-                            try? controller.startScanning()
-                        }
-                        if scanning != controller.isScanning { scanning = controller.isScanning }
-                        let reach = controller.maxZoomFactor > 1.01 ? controller.maxZoomFactor : 0
-                        if abs(reach - maxZoom) > 0.01 { maxZoom = reach }
-                        if reach > 0, abs(controller.minZoomFactor - minZoom) > 0.01 { minZoom = controller.minZoomFactor }
-                        if let wanted = wantedZoom {
-                            // Once the camera says how far it goes, as close as it gets.
-                            if controller.isScanning, controller.maxZoomFactor >= wanted - 0.01 || reach > 0 {
-                                controller.zoomFactor = max(min(wanted, controller.maxZoomFactor), controller.minZoomFactor)
-                                zoom = controller.zoomFactor
-                                wantedZoom = nil
-                            }
-                        } else if abs(controller.zoomFactor - zoom) > 0.01 {
-                            zoom = controller.zoomFactor
-                        }
-                    }
-                    try? await Task.sleep(for: .milliseconds(100))
-                }
-            }
+            .task { await camera.start() }
+            .onDisappear { camera.stop() }
     }
 
-    /// The camera app's zoom steps, as far as the camera goes; the one in use shows the exact zoom.
+    /// The Camera app's zoom steps for this iPhone; the one in use shows the exact zoom.
     @ViewBuilder private var zoomControl: some View {
-        // Shown straight away; once the camera says how far it goes, only the steps it reaches.
-        let steps = Self.zoomSteps.filter {
-            (maxZoom == 0 || $0 <= maxZoom + 0.01) && (minZoom == 0 || $0 >= minZoom - 0.01)
-        }
-        if steps.count > 1 {
+        if let steps = camera.lenses?.steps, steps.count > 1 {
+            let zoom = camera.zoom
             let current = steps.last { zoom >= $0 - 0.05 } ?? steps[0]
             HStack(spacing: 6) {
                 ForEach(steps, id: \.self) { step in
                     let active = step == current
-                    Button { setZoom(step) } label: {
+                    Button { camera.setZoom(step) } label: {
                         Text(verbatim: Self.zoomLabel(active ? zoom : step))
                             .font(active ? Font.footnote.weight(.semibold) : Font.caption.weight(.semibold))
                             .monospacedDigit()
@@ -154,18 +96,7 @@ struct SlideCameraView: View {
         }
     }
 
-    private func setZoom(_ factor: Double) {
-        zoom = factor
-        guard let controller = scanner.controller, controller.isScanning, controller.maxZoomFactor >= factor - 0.01 else {
-            // Not ready to go that far yet: the loop above puts it through when it is.
-            wantedZoom = factor
-            return
-        }
-        wantedZoom = nil
-        controller.zoomFactor = max(factor, controller.minZoomFactor)
-    }
-
-    /// "2×", "2.4×".
+    /// "2×", "0.5×", "2.4×".
     private static func zoomLabel(_ factor: Double) -> String {
         factor.formatted(.number.precision(.fractionLength(0...1))) + "×"
     }
@@ -186,83 +117,252 @@ struct SlideCameraView: View {
     }
 
     private func capture() {
-        guard !capturing, let controller = scanner.controller, controller.isScanning else { return }
+        guard !capturing, camera.lenses != nil else { return }
         capturing = true
         Task {
             defer { capturing = false }
-            if let photo = try? await controller.capturePhoto(), let image = photo.uprightCGImage() {
-                onCapture(image)
-            }
+            if let image = await camera.capture() { onCapture(image) }
         }
     }
 }
 
+/// The camera's state for the view: its lenses once it's running, the zoom, and the rotation of
+/// the phone for an upright photo.
 @Observable
-final class ScannerHandle {
-    weak var controller: DataScannerViewController?
+final class SlideCamera {
+    let session = SlideCameraSession()
+    private(set) var lenses: SlideCameraSession.Lenses?
+    /// The zoom as the Camera app shows it: 1× is the main camera.
+    private(set) var zoom = 1.0
+    @ObservationIgnored weak var preview: CameraPreviewView?
+    @ObservationIgnored private var pinchStart = 1.0
+
+    /// Starts the camera, or starts it again after it was stopped.
+    func start() async {
+        guard let started = await session.start() else { return }
+        lenses = started
+        if let device = session.device { preview?.attach(device) }
+    }
+
+    func stop() { session.stop() }
+
+    func setZoom(_ factor: Double) {
+        guard let lenses else { return }
+        zoom = min(max(factor, lenses.minZoom), lenses.maxZoom)
+        session.setZoom(zoom / lenses.multiplier)
+    }
+
+    func pinchBegan() { pinchStart = zoom }
+    func pinched(_ scale: Double) { setZoom(pinchStart * scale) }
+
+    /// Focuses and exposes for a point in the camera's own coordinates (0…1).
+    func focus(at point: CGPoint) { session.focus(at: point) }
+
+    func capture() async -> CGImage? {
+        // Upright as the phone is held, whatever the screen's orientation.
+        let angle = preview?.rotation?.videoRotationAngleForHorizonLevelCapture ?? 90
+        guard let data = await session.capture(rotationAngle: angle) else { return nil }
+        return await Task.detached(priority: .userInitiated) { SlideImage.decode(data) }.value
+    }
 }
 
-private struct DataScannerRepresentable: UIViewControllerRepresentable {
-    let handle: ScannerHandle
-    let onTapText: () -> Void
-
-    func makeUIViewController(context: Context) -> ScannerContainer {
-        // Balanced: the live highlights only say where to tap; the slide is read from the photo.
-        let controller = DataScannerViewController(recognizedDataTypes: [.text()], qualityLevel: .balanced,
-                                                   recognizesMultipleItems: true, isHighFrameRateTrackingEnabled: false,
-                                                   isPinchToZoomEnabled: true, isGuidanceEnabled: false,
-                                                   isHighlightingEnabled: true)
-        controller.delegate = context.coordinator
-        handle.controller = controller
-        return ScannerContainer(scanner: controller)
+/// The capture session, on its own queue: starting a camera takes long enough to stall the screen.
+nonisolated final class SlideCameraSession: NSObject, AVCapturePhotoCaptureDelegate, @unchecked Sendable {
+    /// The back camera's zoom, as the Camera app shows it (1× is the main camera): the range and the
+    /// steps to offer, and what to multiply the device's own zoom factor by to get there.
+    struct Lenses: Sendable {
+        var multiplier: Double
+        var minZoom: Double
+        var maxZoom: Double
+        var steps: [Double]
     }
 
-    func updateUIViewController(_ container: ScannerContainer, context: Context) {}
+    let session = AVCaptureSession()
+    private let photoOutput = AVCapturePhotoOutput()
+    private let queue = DispatchQueue(label: "com.blainemiller.ScriptureAlone.SlideCamera")
+    private(set) var device: AVCaptureDevice?
+    private var photo: CheckedContinuation<Data?, Never>?
 
-    static func dismantleUIViewController(_ container: ScannerContainer, coordinator: Coordinator) {
-        container.scanner.stopScanning()
+    /// Sets up the back camera — all its lenses, so 0.5× and the telephoto switch as the Camera app
+    /// does — and starts it. Returns as soon as the zoom is known; the preview follows a moment later.
+    func start() async -> Lenses? {
+        await withCheckedContinuation { continuation in
+            queue.async {
+                let lenses = self.configure()
+                continuation.resume(returning: lenses)
+                if lenses != nil, !self.session.isRunning { self.session.startRunning() }
+            }
+        }
     }
 
-    func makeCoordinator() -> Coordinator { Coordinator(onTapText: onTapText) }
+    func stop() {
+        queue.async { if self.session.isRunning { self.session.stopRunning() } }
+    }
 
-    final class Coordinator: NSObject, DataScannerViewControllerDelegate {
-        let onTapText: () -> Void
-        init(onTapText: @escaping () -> Void) { self.onTapText = onTapText }
+    private func configure() -> Lenses? {
+        if let device { return zoomRange(of: device) }
+        let camera = AVCaptureDevice.default(.builtInTripleCamera, for: .video, position: .back)
+            ?? AVCaptureDevice.default(.builtInDualWideCamera, for: .video, position: .back)
+            ?? AVCaptureDevice.default(.builtInDualCamera, for: .video, position: .back)
+            ?? AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
+        guard let camera, let input = try? AVCaptureDeviceInput(device: camera) else { return nil }
+        session.beginConfiguration()
+        session.sessionPreset = .photo
+        guard session.canAddInput(input), session.canAddOutput(photoOutput) else {
+            session.commitConfiguration()
+            return nil
+        }
+        session.addInput(input)
+        session.addOutput(photoOutput)
+        session.commitConfiguration()
 
-        func dataScanner(_ dataScanner: DataScannerViewController, didTapOn item: RecognizedItem) { onTapText() }
+        let lenses = zoomRange(of: camera)
+        if (try? camera.lockForConfiguration()) != nil {
+            // Open at 1× — the main camera — not the ultra wide a triple camera starts on.
+            let main = min(max(1 / lenses.multiplier, Double(camera.minAvailableVideoZoomFactor)), Double(camera.maxAvailableVideoZoomFactor))
+            camera.videoZoomFactor = CGFloat(main)
+            if camera.isFocusModeSupported(.continuousAutoFocus) { camera.focusMode = .continuousAutoFocus }
+            if camera.isExposureModeSupported(.continuousAutoExposure) { camera.exposureMode = .continuousAutoExposure }
+            camera.unlockForConfiguration()
+        }
+        device = camera
+        return lenses
+    }
+
+    /// 0.5× with an ultra wide; 1× and 2×; the telephoto's zoom, where the camera switches to it;
+    /// and twice that where the telephoto is 48 MP (8× beside 4×).
+    private func zoomRange(of camera: AVCaptureDevice) -> Lenses {
+        let multiplier = Double(camera.displayVideoZoomFactorMultiplier)
+        let minZoom = Double(camera.minAvailableVideoZoomFactor) * multiplier
+        let constituents = camera.isVirtualDevice ? camera.constituentDevices : [camera]
+        let telephoto = constituents.first { $0.deviceType == .builtInTelephotoCamera }
+        var steps: Set<Double> = [1, 2]
+        if minZoom <= 0.51 { steps.insert(0.5) }
+        // Past about 3× the telephoto (or 10× without one), it's only blur.
+        var reach = 10.0
+        if let telephoto, let switchOver = camera.virtualDeviceSwitchOverVideoZoomFactors.last {
+            let zoom = (switchOver.doubleValue * multiplier * 10).rounded() / 10
+            steps.insert(zoom)
+            let pixels = telephoto.formats.flatMap(\.supportedMaxPhotoDimensions).map { Int($0.width) * Int($0.height) }.max() ?? 0
+            if pixels >= 40_000_000 { steps.insert(zoom * 2) }
+            reach = zoom * 3
+        }
+        let maxZoom = min(Double(camera.maxAvailableVideoZoomFactor) * multiplier, reach)
+        return Lenses(multiplier: multiplier, minZoom: minZoom, maxZoom: maxZoom,
+                      steps: steps.filter { $0 >= minZoom - 0.01 && $0 <= maxZoom + 0.01 }.sorted())
+    }
+
+    /// Sets the device's own zoom factor.
+    func setZoom(_ factor: Double) {
+        queue.async {
+            guard let device = self.device, (try? device.lockForConfiguration()) != nil else { return }
+            device.videoZoomFactor = CGFloat(min(max(factor, Double(device.minAvailableVideoZoomFactor)), Double(device.maxAvailableVideoZoomFactor)))
+            device.unlockForConfiguration()
+        }
+    }
+
+    func focus(at point: CGPoint) {
+        queue.async {
+            guard let device = self.device, (try? device.lockForConfiguration()) != nil else { return }
+            if device.isFocusPointOfInterestSupported, device.isFocusModeSupported(.continuousAutoFocus) {
+                device.focusPointOfInterest = point
+                device.focusMode = .continuousAutoFocus
+            }
+            if device.isExposurePointOfInterestSupported, device.isExposureModeSupported(.continuousAutoExposure) {
+                device.exposurePointOfInterest = point
+                device.exposureMode = .continuousAutoExposure
+            }
+            device.unlockForConfiguration()
+        }
+    }
+
+    /// Takes the photo, turned by `rotationAngle`; its file data (HEIC or JPEG) or nil.
+    func capture(rotationAngle: CGFloat) async -> Data? {
+        await withCheckedContinuation { continuation in
+            queue.async {
+                guard self.photo == nil, self.session.isRunning else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+                self.photo = continuation
+                if let connection = self.photoOutput.connection(with: .video), connection.isVideoRotationAngleSupported(rotationAngle) {
+                    connection.videoRotationAngle = rotationAngle
+                }
+                self.photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+            }
+        }
+    }
+
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: (any Error)?) {
+        let data = error == nil ? photo.fileDataRepresentation() : nil
+        queue.async {
+            self.photo?.resume(returning: data)
+            self.photo = nil
+        }
     }
 }
 
-/// Holds the scanner and starts it the moment it's on screen: any sooner, starting fails without a
-/// word, and waiting it out by polling left the camera black for seconds.
-final class ScannerContainer: UIViewController {
-    let scanner: DataScannerViewController
+/// The live picture, with pinch to zoom and tap to focus.
+final class CameraPreviewView: UIView {
+    override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
+    var previewLayer: AVCaptureVideoPreviewLayer { layer as! AVCaptureVideoPreviewLayer }
+    /// Which way up the phone is, for the preview and the photo.
+    private(set) var rotation: AVCaptureDevice.RotationCoordinator?
+    weak var camera: SlideCamera?
 
-    init(scanner: DataScannerViewController) {
-        self.scanner = scanner
-        super.init(nibName: nil, bundle: nil)
+    init(camera: SlideCamera) {
+        self.camera = camera
+        super.init(frame: .zero)
+        backgroundColor = .black
+        previewLayer.videoGravity = .resizeAspectFill
+        previewLayer.session = camera.session.session
+        addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(pinched(_:))))
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapped(_:))))
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .black
-        addChild(scanner)
-        scanner.view.frame = view.bounds
-        scanner.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.addSubview(scanner.view)
-        scanner.didMove(toParent: self)
+    func attach(_ device: AVCaptureDevice) {
+        rotation = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: previewLayer)
+        setNeedsLayout()
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        if !scanner.isScanning { try? scanner.startScanning() }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        if let rotation, let connection = previewLayer.connection,
+           connection.isVideoRotationAngleSupported(rotation.videoRotationAngleForHorizonLevelPreview) {
+            connection.videoRotationAngle = rotation.videoRotationAngleForHorizonLevelPreview
+        }
+    }
+
+    @objc private func pinched(_ gesture: UIPinchGestureRecognizer) {
+        switch gesture.state {
+        case .began: camera?.pinchBegan()
+        case .changed: camera?.pinched(Double(gesture.scale))
+        default: break
+        }
+    }
+
+    @objc private func tapped(_ gesture: UITapGestureRecognizer) {
+        camera?.focus(at: previewLayer.captureDevicePointConverted(fromLayerPoint: gesture.location(in: self)))
     }
 }
 
-/// The system camera, for devices without the live text scanner.
+private struct CameraPreview: UIViewRepresentable {
+    let camera: SlideCamera
+
+    func makeUIView(context: Context) -> CameraPreviewView {
+        let view = CameraPreviewView(camera: camera)
+        camera.preview = view
+        if let device = camera.session.device { view.attach(device) }
+        return view
+    }
+
+    func updateUIView(_ view: CameraPreviewView, context: Context) {}
+}
+
+/// The system camera, for devices without a back camera to run.
 private struct ImagePickerCamera: UIViewControllerRepresentable {
     let onCapture: (CGImage) -> Void
     let onCancel: () -> Void
