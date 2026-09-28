@@ -53,4 +53,4 @@ Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 
 ## release_notes
-Die erste Version von Scripture Alone für Android.
+1.1.0 — Die erste Version von Scripture Alone für Android.

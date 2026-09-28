@@ -70,7 +70,7 @@ Scripture Alone 是一款适用于 iPhone、iPad、Mac 和 Apple Watch 的圣经
 找到圣经对你正在经历之事的话语，导入你自己的圣经，并借助地图与时间线离线研读。无广告，无需账户。
 
 ## whats_new
-Scripture Alone 首个版本发布。
+1.1.0 — Scripture Alone 首个版本发布。
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

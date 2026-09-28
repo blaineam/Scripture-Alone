@@ -53,4 +53,4 @@ Evidenziazioni, note e preferiti restano sul tuo dispositivo. Nessun server, nes
 Nata per aiutare le persone a studiare la Parola di Dio e a crescere nella vicinanza a Cristo.
 
 ## release_notes
-La prima versione di Scripture Alone per Android.
+1.1.0 — La prima versione di Scripture Alone per Android.

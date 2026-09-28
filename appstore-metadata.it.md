@@ -64,7 +64,7 @@ scritture,riveduta,diodati,argomenti,ansia,lutto,conforto,devozionale,sermone,ri
 Scopri che cosa dice la Bibbia di ciò che stai vivendo, porta le tue Bibbie e studia offline con mappe e cronologie. Senza pubblicità né account.
 
 ## whats_new
-La prima versione di Scripture Alone.
+1.1.0 — La prima versione di Scripture Alone.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

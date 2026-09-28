@@ -64,7 +64,7 @@ sagrada,almeida,acf,nvi,arc,devocional,sermão,temas,ansiedade,luto,consolo,cris
 Descubra o que a Bíblia diz sobre o que você está vivendo, traga suas próprias Bíblias e estude offline com mapas e linhas do tempo. Sem anúncios, sem contas.
 
 ## whats_new
-A primeira versão do Scripture Alone.
+1.1.0 — A primeira versão do Scripture Alone.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

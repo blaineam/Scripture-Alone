@@ -64,7 +64,7 @@ andacht,predigt,kommentar,notizen,themen,trost,angst,trauer,lutherbibel,kjv,refo
 Finde, was die Bibel zu dem sagt, was dich bewegt, bring deine eigenen Bibeln mit und studiere offline mit Karten und Zeitleisten. Ohne Werbung, ohne Konto.
 
 ## whats_new
-Die erste Version von Scripture Alone.
+1.1.0 — Die erste Version von Scripture Alone.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

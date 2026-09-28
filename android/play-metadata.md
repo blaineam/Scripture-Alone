@@ -71,7 +71,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-The first release of Scripture Alone for Android.
+1.1.0 — The first release of Scripture Alone for Android.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->
