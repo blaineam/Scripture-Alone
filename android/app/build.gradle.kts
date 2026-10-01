@@ -4,6 +4,34 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+/**
+ * The secret content-key seed for licensed translations (docs/lockman/README.md), from the
+ * SA_CONTENT_KEY_SEED environment variable — the same secret Xcode Cloud compiles into the iOS app,
+ * read the same way (hex when it looks like hex, else UTF-8) and masked the same way, which is
+ * obfuscation, not protection: it only keeps the seed from being a string `strings` prints. Empty when
+ * the build has none, and then no licensed translation ships.
+ */
+val contentKeySeedMasked: String = System.getenv("SA_CONTENT_KEY_SEED").orEmpty().let { raw ->
+    if (raw.isEmpty()) return@let ""
+    val seed = if (raw.all { it in "0123456789abcdefABCDEF" }) raw.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+        else raw.toByteArray(Charsets.UTF_8)
+    val pad = java.security.MessageDigest.getInstance("SHA-256").digest("scripture-alone-seed-pad-v1".toByteArray(Charsets.UTF_8))
+    seed.indices.joinToString("") { i -> "%02x".format((seed[i].toInt() xor pad[i % pad.size].toInt()) and 0xff) }
+}
+
+/**
+ * Whether this build carries the licensed NASB 2020: its package and signing key in the iOS
+ * resources (copied there from private storage by the release workflow; never committed) and the
+ * seed that opens it. Fixed at build time, so the default translation is a constant at runtime.
+ */
+val shipsLicensedNasb: Boolean = rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources/Packages").asFile.let {
+    java.io.File(it, "NASB2020.sabible").exists() && java.io.File(it, "NASB2020-signing.pub").exists()
+}.also { present ->
+    check(!present || contentKeySeedMasked.isNotEmpty()) {
+        "NASB2020.sabible is present but SA_CONTENT_KEY_SEED is not set: it would ship as a default nobody can open"
+    }
+}
+
 android {
     namespace = "com.blainemiller.scripturealone"
     compileSdk = 36
@@ -19,6 +47,8 @@ android {
         versionName = providers.gradleProperty("saVersionName").orNull ?: "1.0.0"
         check(versionCode!! < 1_000_000) { "phone versionCode $versionCode is in the Wear OS 1,000,000+ range" }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "CONTENT_KEY_SEED_MASKED", "\"$contentKeySeedMasked\"")
+        buildConfigField("boolean", "SHIPS_LICENSED_NASB", shipsLicensedNasb.toString())
     }
 
     buildTypes.getByName("debug") {
@@ -66,6 +96,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     // The bundled databases are copied in from the iOS app's resources at build time — see
@@ -177,6 +208,9 @@ val syncBundledData by tasks.registering(Sync::class) {
         include(
             "Study/CrossReferences.sqlite", "Study/Context.sqlite", "Study/Basemap.bin", "Study/Topics.sqlite",
             "Packages/bundled-signing.pub",
+            // The licensed NASB 2020 and the key it was signed with, when this build carries them
+            // (`shipsLicensedNasb`). In the base module, as on iOS: it is the default translation.
+            "Packages/NASB2020.sabible", "Packages/NASB2020-signing.pub",
         )
         eachFile { path = name }          // flatten, as the iOS bundle does
         includeEmptyDirs = false

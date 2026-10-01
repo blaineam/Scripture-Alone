@@ -52,10 +52,12 @@ enum IntentLibrary {
         return store
     }
 
-    /// The reader's translation when it is on the device, else the ASV.
+    /// The reader's translation when it is on the device, else the default (the NASB 2020 when this
+    /// build ships it), else the ASV, which every build carries.
     static var currentTranslationID: String {
         if let id = UserDefaults.standard.string(forKey: "translation"), source(for: id) != nil { return id }
-        return ReaderModel.defaultTranslation
+        if source(for: ReaderModel.defaultTranslation) != nil { return ReaderModel.defaultTranslation }
+        return ReaderModel.fallbackTranslation
     }
 
     static var currentSource: (any ChapterTextSource)? { source(for: currentTranslationID) }

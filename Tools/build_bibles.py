@@ -535,21 +535,32 @@ def apply_corrections(code, text, applied):
             applied.add((book, wrong))
     return text
 
+def _usfm_files(path):
+    """(name, bytes) for every USFM file in a zip, or in a folder of them."""
+    if os.path.isdir(path):
+        for name in sorted(os.listdir(path)):
+            with open(os.path.join(path, name), "rb") as handle:
+                yield name, handle.read()
+        return
+    with zipfile.ZipFile(path) as z:
+        for name in z.namelist():
+            yield name, z.read(name)
+
+
 def load_books(zip_path, report_corrections=True):
     books = {}
     applied = set()
-    with zipfile.ZipFile(zip_path) as z:
-        for name in z.namelist():
-            if not name.lower().endswith((".usfm", ".sfm")):
-                continue
-            text = z.read(name).decode("utf-8-sig")
-            code = re.match(r"\\id\s+(\S+)", text)
-            if not code or code.group(1) not in BOOKS:
-                continue
-            text = apply_corrections(code.group(1), text, applied)
-            book = Book(code.group(1))
-            Parser(text).parse(book)
-            books[book.code] = book
+    for name, data in _usfm_files(zip_path):
+        if not name.lower().endswith((".usfm", ".sfm")):
+            continue
+        text = data.decode("utf-8-sig")
+        code = re.match(r"\\id\s+(\S+)", text)
+        if not code or code.group(1) not in BOOKS:
+            continue
+        text = apply_corrections(code.group(1), text, applied)
+        book = Book(code.group(1))
+        Parser(text).parse(book)
+        books[book.code] = book
     missing = [c for c in BOOKS if c not in books]
     if missing:
         raise SystemExit(f"{zip_path}: missing books {missing}")
@@ -564,9 +575,9 @@ _BOOK_CACHE = {}
 
 def books_for(tid):
     if tid not in _BOOK_CACHE:
-        t = next(t for t in TRANSLATIONS if t["id"] == tid)
+        t = next(t for t in TRANSLATIONS + LICENSED if t["id"] == tid)
         # The corrections are for the BSB's USFM; only its load says whether they still apply.
-        _BOOK_CACHE[tid] = load_books(os.path.join(SOURCE_DIR, t["zip"]), report_corrections=tid == "BSB")
+        _BOOK_CACHE[tid] = load_books(t.get("usfm") or os.path.join(SOURCE_DIR, t["zip"]), report_corrections=tid == "BSB")
     return _BOOK_CACHE[tid]
 
 
@@ -965,7 +976,7 @@ def strip_stray_spaces(books, patterns=(STRAY_SPACE,)):
     return removed
 
 
-def build(translation):
+def build(translation, output_dir=OUTPUT_DIR):
     books = books_for(translation["id"])
     if translation.get("repair_from"):
         source_zip, table = translation["repair_from"]
@@ -984,9 +995,9 @@ def build(translation):
         source = books_for(translation["headings_from"])
         placed = sum(borrow_headings(book, source[code]) for code, book in books.items())
         print(f"{translation['id']}: {placed} section headings borrowed from {translation['headings_from']}")
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    out_path = os.path.join(OUTPUT_DIR, f"{translation['id']}.sqlite")
-    fd, tmp = tempfile.mkstemp(suffix=".sqlite", dir=OUTPUT_DIR)
+    os.makedirs(output_dir, exist_ok=True)
+    out_path = os.path.join(output_dir, f"{translation['id']}.sqlite")
+    fd, tmp = tempfile.mkstemp(suffix=".sqlite", dir=output_dir)
     os.close(fd)
     db = sqlite3.connect(tmp)
     # Chinese and Japanese are written without spaces, and a Korean word carries its particles
@@ -1052,7 +1063,7 @@ def build(translation):
     db.execute("VACUUM")
     db.close()
     os.replace(tmp, out_path)
-    print(f"{translation['id']}: {total} verses -> {os.path.relpath(out_path, ROOT)} ({os.path.getsize(out_path) / 1e6:.1f} MB)")
+    print(f"{translation['id']}: {total} verses -> {out_path} ({os.path.getsize(out_path) / 1e6:.1f} MB)")
     return out_path
 
 
@@ -1188,7 +1199,44 @@ def check(paths):
     print("check: ok")
 
 
+# Translations the app is licensed to ship (docs/lockman/README.md). Filled in by `--licensed`: their
+# text is never in this repository, and neither is the store built from it.
+LICENSED = []
+
+
+def build_licensed(arguments):
+    """Builds a licensed translation's store from the publisher's USFM, outside this repository.
+
+        python3 Tools/build_bibles.py --licensed NASB2020 --usfm ~/secure/nasb/NASB2020-usfm.zip \\
+            --out-dir ~/secure/nasb
+
+    Identity comes from Tools/licensed/*.json, so the store is named exactly as its licence says.
+    Then seal it with `Tools/package_translation.py licensed`, which checks the edition again.
+    """
+    def value(flag):
+        index = arguments.index(flag)
+        return os.path.expanduser(arguments[index + 1])
+    edition_id, usfm, out_dir = value("--licensed"), value("--usfm"), os.path.abspath(value("--out-dir"))
+    if out_dir == ROOT or out_dir.startswith(ROOT + os.sep):
+        sys.exit(f"Refusing to write {edition_id} inside the repository ({out_dir}): its text must never be committed.")
+    edition = None
+    licensed_dir = os.path.join(ROOT, "Tools", "licensed")
+    for name in sorted(os.listdir(licensed_dir)):
+        if name.endswith(".json"):
+            with open(os.path.join(licensed_dir, name), encoding="utf-8") as handle:
+                edition = json.load(handle)["editions"].get(edition_id) or edition
+    if edition is None:
+        sys.exit(f"No licensed edition called {edition_id} in Tools/licensed/.")
+    translation = {key: edition[key] for key in ("id", "name", "abbreviation", "copyright", "license")}
+    translation.update(source=edition["link"], usfm=usfm)
+    LICENSED.append(translation)
+    build(translation, output_dir=out_dir)
+
+
 def main():
+    if "--licensed" in sys.argv:
+        build_licensed(sys.argv)
+        return
     paths = {t["id"]: build(t) for t in TRANSLATIONS}
     if "--check" in sys.argv:
         check(paths)

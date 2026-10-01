@@ -55,7 +55,14 @@ enum ReaderModelError: LocalizedError {
 
 @Observable
 final class ReaderModel {
-    static let defaultTranslation = "ASV"
+    /// What a fresh install opens to: the NASB 2020 when this build ships it, the ASV otherwise.
+    static var defaultTranslation: String {
+        SealedTranslations.ships(SealedTranslations.licensedDefault) ? SealedTranslations.licensedDefault : fallbackTranslation
+    }
+
+    /// The translation every build carries inside the app, so there is always something to read: the
+    /// public-domain ASV. Launch-failure reporting and its retry are about this one.
+    static let fallbackTranslation = "ASV"
 
     /// Bundled plus whatever the reader has imported.
     private(set) var translations: [TranslationEntry]
@@ -165,7 +172,7 @@ final class ReaderModel {
         } else {
             // Hold the wish. `rebuildTranslations` grants it the moment the entry shows up.
             if preferredEntry == nil { awaitedTranslation = preferred }
-            let fallback = [Self.defaultTranslation, translations.first(where: Self.isOnDevice)?.id]
+            let fallback = [Self.defaultTranslation, Self.fallbackTranslation, translations.first(where: Self.isOnDevice)?.id]
                 .compactMap { $0 }
                 .first { id in translations.contains { $0.id == id && Self.isOnDevice($0) } }
             if let fallback { selectTranslation(fallback, remember: false) }
@@ -205,7 +212,14 @@ final class ReaderModel {
         let offered = AssetPack.offeredTranslations(forPreferredLanguages: Locale.preferredLanguages) {
             FileManager.default.fileExists(atPath: AssetLibrary.installedURL(for: $0).path)
         }
-        return (["ASV"] + offered.compactMap(\.translationID)).compactMap { id -> TranslationEntry? in
+        // The licensed translations this build ships come first, listed even if their package is
+        // still locked: choosing one reopens it (`load`), and a reader whose default it is must find
+        // it here rather than be moved to the ASV for good.
+        let licensed = SealedTranslations.licensedIdentifiers.filter { SealedTranslations.ships($0) }.map { id in
+            let info = SealedTranslations.shared.package(id)?.info
+            return TranslationEntry(id: id, name: info?.name ?? id, source: .package, abbreviation: info?.abbreviation)
+        }
+        return licensed + (["ASV"] + offered.compactMap(\.translationID)).compactMap { id -> TranslationEntry? in
             guard let pack = AssetPack(translationID: id) else { return nil }
             if SealedTranslations.shared.package(id) != nil {
                 return TranslationEntry(id: id, name: pack.title, source: .package)
@@ -225,25 +239,25 @@ final class ReaderModel {
 
     /// Whether the ASV failed to open, which is what the reader's "Try Again" retries.
     var defaultTranslationMissing: Bool {
-        SealedTranslations.shared.package(Self.defaultTranslation) == nil
+        SealedTranslations.shared.package(Self.fallbackTranslation) == nil
     }
 
     private func reportDefaultTranslationFailure() {
-        let why = SealedTranslations.shared.failure(Self.defaultTranslation) ?? String(localized: "It couldn’t be opened.", comment: "Reason shown after “The American Standard Version couldn’t be opened.”")
+        let why = SealedTranslations.shared.failure(Self.fallbackTranslation) ?? String(localized: "It couldn’t be opened.", comment: "Reason shown after “The American Standard Version couldn’t be opened.”")
         loadError = String(localized: "The American Standard Version couldn’t be opened. \(why)", comment: "%@ is a sentence giving the reason.")
     }
 
     /// Tries the ASV again after it failed to open at launch. The one cause a retry cures is a
     /// device that was still locked, so the keychain was unreadable.
     func retryDefaultTranslation() {
-        guard SealedTranslations.shared.reopen(Self.defaultTranslation) else {
+        guard SealedTranslations.shared.reopen(Self.fallbackTranslation) else {
             reportDefaultTranslationFailure()
             return
         }
         loadError = nil
         bundledTranslations = Self.makeBundledEntries()
         rebuildTranslations()
-        if source == nil { selectTranslation(Self.defaultTranslation, remember: false) }
+        if source == nil { selectTranslation(Self.fallbackTranslation, remember: false) }
     }
 
     private func rebuildTranslations() {

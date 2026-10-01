@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.data
 
 import android.content.Context
+import com.blainemiller.scripturealone.BuildConfig
 import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.layout.ChapterLayout
 import com.blainemiller.scripturealone.data.rights.PublisherTerms
@@ -275,8 +276,18 @@ object BundledTranslations {
      * The translations the app ships — in its base module or as asset packs: the English three, then a
      * Bible for each of the big-8 locales (docs/localization.md), in the Translations screen's order.
      */
-    val bundled: List<String> = listOf("ASV") + AssetPack.translations.mapNotNull { it.translationId }
-    const val DEFAULT = "ASV"
+    val bundled: List<String> =
+        (if (BuildConfig.SHIPS_LICENSED_NASB) listOf(LICENSED_NASB) else emptyList()) +
+            listOf(FALLBACK) + AssetPack.translations.mapNotNull { it.translationId }
+
+    /** The licensed NASB 2020 (docs/lockman/README.md), in builds that carry it. */
+    const val LICENSED_NASB = "NASB2020"
+
+    /** The public-domain ASV, which every build carries. */
+    const val FALLBACK = "ASV"
+
+    /** What a fresh install opens to: the NASB 2020 when this build ships it, else the ASV. */
+    val DEFAULT: String = if (BuildConfig.SHIPS_LICENSED_NASB) LICENSED_NASB else FALLBACK
 
     /** Everything the reader can switch to right now: [bundled], then imported, then online. */
     val ids: List<String> get() = bundled + TranslationLibrary.addedIds
@@ -302,6 +313,23 @@ object BundledTranslations {
                     // Derived from the seed and sealed to this device on first use; afterwards only
                     // the Keystore-wrapped blob is on disk. Zeroed once the package holds its copy.
                     val contentKey = SealedTranslationKeys.contentKey(app, "ASV", ContentKey.BUNDLED_SEED)
+                    try {
+                        PackageChapterSource(TranslationPackage.open(file, PublisherKeyring(listOf(publisher)), contentKey))
+                    } finally {
+                        contentKey.fill(0)
+                    }
+                }
+                LICENSED_NASB -> {
+                    // Its own signing key and only that one, and a content key from the build's
+                    // secret seed rather than the ASV's published one.
+                    val publisher = app.assets.open("$id-signing.pub").use { it.readBytes() }
+                    val file = BundledDatabase.file(app, "$id.sabible")
+                    val seed = checkNotNull(ContentKey.licensedSeed()) { "this build carries no content-key seed" }
+                    val contentKey = try {
+                        SealedTranslationKeys.contentKey(app, id, seed)
+                    } finally {
+                        seed.fill(0)
+                    }
                     try {
                         PackageChapterSource(TranslationPackage.open(file, PublisherKeyring(listOf(publisher)), contentKey))
                     } finally {

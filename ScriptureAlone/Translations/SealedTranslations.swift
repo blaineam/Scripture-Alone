@@ -24,11 +24,32 @@ import ScriptureAloneCore
 final class SealedTranslations {
     static let shared = SealedTranslations()
 
-    /// Translation identifiers the app ships sealed, in the order they appear to a reader.
-    static let identifiers = ["ASV"]
+    /// Translations the app is licensed to ship sealed (docs/lockman/README.md). Their packages are
+    /// never in this repository: Xcode Cloud copies them into `Resources/Packages/` at build time
+    /// (ci_scripts/ci_post_clone.sh), together with the one-time signing key each was sealed with
+    /// (`<id>-signing.pub`), and their content key comes from the build's secret seed
+    /// (`ContentKeySeed`), never from the published one below. A build without them simply doesn't
+    /// offer them, and the ASV is the default as before.
+    static let licensedIdentifiers = ["NASB2020"]
 
-    /// Seeds the content key. See the note above: deliberately not a secret.
+    /// The licensed translation a fresh install opens to, when this build ships it.
+    static let licensedDefault = "NASB2020"
+
+    /// Translation identifiers the app ships sealed, in the order they appear to a reader.
+    static let identifiers = licensedIdentifiers + ["ASV"]
+
+    /// Seeds the ASV's content key. See the note above: deliberately not a secret.
     static let seed = Data("SCRIPTURE-ALONE-BUNDLED-SEED-v1".utf8)
+
+    /// Whether this build carries everything a licensed translation needs to open: its package, the
+    /// key it was signed with, and the secret seed. Read from the bundle, not from whether the package
+    /// has opened yet, so a translation that is merely locked at launch is still the reader's default.
+    static func ships(_ id: String) -> Bool {
+        guard licensedIdentifiers.contains(id) else { return identifiers.contains(id) }
+        return Bundle.main.url(forResource: id, withExtension: "sabible") != nil
+            && Bundle.main.url(forResource: "\(id)-signing", withExtension: "pub") != nil
+            && ContentKeySeed.data != nil
+    }
 
     private(set) var packages: [String: TranslationPackage] = [:]
     private(set) var failures: [String: String] = [:]
@@ -57,8 +78,13 @@ final class SealedTranslations {
     /// The publisher key it is verified against stays inside the app binary: a trust anchor that
     /// came down the same channel as the thing it vouches for would vouch for nothing.
     private func open(_ id: String) {
-        guard let keyURL = Bundle.main.url(forResource: "bundled-signing", withExtension: "pub"),
-              let publisherKey = try? Data(contentsOf: keyURL) else {
+        let licensed = Self.licensedIdentifiers.contains(id)
+        // Each licensed package pins the key it was signed with, and only that key: one translation's
+        // signer can never vouch for another's package.
+        let keyName = licensed ? "\(id)-signing" : "bundled-signing"
+        let seed = licensed ? ContentKeySeed.data : Self.seed
+        guard let keyURL = Bundle.main.url(forResource: keyName, withExtension: "pub"),
+              let publisherKey = try? Data(contentsOf: keyURL), let seed else {
             failures[id] = String(localized: "\(id) isn't in this build.", comment: "Error. %@ is a translation abbreviation, e.g. “ASV”.")
             return
         }
@@ -70,7 +96,7 @@ final class SealedTranslations {
         do {
             let keyring = try PublisherKeyring(rawPublicKeys: [publisherKey])
             packages[id] = try TranslationPackage.open(url: packageURL, keyring: keyring,
-                                                       contentKey: contentKey(for: id))
+                                                       contentKey: contentKey(for: id, seed: seed))
             failures[id] = nil
         } catch {
             failures[id] = error.localizedDescription
@@ -85,17 +111,17 @@ final class SealedTranslations {
     /// cost the reader their Bible. So a failure re-seals once from the seed, and if that fails
     /// too the key is derived in memory for this launch. That gives up nothing: the seed is
     /// published (see above), and the vault only ever raised the floor.
-    private func contentKey(for id: String) -> SymmetricKey {
+    private func contentKey(for id: String, seed: Data) -> SymmetricKey {
         let vault = ContentKeyVault(translationID: id)
         do {
-            try vault.bootstrapIfNeeded(seed: Self.seed)
+            try vault.bootstrapIfNeeded(seed: seed)
             return try vault.contentKey()
         } catch {
             vault.erase()
-            if (try? vault.bootstrapIfNeeded(seed: Self.seed)) != nil, let key = try? vault.contentKey() {
+            if (try? vault.bootstrapIfNeeded(seed: seed)) != nil, let key = try? vault.contentKey() {
                 return key
             }
-            return ContentKeyVault.deriveContentKey(seed: Self.seed, account: id)
+            return ContentKeyVault.deriveContentKey(seed: seed, account: id)
         }
     }
 

@@ -9,3 +9,6 @@ docs/licensing/
 # Downloaded build inputs (verified by SHA-256 in Tools/build_context.py).
 Data/cache/
 ScriptureAlone/Generated/
+
+# Licensed translations: fetched from private storage at build time, never committed (docs/lockman/README.md).
+ScriptureAlone/Resources/Packages/NASB*

@@ -1,6 +1,8 @@
 package com.blainemiller.scripturealone.data.sabible
 
+import com.blainemiller.scripturealone.BuildConfig
 import com.google.crypto.tink.subtle.Hkdf
+import java.security.MessageDigest
 
 /**
  * Derives the content key for a sealed translation. Mirrors `ContentKeyVault.deriveContentKey` in
@@ -21,6 +23,20 @@ object ContentKey {
      * purpose: it protects a public-domain text, so secrecy would be theatre.
      */
     val BUNDLED_SEED: ByteArray = "SCRIPTURE-ALONE-BUNDLED-SEED-v1".toByteArray(Charsets.UTF_8)
+
+    /**
+     * The build's secret seed for licensed translations — `ContentKeySeed.data` on iOS — unmasked, or
+     * null when this build carries none. Never in the repository: the release build reads it from the
+     * SA_CONTENT_KEY_SEED secret (see `contentKeySeedMasked` in build.gradle.kts).
+     */
+    fun licensedSeed(): ByteArray? {
+        val hex = BuildConfig.CONTENT_KEY_SEED_MASKED
+        if (hex.isEmpty()) return null
+        val pad = MessageDigest.getInstance("SHA-256").digest("scripture-alone-seed-pad-v1".toByteArray(Charsets.UTF_8))
+        return ByteArray(hex.length / 2) { i ->
+            (hex.substring(2 * i, 2 * i + 2).toInt(16) xor (pad[i % pad.size].toInt() and 0xff)).toByte()
+        }
+    }
 
     private val SALT: ByteArray = "scripture-alone-content-key-v1".toByteArray(Charsets.UTF_8)
 

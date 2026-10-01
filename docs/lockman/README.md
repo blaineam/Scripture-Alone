@@ -27,8 +27,13 @@ us, and how the text gets from Lockman into the app without breaking any of it.
 1. **Lockman sends the files** in USFM (preferred), USX or OSIS. These are the industry-standard
    formats Bible publishers already produce for the Digital Bible Library, Paratext and CrossWire.
    Keep the files on your own machine, in an encrypted location, and nowhere else.
-2. **Build a store outside the repository.** Run `Tools/build_bibles.py` against the USFM with the
-   output pointed outside the working tree. That option is added when the files arrive.
+2. **Build a store outside the repository**, from the zip or folder of USFM files. The tool refuses
+   to write inside the repository:
+
+   ```sh
+   python3 Tools/build_bibles.py --licensed NASB2020 --usfm ~/secure/nasb/nasb2020-usfm.zip --out-dir ~/secure/nasb
+   ```
+
 3. **Create the secret seed once, without anyone seeing it.** `SA_CONTENT_KEY_SEED` is the secret
    Xcode Cloud compiles in (`ci_scripts/ci_post_clone.sh`). On your Mac, these commands create it
    straight into your login keychain, copy it to the clipboard for the Xcode Cloud secret, and send it
@@ -54,12 +59,28 @@ us, and how the text gets from Lockman into the app without breaking any of it.
    It refuses the published ASV seed, and it refuses a store whose John 3:16 is not that edition's
    wording, so the 1995 text cannot go out labelled 2020 or the other way round. It signs with a
    one-time key and writes `NASB2020-signing.pub` for the app to pin. No signing secret exists to leak.
-4. **Ship the package without publishing it.** Keep the `.sabible` out of this public repository.
-   Hold it in a private repository or private storage that the Xcode Cloud and Android builds fetch
-   with a token, then copy into `Resources/Packages/` at build time.
-5. **Make it the default.** Add the identifier to `SealedTranslations.identifiers`, derive its key
-   from `ContentKeySeed.data` rather than the published seed, and point `ReaderModel.defaultTranslation`
-   at it. Keep the ASV bundled as the fallback, and do the same on Android.
+4. **Put the package in private storage.** Create a private repository (for example
+   `blaineam/scripture-alone-licensed`) holding just `NASB2020.sabible` and `NASB2020-signing.pub`.
+   Never add them to this repository; `.gitignore` refuses `Resources/Packages/NASB*`. Then create a
+   fine-grained GitHub token with read-only Contents access to that one repository, and set it up in
+   both build systems:
+
+   | Where | Name | Value |
+   |---|---|---|
+   | Xcode Cloud workflow › Environment | `SA_LICENSED_REPO` | `blaineam/scripture-alone-licensed` |
+   | Xcode Cloud workflow › Environment (secret) | `SA_LICENSED_TOKEN` | the token |
+   | Xcode Cloud workflow › Environment (secret) | `SA_CONTENT_KEY_SEED` | from step 3 |
+   | GitHub › Actions variable | `SA_LICENSED_REPO` | `blaineam/scripture-alone-licensed` |
+   | GitHub › Actions secret | `SA_LICENSED_TOKEN` | the token |
+   | GitHub › Actions secret | `SA_CONTENT_KEY_SEED` | from step 3 |
+
+5. **It becomes the default by itself.** `ci_scripts/ci_post_clone.sh` (iOS) and the "Fetch licensed
+   translations" step in `android.yml` copy the package into the build. When the package, its signing
+   key and the seed are all present, the NASB 2020 is listed first and is what a fresh install opens
+   to (`ReaderModel.defaultTranslation`, `BundledTranslations.DEFAULT`). When any of them is missing,
+   the build ships no NASB and opens to the ASV exactly as before. Both builds refuse to bundle the
+   package without the seed, so a default nobody can open can't ship. Readers who already chose a
+   translation keep their choice.
 
 ## The annual report
 

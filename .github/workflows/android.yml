@@ -217,6 +217,30 @@ jobs:
           TRACKS: ${{ steps.cfg.outputs.phone_tracks }},${{ steps.cfg.outputs.wear_tracks }}
         run: node scripts/play-publish.mjs plan --check-tracks "$TRACKS"
 
+      # The licensed NASB 2020 (docs/lockman/README.md) is never in this public repository: it is
+      # copied from the private repository in the SA_LICENSED_REPO variable, read with the
+      # SA_LICENSED_TOKEN secret, into the iOS resources the Android build syncs from. Without
+      # them the build ships no licensed translation and opens to the ASV.
+      - name: Fetch licensed translations
+        env:
+          SA_LICENSED_REPO: ${{ vars.SA_LICENSED_REPO }}
+          SA_LICENSED_TOKEN: ${{ secrets.SA_LICENSED_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SA_LICENSED_REPO:-}" ] || [ -z "${SA_LICENSED_TOKEN:-}" ]; then
+            echo "::notice title=No licensed translation::SA_LICENSED_REPO / SA_LICENSED_TOKEN not set, so the NASB 2020 is not bundled"
+            exit 0
+          fi
+          tmp="$(mktemp -d)"
+          git -c credential.helper= clone -q --depth 1 "https://x-access-token:${SA_LICENSED_TOKEN}@github.com/${SA_LICENSED_REPO}.git" "$tmp"
+          for id in NASB2020; do
+            if [ -f "$tmp/$id.sabible" ] && [ -f "$tmp/$id-signing.pub" ]; then
+              cp "$tmp/$id.sabible" "$tmp/$id-signing.pub" ScriptureAlone/Resources/Packages/
+              echo "licensed translation: $id bundled"
+            fi
+          done
+          rm -rf "$tmp"
+
       - name: Build release bundles (phone + Wear OS)
         working-directory: android
         env:
@@ -224,6 +248,8 @@ jobs:
           # The SA_UPLOAD_* Gradle properties, as ORG_GRADLE_PROJECT_* env — the same names the
           # local build reads from ~/.gradle/gradle.properties.
           SA_STORE: ${{ runner.temp }}/upload.keystore
+          # Opens the licensed NASB 2020; the build refuses to bundle its package without it.
+          SA_CONTENT_KEY_SEED: ${{ secrets.SA_CONTENT_KEY_SEED }}
           SA_STORE_PW: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           SA_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           SA_KEY_PW: ${{ secrets.ANDROID_KEY_PASSWORD }}
