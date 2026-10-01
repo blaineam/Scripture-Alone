@@ -22,7 +22,12 @@ struct TranslationsView: View {
             Form {
                 Section("Included") {
                     ForEach(model.bundledTranslations) { entry in
-                        row(name: entry.name, abbreviation: entry.id, note: nil)
+                        // A licensed translation shows its full notice, www.Lockman.org a working link,
+                        // as its licence requires; the public-domain ones need none.
+                        let licensed = SealedTranslations.licensedIdentifiers.contains(entry.id)
+                        row(name: entry.name, abbreviation: entry.abbreviation,
+                            note: licensed ? SealedTranslations.shared.package(entry.id)?.info.copyright : nil,
+                            fullNote: licensed)
                     }
                 }
 
@@ -128,7 +133,9 @@ struct TranslationsView: View {
     }
 
 
-    private func row(name: String, abbreviation: String, note: String?) -> some View {
+    /// `fullNote` shows the whole note rather than two lines — a licence notice must be shown entire.
+    /// Web addresses in a note are links (`NoticeLinks`).
+    private func row(name: String, abbreviation: String, note: String?, fullNote: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack {
                 Text(name)
@@ -136,7 +143,8 @@ struct TranslationsView: View {
                 Text(abbreviation).font(.caption.monospaced()).foregroundStyle(.secondary)
             }
             if let note, !note.isEmpty {
-                Text(note).font(.caption2).foregroundStyle(.secondary).lineLimit(2)
+                Text(NoticeLinks.attributed(note)).font(.caption2).foregroundStyle(.secondary)
+                    .lineLimit(fullNote ? nil : 2)
             }
         }
     }

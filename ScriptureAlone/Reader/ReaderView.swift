@@ -15,6 +15,7 @@ struct ReaderView: View {
     @Environment(ImportedLibrary.self) private var library
     @Environment(OnlineTranslationKeys.self) private var onlineKeys
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.openURL) private var openURL
     @Environment(\.modelContext) private var context
     @Environment(LegacySession.self) private var legacy
 
@@ -394,6 +395,10 @@ struct ReaderView: View {
             popover = ReaderPopover(kind: .footnote(text), rect: rect)
         case .action("next"):
             model.next()
+        case .action(let action) where action.hasPrefix(ChapterRenderer.linkActionPrefix):
+            // A web address in the translation's notice — the NASB licences require www.Lockman.org
+            // to be a working link wherever the notice appears.
+            if let url = URL(string: String(action.dropFirst(ChapterRenderer.linkActionPrefix.count))) { openURL(url) }
         case .action:
             break
         }

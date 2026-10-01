@@ -2,13 +2,17 @@ package com.blainemiller.scripturealone.ui.reader
 
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -47,6 +51,24 @@ data class ReaderFonts(
 
 /** Tappable chrome inside the chapter. */
 enum class ReaderAction { NEXT_CHAPTER }
+
+/** A web address in a translation's notice: "www.Lockman.org", or one with its scheme. */
+private val NOTICE_URL = Regex("""(?i)\b(?:https?://|www\.)[a-z0-9.-]+\.[a-z]{2,}(?:/\S*)?""")
+
+/**
+ * A translation's notice with every web address a working link — the NASB licences require
+ * "www.Lockman.org" to be one wherever the notice appears: the chapter footer and the Translations
+ * screen. As `NoticeLinks` on iOS; `Text` opens it.
+ */
+fun noticeWithLinks(notice: String, style: SpanStyle, linkColor: Color): AnnotatedString = buildAnnotatedString {
+    withStyle(style) { append(notice) }
+    val linkStyle = TextLinkStyles(style.copy(color = linkColor, textDecoration = TextDecoration.Underline))
+    for (match in NOTICE_URL.findAll(notice)) {
+        val address = match.value.trimEnd('.', ',', ';', ':', ')')
+        val url = if (address.startsWith("http", ignoreCase = true)) address else "https://$address"
+        addLink(LinkAnnotation.Url(url, linkStyle), match.range.first, match.range.first + address.length)
+    }
+}
 
 /**
  * One paragraph of the rendered chapter, with the paragraph-level metrics NSParagraphStyle carries on
@@ -223,7 +245,7 @@ class ChapterRenderer(
         }
         val fineSize = maxOf(10f, size * 0.55f)
         out += RenderedParagraph(
-            text = AnnotatedString(copyright, SpanStyle(fontFamily = fonts.chrome, fontSize = fineSize.sp, color = palette.secondary)),
+            text = noticeWithLinks(copyright, SpanStyle(fontFamily = fonts.chrome, fontSize = fineSize.sp, color = palette.secondary), palette.accent),
             align = TextAlign.Center,
             spaceBefore = size * 2 + fineSize * NATURAL_LINE_HEIGHT,
             lineHeight = fineSize * NATURAL_LINE_HEIGHT,

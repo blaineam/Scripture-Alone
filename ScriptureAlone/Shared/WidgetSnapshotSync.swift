@@ -45,7 +45,9 @@ private struct WidgetSnapshotSync: ViewModifier {
     }
 
     private func write() {
-        guard let store = model.store else { return }
+        // Whatever the reader is reading from: a store, or a sealed package such as the ASV or the
+        // NASB 2020 — `model.store` alone is nil for a package, which left their widgets unwritten.
+        guard let store = model.source else { return }
         // The Verse of the Day widget honors the reader's red-letter setting.
         if AppGroup.defaults?.object(forKey: SettingsKey.redLetters) as? Bool != redLetters {
             AppGroup.defaults?.set(redLetters, forKey: SettingsKey.redLetters)

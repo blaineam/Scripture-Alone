@@ -25,9 +25,10 @@ nonisolated enum DailyVerseLibrary {
 
     /// The next two weeks' Verse of the Day in `store`, for a translation this list doesn't carry
     /// (it has the bundled Bibles' text already) — what the widgets and complications show for an
-    /// imported one (`VerseSnapshot.daily`). Only one whose terms let it be
-    /// stored; red letters as the widget draws them.
-    static func ownTexts(from store: BibleStore) -> [String: VerseSnapshot.DailyText]? {
+    /// imported one, or a sealed licensed one such as the NASB 2020 (`VerseSnapshot.daily`), whose
+    /// text can't be in this public list. Only one whose terms let it be stored; red letters as the
+    /// widget draws them.
+    static func ownTexts(from store: any ChapterTextSource) -> [String: VerseSnapshot.DailyText]? {
         let info = store.info
         guard info.rights.allowOfflineStorage, !(catalog?.translations.contains(info.id) ?? false) else { return nil }
         var result: [String: VerseSnapshot.DailyText] = [:]

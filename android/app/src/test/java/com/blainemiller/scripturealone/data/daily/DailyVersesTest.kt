@@ -84,7 +84,10 @@ class DailyVersesTest {
         // The English three, then the big-8 locales' Bibles (docs/localization.md) — every one a
         // translation the app ships, so the widget can show the reader's own.
         assertEquals(listOf("ASV", "BSB", "KJV"), catalog.translations.take(3))
-        assertEquals(com.blainemiller.scripturealone.data.BundledTranslations.bundled, catalog.translations)
+        // Except a licensed translation (the NASB 2020): its text can't be in this public list, so the
+        // app writes its days into the widget snapshot instead (`WidgetData.dailyTexts`).
+        val bundled = com.blainemiller.scripturealone.data.BundledTranslations
+        assertEquals(bundled.bundled - bundled.LICENSED_NASB, catalog.translations)
         assertEquals(catalog.verses.size, catalog.verses.map { it.ref }.toSet().size)
         val books = mutableSetOf<BookID>()
         for (verse in catalog.verses) {

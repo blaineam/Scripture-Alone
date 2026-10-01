@@ -67,6 +67,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -105,6 +106,7 @@ import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
 import com.blainemiller.scripturealone.ui.reader.SheetColors
 import com.blainemiller.scripturealone.ui.reader.glass
+import com.blainemiller.scripturealone.ui.reader.noticeWithLinks
 import com.blainemiller.scripturealone.ui.study.Cell
 import com.blainemiller.scripturealone.ui.study.CellDivider
 import com.blainemiller.scripturealone.ui.study.ContentUnavailable
@@ -285,7 +287,13 @@ private fun MainPage(
                 val infos = bundled ?: BundledTranslations.bundled.map { TranslationInfo(it, it, it, "") }
                 infos.forEachIndexed { i, info ->
                     if (i > 0) CellDivider(palette)
-                    TranslationRow(info.name, info.id, null, palette, info.id == reader.translationId) { reader.selectTranslation(info.id) }
+                    // A licensed translation shows its full notice, www.Lockman.org a working link, as its
+                    // licence requires; the public-domain ones need none.
+                    val licensed = info.id == BundledTranslations.LICENSED_NASB
+                    TranslationRow(
+                        info.name, if (licensed) info.abbreviation else info.id, if (licensed) info.copyright else null,
+                        palette, info.id == reader.translationId, fullNote = licensed,
+                    ) { reader.selectTranslation(info.id) }
                 }
             }
             if (library.online.isNotEmpty()) {
@@ -351,6 +359,8 @@ private fun TranslationRow(
     palette: ReaderPalette,
     selected: Boolean,
     onLongClick: (() -> Unit)? = null,
+    /** Show the whole note rather than two lines: a licence notice must be shown entire. */
+    fullNote: Boolean = false,
     onClick: () -> Unit,
 ) {
     Row(
@@ -367,7 +377,10 @@ private fun TranslationRow(
                 Text(abbreviation, color = palette.secondary, fontSize = StudyStyle.caption, fontFamily = FontFamily.Monospace)
             }
             if (!note.isNullOrEmpty()) {
-                Text(note, color = palette.secondary, fontSize = StudyStyle.caption2, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(
+                    noticeWithLinks(note, SpanStyle(color = palette.secondary, fontSize = StudyStyle.caption2), palette.accent),
+                    maxLines = if (fullNote) Int.MAX_VALUE else 2, overflow = TextOverflow.Ellipsis,
+                )
             }
         }
         Box(Modifier.width(30.dp), contentAlignment = Alignment.CenterEnd) {

@@ -17,6 +17,30 @@ extension NSAttributedString.Key {
     static let readerAction = NSAttributedString.Key("sa.action")
 }
 
+/// Web addresses in a translation's notice, as https links — the Lockman Foundation's
+/// "www.Lockman.org" in the NASB's. Its licences require that address to be a working link wherever
+/// the notice appears, so the chapter footer and the Translations screen both make every one tappable.
+nonisolated enum NoticeLinks {
+    static func find(in text: String) -> [(range: NSRange, url: URL)] {
+        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) else { return [] }
+        return detector.matches(in: text, range: NSRange(text.startIndex..., in: text)).compactMap { match in
+            guard let url = match.url, url.scheme == "http" || url.scheme == "https" else { return nil }
+            guard url.scheme == "http", var parts = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+                return (match.range, url)
+            }
+            parts.scheme = "https"
+            return (match.range, parts.url ?? url)
+        }
+    }
+
+    /// The notice with each address made a link, for SwiftUI `Text`.
+    static func attributed(_ text: String) -> AttributedString {
+        let result = NSMutableAttributedString(string: text)
+        for link in find(in: text) { result.addAttribute(.link, value: link.url, range: link.range) }
+        return AttributedString(result)
+    }
+}
+
 /// A rendered chapter plus a fingerprint so views can skip identical updates.
 struct RenderedChapter {
     let chapter: ChapterRef
@@ -59,6 +83,9 @@ struct ReaderStyleKey: Hashable {
 }
 
 enum ChapterRenderer {
+    /// `.readerAction` values that open a web address start with this, the address following it.
+    static let linkActionPrefix = "link:"
+
     static func render(layout: ChapterLayout, input: ChapterRenderInput, style: ReaderStyle) -> RenderedChapter {
         var builder = Builder(style: style, input: input, layout: layout)
         builder.build()
@@ -136,10 +163,19 @@ enum ChapterRenderer {
             let fine = NSMutableParagraphStyle()
             fine.alignment = .center
             fine.paragraphSpacingBefore = style.size
-            output.append(NSAttributedString(string: "\n\(input.copyright)\n", attributes: [
+            let notice = NSMutableAttributedString(string: "\n\(input.copyright)\n", attributes: [
                 .font: PlatformFont.systemFont(ofSize: max(10, style.size * 0.55)),
                 .foregroundColor: style.palette.secondary, .paragraphStyle: fine,
-            ]))
+            ])
+            // Any web address in the notice is a link (`NoticeLinks`); +1 for the leading newline.
+            for link in NoticeLinks.find(in: input.copyright) {
+                notice.addAttributes([
+                    .readerAction: ChapterRenderer.linkActionPrefix + link.url.absoluteString,
+                    .foregroundColor: style.palette.accent,
+                    .underlineStyle: NSUnderlineStyle.single.rawValue,
+                ], range: NSRange(location: link.range.location + 1, length: link.range.length))
+            }
+            output.append(notice)
         }
 
         // MARK: Layout modes
