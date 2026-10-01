@@ -1,0 +1,72 @@
+name: lockman-report
+
+# The yearly NASB usage report owed to The Lockman Foundation (docs/lockman/README.md): within 60
+# days after each October 1, the copies distributed and usage measures for the year to September 30.
+#
+# Runs every October 10 — Apple's September monthly report is out by then — and on demand. It fills
+# docs/lockman/annual-report-template.md from App Store Connect and Google Play and attaches the
+# result to the run as the `lockman-report` artifact, ready to paste into an email.
+#
+# Secrets (shared with apple-store.yml / android.yml): ASC_API_KEY_ID, ASC_API_ISSUER_ID,
+#   ASC_API_KEY_P8, PLAY_SERVICE_ACCOUNT_JSON.
+# Variables: ASC_VENDOR_NUMBER, PLAY_REPORTS_BUCKET, NASB_AVAILABLE_FROM (YYYY-MM-DD).
+# Anything missing is left as "—" in the report and listed in the run summary; the run still passes.
+#
+# The repository is public, so this run's summary and artifact are too: they hold download counts
+# and nothing else.
+
+on:
+  schedule:
+    - cron: "17 15 10 10 *"     # October 10, 15:17 UTC
+  workflow_dispatch:
+    inputs:
+      from:
+        description: "Period start, YYYY-MM-DD (blank = the last complete Oct 1 – Sep 30)"
+        required: false
+      to:
+        description: "Period end, YYYY-MM-DD"
+        required: false
+      apple_active:
+        description: "Optional: Apple active devices at period end (App Store Connect › Analytics)"
+        required: false
+      web_usage:
+        description: "Optional: a sentence about the website, if the NASB is offered there"
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build the report
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_VENDOR_NUMBER: ${{ vars.ASC_VENDOR_NUMBER }}
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_REPORTS_BUCKET: ${{ vars.PLAY_REPORTS_BUCKET }}
+          NASB_AVAILABLE_FROM: ${{ vars.NASB_AVAILABLE_FROM }}
+          APPLE_ACTIVE: ${{ inputs.apple_active }}
+          WEB_USAGE: ${{ inputs.web_usage }}
+          FROM: ${{ inputs.from }}
+          TO: ${{ inputs.to }}
+        run: |
+          set -euo pipefail
+          args=(--out lockman-report.md)
+          [ -n "${FROM:-}" ] && args+=(--from "$FROM")
+          [ -n "${TO:-}" ] && args+=(--to "$TO")
+          node scripts/lockman-report.mjs "${args[@]}"
+          { echo; echo '```markdown'; cat lockman-report.md; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lockman-report
+          path: lockman-report.md
+          retention-days: 90

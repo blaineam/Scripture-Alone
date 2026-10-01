@@ -1,0 +1,53 @@
+{
+  "_comment": [
+    "The two NASB editions Scripture Alone is licensed to distribute, each under its own Distribution",
+    "Permission Agreement with The Lockman Foundation, effective 2026-10-01. Everything a reader sees",
+    "about the translation comes from here, never from the source file, so a package cannot carry one",
+    "edition's text under the other's name or notice. `package_translation.py licensed` refuses a",
+    "store whose John 3:16 does not read the way this edition's does.",
+    "",
+    "Notices are copied from the agreements word for word, line breaks included. Do not edit them",
+    "without a written change from Lockman: the agreement makes them a condition of the licence.",
+    "",
+    "Policy: system text-to-speech is not a hand-off and is always allowed (it renders live and keeps",
+    "nothing, which is what the agreements permit). allowExternalHandoff is false, which turns off",
+    "the Mi Speaks Studio voice: it renders a recording and leaves a file behind, which they forbid."
+  ],
+  "editions": {
+    "NASB2020": {
+      "id": "NASB2020",
+      "abbreviation": "NASB 2020",
+      "name": "New American Standard Bible — NASB 2020",
+      "publisher": "The Lockman Foundation",
+      "link": "https://www.lockman.org",
+      "copyright": "New American Standard Bible — NASB 2020\nCopyright © 1960, 1971, 1977, 1995, 2020\nby The Lockman Foundation, La Habra, Calif. Used by permission. All rights reserved.\nFor Permission to Quote Information visit www.Lockman.org",
+      "license": "Used by permission of The Lockman Foundation (www.Lockman.org) under a Distribution Permission Agreement effective October 1, 2026.",
+      "john_3_16": {
+        "must_contain": ["everyone who believes in Him will not perish"],
+        "must_not_contain": ["begotten"]
+      }
+    },
+    "NASB1995": {
+      "id": "NASB1995",
+      "abbreviation": "NASB 1995",
+      "name": "New American Standard Bible — NASB 1995",
+      "publisher": "The Lockman Foundation",
+      "link": "https://www.lockman.org",
+      "copyright": "New American Standard Bible — NASB 1995\nCopyright © 1960, 1971, 1977, 1995\nby The Lockman Foundation, La Habra, Calif. Used by permission. All rights reserved.\nFor Permission to Quote Information visit www.Lockman.org",
+      "license": "Used by permission of The Lockman Foundation (www.Lockman.org) under a Distribution Permission Agreement effective October 1, 2026.",
+      "john_3_16": {
+        "must_contain": ["only begotten Son", "whoever believes in Him shall not perish"],
+        "must_not_contain": ["everyone who believes"]
+      }
+    }
+  },
+  "policy": {
+    "allowCopy": true,
+    "allowShare": true,
+    "allowVerseImages": true,
+    "allowNotesExport": true,
+    "allowExternalHandoff": false,
+    "allowOfflineStorage": true,
+    "maxQuotationVerses": 1000
+  }
+}

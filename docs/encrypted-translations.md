@@ -100,8 +100,8 @@ them is. This is a real package's header, printed with no key at all by
 ```json
 {
   "format": 1,
-  "packageID": "3AABF641-8B15-417A-A2F0-BEA8815FD949",
-  "createdAt": "2026-09-20T06:43:35Z",
+  "packageID": "08769678-AEC7-417B-AB27-03850FA3AFED",
+  "createdAt": "2026-10-01T22:39:24Z",
   "translation": { "id": "ASV", "name": "American Standard Version", "abbreviation": "ASV",
                    "publisher": "Public domain", "license": "Public domain",
                    "copyright": "American Standard Version (1901). Public domain. …" },
@@ -110,7 +110,7 @@ them is. This is a real package's header, printed with no key at all by
               "allowOfflineStorage": true, "maxQuotationVerses": 9223372036854775807 },
   "crypto": { "cipher": "AES-256-GCM", "signature": "Ed25519", "aad": "sabible-chapter-v1",
               "keyID": "00b63e297da6049dce75d3e984b74b72",
-              "publisherKeyID": "9f8568f961afc58850ba30326f20f8c2" },
+              "publisherKeyID": "76730a08d7cd74ab2e9c8e972b9ba5c5" },
   "index":  { "aad": "sabible-index-v1", "buckets": 256, "entries": [ … ] },
   "chapters": [ { "book": 1, "chapter": 1, "verses": 31, "offset": 0, "length": … }, … ]
 }
@@ -442,10 +442,17 @@ control the reader actually touches. The two claims are kept apart on purpose �
 carries a real Bible, the other says the app honours real terms — because proving them with the
 same artefact would let a weakness in either hide behind the other.
 
-The seed and the signing key for this package are published, in `Tools/package_translation.py` and
-in `SealedTranslations.swift`. That is deliberate: they protect a public-domain text, so keeping
-them secret would be theatre, and theatre is what this document exists to avoid. A licensed package
-uses a key its publisher generates and holds, delivered as described in section 4.
+The content-key seed for this package is published, in `Tools/package_translation.py` and in
+`SealedTranslations.swift`. That is deliberate: it protects a public-domain text, so keeping it
+secret would be theatre, and theatre is what this document exists to avoid. A licensed package uses a
+seed that is never in the repository, delivered as described in section 4.
+
+The signing key is a different matter, and is not published. Until 1.1.1 it was derived from a string
+in the packaging tool, which let anyone sign a package the app would accept. The package is now
+signed with a one-time key generated in memory by `package_translation.py bundle`, used once and
+discarded: the app pins its public half, and its private half was never written, printed or stored,
+so nobody can sign anything else under it. Rebuilding the package pins a fresh key; re-signing
+(`bundle --resign`) does so from the shipped bytes, leaving the text unchanged.
 
 `ShippedPackageTests` asserts against that exact artefact rather than a package built for the test:
 it opens the shipped bytes with the published seed and the pinned key, reads Psalm 23 back as poetry

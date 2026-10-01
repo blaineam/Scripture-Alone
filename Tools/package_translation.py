@@ -633,16 +633,48 @@ def add_policy_arguments(parser: argparse.ArgumentParser) -> None:
 DEMO_SEED = bytes.fromhex("5343524950545552452d414c4f4e452d44454d4f2d534545442d7631212121")
 DEMO_SIGNING_SEED = b"scripture-alone-demo-signing-v1"
 
-# The seed and signing key for the translation the app ships sealed. Both are published on purpose:
-# they protect a public-domain text, so keeping them secret would be theatre, and this document set
-# is trying to be the opposite of theatre. A licensed package uses a key its publisher generates and
-# holds, delivered as described in docs/encrypted-translations.md.
+# The content-key seed for the translation the app ships sealed. Published on purpose: it protects a
+# public-domain text, so keeping it secret would be theatre. A licensed package uses a seed that is
+# never in this repository (docs/encrypted-translations.md, section 4).
+#
+# There is deliberately no signing key here. Until 1.1.1 the bundled package was signed with a key
+# derived from a string in this file, which meant anyone could sign a package the app would accept.
+# `bundle` now signs with a one-time key generated in memory and dropped when the command ends: the
+# app pins its public half, and the private half is never written, printed or stored anywhere, so no
+# one — including whoever ran the command — can sign another package under it. Rebuilding the
+# package pins a fresh key.
 BUNDLED_SEED = b"SCRIPTURE-ALONE-BUNDLED-SEED-v1"
-BUNDLED_SIGNING_SEED = b"scripture-alone-bundled-signing-v1"
 
 # What `TranslationRights.unlimitedQuotation` is on the Swift side: Int.max, not a large number some
 # future verse count could reach.
 UNLIMITED_QUOTATION = 2 ** 63 - 1
+
+
+def bundled_content_key(translation_id: str) -> bytes:
+    """The same derivation the app performs: HKDF-SHA256 over the seed, keyed to the translation id."""
+    return HKDF(algorithm=hashes.SHA256(), length=32, salt=b"scripture-alone-content-key-v1",
+                info=translation_id.encode()).derive(BUNDLED_SEED)
+
+
+def read_package_chapters(data: bytes, content_key: bytes) -> tuple[dict, list[dict]]:
+    """Every chapter of a package, decrypted in memory, in the shape `read_store` returns.
+
+    Lets a shipped package be re-signed from its own bytes, so a key rotation cannot also change
+    one word of the text: the chapters that go back in are exactly the ones that came out.
+    """
+    header, header_bytes, _, body_offset = parse_header(data)
+    digest = hashlib.sha256(header_bytes).digest()
+    translation_id = header["translation"]["id"]
+    cipher = AESGCM(content_key)
+    chapters = []
+    for entry in header["chapters"]:
+        start = body_offset + entry["offset"]
+        sealed = data[start:start + entry["length"]]
+        payload = json.loads(cipher.decrypt(sealed[:NONCE_BYTES], sealed[NONCE_BYTES:], associated_data(
+            header["packageID"], translation_id, entry["book"], entry["chapter"], digest)))
+        chapters.append({"book": entry["book"], "chapter": entry["chapter"], "verses": entry["verses"],
+                         "layout": payload["layout"], "rows": payload["verses"]})
+    return header, chapters
 
 
 def command_bundle(arguments: argparse.Namespace) -> None:
@@ -656,50 +688,123 @@ def command_bundle(arguments: argparse.Namespace) -> None:
     The text is public domain, so the package grants everything a public-domain text may do. What
     is being proved here is the mechanism, not a restriction; enforcement of a publisher's terms is
     proved separately, against packages built with terms that forbid things.
+
+    `--resign` rebuilds from the package already shipped rather than from a store, so rotating the
+    signing key leaves the text byte-for-byte as it was.
     """
-    bibles = repo_root() / "ScriptureAlone/Resources/Bibles"
-    store = bibles / f"{arguments.translation}.sqlite"
-    if not store.exists():
-        sys.exit(f"No bundled store at {store}.")
-
-    # The same derivation the app performs: HKDF-SHA256 over the seed, keyed to the translation id.
-    content_key = HKDF(algorithm=hashes.SHA256(), length=32,
-                       salt=b"scripture-alone-content-key-v1",
-                       info=arguments.translation.encode()).derive(BUNDLED_SEED)
-    signing_seed = hashlib.sha256(BUNDLED_SIGNING_SEED).digest()
-
-    meta, chapters = read_store(store)
-    identity = {
-        "id": arguments.translation,
-        "name": meta.get("name", arguments.translation),
-        "abbreviation": arguments.translation,
-        "publisher": "Public domain",
-        "copyright": meta.get("copyright", ""),
-        "license": meta.get("license", "Public domain."),
-    }
-    # Everything a public-domain text may do. Sealing it protects nobody's rights and is not meant
-    # to: the seal is here to prove the format carries a real translation, at real size, on every
-    # launch. `maxQuotationVerses` is the format's "no limit" sentinel.
-    policy = {"allowCopy": True, "allowShare": True, "allowVerseImages": True,
-              "allowNotesExport": True, "allowExternalHandoff": True,
-              "allowOfflineStorage": True, "maxQuotationVerses": UNLIMITED_QUOTATION}
-
-    data = build_package(identity=identity, policy=policy, chapters=chapters,
-                         content_key=content_key, signing_key=signing_seed)
     out_dir = repo_root() / "ScriptureAlone/Resources/Packages"
-    out_dir.mkdir(parents=True, exist_ok=True)
     package = out_dir / f"{arguments.translation}.sabible"
-    package.write_bytes(data)
+    content_key = bundled_content_key(arguments.translation)
 
-    public_raw = ed25519.Ed25519PrivateKey.from_private_bytes(signing_seed) \
-        .public_key().public_bytes_raw()
+    if arguments.resign:
+        if not package.exists():
+            sys.exit(f"No shipped package at {package} to re-sign.")
+        previous, chapters = read_package_chapters(package.read_bytes(), content_key)
+        identity, policy = previous["translation"], previous["policy"]
+    else:
+        store = repo_root() / "ScriptureAlone/Resources/Bibles" / f"{arguments.translation}.sqlite"
+        if not store.exists():
+            sys.exit(f"No bundled store at {store}.")
+        meta, chapters = read_store(store)
+        identity = {
+            "id": arguments.translation,
+            "name": meta.get("name", arguments.translation),
+            "abbreviation": arguments.translation,
+            "publisher": "Public domain",
+            "copyright": meta.get("copyright", ""),
+            "license": meta.get("license", "Public domain."),
+        }
+        # Everything a public-domain text may do. Sealing it protects nobody's rights and is not meant
+        # to: the seal is here to prove the format carries a real translation, at real size, on every
+        # launch. `maxQuotationVerses` is the format's "no limit" sentinel.
+        policy = {"allowCopy": True, "allowShare": True, "allowVerseImages": True,
+                  "allowNotesExport": True, "allowExternalHandoff": True,
+                  "allowOfflineStorage": True, "maxQuotationVerses": UNLIMITED_QUOTATION}
+
+    # A one-time signing key: generated here, used once, never written or printed. See BUNDLED_SEED.
+    one_time = ed25519.Ed25519PrivateKey.generate()
+    public_raw = one_time.public_key().public_bytes_raw()
+    data = build_package(identity=identity, policy=policy, chapters=chapters,
+                         content_key=content_key, signing_key=one_time.private_bytes_raw())
+    del one_time
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    package.write_bytes(data)
     (out_dir / "bundled-signing.pub").write_bytes(public_raw)
 
     header, _, _, _ = parse_header(data)
     lengths = [entry["length"] for entry in header["index"]["entries"]]
     print(f"{package} — {len(data):,} bytes, {len(chapters):,} chapters, "
           f"index {sum(lengths):,} bytes in {len(lengths)} buckets")
-    print(f"publisher key id {publisher_key_id(public_raw)} — pinned in the app")
+    print(f"publisher key id {publisher_key_id(public_raw)} — pinned in the app; its private half is gone")
+
+
+LICENSED_DEFINITIONS = Path(__file__).resolve().parent / "licensed"
+JOHN_3_16 = 43_003_016
+
+
+def licensed_edition(edition: str) -> tuple[dict, dict]:
+    """An edition's identity and policy, from `Tools/licensed/*.json` and nowhere else."""
+    for definition in sorted(LICENSED_DEFINITIONS.glob("*.json")):
+        document = json.loads(definition.read_text(encoding="utf-8"))
+        if edition in document["editions"]:
+            return document["editions"][edition], document["policy"]
+    sys.exit(f"No licensed edition called {edition} in {LICENSED_DEFINITIONS}.")
+
+
+def check_edition(edition: dict, chapters: list[dict]) -> None:
+    """Refuses a store whose text is not the edition it is about to be labelled as.
+
+    Two editions of one translation differ in wording, not in shape, so nothing structural would catch
+    the 1995 text going out under the 2020 notice. John 3:16 differs between them, so it decides.
+    """
+    verse = next((row["t"] for chapter in chapters for row in chapter["rows"] if row["i"] == JOHN_3_16), None)
+    if verse is None:
+        sys.exit(f"{edition['id']}: the store has no John 3:16, so its edition can't be confirmed.")
+    rules = edition["john_3_16"]
+    missing = [phrase for phrase in rules.get("must_contain", []) if phrase not in verse]
+    present = [phrase for phrase in rules.get("must_not_contain", []) if phrase in verse]
+    if missing or present:
+        sys.exit(f"{edition['id']}: John 3:16 in this store is not the {edition['abbreviation']} text "
+                 f"(missing {missing}, unexpected {present}). Nothing was written.")
+
+
+def command_licensed(arguments: argparse.Namespace) -> None:
+    """Packages a translation Scripture Alone is licensed to ship, under its licence's exact terms.
+
+    Identity, notice and policy come from `Tools/licensed/`, never from the source file. The content
+    key is derived, exactly as the app derives it, from the seed in the environment variable named by
+    `--seed-env` — the same secret Xcode Cloud compiles in (ci_scripts/ci_post_clone.sh). The seed is
+    never read from a file, never printed, and never written. The package is signed with a one-time
+    key, as `bundle` is; its public half is written beside the package for the app to pin.
+    """
+    edition, policy = licensed_edition(arguments.edition)
+    raw_seed = os.environ.get(arguments.seed_env, "")
+    if not raw_seed:
+        sys.exit(f"${arguments.seed_env} is not set. It must hold the build's content-key seed.")
+    seed = bytes.fromhex(raw_seed) if all(c in "0123456789abcdefABCDEF" for c in raw_seed) else raw_seed.encode()
+    if seed == BUNDLED_SEED:
+        sys.exit("That is the published seed. A licensed translation needs the secret one.")
+
+    meta, chapters = read_store(Path(arguments.store).expanduser())
+    check_edition(edition, chapters)
+    identity = {key: edition[key] for key in ("id", "name", "abbreviation", "publisher", "copyright", "license")}
+    content_key = HKDF(algorithm=hashes.SHA256(), length=32, salt=b"scripture-alone-content-key-v1",
+                       info=edition["id"].encode()).derive(seed)
+
+    one_time = ed25519.Ed25519PrivateKey.generate()
+    public_raw = one_time.public_key().public_bytes_raw()
+    data = build_package(identity=identity, policy=policy, chapters=chapters,
+                         content_key=content_key, signing_key=one_time.private_bytes_raw())
+    del one_time, content_key, seed
+
+    out = Path(arguments.out).expanduser()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(data)
+    key_out = out.with_name(f"{edition['id']}-signing.pub")
+    key_out.write_bytes(public_raw)
+    print(f"{out} — {edition['name']}, {len(data):,} bytes, {len(chapters):,} chapters")
+    print(f"{key_out} — publisher key id {publisher_key_id(public_raw)}; its private half is gone")
 
 
 def main(argv: list[str]) -> None:
@@ -736,7 +841,18 @@ def main(argv: list[str]) -> None:
     bundle = commands.add_parser(
         "bundle", help="seal one of the app's own translations into the resources it ships")
     bundle.add_argument("--translation", default="ASV")
+    bundle.add_argument("--resign", action="store_true",
+                        help="re-sign the shipped package with a new one-time key, text unchanged")
     bundle.set_defaults(handler=command_bundle)
+
+    licensed = commands.add_parser(
+        "licensed", help="package a licensed translation under the exact terms in Tools/licensed/")
+    licensed.add_argument("--edition", required=True, help="e.g. NASB2020 or NASB1995")
+    licensed.add_argument("--store", required=True, help="the store built from the publisher's files")
+    licensed.add_argument("--out", required=True, help="where the .sabible goes")
+    licensed.add_argument("--seed-env", default="SA_CONTENT_KEY_SEED",
+                          help="environment variable holding the secret content-key seed")
+    licensed.set_defaults(handler=command_licensed)
 
     demo = commands.add_parser("demo", help="package the bundled public-domain texts with a demonstration key")
     demo.add_argument("--out-dir", default=str(DEMO_DIRECTORY))
