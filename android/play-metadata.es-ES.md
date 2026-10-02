@@ -12,7 +12,7 @@ Biblia privada y sin conexión: temas para días difíciles, estudio y notas.
 Scripture Alone es una Biblia para teléfonos y tabletas Android y Wear OS, hecha con un solo propósito: estudiar la Palabra de Dios sin nada que estorbe. Sin anuncios. Sin rastreadores. Sin cuentas. La aplicación está por completo en español y, tras el primer inicio, todo funciona sin conexión.
 
 Lee toda la Biblia, sin conexión
-La Reina-Valera 1909 se descarga la primera vez que abres la aplicación y desde entonces se lee sin conexión, con sus nombres de libros y su numeración de siempre. En inglés también están la American Standard Version, la Berean Standard Bible y la King James Version. Búsqueda de texto completo, las Palabras de Cristo en rojo, la poesía como poesía y las notas a un toque.
+La Reina-Valera 1909 se descarga la primera vez que abres la aplicación y desde entonces se lee sin conexión, con sus nombres de libros y su numeración de siempre. En inglés, la NASB 2020 viene integrada, y también están la NASB 1995, la ASV, la BSB y la KJV. Búsqueda de texto completo, las Palabras de Cristo en rojo, la poesía como poesía y las notas a un toque.
 
 Lo que la Biblia dice de lo que estás viviendo
 Temas reúne pasajes para 72 temas de la vida —ansiedad, duelo, soledad, miedo, matrimonio, espera y más— en la traducción que lees. Escribe un sentimiento como «ansioso» en Ir a y aparece su tema. En inglés, además, la Nave's Topical Bible de la A a la Z.

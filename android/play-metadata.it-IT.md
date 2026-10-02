@@ -12,7 +12,7 @@ Bibbia offline e privata: argomenti per i giorni difficili, studio e note.
 Scripture Alone è una Bibbia per telefoni, tablet e Wear OS, pensata per una cosa sola: studiare la Parola di Dio senza nulla che si metta in mezzo. Nessuna pubblicità. Nessun tracciamento. Nessun account. L'app è interamente in italiano e, dopo il primo avvio, tutto funziona anche senza connessione.
 
 Leggi tutta la Bibbia, offline
-La Riveduta 1927 si scarica al primo avvio e poi si legge offline, con i nomi dei libri e la numerazione dei versetti in italiano. In inglese ci sono anche American Standard Version, Berean Standard Bible e King James Version. Ricerca sul testo completo, Parole di Cristo in rosso, poesia impaginata come poesia, note a un tocco.
+La Riveduta 1927 si scarica al primo avvio e poi si legge offline, con i nomi dei libri e la numerazione dei versetti in italiano. In inglese è integrata la NASB 2020, e ci sono anche NASB 1995, ASV, BSB e KJV. Ricerca sul testo completo, Parole di Cristo in rosso, poesia impaginata come poesia, note a un tocco.
 
 Che cosa dice la Bibbia di ciò che stai vivendo
 Argomenti raccoglie passi per 72 temi di vita — ansia, lutto, solitudine, paura, matrimonio, attesa e altro — nella traduzione che leggi. Scrivi uno stato d'animo come "ansioso" in Vai a e compare l'argomento. In inglese c'è anche la Nave's Topical Bible dalla A alla Z.

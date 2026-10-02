@@ -12,7 +12,7 @@ Bible hors ligne et privée : thèmes pour les jours difficiles, étude, notes.
 Scripture Alone est une Bible pour téléphones et tablettes Android et pour Wear OS, conçue pour une seule chose : étudier la Parole de Dieu sans rien entre elle et vous. Aucun traceur, aucun compte. L'application est entièrement en français et, après le premier lancement, tout fonctionne sans connexion.
 
 Lire toute la Bible, hors ligne
-La Louis Segond 1910 se télécharge au premier lancement, puis se lit hors ligne, avec ses noms de livres et sa numérotation. En anglais, l'American Standard Version, la Berean Standard Bible et la King James Version sont aussi disponibles. Recherche plein texte, Paroles du Christ en rouge, poésie mise en forme, notes à portée de doigt.
+La Louis Segond 1910 se télécharge au premier lancement, puis se lit hors ligne, avec ses noms de livres et sa numérotation. En anglais, la NASB 2020 est intégrée, et la NASB 1995, l'ASV, la BSB et la KJV sont aussi disponibles. Recherche plein texte, Paroles du Christ en rouge, poésie mise en forme, notes à portée de doigt.
 
 Ce que la Bible dit de ce que vous traversez
 Thèmes rassemble des passages pour 72 thèmes de vie — anxiété, deuil, solitude, peur, mariage, attente… — dans la traduction que vous lisez. Tapez un sentiment comme « anxieux » dans Aller à, et le thème apparaît. En anglais, la Nave's Topical Bible de A à Z en plus.

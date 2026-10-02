@@ -12,7 +12,7 @@ Private Offline-Bibel: Themen für schwere Tage, Studienhilfen, Predigtnotizen.
 Scripture Alone ist eine Bibel für Android-Smartphones, Tablets und Wear OS, gebaut für eine Sache: Gottes Wort zu studieren, ohne dass etwas im Weg steht. Keine Werbung. Keine Tracker. Keine Konten. Vollständig auf Deutsch – und nach dem ersten Start funktioniert alles auch ohne Verbindung.
 
 Die ganze Bibel lesen, offline
-Die Lutherbibel 1912 lädt beim ersten Start und liest sich dann offline, mit eigenen Buchnamen und eigener Verszählung. Auf Englisch stehen außerdem die American Standard Version, die Berean Standard Bible und die King James Version bereit. Volltextsuche, die Worte Jesu in Rot, Poesie als Poesie gesetzt, Fußnoten einen Fingertipp entfernt.
+Die Lutherbibel 1912 lädt beim ersten Start und liest sich dann offline, mit eigenen Buchnamen und eigener Verszählung. Auf Englisch ist die NASB 2020 eingebaut; dazu kommen NASB 1995, ASV, BSB und KJV. Volltextsuche, die Worte Jesu in Rot, Poesie als Poesie gesetzt, Fußnoten einen Fingertipp entfernt.
 
 Was die Bibel zu dem sagt, was dich bewegt
 Themen sammelt Bibelstellen zu 72 Lebensthemen – Angst und Sorge, Trauer, Einsamkeit, Furcht, Ehe, Warten und mehr – in der Übersetzung, die du liest. Tippe ein Gefühl wie „ängstlich“ in „Gehe zu“, und das passende Thema erscheint. Auf Englisch gibt es dazu Nave's Topical Bible von A bis Z.

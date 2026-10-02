@@ -15,7 +15,7 @@ A private, offline Bible: topics for hard days, study tools, sermon notes.
 Scripture Alone is a Bible for Android phones, tablets and Wear OS, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. Reading, searching, highlighting and notes work anywhere, with or without a connection.
 
 Read the whole Bible, offline
-The American Standard Version and the Berean Standard Bible arrive with the app; the King James Version downloads once, when you first choose it. Full-text search, the words of Christ in red, poetry set as poetry, and footnotes a tap away.
+The New American Standard Bible — NASB 2020 is on your device from the moment it installs, and the Berean Standard Bible arrives with it; the NASB 1995, the American Standard Version and the King James Version download once, when you first choose one. Full-text search, the words of Christ in red, poetry set as poetry, and footnotes a tap away.
 
 What the Bible says about what you're going through
 Topics gathers passages for 72 themes — anxiety, grief, loneliness, fear, marriage, waiting and more — in the translation you read. Type a feeling like "anxious" in Go To and its topic comes up. In English, Nave's Topical Bible is there too, A to Z.
@@ -54,6 +54,8 @@ Private by design
 Your highlights, notes and favorites stay on your device. No server, no account, and the developer never sees your data. Scripture Alone is open source under the AGPL, so anyone can read exactly what it does.
 
 Built to help people study God's word and grow closer to Christ.
+
+NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## category
 Books & Reference
