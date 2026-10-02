@@ -2,6 +2,12 @@
 
 ## After 1.0.0
 
+- The NASB 2020 is the Bible inside the app, and what it opens to — on iPhone, iPad, Mac, Apple Watch,
+  Android and Wear OS, and in the widgets and complications. The NASB 1995, the ASV and every other Bible
+  download the first time you choose them, so the app itself is smaller. The watches carry the NASB 2020
+  themselves and receive any other Bible you read from the phone.
+- API.Bible's NASB is no longer listed beside the app's own NASB; if you were reading it, you're moved
+  to the app's edition.
 - Groundwork for the NASB: the reader can show a footnote with its own mark instead of a letter
   (the NASB's * for a historical present, which explains itself when tapped), and draws Old
   Testament quotations in the New Testament in small caps, on iPhone, iPad, Mac and Android.

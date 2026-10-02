@@ -107,7 +107,15 @@ us, and how the text gets from Lockman into the app without breaking any of it.
    | GitHub › Actions secret | `SA_LICENSED_TOKEN` | the token |
    | GitHub › Actions secret | `SA_CONTENT_KEY_SEED` | from step 3 |
 
-5. **It becomes the default by itself.** `ci_scripts/ci_post_clone.sh` (iOS) and the "Fetch licensed
+5. **Where each edition ships.** The NASB 2020 is inside the iPhone, iPad, Mac, Apple Watch, Android
+   phone and Wear OS apps, sealed, and is what each opens to. The NASB 1995 is an on-demand download:
+   an Apple-hosted Background Assets pack on iOS (`Tools/asset-packs/nasb1995.json`, uploaded from
+   the private clone — see `Tools/asset-packs/README.md`) and a Play on-demand pack on Android
+   (`android/packs/nasb1995`, filled by the release workflow). The watches receive it from the phone,
+   still sealed. Every other Bible, the ASV included, is a download too, so Xcode Cloud and the Android
+   release workflow refuse to build without the NASB 2020. API.Bible's NASB is not offered beside a
+   licensed edition.
+6. **It becomes the default by itself.** `ci_scripts/ci_post_clone.sh` (iOS) and the "Fetch licensed
    translations" step in `android.yml` copy the package into the build. When the package, its signing
    key and the seed are all present, the NASB 2020 is listed first and is what a fresh install opens
    to (`ReaderModel.defaultTranslation`, `BundledTranslations.DEFAULT`). The NASB 1995, when its

@@ -1,12 +1,14 @@
 # Asset packs
 
-The BSB, KJV and the study databases don't ship inside the app binary. They are **Apple-hosted
-Background Assets** packs, uploaded to App Store Connect separately from the build. The ASV does
-ship inside it — see below.
+Since 1.1.1 the only Bible inside the app binary is the sealed **NASB 2020**, the translation a fresh
+install opens to (copied in by Xcode Cloud from private storage; see `docs/lockman/README.md`). Every
+other Bible, and the study databases, are **Apple-hosted Background Assets** packs, uploaded to App Store
+Connect separately from the build.
 
 | Pack ID | File | Policy | Size |
 |---|---|---|---|
-| `asv` | `Packages/ASV.sabible` | `onDemand` (v2) — legacy only, see below | ~16 MB |
+| `asv` | `Packages/ASV.sabible` | `onDemand` (v3 since 1.1.1 — re-signed, see below) | ~16 MB |
+| `nasb1995` | `NASB1995.sabible`, from private storage | `onDemand` | ~18 MB |
 | `bsb` | `Bibles/BSB.sqlite` | `onDemand` | ~5 MB packed |
 | `kjv` | `Bibles/KJV.sqlite` | `onDemand` | ~5 MB packed |
 | `study-commentary` | `Study/Study.sqlite` | `onDemand` | ~40 MB |
@@ -17,21 +19,36 @@ which is how `AssetLibrary` addresses it (`descriptor(for: FilePath(pack.file))`
 selector preserves the source directory inside the pack — Mi Speaks shipped that bug and downloaded
 325 MB to fail with "No file was found".
 
-What stays in the binary: `Study/CrossReferences.sqlite` (derived by `Tools/build_study.py`, so
-cross references never wait on the commentary download), `Study/Context.sqlite`, `Basemap.bin`, and
-`Packages/bundled-signing.pub` — the key the ASV package is verified against. A trust anchor that
-arrived by the same channel as the package it vouches for would vouch for nothing.
+What stays in the binary: the NASB 2020, `Study/CrossReferences.sqlite` (derived by
+`Tools/build_study.py`, so cross references never wait on the commentary download),
+`Study/Context.sqlite`, `Basemap.bin`, and the signing keys every sealed package is verified against —
+`Packages/bundled-signing.pub` (the ASV's), `NASB2020-signing.pub` and `NASB1995-signing.pub`. A trust
+anchor that arrived by the same channel as the package it vouches for would vouch for nothing.
 
-## Why the ASV is bundled, and why its pack still exists
+## The ASV and the NASB 1995
 
-Version 1 of `asv` was `essential` on first installation. App Review's iPad launched 1.0.0 build 40
-to a spinner that never ended: the essential pack was accepted in the same submission, yet the ASV
-wasn't readable at launch. The translation a fresh install opens to can't wait on delivery, so
-`ASV.sabible` is an app resource again and `SealedTranslations` opens it from the bundle.
+Sealed packages, opened by `SealedTranslations` once copied out. Neither is ever what a fresh install
+opens to: version 1 of `asv` was `essential`, and App Review's iPad launched 1.0.0 build 40 to a spinner
+that never ended — the essential pack was accepted in the same submission, yet the ASV wasn't readable
+at launch. So a build carries the NASB 2020 (Xcode Cloud refuses to build without it), and the ASV
+waits to be chosen like any other Bible.
 
-The pack is kept, as version 2 with an `onDemand` policy, for builds up to 40 (TestFlight), which
-still fetch it through `AssetLibrary.ensure(.asv)`. `onDemand` means no new install downloads it
-for nothing. **Never archive it**: archiving is permanent.
+**The ASV was re-signed for 1.1.1** (the old signing key was derived from a published string), so its
+pack needs **version 3**, uploaded from today's `ScriptureAlone/Resources/Packages/ASV.sabible` and
+submitted with the 1.1.1 version. A copy signed with the old key that a device already holds no longer
+opens, and the app removes it and downloads again. **Never archive `asv`**: builds up to 40 fetch it.
+
+**The NASB 1995's package is never in this repository.** Its manifest's `fileSource` is the bare file
+name, so package it from the private clone holding the file:
+
+```bash
+cd ~/secure/nasb/licensed
+rm -f /tmp/nasb1995.aar
+xcrun ba-package package "<repo>/Tools/asset-packs/nasb1995.json" -o /tmp/nasb1995.aar
+```
+
+then upload as below. Upload the package whose key Xcode Cloud bundles: the build log prints the
+fingerprint of the one in the private repository (`licensed translation: NASB1995 key bundled …`).
 
 Every pack is copied out of (Background Assets exposes only `Data` or a file descriptor; SQLite
 and the package reader need a path) and then released, so nothing is stored twice.
