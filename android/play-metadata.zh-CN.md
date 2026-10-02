@@ -53,4 +53,4 @@
 愿它帮助人研读神的话语，与基督更加亲近。
 
 ## release_notes
-1.1.0 — 唯独圣经 Android 版的第一个版本。
+1.1.1 — New American Standard Bible — NASB 2020 现已内置，Scripture Alone 在你的手机、Wear OS 手表和小组件中都会默认打开它。NASB 1995 与 ASV、BSB 和 KJV 一样，只需一次下载即可获得。应用本身也更小了：除 NASB 2020 外，每本圣经都会在你首次选择时下载。经 The Lockman Foundation 许可收录。

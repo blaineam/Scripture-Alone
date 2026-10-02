@@ -53,4 +53,4 @@ Tus subrayados, notas y favoritos se quedan en tu dispositivo. No hay servidor n
 Hecha para ayudar a estudiar la Palabra de Dios y acercarse más a Cristo.
 
 ## release_notes
-1.1.0 — Primera versión de Scripture Alone para Android.
+1.1.1 — La New American Standard Bible — NASB 2020 ya viene integrada y es la que abre Scripture Alone, en tu teléfono, tu reloj Wear OS y tus widgets. La NASB 1995 está a una descarga, junto con la ASV, la BSB y la KJV. La app en sí es más ligera: cada Biblia, salvo la NASB 2020, se descarga la primera vez que la eliges. Con permiso de The Lockman Foundation.

@@ -53,4 +53,4 @@ DRM이 없는 ePub, 텍스트 레이어가 있는 성경 PDF, USFM 파일처럼 
 하나님의 말씀을 공부하고 그리스도께 더 가까이 나아가도록 돕기 위해 만들었습니다.
 
 ## release_notes
-1.1.0 — 안드로이드용 오직 성경의 첫 출시입니다.
+1.1.1 — New American Standard Bible — NASB 2020이 이제 앱에 내장되어, Scripture Alone이 휴대폰과 Wear OS 워치, 위젯에서 이 역본으로 열립니다. NASB 1995는 ASV, BSB, KJV와 함께 다운로드 한 번이면 추가할 수 있습니다. 앱 자체도 가벼워졌습니다. NASB 2020을 제외한 모든 성경은 처음 선택할 때 다운로드됩니다. The Lockman Foundation의 허가를 받아 수록했습니다.

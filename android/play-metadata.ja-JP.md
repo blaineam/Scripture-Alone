@@ -53,4 +53,4 @@ DRM フリーの ePub、テキストレイヤーのある聖書 PDF、USFM フ�
 神のことばを学び、キリストに近づく助けとなるように作られました。
 
 ## release_notes
-1.1.0 — Scripture Alone、Android 版の最初のリリースです。
+1.1.1 — New American Standard Bible — NASB 2020 を内蔵しました。Scripture Alone はスマートフォン、Wear OS ウォッチ、ウィジェットで、まずこの訳を開きます。NASB 1995 も ASV、BSB、KJV と同じく、ダウンロード1回で追加できます。アプリ自体も軽くなりました。NASB 2020 以外の聖書は、最初に選んだときにダウンロードされます。The Lockman Foundation の許可を得て収録しています。
