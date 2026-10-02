@@ -29,10 +29,23 @@ export CAP_APP_NAME="Scripture Alone"
 ONLY="${1:-all}"
 read -r -a LOCALES <<<"${SHOT_LOCALES:-en-US zh-Hans ja de-DE fr-FR es-ES ko pt-BR it}"
 
+# The English set shows what a new install opens to: the NASB 2020, once Tools/prepare_licensed_local.sh
+# has put it (and the seed that opens it) into the local build. Without that, the ASV as before.
+#
+# THE NASB TEXT MUST NEVER BE SHOWN TO AN AI SYSTEM (docs/lockman/README.md). This rig only writes PNGs
+# and prints file names; the owner looks at the NASB shots. Never open them with an AI tool.
+if [ -f "$PROJECT_ROOT/ScriptureAlone/Resources/Packages/NASB2020.sabible" ] &&
+    ! grep -q 'masked: \[UInt8\] = \[\]' "$PROJECT_ROOT/ScriptureAlone/Generated/ContentKeySeed.swift" 2>/dev/null; then
+    ENGLISH_BIBLE=NASB2020
+else
+    ENGLISH_BIBLE=ASV
+    echo "note: the NASB 2020 isn't in the local build (./Tools/prepare_licensed_local.sh), so English shows the ASV" >&2
+fi
+
 locale_bible() {  # locale_bible <asc locale> -> the Bible a reader in that locale opens to
     case "$1" in
         zh-Hans) echo CUVS ;; ja) echo BUNGO ;; de-DE) echo LUT1912 ;; fr-FR) echo LSG ;;
-        es-ES) echo RVR1909 ;; ko) echo KRV ;; pt-BR) echo BLIVRE ;; it) echo RIV1927 ;; *) echo ASV ;;
+        es-ES) echo RVR1909 ;; ko) echo KRV ;; pt-BR) echo BLIVRE ;; it) echo RIV1927 ;; *) echo "$ENGLISH_BIBLE" ;;
     esac
 }
 
@@ -179,7 +192,8 @@ capture_watch() {
     )
     # A locale reader's watch reads the edition their phone sent it. The rig puts that edition
     # exactly where a phone transfer lands (Documents/Translations/<ID>-Watch.sqlite) and chooses
-    # it, so a French set shows Louis Segond rather than the bundled English.
+    # it, so a French set shows Louis Segond. The watch app carries only the NASB 2020; without it,
+    # the English set gets the ASV's edition the same way.
     local editions="${TMPDIR:-/tmp}/sa-watch-editions" received bible
     received="$(xcrun simctl get_app_container "$udid" "$WATCH_BUNDLE" data)/Documents/Translations"
     local entry file route tmp locale dir
@@ -191,7 +205,9 @@ capture_watch() {
         bible="$(locale_bible "$locale")"
         mkdir -p "$received" "$editions"
         rm -f "$received"/*-Watch.sqlite
-        if [ "$bible" != "ASV" ]; then
+        if [ "$bible" = "ASV" ]; then
+            cp "$PROJECT_ROOT/ScriptureAloneWatch/Resources/ASV-Watch.sqlite" "$received/"
+        elif [ "$bible" != "NASB2020" ]; then
             [ -f "$editions/$bible-Watch.sqlite" ] ||
                 python3 "$PROJECT_ROOT/Tools/build_companion_data.py" --watch-edition "$bible" "$editions/$bible-Watch.sqlite" >/dev/null ||
                 { echo "  could not build the $bible watch edition" >&2; return 1; }

@@ -125,6 +125,14 @@ us, and how the text gets from Lockman into the app without breaking any of it.
    package without the seed, so a default nobody can open can't ship. Readers who already chose a
    translation keep their choice.
 
+## A local build with the NASB
+
+`./Tools/prepare_licensed_local.sh` copies the NASB 2020's package and both editions' keys from your
+private clone into `Resources/Packages/` and writes the seed from your keychain — what Xcode Cloud does —
+so a Debug build or the screenshot rig (`Tools/capture_screenshots.sh`, whose English set then shows the
+NASB 2020) runs with it. `--remove` undoes it. Both files are git-ignored. Whatever the rig captures,
+**you** review it: never open NASB screenshots with an AI tool.
+
 ## The annual report
 
 `.github/workflows/lockman-report.yml` runs every **October 10**, or by hand from the Actions tab
