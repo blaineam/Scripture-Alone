@@ -273,21 +273,26 @@ class PackageChapterSource(private val pkg: TranslationPackage) : ChapterSource 
  */
 object BundledTranslations {
     /**
+     * The licensed translations this build carries (docs/lockman/README.md): the NASB 2020 and the
+     * NASB 1995, each under its own agreement, when their packages were in the release build.
+     */
+    val LICENSED: List<String> = BuildConfig.LICENSED_TRANSLATIONS.toList()
+
+    /**
      * The translations the app ships — in its base module or as asset packs: the English three, then a
      * Bible for each of the big-8 locales (docs/localization.md), in the Translations screen's order.
      */
     val bundled: List<String> =
-        (if (BuildConfig.SHIPS_LICENSED_NASB) listOf(LICENSED_NASB) else emptyList()) +
-            listOf(FALLBACK) + AssetPack.translations.mapNotNull { it.translationId }
+        LICENSED + listOf(FALLBACK) + AssetPack.translations.mapNotNull { it.translationId }
 
-    /** The licensed NASB 2020 (docs/lockman/README.md), in builds that carry it. */
+    /** The licensed NASB 2020, the default in builds that carry it. */
     const val LICENSED_NASB = "NASB2020"
 
     /** The public-domain ASV, which every build carries. */
     const val FALLBACK = "ASV"
 
     /** What a fresh install opens to: the NASB 2020 when this build ships it, else the ASV. */
-    val DEFAULT: String = if (BuildConfig.SHIPS_LICENSED_NASB) LICENSED_NASB else FALLBACK
+    val DEFAULT: String = if (LICENSED_NASB in LICENSED) LICENSED_NASB else FALLBACK
 
     /** Everything the reader can switch to right now: [bundled], then imported, then online. */
     val ids: List<String> get() = bundled + TranslationLibrary.addedIds
@@ -319,7 +324,7 @@ object BundledTranslations {
                         contentKey.fill(0)
                     }
                 }
-                LICENSED_NASB -> {
+                in LICENSED -> {
                     // Its own signing key and only that one, and a content key from the build's
                     // secret seed rather than the ASV's published one.
                     val publisher = app.assets.open("$id-signing.pub").use { it.readBytes() }

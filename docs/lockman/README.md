@@ -18,7 +18,7 @@ us, and how the text gets from Lockman into the app without breaking any of it.
 | **No AI or machine-learning use of any kind** without written permission. That includes training, fine-tuning, evaluation, embeddings, and *sending the text to* an AI system | The app has no AI feature. **Never paste, upload or attach NASB text or files to an AI assistant, coding agent or AI service**, including the one that wrote this page. Packaging runs locally or in CI with the scripts below, which call no AI service. |
 | Promote Lockman and the NASB with a link to their website | The link on the Translations screen and on the chapter notice (above). |
 | No sublicensing or transfer | The keys and packages stay with us. |
-| Verse of the Day | Widgets and complications show the day's passage in the NASB 2020 for a NASB reader, read from the sealed package on the device into the widget snapshot (14 days ahead). The NASB text is never added to the public `DailyVerses.json`. |
+| Verse of the Day | Widgets and complications show the day's passage in the reader's NASB edition (2020 or 1995), read from the sealed package on the device into the widget snapshot (14 days ahead). The NASB text is never added to the public `DailyVerses.json`. |
 | An annual report within 60 days after each October 1 | `.github/workflows/lockman-report.yml`; see "The annual report" below. |
 | Agreement ends automatically if the NASB is unavailable for more than three consecutive months, or on 30 days' notice from Lockman | Don't pull it from a release without a replacement build ready. |
 | Other websites need prior written notice to Lockman | Only https://wemiller.com/apps/scripture-alone/ is covered today. |
@@ -36,6 +36,8 @@ us, and how the text gets from Lockman into the app without breaking any of it.
    ```sh
    python3 Tools/build_bibles.py --licensed NASB2020 \
      --lockman ~/secure/nasb/"NASB 2020 (b+n-r-num)(08-12-26).zip" --out-dir ~/secure/nasb
+   python3 Tools/build_bibles.py --licensed NASB1995 \
+     --lockman ~/secure/nasb/"NASB 1995 (b+n-r-num)(08-26-25).zip" --out-dir ~/secure/nasb
    ```
 
    Its report names verse references, codes and counts — never a word of the text — so it is safe
@@ -77,12 +79,21 @@ us, and how the text gets from Lockman into the app without breaking any of it.
        --store ~/secure/nasb/NASB2020.sqlite --out ~/secure/nasb/NASB2020.sabible
    ```
 
+   and the same with `NASB1995` for the 1995. Each edition is signed with its own one-time key:
+
+   ```sh
+   SA_CONTENT_KEY_SEED=$(security find-generic-password -s SA_CONTENT_KEY_SEED -w) \
+     ./Tools/package_translation.py licensed --edition NASB1995 \
+       --store ~/secure/nasb/NASB1995.sqlite --out ~/secure/nasb/NASB1995.sabible
+   ```
+
    `licensed` takes identity, notice and policy from `Tools/licensed/nasb.json`, never from the file.
    It refuses the published ASV seed, and it refuses a store whose John 3:16 is not that edition's
    wording, so the 1995 text cannot go out labelled 2020 or the other way round. It signs with a
    one-time key and writes `NASB2020-signing.pub` for the app to pin. No signing secret exists to leak.
 4. **Put the package in private storage.** Create a private repository (for example
-   `blaineam/scripture-alone-licensed`) holding just `NASB2020.sabible` and `NASB2020-signing.pub`.
+   `blaineam/scripture-alone-licensed`) holding just `NASB2020.sabible`, `NASB2020-signing.pub`, `NASB1995.sabible` and
+   `NASB1995-signing.pub`, at its root.
    Never add them to this repository; `.gitignore` refuses `Resources/Packages/NASB*`. Then create a
    fine-grained GitHub token with read-only Contents access to that one repository, and set it up in
    both build systems:
@@ -99,7 +110,9 @@ us, and how the text gets from Lockman into the app without breaking any of it.
 5. **It becomes the default by itself.** `ci_scripts/ci_post_clone.sh` (iOS) and the "Fetch licensed
    translations" step in `android.yml` copy the package into the build. When the package, its signing
    key and the seed are all present, the NASB 2020 is listed first and is what a fresh install opens
-   to (`ReaderModel.defaultTranslation`, `BundledTranslations.DEFAULT`). When any of them is missing,
+   to (`ReaderModel.defaultTranslation`, `BundledTranslations.DEFAULT`). The NASB 1995, when its
+   package and key are there too, is listed right after it but is never the default. Each edition is
+   offered only when its own package and key are present. When any of them is missing,
    the build ships no NASB and opens to the ASV exactly as before. Both builds refuse to bundle the
    package without the seed, so a default nobody can open can't ship. Readers who already chose a
    translation keep their choice.

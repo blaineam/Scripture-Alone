@@ -43,16 +43,16 @@ fi
 # ---- end guard -------------------------------------------------------------
 
 # ---- licensed translations ---------------------------------------------------
-# The NASB 2020 (docs/lockman/README.md) ships sealed, but its package is never in this public
-# repository. It lives in a private repository (SA_LICENSED_REPO, e.g. "blaineam/scripture-alone-
+# The NASB 2020 and NASB 1995 (docs/lockman/README.md) ship sealed, but their packages are never in this public
+# repository. They live in a private repository (SA_LICENSED_REPO, e.g. "blaineam/scripture-alone-
 # licensed", read with the fine-grained token SA_LICENSED_TOKEN: Contents read-only, that repository
-# only), and is copied into Resources/Packages before the project is generated so it is bundled.
+# only), and are copied into Resources/Packages before the project is generated so they are bundled.
 # Without those variables the build simply ships no licensed translation and opens to the ASV.
 if [ -n "${SA_LICENSED_REPO:-}" ] && [ -n "${SA_LICENSED_TOKEN:-}" ]; then
   LICENSED_TMP="$(mktemp -d)"
   git -c credential.helper= clone -q --depth 1 \
     "https://x-access-token:${SA_LICENSED_TOKEN}@github.com/${SA_LICENSED_REPO}.git" "$LICENSED_TMP"
-  for id in NASB2020; do
+  for id in NASB2020 NASB1995; do
     if [ -f "$LICENSED_TMP/$id.sabible" ] && [ -f "$LICENSED_TMP/$id-signing.pub" ]; then
       cp "$LICENSED_TMP/$id.sabible" "$LICENSED_TMP/$id-signing.pub" ScriptureAlone/Resources/Packages/
       echo "licensed translation: $id bundled"
@@ -62,7 +62,7 @@ if [ -n "${SA_LICENSED_REPO:-}" ] && [ -n "${SA_LICENSED_TOKEN:-}" ]; then
   done
   rm -rf "$LICENSED_TMP"
   # A licensed package with no seed to open it would ship as a default nobody can read.
-  if [ -f ScriptureAlone/Resources/Packages/NASB2020.sabible ] && [ -z "${SA_CONTENT_KEY_SEED:-}" ]; then
+  if ls ScriptureAlone/Resources/Packages/NASB*.sabible >/dev/null 2>&1 && [ -z "${SA_CONTENT_KEY_SEED:-}" ]; then
     echo "error: a licensed package is bundled but SA_CONTENT_KEY_SEED is not set" >&2
     exit 1
   fi

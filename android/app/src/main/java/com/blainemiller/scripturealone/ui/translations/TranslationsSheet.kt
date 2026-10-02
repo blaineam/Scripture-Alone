@@ -289,7 +289,7 @@ private fun MainPage(
                     if (i > 0) CellDivider(palette)
                     // A licensed translation shows its full notice, www.Lockman.org a working link, as its
                     // licence requires; the public-domain ones need none.
-                    val licensed = info.id == BundledTranslations.LICENSED_NASB
+                    val licensed = info.id in BundledTranslations.LICENSED
                     TranslationRow(
                         info.name, if (licensed) info.abbreviation else info.id, if (licensed) info.copyright else null,
                         palette, info.id == reader.translationId, fullNote = licensed,

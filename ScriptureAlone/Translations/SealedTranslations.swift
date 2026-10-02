@@ -30,9 +30,11 @@ final class SealedTranslations {
     /// (`<id>-signing.pub`), and their content key comes from the build's secret seed
     /// (`ContentKeySeed`), never from the published one below. A build without them simply doesn't
     /// offer them, and the ASV is the default as before.
-    static let licensedIdentifiers = ["NASB2020"]
+    /// The NASB 2020 and NASB 1995 each have their own agreement, package, signing key and notice.
+    static let licensedIdentifiers = ["NASB2020", "NASB1995"]
 
-    /// The licensed translation a fresh install opens to, when this build ships it.
+    /// The licensed translation a fresh install opens to, when this build ships it. The NASB 1995 is
+    /// offered beside it, never as the default.
     static let licensedDefault = "NASB2020"
 
     /// Translation identifiers the app ships sealed, in the order they appear to a reader.

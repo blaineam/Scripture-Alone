@@ -23,15 +23,17 @@ val contentKeySeedMasked: String = System.getenv("SA_CONTENT_KEY_SEED").orEmpty(
 }
 
 /**
- * Whether this build carries the licensed NASB 2020: its package and signing key in the iOS
- * resources (copied there from private storage by the release workflow; never committed) and the
- * seed that opens it. Fixed at build time, so the default translation is a constant at runtime.
+ * The licensed translations this build carries (docs/lockman/README.md), in the reader's order: each
+ * one whose package and signing key are in the iOS resources (copied there from private storage by
+ * the release workflow; never committed). Fixed at build time, so the list — and the default, the
+ * NASB 2020 when present — is a constant at runtime. A package without the seed that opens it fails
+ * the build rather than ship a translation nobody can read.
  */
-val shipsLicensedNasb: Boolean = rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources/Packages").asFile.let {
-    File(it, "NASB2020.sabible").exists() && File(it, "NASB2020-signing.pub").exists()
+val licensedTranslations: List<String> = rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources/Packages").asFile.let { dir ->
+    listOf("NASB2020", "NASB1995").filter { File(dir, "$it.sabible").exists() && File(dir, "$it-signing.pub").exists() }
 }.also { present ->
-    check(!present || contentKeySeedMasked.isNotEmpty()) {
-        "NASB2020.sabible is present but SA_CONTENT_KEY_SEED is not set: it would ship as a default nobody can open"
+    check(present.isEmpty() || contentKeySeedMasked.isNotEmpty()) {
+        "${present.joinToString()} present but SA_CONTENT_KEY_SEED is not set: nobody could open it"
     }
 }
 
@@ -51,7 +53,10 @@ android {
         check(versionCode!! < 1_000_000) { "phone versionCode $versionCode is in the Wear OS 1,000,000+ range" }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "CONTENT_KEY_SEED_MASKED", "\"$contentKeySeedMasked\"")
-        buildConfigField("boolean", "SHIPS_LICENSED_NASB", shipsLicensedNasb.toString())
+        buildConfigField(
+            "String[]", "LICENSED_TRANSLATIONS",
+            licensedTranslations.joinToString(prefix = "{", postfix = "}") { "\"$it\"" },
+        )
     }
 
     buildTypes.getByName("debug") {
@@ -211,9 +216,11 @@ val syncBundledData by tasks.registering(Sync::class) {
         include(
             "Study/CrossReferences.sqlite", "Study/Context.sqlite", "Study/Basemap.bin", "Study/Topics.sqlite",
             "Packages/bundled-signing.pub",
-            // The licensed NASB 2020 and the key it was signed with, when this build carries them
-            // (`shipsLicensedNasb`). In the base module, as on iOS: it is the default translation.
+            // The licensed NASB 2020 and 1995 and the keys they were signed with, when this build
+            // carries them (`licensedTranslations`). In the base module, as on iOS: the 2020 is the
+            // default translation.
             "Packages/NASB2020.sabible", "Packages/NASB2020-signing.pub",
+            "Packages/NASB1995.sabible", "Packages/NASB1995-signing.pub",
         )
         eachFile { path = name }          // flatten, as the iOS bundle does
         includeEmptyDirs = false
