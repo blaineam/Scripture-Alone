@@ -55,7 +55,9 @@ if [ -n "${SA_LICENSED_REPO:-}" ] && [ -n "${SA_LICENSED_TOKEN:-}" ]; then
   for id in NASB2020 NASB1995; do
     if [ -f "$LICENSED_TMP/$id.sabible" ] && [ -f "$LICENSED_TMP/$id-signing.pub" ]; then
       cp "$LICENSED_TMP/$id.sabible" "$LICENSED_TMP/$id-signing.pub" ScriptureAlone/Resources/Packages/
-      echo "licensed translation: $id bundled"
+      # Which package set this build carries: a package opens only with the key it was signed with,
+      # so the two fingerprints together say exactly what shipped.
+      echo "licensed translation: $id bundled (package $(shasum -a 256 "$LICENSED_TMP/$id.sabible" | cut -c1-12), key $(shasum -a 256 "$LICENSED_TMP/$id-signing.pub" | cut -c1-12))"
     else
       echo "licensed translation: $id not in $SA_LICENSED_REPO, not bundled"
     fi

@@ -236,7 +236,7 @@ jobs:
           for id in NASB2020 NASB1995; do
             if [ -f "$tmp/$id.sabible" ] && [ -f "$tmp/$id-signing.pub" ]; then
               cp "$tmp/$id.sabible" "$tmp/$id-signing.pub" ScriptureAlone/Resources/Packages/
-              echo "licensed translation: $id bundled"
+              echo "licensed translation: $id bundled (package $(sha256sum "$tmp/$id.sabible" | cut -c1-12), key $(sha256sum "$tmp/$id-signing.pub" | cut -c1-12))"
             fi
           done
           rm -rf "$tmp"
