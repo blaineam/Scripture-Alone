@@ -11,7 +11,11 @@
     "",
     "Policy: system text-to-speech is not a hand-off and is always allowed (it renders live and keeps",
     "nothing, which is what the agreements permit). allowExternalHandoff is false, which turns off",
-    "the Mi Speaks Studio voice: it renders a recording and leaves a file behind, which they forbid."
+    "the Mi Speaks Studio voice: it renders a recording and leaves a file behind, which they forbid.",
+    "",
+    "Markers: a character in Lockman's text that the reader shows as a tappable note instead of",
+    "printing it. The NASB's * marks a historical present; it is taken out of the verse text (search,",
+    "speech, sharing) and shown as a * footnote whose note is this explanation, in our own words."
   ],
   "editions": {
     "NASB2020": {
@@ -40,6 +44,9 @@
         "must_not_contain": ["everyone who believes"]
       }
     }
+  },
+  "markers": {
+    "*": "Historical present: the Greek has a present-tense verb here, translated with an English past tense to read naturally."
   },
   "policy": {
     "allowCopy": true,

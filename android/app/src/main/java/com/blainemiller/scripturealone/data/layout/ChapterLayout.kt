@@ -65,7 +65,8 @@ data class ChapterLayout(val blocks: List<Block>) {
     /** [start] and [length] in Unicode scalars. [style] is null for a style this build doesn't know. */
     data class Span(val start: Int, val length: Int, val style: Style?) {
         enum class Style(val code: String) {
-            WORDS_OF_CHRIST("r"), SUPPLIED("i"), SMALL_CAPS("c");
+            /** SMALL_CAPS is the divine name (found by pattern); QUOTATION is drawn in small caps. */
+            WORDS_OF_CHRIST("r"), SUPPLIED("i"), SMALL_CAPS("c"), QUOTATION("k");
 
             companion object {
                 fun of(code: String): Style? = entries.firstOrNull { it.code == code }
@@ -73,8 +74,11 @@ data class ChapterLayout(val blocks: List<Block>) {
         }
     }
 
-    /** [position] is the Unicode-scalar offset where the marker sits. */
-    data class Footnote(val position: Int, val text: String)
+    /**
+     * [position] is the Unicode-scalar offset where the marker sits. [label], when present, is drawn
+     * instead of the next letter: the NASB's `*` (a historical present).
+     */
+    data class Footnote(val position: Int, val text: String, val label: String? = null)
 
     companion object {
         /**
@@ -128,7 +132,11 @@ data class ChapterLayout(val blocks: List<Block>) {
         private fun footnote(element: JsonElement): Footnote {
             val a = element.asArray("footnote")
             if (a.size < 2) throw LayoutFormatException("a footnote has ${a.size} members, not 2")
-            return Footnote(a[0].asInt("footnote position"), a[1].asString("footnote text"))
+            return Footnote(
+                a[0].asInt("footnote position"),
+                a[1].asString("footnote text"),
+                a.getOrNull(2)?.let { (it as? JsonPrimitive)?.takeIf { p -> p.isString }?.content },
+            )
         }
 
         private fun JsonElement.asObject(what: String): JsonObject =

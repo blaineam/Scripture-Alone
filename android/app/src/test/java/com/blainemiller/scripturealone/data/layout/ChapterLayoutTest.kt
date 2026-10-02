@@ -64,6 +64,20 @@ class ChapterLayoutTest {
     }
 
     @Test
+    fun footnoteLabelAndQuotationStyle() {
+        val layout = ChapterLayout.parse(
+            """{"b":[{"k":"p","f":[{"v":1,"n":1,"t":"He vopped. It says, Vop.","s":[[20,3,"k"]],
+               "fn":[[3,"Historical present","*"],[10,"Or zib"]]}]}]}""",
+        )
+        val fragment = layout.blocks.single().fragments.single()
+        assertEquals(listOf(Style.QUOTATION), fragment.spans.map { it.style })
+        assertEquals(
+            listOf(ChapterLayout.Footnote(3, "Historical present", "*"), ChapterLayout.Footnote(10, "Or zib")),
+            fragment.footnotes,
+        )
+    }
+
+    @Test
     fun malformedLayoutsAreRefusedWhereSwiftRefusesThem() {
         for (bad in listOf(
             "not json",

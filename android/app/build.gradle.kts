@@ -1,3 +1,6 @@
+import java.io.File
+import java.security.MessageDigest
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -15,7 +18,7 @@ val contentKeySeedMasked: String = System.getenv("SA_CONTENT_KEY_SEED").orEmpty(
     if (raw.isEmpty()) return@let ""
     val seed = if (raw.all { it in "0123456789abcdefABCDEF" }) raw.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
         else raw.toByteArray(Charsets.UTF_8)
-    val pad = java.security.MessageDigest.getInstance("SHA-256").digest("scripture-alone-seed-pad-v1".toByteArray(Charsets.UTF_8))
+    val pad = MessageDigest.getInstance("SHA-256").digest("scripture-alone-seed-pad-v1".toByteArray(Charsets.UTF_8))
     seed.indices.joinToString("") { i -> "%02x".format((seed[i].toInt() xor pad[i % pad.size].toInt()) and 0xff) }
 }
 
@@ -25,7 +28,7 @@ val contentKeySeedMasked: String = System.getenv("SA_CONTENT_KEY_SEED").orEmpty(
  * seed that opens it. Fixed at build time, so the default translation is a constant at runtime.
  */
 val shipsLicensedNasb: Boolean = rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources/Packages").asFile.let {
-    java.io.File(it, "NASB2020.sabible").exists() && java.io.File(it, "NASB2020-signing.pub").exists()
+    File(it, "NASB2020.sabible").exists() && File(it, "NASB2020-signing.pub").exists()
 }.also { present ->
     check(!present || contentKeySeedMasked.isNotEmpty()) {
         "NASB2020.sabible is present but SA_CONTENT_KEY_SEED is not set: it would ship as a default nobody can open"

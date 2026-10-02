@@ -92,7 +92,9 @@ public struct ChapterLayout: Decodable, Sendable {
     }
 
     public struct Span: Decodable, Sendable {
-        public enum Style: String, Sendable { case wordsOfChrist = "r", supplied = "i", smallCaps = "c" }
+        /// `c` is the divine name (LORD), which the reader finds by pattern; `k` is a quotation set in
+        /// small caps — the NASB's Old Testament quotations in the New Testament.
+        public enum Style: String, Sendable { case wordsOfChrist = "r", supplied = "i", smallCaps = "c", quotation = "k" }
         /// Offsets in Unicode scalars.
         public let start: Int
         public let length: Int
@@ -110,11 +112,14 @@ public struct ChapterLayout: Decodable, Sendable {
         /// Offset in Unicode scalars where the marker sits.
         public let position: Int
         public let text: String
+        /// Drawn instead of the next letter when present: the NASB's `*` (a historical present).
+        public let label: String?
 
         public init(from decoder: Decoder) throws {
             var c = try decoder.unkeyedContainer()
             position = try c.decode(Int.self)
             text = try c.decode(String.self)
+            label = c.isAtEnd ? nil : try c.decodeIfPresent(String.self)
         }
     }
 }

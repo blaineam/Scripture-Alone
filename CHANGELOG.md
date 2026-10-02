@@ -2,6 +2,9 @@
 
 ## After 1.0.0
 
+- Groundwork for the NASB: the reader can show a footnote with its own mark instead of a letter
+  (the NASB's * for a historical present, which explains itself when tapped), and draws Old
+  Testament quotations in the New Testament in small caps, on iPhone, iPad, Mac and Android.
 - The slide camera looks for the screen the slide is shown on. After the photo is taken, the
   review finds the projector screen, TV or monitor, straightens it out and reads only that, so the
   text in the room around it doesn't get mixed in. "Crop to the screen" in the review turns this

@@ -457,6 +457,7 @@ class ChapterRenderer(
             when (span.style) {
                 Span.Style.WORDS_OF_CHRIST -> if (style.redLetters) runs.red(range)
                 Span.Style.SUPPLIED -> runs.italic(range)
+                Span.Style.QUOTATION -> runs.quotation(range, synthetic = fonts.syntheticSmallCaps(runs.isItalic(range.first)))
                 // "c" marks the divine name, which Swift finds by pattern instead (below); a span
                 // style it doesn't draw isn't drawn here either.
                 else -> Unit
@@ -469,7 +470,7 @@ class ChapterRenderer(
         val markers = if (style.footnotes) {
             fragment.footnotes.map { note ->
                 // Clamped to the text's end, as Swift's `min(text.length, …)`.
-                minOf(text.length, text.utf16Offset(note.position)) to footnoteMarker(note.text)
+                minOf(text.length, text.utf16Offset(note.position)) to footnoteMarker(note.text, note.label)
             }.sortedBy { it.first }
         } else {
             emptyList()
@@ -496,9 +497,12 @@ class ChapterRenderer(
      * The letter, carrying the note's text as a [FOOTNOTE_TAG] annotation — as Swift carries it in the
      * `.footnote` attribute — so a tap on the letter can find what to show without a second lookup.
      */
-    private fun footnoteMarker(note: String): AnnotatedString {
-        footnoteCounter += 1
-        val label = LETTERS[(footnoteCounter - 1) % LETTERS.length].toString()
+    private fun footnoteMarker(note: String, given: String? = null): AnnotatedString {
+        // A note with its own mark (the NASB's *) takes no letter.
+        val label = given ?: run {
+            footnoteCounter += 1
+            LETTERS[(footnoteCounter - 1) % LETTERS.length].toString()
+        }
         val markerSize = maxOf(9f, size * 0.55f)
         val marker = AnnotatedString.Builder()
         marker.pushStringAnnotation(FOOTNOTE_TAG, note)
@@ -538,6 +542,17 @@ class ChapterRenderer(
             } else {
                 caps[it] = 1
                 chars[it] = chars[it].lowercaseChar()
+            }
+        }
+
+        /** A quotation: lowercase letters become small capitals, capitals stay as they are. */
+        fun quotation(range: IntRange, synthetic: Boolean) = range.forEach {
+            if (!chars[it].isLowerCase()) return@forEach
+            if (synthetic) {
+                caps[it] = 2
+                chars[it] = chars[it].uppercaseChar()
+            } else {
+                caps[it] = 1
             }
         }
 

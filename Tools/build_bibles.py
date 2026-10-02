@@ -463,7 +463,7 @@ class Parser:
                         if cut and "s" in frag:
                             frag["s"] = [[s, min(l, len(stripped) - s), st] for s, l, st in frag["s"] if s < len(stripped)]
                         if "fn" in frag:
-                            frag["fn"] = [[min(p, len(stripped)), n] for p, n in frag["fn"]]
+                            frag["fn"] = [[min(note[0], len(stripped)), *note[1:]] for note in frag["fn"]]
                     block["f"] = [f for f in block["f"] if f["t"] or f.get("n") or f.get("fn")]
                     if not block["f"]:
                         continue
@@ -576,6 +576,10 @@ _BOOK_CACHE = {}
 def books_for(tid):
     if tid not in _BOOK_CACHE:
         t = next(t for t in TRANSLATIONS + LICENSED if t["id"] == tid)
+        if t.get("lockman"):
+            import lockman  # Lockman's own coded text, not USFM (Tools/lockman.py)
+            _BOOK_CACHE[tid] = lockman.load(t["lockman"], markers=t.get("markers"))
+            return _BOOK_CACHE[tid]
         # The corrections are for the BSB's USFM; only its load says whether they still apply.
         _BOOK_CACHE[tid] = load_books(t.get("usfm") or os.path.join(SOURCE_DIR, t["zip"]), report_corrections=tid == "BSB")
     return _BOOK_CACHE[tid]
@@ -1205,10 +1209,15 @@ LICENSED = []
 
 
 def build_licensed(arguments):
-    """Builds a licensed translation's store from the publisher's USFM, outside this repository.
+    """Builds a licensed translation's store from the publisher's files, outside this repository.
 
         python3 Tools/build_bibles.py --licensed NASB2020 --usfm ~/secure/nasb/NASB2020-usfm.zip \\
             --out-dir ~/secure/nasb
+        python3 Tools/build_bibles.py --licensed NASB2020 --lockman ~/secure/nasb/NASB2020.txt \\
+            --out-dir ~/secure/nasb
+
+    --lockman reads The Lockman Foundation's coded text file (or their zip holding it); see
+    Tools/lockman.py. Its report names references and codes only, never the text.
 
     Identity comes from Tools/licensed/*.json, so the store is named exactly as its licence says.
     Then seal it with `Tools/package_translation.py licensed`, which checks the edition again.
@@ -1216,19 +1225,22 @@ def build_licensed(arguments):
     def value(flag):
         index = arguments.index(flag)
         return os.path.expanduser(arguments[index + 1])
-    edition_id, usfm, out_dir = value("--licensed"), value("--usfm"), os.path.abspath(value("--out-dir"))
+    edition_id, out_dir = value("--licensed"), os.path.abspath(value("--out-dir"))
+    source = ("lockman", value("--lockman")) if "--lockman" in arguments else ("usfm", value("--usfm"))
     if out_dir == ROOT or out_dir.startswith(ROOT + os.sep):
         sys.exit(f"Refusing to write {edition_id} inside the repository ({out_dir}): its text must never be committed.")
-    edition = None
+    edition, markers = None, None
     licensed_dir = os.path.join(ROOT, "Tools", "licensed")
     for name in sorted(os.listdir(licensed_dir)):
         if name.endswith(".json"):
             with open(os.path.join(licensed_dir, name), encoding="utf-8") as handle:
-                edition = json.load(handle)["editions"].get(edition_id) or edition
+                config = json.load(handle)
+                if edition_id in config["editions"]:
+                    edition, markers = config["editions"][edition_id], config.get("markers")
     if edition is None:
         sys.exit(f"No licensed edition called {edition_id} in Tools/licensed/.")
     translation = {key: edition[key] for key in ("id", "name", "abbreviation", "copyright", "license")}
-    translation.update(source=edition["link"], usfm=usfm)
+    translation.update({"source": edition["link"], source[0]: source[1], "markers": markers})
     LICENSED.append(translation)
     build(translation, output_dir=out_dir)
 

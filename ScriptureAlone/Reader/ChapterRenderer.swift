@@ -381,6 +381,16 @@ enum ChapterRenderer {
                     break
                 }
             }
+            // After italics, so a quotation with supplied words keeps both.
+            for span in fragment.spans where span.style == .quotation {
+                let start = fragment.text.utf16Offset(ofScalar: span.start)
+                let end = fragment.text.utf16Offset(ofScalar: span.start + span.length)
+                let range = NSRange(location: start, length: max(0, end - start))
+                guard range.upperBound <= text.length else { continue }
+                text.enumerateAttribute(.font, in: range) { value, run, _ in
+                    text.addAttribute(.font, value: ((value as? PlatformFont) ?? font).smallCaps, range: run)
+                }
+            }
             applyDivineNameSmallCaps(text, font: font)
 
             if style.footnotes {
@@ -388,7 +398,7 @@ enum ChapterRenderer {
                 // never shifts the position of one still to come. Doing both in the reversed loop
                 // lettered a verse with two notes "b … a" — Genesis 5:2 and 344 other BSB verses.
                 let markers = fragment.footnotes.map { note in
-                    (position: note.position, marker: footnoteMarker(note.text, verse: key))
+                    (position: note.position, marker: footnoteMarker(note.text, label: note.label, verse: key))
                 }
                 for (position, marker) in markers.reversed() {
                     let at = min(text.length, fragment.text.utf16Offset(ofScalar: position))
@@ -459,10 +469,15 @@ enum ChapterRenderer {
 
         static let divineName = try! NSRegularExpression(pattern: #"\b(LORD|GOD)(?=\b|’|')"#)
 
-        private mutating func footnoteMarker(_ note: String, verse: Int) -> NSAttributedString {
-            footnoteCounter += 1
-            let letters = Array("abcdefghijklmnopqrstuvwxyz")
-            let label = String(letters[(footnoteCounter - 1) % letters.count])
+        private mutating func footnoteMarker(_ note: String, label given: String?, verse: Int) -> NSAttributedString {
+            let label: String
+            if let given {
+                label = given  // its own mark (the NASB's *), which takes no letter
+            } else {
+                footnoteCounter += 1
+                let letters = Array("abcdefghijklmnopqrstuvwxyz")
+                label = String(letters[(footnoteCounter - 1) % letters.count])
+            }
             return NSAttributedString(string: label, attributes: [
                 .font: PlatformFont.systemFont(ofSize: max(9, style.size * 0.55), weight: .medium),
                 .foregroundColor: style.palette.secondary,

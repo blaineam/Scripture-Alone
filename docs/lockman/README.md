@@ -25,15 +25,36 @@ us, and how the text gets from Lockman into the app without breaking any of it.
 
 ## Getting the text in, safely
 
-1. **Lockman sends the files** in USFM (preferred), USX or OSIS. These are the industry-standard
-   formats Bible publishers already produce for the Digital Bible Library, Paratext and CrossWire.
-   Keep the files on your own machine, in an encrypted location, and nowhere else.
-2. **Build a store outside the repository**, from the zip or folder of USFM files. The tool refuses
-   to write inside the repository:
+1. **Lockman sends the files** as one coded text file per edition — `NASB 2020(b+n-r-num)(…).txt`,
+   in a zip with two Word documents that define the codes ("Codes NC") and the front matter. The
+   codes are Lockman's "Short Codes for LSB/NASB/LBLA/NBLA/AMP"; `Tools/lockman.py` documents how
+   each one maps onto the reader's layout. Keep the files on your own machine, in an encrypted
+   location, and nowhere else.
+2. **Build a store outside the repository**, straight from Lockman's zip or the .txt in it. The tool
+   refuses to write inside the repository:
 
    ```sh
-   python3 Tools/build_bibles.py --licensed NASB2020 --usfm ~/secure/nasb/nasb2020-usfm.zip --out-dir ~/secure/nasb
+   python3 Tools/build_bibles.py --licensed NASB2020 \
+     --lockman ~/secure/nasb/"NASB 2020 (b+n-r-num)(08-12-26).zip" --out-dir ~/secure/nasb
    ```
+
+   Its report names verse references, codes and counts — never a word of the text — so it is safe
+   to share when something needs fixing. It stops on a code it doesn't know or on code characters
+   left in a verse. If the parser needs to learn something new about the file, run
+   `python3 Tools/lockman_probe.py <file.txt>` and share its output instead of the text: it prints
+   the file's structure (codes, positions, punctuation counts, versification against the KJV) only.
+
+   How the codes are presented:
+   - Footnotes (`<$F … $E>`) become the reader's lettered notes; their `<FN>` chapter:verse prefix
+     and the superior numbers and letters are dropped.
+   - `*` (a historical present) is taken out of the verse text, so search, speech and sharing read
+     cleanly, and shown as a tappable `*` note explaining it (`markers` in `Tools/licensed/nasb.json`).
+   - Small caps: in the Old Testament they set LORD and GOD, uppercased so plain text keeps them
+     apart from "Lord"; in the New Testament they mark Old Testament quotations, drawn in small caps.
+   - Continuing quotes marked `+` are verse-format only: kept in single-verse text (sharing, Verse of
+     the Day), removed from the paragraph layout. Those marked `-` are kept.
+   - The thirteen verses the NASB 2020 moves to footnotes (Matthew 17:21 and others) have no text,
+     as in print; the NASB 1995 has them all.
 
 3. **Create the secret seed once, without anyone seeing it.** `SA_CONTENT_KEY_SEED` is the secret
    Xcode Cloud compiles in (`ci_scripts/ci_post_clone.sh`). On your Mac, these commands create it
