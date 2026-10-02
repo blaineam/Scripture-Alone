@@ -21,6 +21,13 @@ enum WatchLinkKeys {
     /// Phone → watch, application context: the reader's accent colour, as 0xRRGGBB (its dark-page
     /// value, the watch's face being always dark).
     nonisolated static let accent = "accent"
+    /// Watch → phone, application context: the translations inside the watch app, which the phone
+    /// never sends. A watch app that doesn't say (1.1.0 and earlier) carries `legacyBundled`.
+    nonisolated static let bundled = "bundled"
+    nonisolated static let legacyBundled = ["ASV", "BSB", "KJV"]
+    /// Translations sent as their sealed package (`<id>.sabible`) rather than a compact edition: the
+    /// licensed text stays encrypted on the watch too, and the ASV is only ever a package.
+    nonisolated static let sealed: Set<String> = ["ASV", "NASB1995", "NASB2020"]
     /// Phone → watch, file metadata: a fingerprint of the store the edition was made from.
     nonisolated static let version = "version"
     /// Phone → watch, file metadata: "import" for a translation the reader imported, otherwise absent.

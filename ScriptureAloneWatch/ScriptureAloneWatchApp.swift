@@ -91,12 +91,16 @@ enum WatchRoute: Hashable {
 
 /// The Bible the watch reads, in whichever translation the reader chose.
 ///
-/// **Editions.** The watch bundles a compact edition of each translation the phone bundles — ASV,
-/// BSB and KJV (`Tools/build_companion_data.py`): verse text and red letters, without the phone's
-/// layout JSON or search index, about 4.5 MB each. A translation the reader imported on the phone
-/// has no bundled edition, so the phone writes one with `WatchEdition` and sends it over
-/// WatchConnectivity (`WatchPhoneLink`); it lands in `receivedDirectory` and reads through the very
-/// same `BibleStore`.
+/// **Editions.** The watch carries one Bible of its own: the NASB 2020, sealed exactly as the phone
+/// ships it (`NASB2020.sabible` with the key it was signed with and the build's secret seed), so it
+/// is what a new watch opens to, encrypted at rest and readable before it has ever met the phone.
+/// Everything else comes from the phone over WatchConnectivity (`WatchPhoneLink`) when the reader
+/// uses it there, into `receivedDirectory`:
+/// - the ASV and the NASB 1995 as the sealed packages the phone downloaded (`<id>.sabible`), checked
+///   against the signing keys the watch carries;
+/// - the BSB, the KJV, the language Bibles and imports as compact editions written by `WatchEdition`
+///   (`<id>-Watch.sqlite`): verse text and red letters, about 4.5 MB each.
+/// Both read through `ChapterTextSource`, so nothing past this type knows the difference.
 ///
 /// **Which one is shown.** The most recent choice the watch can actually show wins: the reader
 /// picking one here, or the phone reporting that they switched there. So switching to the KJV on
@@ -105,9 +109,15 @@ enum WatchRoute: Hashable {
 /// forbid storing it — is remembered but not applied, and the watch keeps what it had.
 @Observable
 final class WatchBible {
-    /// Translations with a compact edition in the watch bundle. The phone skips sending these.
-    nonisolated static let bundledIDs = ["ASV", "BSB", "KJV"]
-    nonisolated static let fallback = "ASV"
+    /// Translations inside the watch app. The phone skips sending these.
+    nonisolated static let bundledIDs = ["NASB2020"]
+    nonisolated static let fallback = "NASB2020"
+
+    /// Translations the phone sends as sealed packages rather than compact editions.
+    nonisolated static let sealedIDs = WatchLinkKeys.sealed
+
+    /// Seeds the ASV's content key: published on purpose (see `SealedTranslations` on the phone).
+    nonisolated static let publishedSeed = Data("SCRIPTURE-ALONE-BUNDLED-SEED-v1".utf8)
 
     struct Edition: Identifiable, Hashable {
         let id: String
@@ -125,43 +135,52 @@ final class WatchBible {
 
     private(set) var editions: [Edition] = []
     private(set) var translation: String = WatchBible.fallback
-    private(set) var store: BibleStore?
+    private(set) var store: (any ChapterTextSource)?
 
     /// The phone's translation, even when the watch can't show it, for the picker to explain.
     private(set) var phoneTranslation: String?
 
-    @ObservationIgnored private var stores: [String: BibleStore] = [:]
+    @ObservationIgnored private var stores: [String: any ChapterTextSource] = [:]
     @ObservationIgnored private let defaults = UserDefaults.standard
 
     init() { reloadEditions() }
 
     /// Editions the phone sent. Documents rather than Caches: the system may clear Caches, and a
-    /// translation the reader chose should not silently revert to the ASV.
+    /// translation the reader chose should not silently revert.
     nonisolated static var receivedDirectory: URL {
         let url = URL.documentsDirectory.appending(path: "Translations")
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         return url
     }
 
+    /// Where a received translation lands: its sealed package, or its compact edition.
     nonisolated static func receivedURL(for id: String) -> URL {
-        receivedDirectory.appending(path: "\(id)-Watch.sqlite")
+        receivedDirectory.appending(path: sealedIDs.contains(id) ? "\(id).sabible" : "\(id)-Watch.sqlite")
     }
 
     func reloadEditions() {
         let bundled = Self.bundledIDs.compactMap { id -> Edition? in
-            guard let url = Bundle.main.url(forResource: "\(id)-Watch", withExtension: "sqlite"),
-                  let store = open(id: id, url: url) else { return nil }
-            return Edition(id: id, name: store.info.name, abbreviation: store.info.abbreviation, url: url, bundled: true)
+            guard let url = Bundle.main.url(forResource: id, withExtension: "sabible"),
+                  let source = open(id: id, url: url) else { return nil }
+            return Edition(id: id, name: source.info.name, abbreviation: source.info.abbreviation, url: url, bundled: true)
         }
         let files = (try? FileManager.default.contentsOfDirectory(
             at: Self.receivedDirectory, includingPropertiesForKeys: nil)) ?? []
         let received = files
-            .filter { $0.lastPathComponent.hasSuffix("-Watch.sqlite") }
             .compactMap { url -> Edition? in
-                let id = String(url.lastPathComponent.dropLast("-Watch.sqlite".count))
+                let name = url.lastPathComponent
+                let id: String
+                if name.hasSuffix("-Watch.sqlite") {
+                    id = String(name.dropLast("-Watch.sqlite".count))
+                } else if name.hasSuffix(".sabible") {
+                    id = String(name.dropLast(".sabible".count))
+                    guard Self.sealedIDs.contains(id) else { return nil }
+                } else {
+                    return nil
+                }
                 // A bundled translation always reads from the bundle; a stray copy is ignored.
-                guard !Self.bundledIDs.contains(id), let store = open(id: id, url: url) else { return nil }
-                return Edition(id: id, name: store.info.name, abbreviation: store.info.abbreviation, url: url, bundled: false)
+                guard !Self.bundledIDs.contains(id), let source = open(id: id, url: url) else { return nil }
+                return Edition(id: id, name: source.info.name, abbreviation: source.info.abbreviation, url: url, bundled: false)
             }
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         editions = bundled + received
@@ -256,7 +275,7 @@ final class WatchBible {
             store = editions.first { $0.id == pick }.flatMap { open(id: $0.id, url: $0.url) }
         }
         // Book names in the Bible's own language (a French edition from the phone reads "Jean").
-        BookNames.use(language: store?.language ?? Locale.preferredLanguages.first)
+        BookNames.use(language: (store as? BibleStore)?.language ?? Locale.preferredLanguages.first)
         publishVerseOfDay()
     }
 
@@ -273,11 +292,28 @@ final class WatchBible {
         if AppGroup.write(snapshot) { WidgetCenter.shared.reloadAllTimelines() }
     }
 
-    private func open(id: String, url: URL) -> BibleStore? {
+    private func open(id: String, url: URL) -> (any ChapterTextSource)? {
         if let cached = stores[id] { return cached }
-        let store = try? BibleStore(url: url)
-        stores[id] = store
-        return store
+        let source: (any ChapterTextSource)? = url.pathExtension == "sabible"
+            ? Self.openSealed(id: id, url: url)
+            : try? BibleStore(url: url)
+        stores[id] = source
+        return source
+    }
+
+    /// Opens a sealed package as the phone does, against the one key it was signed with: the ASV's
+    /// (`bundled-signing.pub`, published seed) or a licensed edition's own (`<id>-signing.pub`, the
+    /// build's secret seed). The content key is derived in memory: the watch has no vault to seal it
+    /// in, and the floor it would raise is the same one the binary already sets.
+    private static func openSealed(id: String, url: URL) -> TranslationPackage? {
+        let licensed = id != "ASV"
+        let seed = licensed ? ContentKeySeed.data : publishedSeed
+        guard let seed,
+              let keyURL = Bundle.main.url(forResource: licensed ? "\(id)-signing" : "bundled-signing", withExtension: "pub"),
+              let key = try? Data(contentsOf: keyURL),
+              let keyring = try? PublisherKeyring(rawPublicKeys: [key]) else { return nil }
+        return try? TranslationPackage.open(url: url, keyring: keyring,
+                                            contentKey: ContentKeyVault.deriveContentKey(seed: seed, account: id))
     }
 
     private enum Keys {
@@ -288,7 +324,7 @@ final class WatchBible {
     }
 
     /// How the Bible on the watch numbers its verses against the KJV keys marks are stored under —
-    /// identity for the ASV, BSB and KJV; a locale Bible sent from the phone carries its `kjv_map`.
+    /// the package's or edition's own, as on the phone.
     var numbering: VerseNumbering { store?.numbering ?? .identity }
 
     /// Verses by **KJV key** — a favorite, a note's passage, the verse of the day.

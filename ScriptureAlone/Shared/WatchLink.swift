@@ -6,13 +6,14 @@ import ScriptureAloneCore
 /// The phone's end of WatchConnectivity: tells the watch which translation the reader is using,
 /// and keeps the watch holding every translation the reader imported.
 ///
-/// The watch already bundles compact editions of the ASV, BSB and KJV, so for those only the
-/// choice is sent. Each imported translation is written as a `WatchEdition` (about a third of the
-/// full store's size) and transferred — only when its terms allow offline storage, and only when
-/// the watch reports it doesn't already hold that version. The list of imports travels too, so one
-/// removed on the phone (or on another device, through iCloud) is removed from the watch. A
-/// language Bible is sent when it is the one being read. An online translation is never sent: its
-/// terms forbid storing it, and it has no file.
+/// The watch app carries the NASB 2020 (and, before 1.1.1, the ASV, BSB and KJV — it says which,
+/// `WatchLinkKeys.bundled`), so for those only the choice is sent. Any other translation the reader
+/// uses is sent when the watch reports it doesn't already hold that version: the ASV and the NASB
+/// 1995 as the sealed packages downloaded here, encrypted on the watch as on the phone; the BSB, the
+/// KJV, the language Bibles and imports as a `WatchEdition` (about a third of the full store's size),
+/// only when their terms allow offline storage. The list of imports travels too, so one removed on
+/// the phone (or on another device, through iCloud) is removed from the watch. An online translation
+/// is never sent: its terms forbid storing it, and it has no file.
 ///
 /// See `WatchPhoneLink` on the watch for why the choice travels as application context and the
 /// edition as a file transfer.
@@ -92,9 +93,15 @@ final class WatchLink: NSObject {
 
     private func sendEditionIfNeeded(_ entry: TranslationEntry) {
         guard let session, session.activationState == .activated, session.isPaired, session.isWatchAppInstalled,
-              let url = entry.url, Self.isImported(url) || Self.isLocaleBible(entry.id),
               WatchLinkKeys.isSafeID(entry.id) else { return }
         let context = session.receivedApplicationContext
+        let inWatchApp = context[WatchLinkKeys.bundled] as? [String] ?? WatchLinkKeys.legacyBundled
+        guard !inWatchApp.contains(entry.id) else { return }
+        // A sealed translation goes as the package itself, once it has been downloaded here.
+        let sealed = WatchLinkKeys.sealed.contains(entry.id)
+        let packageFile = sealed ? AssetPack(translationID: entry.id).flatMap { AssetLibrary.shared.url(of: $0) } : nil
+        guard let url = sealed ? packageFile : entry.url,
+              sealed || Self.isImported(url) || Self.isPackBible(entry.id) else { return }
         let held = context[WatchLinkKeys.editions] as? [String] ?? []
         let versions = context[WatchLinkKeys.editionVersions] as? [String: String]
         let imported = Self.isImported(url)
@@ -109,6 +116,16 @@ final class WatchLink: NSObject {
         let id = entry.id
         let heldVersion = versions?[id]
         Task.detached(priority: .utility) {
+            if sealed {
+                // Copied aside first: the transfer reads the file until it is done, and the reader may
+                // remove the download meanwhile.
+                let copy = URL.cachesDirectory.appending(path: "WatchEditions/\(id).sabible")
+                try? FileManager.default.createDirectory(at: copy.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try? FileManager.default.removeItem(at: copy)
+                guard (try? FileManager.default.copyItem(at: url, to: copy)) != nil else { return }
+                await self.transfer(copy, metadata: [WatchLinkKeys.translation: id])
+                return
+            }
             guard let store = try? BibleStore(url: url), store.info.rights.allowOfflineStorage else { return }
             let version = imported ? ImportedBibleSync.fingerprint(of: url) : nil
             if let version, version == heldVersion { return }
@@ -130,10 +147,11 @@ final class WatchLink: NSObject {
         _ = session.transferFile(edition, metadata: metadata)
     }
 
-    /// The big-8 locales' Bibles (docs/localization.md) aren't bundled on the watch — it carries the
-    /// ASV, BSB and KJV — so the phone sends them as editions too, with their verse numbering.
-    private static func isLocaleBible(_ id: String) -> Bool {
-        AssetPack(translationID: id)?.locale != nil
+    /// The Bibles the phone downloads as asset packs — the BSB, the KJV and the big-8 locales' Bibles
+    /// (docs/localization.md) — aren't in the watch app, so the phone sends them as editions, with
+    /// their verse numbering.
+    private static func isPackBible(_ id: String) -> Bool {
+        AssetPack(translationID: id) != nil
     }
 
     /// Imported translations live in `ImportedLibrary.directory`; bundled ones are inside the app.

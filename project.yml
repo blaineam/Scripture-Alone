@@ -256,6 +256,18 @@ targets:
         excludes:
           - "Info.plist"
           - "*.entitlements"
+          # Since 1.1.1 the watch carries only the NASB 2020; the phone sends the ASV, BSB, KJV and the
+          # rest when the reader uses them (WatchLink). The editions stay in the repository as
+          # build_companion_data.py's output, for Wear OS's tests.
+          - "Resources/*-Watch.sqlite"
+      # The sealed NASB 2020 (copied in by CI, never committed) and the signing keys of every sealed
+      # translation the watch may hold. The ASV and NASB 1995 packages themselves come from the phone.
+      - path: ScriptureAlone/Resources/Packages
+        excludes:
+          - "ASV.sabible"
+          - "NASB1995.sabible"
+      # The build's secret seed, which opens the licensed packages (written by ci_post_clone.sh).
+      - ScriptureAlone/Generated/ContentKeySeed.swift
       - ScriptureAlone/Persistence/Models.swift
       - ScriptureAlone/Shared/DemoLibrary.swift
       - ScriptureAlone/Shared/DailyVerseLibrary.swift

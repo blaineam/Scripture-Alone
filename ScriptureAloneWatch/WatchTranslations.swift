@@ -3,13 +3,14 @@ import WatchConnectivity
 import ScriptureAloneCore
 
 /// The watch's end of WatchConnectivity: which translation the reader is using on the phone, and
-/// the compact editions the phone sends of translations the reader imported.
+/// the translations the phone sends: compact editions of imports and of the Bibles the watch doesn't
+/// carry, and the sealed ASV and NASB 1995 packages.
 ///
 /// Two channels, each chosen for what it carries:
 /// - **Application context** for the phone's current translation. It holds only the latest value
 ///   and is delivered the next time the watch app runs, which is exactly the semantics of "what
 ///   is the reader using now" — a stale value is never replayed after a newer one.
-/// - **File transfer** for an imported translation's edition, a few megabytes that must arrive
+/// - **File transfer** for a translation's edition or sealed package, megabytes that must arrive
 ///   intact even if the watch is out of range when it is sent.
 ///
 /// The watch reports back which editions it holds, so the phone sends a translation only when the
@@ -68,7 +69,8 @@ final class WatchPhoneLink: NSObject {
         guard let session, session.activationState == .activated, let bible else { return }
         let received = bible.editions.filter { !$0.bundled }.map(\.id)
         try? session.updateApplicationContext([WatchLinkKeys.editions: received,
-                                               WatchLinkKeys.editionVersions: WatchBible.receivedVersions()])
+                                               WatchLinkKeys.editionVersions: WatchBible.receivedVersions(),
+                                               WatchLinkKeys.bundled: WatchBible.bundledIDs])
     }
 }
 
