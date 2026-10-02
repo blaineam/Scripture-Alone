@@ -116,6 +116,14 @@ class LockmanTests(unittest.TestCase):
         self.assertEqual(blocks[1]["f"][0]["t"], "“Quo.”")              # - quote kept
         self.assertEqual(parser.stats["continuing quotes removed (+)"], 1)
 
+    def test_continuing_quote_inside_double_brackets(self):
+        books, _ = parse(
+            "<CN>CHAPTER 1</CN>\r\n"
+            "<C>{{@::1}}1<T>He said, “Vop.\r\n"
+            "<V>{{@::1}}2<T>[[+“Zib.”]]\r\n")
+        self.assertEqual(chapter(books)[0]["f"][1]["t"], "[[Zib.”]]")
+        self.assertEqual(books["GEN"].verses[(1, 2)]["t"], "[[“Zib.”]]")
+
     def test_dash_macron_and_asterisk_marker(self):
         books, parser = parse(
             "<CN>CHAPTER 1</CN>\r\n"
@@ -169,7 +177,7 @@ class LockmanTests(unittest.TestCase):
     def test_check_reports_references_not_text(self):
         books, _ = parse("<CN>CHAPTER 1</CN>\r\n<C>{{@::1}}1<T>Secretword + stray.\r\n")
         problems = lockman.check(books)
-        self.assertEqual(problems["code characters left in the text"], ["GEN 1:1"])
+        self.assertEqual(problems["code characters left in the text {'+'}"], ["GEN 1:1"])
         self.assertNotIn("Secretword", repr(problems))
 
 

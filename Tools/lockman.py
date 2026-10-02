@@ -49,7 +49,9 @@ NAMES_FROM = os.path.join(ROOT, "ScriptureAlone", "Resources", "Bibles", "ASV.sq
 VERSE = re.compile(r"\{\{(\d+)::(\d+)\}\}(\d+)(?:<T>|\^)?")
 TOKEN = re.compile(r"\{\{\d+::\d+\}\}\d+(?:<T>|\^)?|<\$F|\$E>|<[^<>\s]{1,6}>|[{}]")
 MACRON = re.compile(r"(.)<L[BE]>")
-CONTINUING = re.compile(r"^(\s*)((?:[+-][“‘])+)")
+# A continuing quote opens the verse, after any brackets around a verse probably not in the
+# original: "[[+“…" (Mark 11:26 and Luke 17:36 in the NASB 2020).
+CONTINUING = re.compile(r"^(\s*\[*)((?:[+-][“‘])+)")
 # Characters that only ever belong to codes. Left in the text, they mean a code was not understood.
 STRAY = re.compile(r"[<>$\\{}=%@¶|^~_+]")
 
@@ -485,6 +487,11 @@ class LockmanParser:
             append_span(entry["s"], start, len(text), "r")
 
 
+def stray(text):
+    """Which code characters are left, as a set of single characters: never the text around them."""
+    return "{" + " ".join(repr(c) for c in sorted(set(STRAY.findall(text)))) + "}"
+
+
 def check(books, expected_missing=()):
     """Problems a reader would see, as references. Never text."""
     problems = collections.defaultdict(list)
@@ -494,14 +501,15 @@ def check(books, expected_missing=()):
             if not entry["t"].strip():
                 problems["empty verse"].append(ref)
             if STRAY.search(entry["t"]):
-                problems["code characters left in the text"].append(ref)
+                problems[f"code characters left in the text {stray(entry['t'])}"].append(ref)
         for chapter, blocks in book.chapters.items():
             for block in blocks:
                 for fragment in block.get("f", []):
                     if STRAY.search(fragment["t"]):
-                        problems["code characters left in the layout"].append(f"{code} {chapter}:{fragment['v']}")
+                        problems[f"code characters left in the layout {stray(fragment['t'])}"].append(
+                            f"{code} {chapter}:{fragment['v']}")
                 if "t" in block and STRAY.search(block["t"]):
-                    problems["code characters left in a heading"].append(f"{code} {chapter}")
+                    problems[f"code characters left in a heading {stray(block['t'])}"].append(f"{code} {chapter}")
     return problems
 
 
