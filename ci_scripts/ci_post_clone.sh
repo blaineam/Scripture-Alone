@@ -73,9 +73,8 @@ else
 fi
 # ---- end licensed translations -----------------------------------------------
 
-brew install xcodegen
-xcodegen generate
-
+# The seed file must exist BEFORE xcodegen runs: XcodeGen lists the files that are on disk when it
+# generates, so one written afterwards is never compiled ("Cannot find 'ContentKeySeed' in scope").
 mkdir -p ScriptureAlone/Generated
 SEED_FILE=ScriptureAlone/Generated/ContentKeySeed.swift
 
@@ -115,3 +114,7 @@ enum ContentKeySeed {
 EMPTY
   echo "content key seed: none set, wrote an empty seed"
 fi
+
+brew install xcodegen
+xcodegen generate
+
