@@ -2,6 +2,11 @@
 """Describes the *shape* of a Lockman Foundation coded text file without printing any of its text.
 
     python3 Tools/lockman_probe.py ~/secure/nasb/"NASB 2020(b+n-r-num)(08-12-26).txt"
+    python3 Tools/lockman_probe.py FILE --around "+" 41:11:26 42:17:36
+
+--around shows, for each occurrence of a character in the given verses (book:chapter:verse, book
+numbered 1-66), only the codes and punctuation touching it: it stops at the first letter or digit on
+either side, so no word is printed. Letters are shown as a count of how many precede it in the verse.
 
 The licence forbids giving the NASB text to an AI system of any kind, including the coding agent
 that maintains Tools/lockman.py. This probe is how that agent learns the file's structure: it prints
@@ -147,7 +152,44 @@ def main(path):
         print(f"  here, not in KJV ({len(extra)}): {extra[:60]}")
 
 
+def around(path, char, refs):
+    _, text = decode(open(os.path.expanduser(path), "rb").read())
+    wanted = {tuple(int(x) for x in ref.split(":")) for ref in refs}
+    for line in text.splitlines():
+        m = VERSE.search(line)
+        if not m or (int(m.group(1)), int(m.group(2)), int(m.group(3))) not in wanted:
+            continue
+        ref = f"{int(m.group(1))}:{int(m.group(2))}:{int(m.group(3))}"
+        # Units: a whole code, or one character. Codes count as punctuation, never as letters.
+        units, pos = [], m.end()
+        for c in CODE.finditer(line, m.end()):
+            units += list(line[pos:c.start()]) + [c.group(0)]
+            pos = c.end()
+        units += list(line[pos:])
+        word = lambda u: len(u) == 1 and u.isalnum()
+        found = False
+        for i, unit in enumerate(units):
+            if unit != char:
+                continue
+            found = True
+            start = i
+            while start > 0 and not word(units[start - 1]):
+                start -= 1
+            end = i + 1
+            while end < len(units) and not word(units[end]):
+                end += 1
+            letters_before = sum(1 for u in units[:start] if len(u) == 1 and u.isalpha())
+            before = f"…{letters_before} letters…" if letters_before else "(verse start)"
+            after = "…" if end < len(units) else "(line end)"
+            print(f"  {ref}: {before} {''.join(units[start:end])!r} {after}   line starts {line[:m.start()]!r}")
+        if not found:
+            print(f"  {ref}: no {char!r}")
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) >= 5 and sys.argv[2] == "--around":
+        around(sys.argv[1], sys.argv[3], sys.argv[4:])
+    elif len(sys.argv) == 2:
+        main(sys.argv[1])
+    else:
         sys.exit(__doc__)
-    main(sys.argv[1])

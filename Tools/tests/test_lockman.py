@@ -124,6 +124,14 @@ class LockmanTests(unittest.TestCase):
         self.assertEqual(chapter(books)[0]["f"][1]["t"], "[[Zib.”]]")
         self.assertEqual(books["GEN"].verses[(1, 2)]["t"], "[[“Zib.”]]")
 
+    def test_continuing_quote_after_brackets_and_a_code(self):
+        books, _ = parse(
+            "<CN>CHAPTER 1</CN>\r\n"
+            "<C>{{@::1}}1<T>He said, “Vop.\r\n"
+            "<V>{{@::1}}2<T>[[<RS>+“Zib.”</RS>]]\r\n")
+        self.assertEqual(chapter(books)[0]["f"][1]["t"], "[[Zib.”]]")
+        self.assertEqual(books["GEN"].verses[(1, 2)]["t"], "[[“Zib.”]]")
+
     def test_dash_macron_and_asterisk_marker(self):
         books, parser = parse(
             "<CN>CHAPTER 1</CN>\r\n"

@@ -427,7 +427,9 @@ class LockmanParser:
                 verse_text = lead + marks.replace("+", "").replace("-", "") + raw[quotes.end():]
                 self.stats["continuing quotes removed (+)"] += marks.count("+")
                 self.stats["continuing quotes kept (-)"] += marks.count("-")
-            self.line_start = False
+            # Opening brackets alone ("[[" then <RS>) don't end the verse's start: the quote may follow.
+            if not re.fullmatch(r"\s*\[+\s*", raw):
+                self.line_start = False
         self.append(layout_text, verse_text)
 
     def append(self, layout_text, verse_text):
