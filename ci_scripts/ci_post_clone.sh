@@ -8,39 +8,12 @@
 set -euo pipefail
 cd "$CI_PRIMARY_REPOSITORY_PATH"
 
-# ---- nothing-to-build guard ------------------------------------------------
-# If EVERY file changed in this commit is outside the iOS app — the Android port under android/,
-# docs, or Markdown — there is nothing to build, and letting the run continue would upload an
-# identical iOS binary to TestFlight. That is not free: App Store Connect caps uploads per app per
-# day. Runs before `brew install` so a skipped run costs seconds, not minutes.
-#
-# A change to ScriptureAlone/Resources is NOT skipped even though Android reads those databases
-# too: it changes what the iOS app ships.
-#
-# NOTE: exiting non-zero is the ONLY way to stop an Xcode Cloud run early. A run that ends with
-# the banner below is a DELIBERATE SKIP, not a broken build.
-# Xcode Cloud clones shallowly, so HEAD~1 usually isn't there and the guard silently stood aside —
-# a Markdown-only commit built and uploaded build 40. Fetch the one parent commit it needs.
-if ! git rev-parse -q --verify HEAD~1 >/dev/null 2>&1; then
-  git fetch -q --deepen=1 origin 2>/dev/null || true
-fi
-if git rev-parse -q --verify HEAD~1 >/dev/null 2>&1; then
-  CHANGED="$(git diff --name-only HEAD~1 HEAD || true)"
-  RELEVANT="$(printf '%s\n' "$CHANGED" | grep -vE '^android/|(^|/)(docs|\.claude)/|\.md$' || true)"
-  if [ -n "$CHANGED" ] && [ -z "$RELEVANT" ]; then
-    echo "=============================================================="
-    echo "  BUILD SKIPPED — this is NOT a failure."
-    echo "  Nothing in this commit affects the iOS app:"
-    printf '%s\n' "$CHANGED" | sed 's/^/    /'
-    echo "  Stopping now instead of uploading an identical binary."
-    echo "=============================================================="
-    exit 1
-  fi
-  echo "nothing-to-build guard: iOS-relevant changes present, building"
-else
-  echo "nothing-to-build guard: no parent commit reachable, building (cannot tell what changed)"
-fi
-# ---- end guard -------------------------------------------------------------
+# ---- nothing-to-build: decided by the workflow, not here --------------------
+# The Xcode Cloud "Main" workflow's start condition does not start when every changed file is
+# docs, screenshots, Monkr, Android or Markdown (DO_NOT_START_IF_ALL_FILES_MATCH), so a commit with
+# nothing for the iOS app never reaches this script. A guard here that compared HEAD~1..HEAD did
+# nothing for automatic starts and only broke manual ones: "Start Build" builds the branch head,
+# and when that head was a screenshots commit the run stopped itself (1.1.1, run #118). Removed.
 
 # ---- licensed translations ---------------------------------------------------
 # The NASB 2020 and NASB 1995 (docs/lockman/README.md) ship sealed, but their packages are never in
