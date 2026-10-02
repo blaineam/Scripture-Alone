@@ -71,7 +71,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.1.0 — The first release of Scripture Alone for Android.
+1.1.1 — The New American Standard Bible — NASB 2020 is now built in, and it's what Scripture Alone opens to, on your phone, your Wear OS watch and your widgets. The NASB 1995 is a download away, with the ASV, BSB and KJV. The app itself is smaller: every Bible but the NASB 2020 downloads the first time you choose it. Included by permission of The Lockman Foundation.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->
