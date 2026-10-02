@@ -7,14 +7,15 @@ import ScriptureAloneCore
 /// Content delivered as Apple-hosted Background Assets packs rather than inside the app.
 ///
 /// **What ships where.** The app binary carries the code, the maps and timeline data, the cross
-/// reference index's neighbours, the pinned signing key and the sealed ASV — the translation a
-/// fresh install opens to, so it reads offline before it has ever reached a network. The other
-/// Bibles and the study databases are packs:
+/// reference index's neighbours, the pinned signing keys and the sealed NASB 2020 — the translation a
+/// fresh install opens to, so it reads offline before it has ever reached a network. Every other
+/// Bible, and the study databases, are packs:
 ///
 /// | Pack | Policy | Why |
 /// |---|---|---|
-/// | ASV | none — in the app | It was `essential`, and App Review's iPad launched to a spinner that
-///   never ended (1.0.0 build 40). `.asv` stays so a copy an earlier build left behind still opens. |
+/// | ASV, NASB 1995 | `onDemand` | Sealed packages, opened by `SealedTranslations` once copied out. Their
+///   signing keys stay in the app. Never what a fresh install opens to: an `essential` ASV left App
+///   Review's iPad on an endless spinner (1.0.0 build 40). |
 /// | BSB, KJV | `onDemand` | Fetched the first time the reader chooses one. |
 /// | Commentary, Original Languages | `onDemand` | 55 MB many readers never open. |
 ///
@@ -48,6 +49,9 @@ enum AssetPack: String, CaseIterable, Sendable {
     case krv
     case blivre
     case riv1927
+    /// The licensed NASB 1995, sealed (docs/lockman/README.md). Its package is uploaded to App Store
+    /// Connect from private storage, never from this repository.
+    case nasb1995
 
     /// Every translation delivered as a pack, in the order the Translations screen lists them.
     static let translations: [AssetPack] = [.bsb, .kjv, .cuvs, .bungo, .lut1912, .lsg, .rvr1909, .krv, .blivre, .riv1927]
@@ -66,6 +70,7 @@ enum AssetPack: String, CaseIterable, Sendable {
         case .krv: "KRV"
         case .blivre: "BLIVRE"
         case .riv1927: "RIV1927"
+        case .nasb1995: "NASB1995"
         case .commentary, .interlinear: nil
         }
     }
@@ -147,6 +152,10 @@ enum AssetPack: String, CaseIterable, Sendable {
         }
     }
 
+    /// A sealed package (`.sabible`) rather than a database: opened by `SealedTranslations` once it is
+    /// copied out, not by `BibleStore`.
+    var isSealed: Bool { file.hasSuffix(".sabible") }
+
     /// The pack for a bundled translation, or nil for anything else.
     init?(translationID: String) {
         guard let pack = AssetPack.allCases.first(where: { $0.translationID == translationID }) else { return nil }
@@ -158,6 +167,7 @@ enum AssetPack: String, CaseIterable, Sendable {
     var file: String {
         switch self {
         case .asv: "ASV.sabible"
+        case .nasb1995: "NASB1995.sabible"
         case .bsb: "BSB.sqlite"
         case .kjv: "KJV.sqlite"
         case .commentary: "Study.sqlite"
@@ -182,6 +192,8 @@ enum AssetPack: String, CaseIterable, Sendable {
         case .krv: "개역한글"
         case .blivre: "Bíblia Livre"
         case .riv1927: "Riveduta 1927"
+        // Never "NASB" alone: the agreement allows the name only with its year.
+        case .nasb1995: "New American Standard Bible — NASB 1995"
         }
     }
 
@@ -201,6 +213,7 @@ enum AssetPack: String, CaseIterable, Sendable {
         case .krv: 20
         case .blivre: 13
         case .riv1927: 14
+        case .nasb1995: 18
         }
     }
 

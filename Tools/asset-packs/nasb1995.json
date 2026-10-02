@@ -1,0 +1,15 @@
+{
+  "assetPackID": "nasb1995",
+  "downloadPolicy": {
+    "onDemand": {}
+  },
+  "fileSelectors": [
+    {
+      "fileSource": "NASB1995.sabible",
+      "fileDestination": "NASB1995.sabible"
+    }
+  ],
+  "platforms": [
+    "iOS"
+  ]
+}

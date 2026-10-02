@@ -5,8 +5,13 @@ import ScriptureAloneCore
 
 /// The translations the app ships as signed, encrypted packages rather than as plain databases.
 ///
-/// The American Standard Version is one of them, and it is the translation the app opens by
-/// default. That is the whole point. A sealed sample sitting beside the real translations would
+/// Where each package comes from: the NASB 2020 is inside the app binary — it is what a fresh
+/// install opens to. The ASV and the NASB 1995 are on-demand Background Assets packs
+/// (`AssetLibrary`), opened here once they have been downloaded and copied out; their signing keys
+/// stay in the app either way.
+///
+/// The American Standard Version was the first of them, and was for a long time the translation
+/// the app opened by default. That was the point. A sealed sample sitting beside the real translations would
 /// prove only that the code path compiles; shipping a translation this way means every reader
 /// exercises it on every launch, and a fault in it would be the first thing anyone noticed rather
 /// than the last.
@@ -25,11 +30,12 @@ final class SealedTranslations {
     static let shared = SealedTranslations()
 
     /// Translations the app is licensed to ship sealed (docs/lockman/README.md). Their packages are
-    /// never in this repository: Xcode Cloud copies them into `Resources/Packages/` at build time
-    /// (ci_scripts/ci_post_clone.sh), together with the one-time signing key each was sealed with
-    /// (`<id>-signing.pub`), and their content key comes from the build's secret seed
-    /// (`ContentKeySeed`), never from the published one below. A build without them simply doesn't
-    /// offer them, and the ASV is the default as before.
+    /// never in this repository: Xcode Cloud copies the NASB 2020's into `Resources/Packages/` at
+    /// build time (ci_scripts/ci_post_clone.sh), and the NASB 1995's is an asset pack uploaded from
+    /// private storage. Each comes with the one-time signing key it was sealed with
+    /// (`<id>-signing.pub`, always in the app), and their content key comes from the build's secret
+    /// seed (`ContentKeySeed`), never from the published one below. A build without them simply
+    /// doesn't offer them, and the ASV is the default as before.
     /// The NASB 2020 and NASB 1995 each have their own agreement, package, signing key and notice.
     static let licensedIdentifiers = ["NASB2020", "NASB1995"]
 
@@ -43,14 +49,20 @@ final class SealedTranslations {
     /// Seeds the ASV's content key. See the note above: deliberately not a secret.
     static let seed = Data("SCRIPTURE-ALONE-BUNDLED-SEED-v1".utf8)
 
-    /// Whether this build carries everything a licensed translation needs to open: its package, the
-    /// key it was signed with, and the secret seed. Read from the bundle, not from whether the package
-    /// has opened yet, so a translation that is merely locked at launch is still the reader's default.
+    /// Whether this build carries everything a licensed translation needs to open: its package (in
+    /// the app, or as an asset pack it can download), the key it was signed with, and the secret
+    /// seed. Read from the bundle, not from whether the package has opened yet, so a translation that
+    /// is merely locked at launch is still the reader's default.
     static func ships(_ id: String) -> Bool {
         guard licensedIdentifiers.contains(id) else { return identifiers.contains(id) }
-        return Bundle.main.url(forResource: id, withExtension: "sabible") != nil
+        return (Bundle.main.url(forResource: id, withExtension: "sabible") != nil || AssetPack(translationID: id) != nil)
             && Bundle.main.url(forResource: "\(id)-signing", withExtension: "pub") != nil
             && ContentKeySeed.data != nil
+    }
+
+    /// Whether this build carries the package itself, so it opens with nothing to download.
+    static func isInApp(_ id: String) -> Bool {
+        Bundle.main.url(forResource: id, withExtension: "sabible") != nil
     }
 
     private(set) var packages: [String: TranslationPackage] = [:]
@@ -90,8 +102,9 @@ final class SealedTranslations {
             failures[id] = String(localized: "\(id) isn't in this build.", comment: "Error. %@ is a translation abbreviation, e.g. “ASV”.")
             return
         }
-        guard let packageURL = Bundle.main.url(forResource: id, withExtension: "sabible")
-                ?? AssetPack(translationID: id).flatMap({ AssetLibrary.shared.url(of: $0) }) else {
+        let bundled = Bundle.main.url(forResource: id, withExtension: "sabible")
+        let pack = AssetPack(translationID: id)
+        guard let packageURL = bundled ?? pack.flatMap({ AssetLibrary.shared.url(of: $0) }) else {
             failures[id] = String(localized: "\(id) isn't in this build.", comment: "Error. %@ is a translation abbreviation, e.g. “ASV”.")
             return
         }
@@ -102,6 +115,10 @@ final class SealedTranslations {
             failures[id] = nil
         } catch {
             failures[id] = error.localizedDescription
+            // A downloaded copy that won't open — signed with a key this build no longer pins (the
+            // ASV was re-signed for 1.1.1), or damaged — is removed, so choosing the translation
+            // downloads it again instead of failing the same way for ever.
+            if bundled == nil, let pack { AssetLibrary.shared.remove(pack) }
         }
     }
 

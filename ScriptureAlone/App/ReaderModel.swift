@@ -60,8 +60,8 @@ final class ReaderModel {
         SealedTranslations.ships(SealedTranslations.licensedDefault) ? SealedTranslations.licensedDefault : fallbackTranslation
     }
 
-    /// The translation every build carries inside the app, so there is always something to read: the
-    /// public-domain ASV. Launch-failure reporting and its retry are about this one.
+    /// The public-domain ASV: the default when a build carries no licensed translation. Since 1.1.1 it
+    /// is an on-demand pack, like the other Bibles; the NASB 2020 is the one inside the app.
     static let fallbackTranslation = "ASV"
 
     /// Bundled plus whatever the reader has imported.
@@ -181,10 +181,12 @@ final class ReaderModel {
             // reader the moment it arrives, rather than leaving them at a blank page meanwhile.
             if preferredEntry != nil { selectTranslation(preferred) }
         }
-        // The ASV ships inside the app, so `SealedTranslations` has opened it by now. If it could
-        // not — and nothing else is on the device to read — say so. A spinner with nothing behind
+        // The default translation ships inside the app (the NASB 2020; the ASV in a build without
+        // it), so `SealedTranslations` has opened it by now. If it could not — and nothing else is on
+        // the device to read — say so. A spinner with nothing behind
         // it is what App Review saw on 1.0.0 build 40, and it never ends.
-        if source == nil, onlineTranslation == nil { reportDefaultTranslationFailure() }
+        // (Unless it is being downloaded: in a build with no licensed translation the ASV is a pack.)
+        if source == nil, onlineTranslation == nil, downloadingPack == nil { reportDefaultTranslationFailure() }
         // The saved position is a KJV key; open at the verse the translation calls it.
         // A different chapter than was loaded above means loading again: the pane refuses to draw
         // a layout under another chapter's reference, so a stale one would just spin.
@@ -215,16 +217,22 @@ final class ReaderModel {
         // The licensed translations this build ships come first, listed even if their package is
         // still locked: choosing one reopens it (`load`), and a reader whose default it is must find
         // it here rather than be moved to the ASV for good.
+        // A sealed translation that comes as a pack (the NASB 1995, the ASV) and isn't open yet is
+        // listed like the BSB: pointing at where its file will be, so choosing it downloads it.
         let licensed = SealedTranslations.licensedIdentifiers.filter { SealedTranslations.ships($0) }.map { id in
-            let info = SealedTranslations.shared.package(id)?.info
-            return TranslationEntry(id: id, name: info?.name ?? id, source: .package, abbreviation: info?.abbreviation)
+            if let info = SealedTranslations.shared.package(id)?.info {
+                return TranslationEntry(id: id, name: info.name, source: .package, abbreviation: info.abbreviation)
+            }
+            if !SealedTranslations.isInApp(id), let pack = AssetPack(translationID: id) {
+                return TranslationEntry(id: id, name: pack.title, url: AssetLibrary.installedURL(for: pack))
+            }
+            return TranslationEntry(id: id, name: id, source: .package)
         }
         return licensed + (["ASV"] + offered.compactMap(\.translationID)).compactMap { id -> TranslationEntry? in
             guard let pack = AssetPack(translationID: id) else { return nil }
             if SealedTranslations.shared.package(id) != nil {
                 return TranslationEntry(id: id, name: pack.title, source: .package)
             }
-            if pack == .asv { return nil }
             return TranslationEntry(id: id, name: pack.title, url: AssetLibrary.installedURL(for: pack))
         }
     }
@@ -237,27 +245,35 @@ final class ReaderModel {
         return FileManager.default.fileExists(atPath: url.path)
     }
 
-    /// Whether the ASV failed to open, which is what the reader's "Try Again" retries.
+    /// Whether the translation inside the app — the NASB 2020, or the ASV in a build without it —
+    /// failed to open, which is what the reader's "Try Again" retries.
     var defaultTranslationMissing: Bool {
-        SealedTranslations.shared.package(Self.fallbackTranslation) == nil
+        SealedTranslations.shared.package(Self.defaultTranslation) == nil
     }
 
     private func reportDefaultTranslationFailure() {
-        let why = SealedTranslations.shared.failure(Self.fallbackTranslation) ?? String(localized: "It couldn’t be opened.", comment: "Reason shown after “The American Standard Version couldn’t be opened.”")
-        loadError = String(localized: "The American Standard Version couldn’t be opened. \(why)", comment: "%@ is a sentence giving the reason.")
+        let id = Self.defaultTranslation
+        if id == Self.fallbackTranslation {
+            let why = SealedTranslations.shared.failure(id) ?? String(localized: "It couldn’t be opened.", comment: "Reason shown after “The American Standard Version couldn’t be opened.”")
+            loadError = String(localized: "The American Standard Version couldn’t be opened. \(why)", comment: "%@ is a sentence giving the reason.")
+            return
+        }
+        let name = SealedTranslations.shared.package(id)?.info.name ?? translations.first { $0.id == id }?.name ?? id
+        let opened = String(localized: "\(name) couldn't be opened.", comment: "%@ is a Bible translation name.")
+        loadError = [opened, SealedTranslations.shared.failure(id)].compactMap { $0 }.joined(separator: " ")
     }
 
-    /// Tries the ASV again after it failed to open at launch. The one cause a retry cures is a
-    /// device that was still locked, so the keychain was unreadable.
+    /// Tries the default translation again after it failed to open at launch. The one cause a retry
+    /// cures is a device that was still locked, so the keychain was unreadable.
     func retryDefaultTranslation() {
-        guard SealedTranslations.shared.reopen(Self.fallbackTranslation) else {
+        guard SealedTranslations.shared.reopen(Self.defaultTranslation) else {
             reportDefaultTranslationFailure()
             return
         }
         loadError = nil
         bundledTranslations = Self.makeBundledEntries()
         rebuildTranslations()
-        if source == nil { selectTranslation(Self.fallbackTranslation, remember: false) }
+        if source == nil { selectTranslation(Self.defaultTranslation, remember: false) }
     }
 
     private func rebuildTranslations() {
@@ -265,7 +281,11 @@ final class ReaderModel {
         // same translation behind an online key isn't offered beside it.
         let local = importedEntries
         let replaced = onlineEntries.filter { online in local.contains { Self.sameTranslation($0, online) } }
-        let online = onlineEntries.filter { entry in !replaced.contains(entry) }
+        // API.Bible's NASB isn't offered beside the licensed one this build carries: the same text,
+        // but over the network and under someone else's key.
+        let licensedNASB = bundledTranslations.map(\.id).filter { $0.hasPrefix("NASB") }
+        let superseded = licensedNASB.isEmpty ? [] : onlineEntries.filter(Self.isNASB)
+        let online = onlineEntries.filter { entry in !replaced.contains(entry) && !superseded.contains(entry) }
         let added = (local + online).sorted {
             $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
@@ -275,6 +295,15 @@ final class ReaderModel {
         if let current = replaced.first(where: { $0.id == translationID }),
            let own = local.first(where: { Self.sameTranslation($0, current) }) {
             selectTranslation(own.id)
+            return
+        }
+
+        // Reading API.Bible's NASB: carry on in the licensed edition.
+        if let current = superseded.first(where: { $0.id == translationID }) {
+            let wants1995 = current.id.contains("95") || current.abbreviation.contains("95")
+            let edition = (wants1995 && licensedNASB.contains("NASB1995")) ? "NASB1995"
+                : licensedNASB.contains("NASB2020") ? "NASB2020" : licensedNASB[0]
+            selectTranslation(edition)
             return
         }
 
@@ -297,6 +326,14 @@ final class ReaderModel {
             // must not become their new preference.
             if let fallback { selectTranslation(fallback, remember: awaitedTranslation == nil) }
         }
+    }
+
+    /// An online NASB, under any of the names a provider gives it ("NASB", "NASB1995", "New American
+    /// Standard Bible").
+    static func isNASB(_ entry: TranslationEntry) -> Bool {
+        let key = { (text: String) in text.uppercased().filter { $0.isLetter || $0.isNumber } }
+        return key(entry.id).hasPrefix("NASB") || key(entry.abbreviation).hasPrefix("NASB")
+            || entry.name.localizedCaseInsensitiveContains("New American Standard")
     }
 
     /// Two entries for one translation: the same abbreviation, or the same name.
@@ -443,6 +480,18 @@ final class ReaderModel {
             return
         }
         guard let url = entry.url else { return }
+        // A sealed pack (the ASV, the NASB 1995) that has arrived: open it, list it as the package it
+        // now is, and choose that.
+        if SealedTranslations.identifiers.contains(id), FileManager.default.fileExists(atPath: url.path) {
+            guard SealedTranslations.shared.reopen(id) else {
+                loadError = SealedTranslations.shared.failure(id) ?? String(localized: "\(entry.name) couldn't be opened.", comment: "%@ is a Bible translation name.")
+                return
+            }
+            bundledTranslations = Self.makeBundledEntries()
+            rebuildTranslations()
+            selectTranslation(id, remember: remember)
+            return
+        }
         // BSB and KJV are on-demand asset packs: listed from the start, fetched the first time
         // they're chosen. Nothing changes on screen until the file is here — the reader keeps
         // reading what they had, with a banner — and then this runs again and switches.

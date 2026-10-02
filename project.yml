@@ -53,11 +53,15 @@ targets:
           - "Resources/Bibles/*.sqlite"
           # Apple-hosted Background Assets packs (`onDemand`), not app resources (Tools/asset-packs).
           # Kept in the repository as the packs' sources, and copied into Debug builds only — see
-          # below. The sealed ASV package (Resources/Packages/ASV.sabible) is NOT excluded: it ships
-          # in the app. As an `essential` pack it left App Review's iPad on an endless spinner
-          # (1.0.0 build 40), and the translation a fresh install opens to can't wait on delivery.
+          # below. The translation a fresh install opens to can't wait on delivery — an `essential`
+          # ASV pack left App Review's iPad on an endless spinner (1.0.0 build 40) — so that one, the
+          # NASB 2020 (Resources/Packages/NASB2020.sabible, copied in by CI), stays in the app.
           - "Resources/Study/Study.sqlite"
           - "Resources/Study/Interlinear.sqlite"
+          # Since 1.1.1 the ASV is an on-demand pack too, and the NASB 1995 is one from the start:
+          # only the NASB 2020, the default, is in the binary. Their signing keys stay in the app.
+          - "Resources/Packages/ASV.sabible"
+          - "Resources/Packages/NASB1995.sabible"
     dependencies:
       - package: MillerKit
       - package: ScriptureAloneCore
@@ -113,9 +117,12 @@ targets:
           [ "$CONFIGURATION" = "Debug" ] || exit 0
           DEST="$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH"
           R="$SRCROOT/ScriptureAlone/Resources"
-          for f in Bibles/BSB.sqlite Bibles/KJV.sqlite Bibles/CUVS.sqlite Bibles/BUNGO.sqlite Bibles/LUT1912.sqlite Bibles/LSG.sqlite Bibles/RVR1909.sqlite Bibles/KRV.sqlite Bibles/BLIVRE.sqlite Bibles/RIV1927.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do
+          for f in Packages/ASV.sabible Bibles/BSB.sqlite Bibles/KJV.sqlite Bibles/CUVS.sqlite Bibles/BUNGO.sqlite Bibles/LUT1912.sqlite Bibles/LSG.sqlite Bibles/RVR1909.sqlite Bibles/KRV.sqlite Bibles/BLIVRE.sqlite Bibles/RIV1927.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do
             cp -f "$R/$f" "$DEST/"
           done
+          # The licensed NASB 1995, when a developer has its package locally (never committed).
+          [ -f "$R/Packages/NASB1995.sabible" ] && cp -f "$R/Packages/NASB1995.sabible" "$DEST/"
+          true
       - name: Strip xattrs (codesign workaround)
         # Must run on EVERY build: iCloud Documents re-tags files with
         # com.apple.provenance between builds, and a stamp-file output lets

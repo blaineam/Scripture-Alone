@@ -43,33 +43,47 @@ fi
 # ---- end guard -------------------------------------------------------------
 
 # ---- licensed translations ---------------------------------------------------
-# The NASB 2020 and NASB 1995 (docs/lockman/README.md) ship sealed, but their packages are never in this public
-# repository. They live in a private repository (SA_LICENSED_REPO, e.g. "blaineam/scripture-alone-
-# licensed", read with the fine-grained token SA_LICENSED_TOKEN: Contents read-only, that repository
-# only), and are copied into Resources/Packages before the project is generated so they are bundled.
-# Without those variables the build simply ships no licensed translation and opens to the ASV.
+# The NASB 2020 and NASB 1995 (docs/lockman/README.md) ship sealed, but their packages are never in
+# this public repository. They live in a private repository (SA_LICENSED_REPO, e.g. "blaineam/
+# scripture-alone-licensed", read with the fine-grained token SA_LICENSED_TOKEN: Contents read-only,
+# that repository only). Copied into Resources/Packages before the project is generated:
+#   NASB2020 — its package and signing key. The package is in the app: it is the default translation.
+#   NASB1995 — its signing key only. Its package is an on-demand asset pack (Tools/asset-packs/
+#              nasb1995.json, uploaded from private storage), and project.yml keeps it out of the app.
 if [ -n "${SA_LICENSED_REPO:-}" ] && [ -n "${SA_LICENSED_TOKEN:-}" ]; then
   LICENSED_TMP="$(mktemp -d)"
   git -c credential.helper= clone -q --depth 1 \
     "https://x-access-token:${SA_LICENSED_TOKEN}@github.com/${SA_LICENSED_REPO}.git" "$LICENSED_TMP"
-  for id in NASB2020 NASB1995; do
-    if [ -f "$LICENSED_TMP/$id.sabible" ] && [ -f "$LICENSED_TMP/$id-signing.pub" ]; then
-      cp "$LICENSED_TMP/$id.sabible" "$LICENSED_TMP/$id-signing.pub" ScriptureAlone/Resources/Packages/
-      # Which package set this build carries: a package opens only with the key it was signed with,
-      # so the two fingerprints together say exactly what shipped.
-      echo "licensed translation: $id bundled (package $(shasum -a 256 "$LICENSED_TMP/$id.sabible" | cut -c1-12), key $(shasum -a 256 "$LICENSED_TMP/$id-signing.pub" | cut -c1-12))"
-    else
-      echo "licensed translation: $id not in $SA_LICENSED_REPO, not bundled"
-    fi
-  done
+  # Which package set this build carries: a package opens only with the key it was signed with, so
+  # the two fingerprints together say exactly what shipped.
+  fingerprint() { shasum -a 256 "$1" | cut -c1-12; }
+  if [ -f "$LICENSED_TMP/NASB2020.sabible" ] && [ -f "$LICENSED_TMP/NASB2020-signing.pub" ]; then
+    cp "$LICENSED_TMP/NASB2020.sabible" "$LICENSED_TMP/NASB2020-signing.pub" ScriptureAlone/Resources/Packages/
+    echo "licensed translation: NASB2020 bundled (package $(fingerprint "$LICENSED_TMP/NASB2020.sabible"), key $(fingerprint "$LICENSED_TMP/NASB2020-signing.pub"))"
+  else
+    echo "licensed translation: NASB2020 not in $SA_LICENSED_REPO, not bundled"
+  fi
+  if [ -f "$LICENSED_TMP/NASB1995-signing.pub" ]; then
+    cp "$LICENSED_TMP/NASB1995-signing.pub" ScriptureAlone/Resources/Packages/
+    echo "licensed translation: NASB1995 key bundled (key $(fingerprint "$LICENSED_TMP/NASB1995-signing.pub")); its package is the nasb1995 asset pack" \
+      "$([ -f "$LICENSED_TMP/NASB1995.sabible" ] && echo "(package $(fingerprint "$LICENSED_TMP/NASB1995.sabible") — upload that one)")"
+  else
+    echo "licensed translation: NASB1995 key not in $SA_LICENSED_REPO, not offered"
+  fi
   rm -rf "$LICENSED_TMP"
-  # A licensed package with no seed to open it would ship as a default nobody can read.
-  if ls ScriptureAlone/Resources/Packages/NASB*.sabible >/dev/null 2>&1 && [ -z "${SA_CONTENT_KEY_SEED:-}" ]; then
-    echo "error: a licensed package is bundled but SA_CONTENT_KEY_SEED is not set" >&2
+  # A licensed translation with no seed to open it would ship as a default nobody can read.
+  if ls ScriptureAlone/Resources/Packages/NASB*-signing.pub >/dev/null 2>&1 && [ -z "${SA_CONTENT_KEY_SEED:-}" ]; then
+    echo "error: a licensed translation is in this build but SA_CONTENT_KEY_SEED is not set" >&2
     exit 1
   fi
 else
   echo "licensed translation: SA_LICENSED_REPO / SA_LICENSED_TOKEN not set, none bundled"
+fi
+# Every other Bible is a download since 1.1.1, the ASV included, so an Xcode Cloud build without the
+# NASB 2020 would open to a download — what App Review rejected in 1.0.0 build 40. Refuse to make one.
+if [ "${CI_XCODE_CLOUD:-}" = "TRUE" ] && [ ! -f ScriptureAlone/Resources/Packages/NASB2020.sabible ]; then
+  echo "error: the NASB 2020 is not in this build, and nothing else is in the app to open to" >&2
+  exit 1
 fi
 # ---- end licensed translations -----------------------------------------------
 
