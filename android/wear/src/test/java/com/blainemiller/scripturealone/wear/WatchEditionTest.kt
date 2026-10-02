@@ -38,7 +38,12 @@ class WatchEditionTest {
 
     companion object {
         private val dir = File(System.getProperty("scripturealone.watchResources") ?: error("scripturealone.watchResources is not set"))
-        private val rows = WatchBible.BUNDLED.associateWith { JdbcRows(File(dir, "$it-Watch.sqlite")) }
+        /**
+         * The compact editions `Tools/build_companion_data.py` writes: what a watch without the NASB carries
+         * (the ASV), and the shape the phone's editions take (`WatchEditionBuilder`).
+         */
+        private val EDITIONS = listOf("ASV", "BSB", "KJV")
+        private val rows = EDITIONS.associateWith { JdbcRows(File(dir, "$it-Watch.sqlite")) }
         private fun edition(id: String) = WatchEdition(id, rows.getValue(id))
 
         @AfterClass @JvmStatic fun close() = rows.values.forEach { it.connection.close() }
@@ -49,7 +54,7 @@ class WatchEditionTest {
 
     @Test fun everyBundledEditionOpens() {
         assertEquals("American Standard Version", edition("ASV").name)
-        for (id in WatchBible.BUNDLED) {
+        for (id in EDITIONS) {
             val e = edition(id)
             assertEquals(id, e.meta["id"])
             assertEquals("watch", e.meta["edition"])
@@ -82,7 +87,7 @@ class WatchEditionTest {
     @Test fun everyDailyVerseReadsFromEveryEdition() {
         val root = System.getProperty("scripturealone.watchResources")!!
         val catalog = DailyVerseCatalog.parse(File(root, "../../ScriptureAlone/Shared/DailyVerses.json").readText())
-        for (id in WatchBible.BUNDLED) {
+        for (id in EDITIONS) {
             val e = edition(id)
             for (verse in catalog.verses) {
                 assertTrue("$id ${verse.ref}", e.verses(verse.range!!).isNotEmpty())

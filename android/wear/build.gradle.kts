@@ -1,7 +1,33 @@
+import java.io.File
+import java.security.MessageDigest
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+}
+
+val packagesDir: File = rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources/Packages").asFile
+
+/**
+ * Whether this build carries the sealed NASB 2020 — the watch's own Bible and its default, as on the
+ * Apple Watch. The release workflow copies the package and key into the iOS resources from private
+ * storage (docs/lockman/README.md); without them (a developer's build) the watch carries the ASV's
+ * compact edition instead, so it still has something to read.
+ */
+val carriesNasb: Boolean = File(packagesDir, "NASB2020.sabible").exists() && File(packagesDir, "NASB2020-signing.pub").exists()
+
+/** The build's secret seed, masked exactly as the phone's (`contentKeySeedMasked` in app/build.gradle.kts). */
+val contentKeySeedMasked: String = System.getenv("SA_CONTENT_KEY_SEED").orEmpty().let { raw ->
+    if (raw.isEmpty()) return@let ""
+    val seed = if (raw.all { it in "0123456789abcdefABCDEF" }) raw.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+        else raw.toByteArray(Charsets.UTF_8)
+    val pad = MessageDigest.getInstance("SHA-256").digest("scripture-alone-seed-pad-v1".toByteArray(Charsets.UTF_8))
+    seed.indices.joinToString("") { i -> "%02x".format((seed[i].toInt() xor pad[i % pad.size].toInt()) and 0xff) }
+}.also { masked ->
+    check(!carriesNasb || masked.isNotEmpty()) {
+        "NASB2020.sabible is present but SA_CONTENT_KEY_SEED is not set: the watch's default nobody could open"
+    }
 }
 
 android {
@@ -21,6 +47,8 @@ android {
         versionCode = providers.gradleProperty("saWearVersionCode").orNull?.toInt() ?: 1_000_005
         versionName = providers.gradleProperty("saVersionName").orNull ?: "1.0.0"
         check(versionCode!! >= 1_000_000) { "Wear OS versionCode $versionCode must be 1,000,000 or more" }
+        buildConfigField("String", "CONTENT_KEY_SEED_MASKED", "\"$contentKeySeedMasked\"")
+        buildConfigField("String", "WATCH_BUNDLED", if (carriesNasb) "\"NASB2020\"" else "\"ASV\"")
     }
 
     buildTypes.getByName("debug") {
@@ -60,6 +88,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     // The watch editions and the Verse of the Day list, copied in at build time (`syncWatchData`).
@@ -68,8 +97,9 @@ android {
     sourceSets["main"].res.srcDir(layout.buildDirectory.dir("generated/watchIcon"))
 
     androidResources {
-        // SQLite files must be stored uncompressed to be copied out cheaply, as in the phone app.
-        noCompress += listOf("sqlite")
+        // SQLite files and sealed packages must be stored uncompressed to be copied out cheaply, as in
+        // the phone app.
+        noCompress += listOf("sqlite", "sabible")
     }
 
     packaging {
@@ -92,13 +122,23 @@ android {
 }
 
 /**
- * The Apple Watch's compact editions — `*-Watch.sqlite`, verse text and red letters without the
- * phone's layout or search index (`Tools/build_companion_data.py`) — and `DailyVerses.json`, copied
- * from the iOS sources so both watches read byte-identical data. Nothing is committed twice.
+ * The watch's own Bible — the sealed NASB 2020 with the signing keys of every sealed translation it may
+ * hold, or, without it, the ASV's compact edition (`Tools/build_companion_data.py`) — and
+ * `DailyVerses.json`, copied from the iOS sources so both watches read byte-identical data. Nothing is
+ * committed twice.
  */
 val syncWatchData by tasks.registering(Sync::class) {
-    from(rootProject.layout.projectDirectory.dir("../ScriptureAloneWatch/Resources")) {
-        include("*-Watch.sqlite")
+    if (carriesNasb) {
+        from(packagesDir) {
+            include("NASB2020.sabible", "NASB2020-signing.pub", "NASB1995-signing.pub", "bundled-signing.pub")
+        }
+    } else {
+        from(rootProject.layout.projectDirectory.dir("../ScriptureAloneWatch/Resources")) {
+            include("ASV-Watch.sqlite")
+        }
+        from(packagesDir) {
+            include("NASB1995-signing.pub", "bundled-signing.pub")
+        }
     }
     from(rootProject.layout.projectDirectory.dir("../ScriptureAlone/Shared")) {
         include("DailyVerses.json")
@@ -116,6 +156,8 @@ tasks.named("preBuild") { dependsOn(syncWatchData, syncWatchIcon) }
 
 dependencies {
     implementation(project(":shared"))
+    // The sealed-package reader's Ed25519 and HKDF (compile-only in :shared), as the phone has it.
+    implementation("com.google.crypto.tink:tink-android:1.16.0")
 
     val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
     implementation(composeBom)

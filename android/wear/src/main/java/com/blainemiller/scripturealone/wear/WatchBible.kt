@@ -15,6 +15,9 @@ import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.canon.BookNames
 import com.blainemiller.scripturealone.data.daily.DailyVerse
 import com.blainemiller.scripturealone.data.daily.DailyVerseCatalog
+import com.blainemiller.scripturealone.data.sabible.PublisherKeyring
+import com.blainemiller.scripturealone.data.sabible.SealedKeys
+import com.blainemiller.scripturealone.data.sabible.TranslationPackage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,13 +31,15 @@ import java.time.Instant
  * The Bible the watch reads, in whichever translation the reader chose — `WatchBible` on the Apple
  * Watch — and the favorites, highlights and notes the phone last sent.
  *
- * **Editions.** The watch bundles a compact edition of each English translation the phone bundles: ASV,
- * BSB and KJV, about 4.5 MB each, copied from the iOS sources at build time. The big-8 locales' Bibles
- * (docs/localization.md) are not bundled — eight would be 40 MB on every watch — so the phone writes the
- * edition of the one the reader uses and sends it over the Data Layer ([PhoneLink]); it lands in
- * [receivedDirectory] and reads through the very same code, carrying its `kjv_map` and `meta.language`.
- * Every translation the reader imported on the phone arrives the same way, and leaves when the phone's
- * list of imports no longer has it ([phoneImports]).
+ * **Editions.** The watch carries one Bible of its own: the NASB 2020, sealed exactly as the phone ships
+ * it (package, signing key and the build's secret seed), so it is what a new watch opens to, encrypted at
+ * rest — the Apple Watch's `WatchBible` likewise. (A build without it — a developer's — carries the ASV's
+ * compact edition instead.) Everything else comes from the phone over the Data Layer ([PhoneLink]) when
+ * the reader uses it there, into [receivedDirectory]: the ASV and the NASB 1995 as the sealed packages
+ * the phone downloaded, and the BSB, the KJV and the big-8 locales' Bibles (docs/localization.md) as
+ * compact editions the phone writes, carrying their `kjv_map` and `meta.language`. Every translation the
+ * reader imported on the phone arrives the same way, and leaves when the phone's list of imports no
+ * longer has it ([phoneImports]).
  *
  * **Which one is shown.** The most recent choice the watch can actually show wins: the reader picking
  * one here, or the phone reporting a switch there ([TranslationChoice]). A phone choice the watch has no
@@ -148,7 +153,7 @@ class WatchBible private constructor(private val app: Context) {
         if (!WearLink.isSafeId(id) || id in BUNDLED) return false
         if (isImport && !WearImports.accepts(id, offeredImports())) return false
         val dir = receivedDirectory(app).apply { mkdirs() }
-        val partial = File(dir, ".${WatchEditionBuilder.fileName(id)}.partial")
+        val partial = File(dir, ".${fileName(id)}.partial")
         try {
             partial.outputStream().use { input.copyTo(it, 1 shl 20) }
         } catch (e: IOException) {
@@ -156,7 +161,7 @@ class WatchBible private constructor(private val app: Context) {
             return false
         }
         val info = try {
-            val edition = WatchEdition(id, AndroidEditionRows(partial))
+            val edition = open(id, partial)
             try {
                 if (edition.meta["id"] != id || edition.verseCount(1, 1) == 0) null else Triple(edition.name, edition.language, edition.meta["abbreviation"])
             } finally {
@@ -251,7 +256,7 @@ class WatchBible private constructor(private val app: Context) {
         val available = editions.map { it.id }
         val watch = pick(Keys.CHOICE, Keys.CHOICE_AT)
         val phone = pick(Keys.PHONE, Keys.PHONE_AT)
-        val id = TranslationChoice.resolve(available = available, watch = watch, phone = phone)
+        val id = TranslationChoice.resolve(available = available, watch = watch, phone = phone, fallback = BUNDLED.first())
         return id to listOfNotNull(watch, phone).any { it.id == id }
     }
 
@@ -265,10 +270,10 @@ class WatchBible private constructor(private val app: Context) {
         val bundled = BUNDLED.map { Edition(it, NAMES.getValue(it), bundled = true) }
         val suffix = WatchEditionBuilder.fileName("")
         val received = receivedDirectory(app).listFiles().orEmpty()
-            .filter { it.isFile && it.name.endsWith(suffix) && !it.name.startsWith(".") }
+            .filter { it.isFile && !it.name.startsWith(".") && (it.name.endsWith(suffix) || it.name.endsWith(SEALED_SUFFIX)) }
             .mapNotNull { file ->
-                val id = file.name.removeSuffix(suffix)
-                if (!WearLink.isSafeId(id) || id in BUNDLED) return@mapNotNull null
+                val id = file.name.removeSuffix(suffix).removeSuffix(SEALED_SUFFIX)
+                if (!WearLink.isSafeId(id) || id in BUNDLED || file.name != fileName(id)) return@mapNotNull null
                 val name = prefs.getString(Keys.name(id), null)
                 if (name != null) {
                     return@mapNotNull Edition(
@@ -278,7 +283,7 @@ class WatchBible private constructor(private val app: Context) {
                 }
                 // A file put here some other way (a restore, a debug push): read its meta once.
                 try {
-                    val edition = WatchEdition(id, AndroidEditionRows(file))
+                    val edition = open(id, file)
                     try {
                         val abbreviation = edition.meta["abbreviation"]?.ifEmpty { null } ?: id
                         val result = Edition(id, edition.name, bundled = false, language = edition.language, abbreviation = abbreviation)
@@ -298,7 +303,36 @@ class WatchBible private constructor(private val app: Context) {
         return bundled + received
     }
 
-    private fun receivedFile(id: String): File = File(receivedDirectory(app), WatchEditionBuilder.fileName(id))
+    private fun receivedFile(id: String): File = File(receivedDirectory(app), fileName(id))
+
+    /** A sealed translation is kept as its package, anything else as a compact edition. */
+    private fun fileName(id: String): String = if (id in SEALED) "$id$SEALED_SUFFIX" else WatchEditionBuilder.fileName(id)
+
+    /** Opens a received or bundled file as what it is: a sealed package, or a compact edition. */
+    private fun open(id: String, file: File): WatchEdition =
+        if (file.name.removeSuffix(".partial").endsWith(SEALED_SUFFIX)) WatchEdition(id, openSealed(id, file)) else WatchEdition(id, AndroidEditionRows(file))
+
+    /**
+     * Opens a sealed package as the phone does, against the one key it was signed with: the ASV's
+     * (`bundled-signing.pub`, published seed) or a licensed edition's own (`<id>-signing.pub`, this
+     * build's secret seed). The content key is derived in memory and dropped once the package holds it.
+     */
+    private fun openSealed(id: String, file: File): TranslationPackage {
+        val licensed = id != "ASV"
+        val publisher = app.assets.open(if (licensed) "$id-signing.pub" else "bundled-signing.pub").use { it.readBytes() }
+        val seed = if (licensed) {
+            checkNotNull(SealedKeys.unmask(BuildConfig.CONTENT_KEY_SEED_MASKED)) { "this build carries no content-key seed" }
+        } else {
+            SealedKeys.BUNDLED_SEED
+        }
+        val contentKey = SealedKeys.derive(seed, id)
+        seed.fill(0)
+        return try {
+            TranslationPackage.open(file, PublisherKeyring(listOf(publisher)), contentKey)
+        } finally {
+            contentKey.fill(0)
+        }
+    }
 
     private val snapshotFile: File get() = File(app.filesDir, VerseSnapshot.FILE_NAME)
 
@@ -316,9 +350,10 @@ class WatchBible private constructor(private val app: Context) {
     fun edition(id: String = translation): WatchEdition = opened.getOrPut(id) {
         val received = receivedFile(id)
         if (id !in BUNDLED && received.exists()) {
-            WatchEdition(id, AndroidEditionRows(received))
+            open(id, received)
         } else {
-            WatchEdition(id, AndroidEditionRows(copyOut(WatchEditionBuilder.fileName(if (id in BUNDLED) id else TranslationChoice.FALLBACK))))
+            val own = if (id in BUNDLED) id else BUNDLED.first()
+            open(own, copyOut(if (own in SEALED) "$own$SEALED_SUFFIX" else WatchEditionBuilder.fileName(own)))
         }
     }
 
@@ -398,13 +433,19 @@ class WatchBible private constructor(private val app: Context) {
     }
 
     companion object {
-        /** Translations with a compact edition in the watch's APK. */
-        val BUNDLED = listOf("ASV", "BSB", "KJV")
+        /**
+         * The translation in the watch's APK: the sealed NASB 2020, or — in a build without it, a
+         * developer's — the ASV's compact edition (`watchBundled` in the build script).
+         */
+        val BUNDLED = listOf(BuildConfig.WATCH_BUNDLED)
         private val NAMES = mapOf(
+            "NASB2020" to "New American Standard Bible — NASB 2020",
             "ASV" to "American Standard Version",
-            "BSB" to "Berean Standard Bible",
-            "KJV" to "King James Version",
         )
+
+        /** Translations the phone sends, and the watch keeps, as their sealed package. */
+        val SEALED = setOf("ASV", "NASB1995", "NASB2020")
+        private const val SEALED_SUFFIX = ".sabible"
 
         /**
          * Where editions the phone sent are kept: the app's files, not its cache, which the system may

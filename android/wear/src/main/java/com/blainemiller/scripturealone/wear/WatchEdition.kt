@@ -4,6 +4,8 @@ import android.database.sqlite.SQLiteDatabase
 import com.blainemiller.scripturealone.data.VerseNumbering
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.data.sabible.TranslationPackage
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
@@ -41,11 +43,79 @@ interface EditionRows {
  * is handed — the phone's favorites, highlights and notes, Verse of the Day, routes — is in KJV keys.
  * So [verses] takes KJV keys and [nativeVerses] the Bible's own; both return verses carrying both.
  */
-class WatchEdition(val id: String, private val rows: EditionRows) {
+class WatchEdition private constructor(val id: String, private val source: Source) {
 
-    val meta: Map<String, String> by lazy {
-        rows.query("SELECT key, value FROM meta") { it.text(0) to it.text(1) }.toMap()
+    /** A compact edition the phone wrote, or one the watch carried before 1.1.1. */
+    constructor(id: String, rows: EditionRows) : this(id, SqlSource(rows))
+
+    /**
+     * A sealed package — the NASB 2020 the watch carries, or the ASV or NASB 1995 the phone sent — read
+     * a chapter at a time and decrypted in memory, as on the phone: the text stays encrypted on disk.
+     */
+    constructor(id: String, sealed: TranslationPackage) : this(id, PackageSource(sealed))
+
+    /** What a Bible on the watch has to answer, whatever it is stored as. */
+    private interface Source {
+        val meta: Map<String, String>
+        val numbering: VerseNumbering
+        fun nativeVerses(range: VerseRange): List<Pair<Int, Pair<String, List<Pair<Int, Int>>>>>
+        fun verseCount(book: Int, chapter: Int): Int
+        fun close()
     }
+
+    private class SqlSource(private val rows: EditionRows) : Source {
+        override val meta: Map<String, String> by lazy {
+            rows.query("SELECT key, value FROM meta") { it.text(0) to it.text(1) }.toMap()
+        }
+
+        override val numbering: VerseNumbering by lazy {
+            val hasMap = rows.query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'kjv_map'") { true }.isNotEmpty()
+            if (!hasMap) {
+                VerseNumbering.IDENTITY
+            } else {
+                VerseNumbering(rows.query("SELECT id, kjv, kjv_last FROM kjv_map") { VerseNumbering.Row(it.long(0).toInt(), it.long(1).toInt(), it.long(2).toInt()) })
+            }
+        }
+
+        override fun nativeVerses(range: VerseRange) =
+            rows.query("SELECT id, text, red FROM verses WHERE id BETWEEN ? AND ? ORDER BY id", range.start.key, range.end.key) {
+                it.long(0).toInt() to (it.text(1) to if (it.isNull(2)) emptyList() else parseRed(it.text(2)))
+            }
+
+        override fun verseCount(book: Int, chapter: Int): Int =
+            rows.query("SELECT verses FROM chapters WHERE book = ? AND chapter = ?", book, chapter) { it.long(0).toInt() }
+                .firstOrNull() ?: 0
+
+        override fun close() = rows.close()
+    }
+
+    /** A package numbers as the KJV does, as `ChapterTextSource` says of packages on iOS. */
+    private class PackageSource(private val sealed: TranslationPackage) : Source {
+        override val meta: Map<String, String> by lazy {
+            val identity = sealed.translation
+            mapOf("id" to identity.id, "name" to identity.name, "abbreviation" to identity.abbreviation)
+        }
+
+        override val numbering: VerseNumbering get() = VerseNumbering.IDENTITY
+
+        override fun nativeVerses(range: VerseRange) = buildList {
+            val first = range.start.book * 1_000 + range.start.chapter
+            val last = range.end.book * 1_000 + range.end.chapter
+            for (chapter in sealed.chapters.filter { it.key in first..last }) {
+                for (verse in sealed.chapter(chapter).verses) {
+                    val key = verse.ref.key
+                    if (key < range.start.key || key > range.end.key) continue
+                    add(key to (verse.text to verse.red.map { it.start to it.length }))
+                }
+            }
+        }
+
+        override fun verseCount(book: Int, chapter: Int): Int = sealed.verseCount(ChapterRef(book, chapter))
+
+        override fun close() = sealed.close()
+    }
+
+    val meta: Map<String, String> get() = source.meta
 
     /** "American Standard Version". */
     val name: String get() = meta["name"] ?: id
@@ -54,14 +124,7 @@ class WatchEdition(val id: String, private val rows: EditionRows) {
     val language: String? get() = meta["language"]?.takeIf { it.isNotEmpty() }
 
     /** How this Bible's verse numbers map to the KJV keys marks are stored under; identity without a map. */
-    val numbering: VerseNumbering by lazy {
-        val hasMap = rows.query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'kjv_map'") { true }.isNotEmpty()
-        if (!hasMap) {
-            VerseNumbering.IDENTITY
-        } else {
-            VerseNumbering(rows.query("SELECT id, kjv, kjv_last FROM kjv_map") { VerseNumbering.Row(it.long(0).toInt(), it.long(1).toInt(), it.long(2).toInt()) })
-        }
-    }
+    val numbering: VerseNumbering get() = source.numbering
 
     /** Verses holding the **KJV** range [range] — a favorite, a note's passage, the verse of the day. */
     fun verses(range: VerseRange): List<WatchVerse> {
@@ -72,25 +135,19 @@ class WatchEdition(val id: String, private val rows: EditionRows) {
     /** Verses 1… of a range in this Bible's own numbers (headings, verse 0, are the phone's), in order. */
     fun nativeVerses(range: VerseRange): List<WatchVerse> {
         val numbering = numbering
-        return rows.query("SELECT id, text, red FROM verses WHERE id BETWEEN ? AND ? ORDER BY id", range.start.key, range.end.key) {
-            val key = it.long(0).toInt()
-            WatchVerse(
-                VerseRef.fromKey(key), it.text(1), if (it.isNull(2)) emptyList() else parseRed(it.text(2)),
-                VerseRef.fromKey(numbering.kjv(key)),
-            )
+        return source.nativeVerses(range).map { (key, verse) ->
+            WatchVerse(VerseRef.fromKey(key), verse.first, verse.second, VerseRef.fromKey(numbering.kjv(key)))
         }.filter { it.ref.verse > 0 }
     }
 
     /** [range] (KJV keys) as this Bible numbers it, for drawing its reference; itself when nothing maps. */
     fun nativeRange(range: VerseRange): VerseRange = numbering.nativeRange(range) ?: range
 
-    fun close() = rows.close()
+    fun close() = source.close()
 
     fun text(range: VerseRange): String = verses(range).joinToString(" ") { it.text }
 
-    fun verseCount(book: Int, chapter: Int): Int =
-        rows.query("SELECT verses FROM chapters WHERE book = ? AND chapter = ?", book, chapter) { it.long(0).toInt() }
-            .firstOrNull() ?: 0
+    fun verseCount(book: Int, chapter: Int): Int = source.verseCount(book, chapter)
 
     /** A whole chapter, in this Bible's own numbers, as a range — `WatchBible.chapterRange`. */
     fun chapterRange(book: Int, chapter: Int): VerseRange =

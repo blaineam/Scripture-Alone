@@ -117,10 +117,10 @@ object TranslationChoice {
      * [available] in the picker's order. On a tie the watch's own choice wins, as Swift's `max(by:)`
      * keeps the first of equal elements.
      */
-    fun resolve(available: List<String>, watch: Pick?, phone: Pick?): String {
+    fun resolve(available: List<String>, watch: Pick?, phone: Pick?, fallback: String = FALLBACK): String {
         val candidates = listOfNotNull(watch, phone).filter { it.id in available }
         var best: Pick? = null
         for (candidate in candidates) if (best == null || candidate.at > best.at) best = candidate
-        return best?.id ?: if (FALLBACK in available) FALLBACK else available.firstOrNull() ?: FALLBACK
+        return best?.id ?: if (fallback in available) fallback else available.firstOrNull() ?: fallback
     }
 }

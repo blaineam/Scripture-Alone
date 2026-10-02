@@ -26,16 +26,21 @@ import java.util.concurrent.TimeUnit
  * reader is using, its accent colour and the favorites/highlights/notes snapshot, as data items the watch reads
  * whenever it next can (the semantics of WatchConnectivity's application context).
  *
- * The watch bundles the ASV, BSB and KJV, so only the choice travels for those. For one of the big-8
- * locales' Bibles ([LocaleBible]) the phone also writes the watch edition ([WatchEditions]) once its pack
- * is on the phone and sends it as an asset in a data item of its own ([publishEdition]) — iOS's
- * `transferFile`. Every translation the reader imported travels the same way ([publishImports]), with
+ * The watch carries the NASB 2020 (before 1.1.1, the ASV, BSB and KJV), so only the choice travels for
+ * it. For any other Bible the phone downloaded as a pack it sends the watch its copy once the pack is on
+ * the phone, as an asset in a data item of its own ([publishEdition]) — iOS's `transferFile`: the ASV and
+ * the NASB 1995 as their sealed packages, encrypted on the watch too; the BSB, the KJV and the big-8
+ * locales' Bibles ([LocaleBible]) as a compact watch edition ([WatchEditions]). A 1.1.0 watch refuses
+ * what it already carries. Every translation the reader imported travels the same way ([publishImports]), with
  * the list of imports, so one removed on the phone leaves the watch too.
  *
  * Every call is best-effort: a phone without Google Play services, or with no watch, simply has no one
  * to tell, and the Data Layer delivers to a watch paired later on its own.
  */
 object WearPublisher {
+
+    /** What the watch app carries itself, so is never sent: the sealed NASB 2020 (`WatchBible.BUNDLED`). */
+    private val WATCH_CARRIES = setOf("NASB2020")
 
     fun publishTranslation(context: Context, translation: String, changedAt: Double) {
         val signature = "t:$translation@$changedAt"
@@ -76,28 +81,35 @@ object WearPublisher {
     }
 
     /**
-     * Sends the watch the edition of [translation] if it is a locale Bible whose pack is on the phone —
+     * Sends the watch [translation] if it is a Bible the phone downloaded as a pack and the pack is here —
      * `WatchLink.sendEditionIfNeeded`. Blocking (it may write a few megabytes); call off the main thread.
      *
      * Each edition is its own data item, so it is sent once per database: the Data Layer keeps it and
      * hands it to the watch whenever the watch can take it — after a reinstall too — and the watch skips
-     * an asset whose digest it already holds. The English Bibles are bundled on the watch; an online
-     * translation has no file (and its terms forbid storing it).
+     * an asset whose digest it already holds. The NASB 2020 is in the watch app; an online translation
+     * has no file (and its terms forbid storing it).
      */
     fun publishEdition(context: Context, translation: String) {
-        if (!LocaleBible.isLocaleBible(translation) || !WearLink.isSafeId(translation)) return
+        if (translation in WATCH_CARRIES || !WearLink.isSafeId(translation)) return
         val pack = AssetPack.forTranslation(translation) ?: return
         if (!AssetLibrary.isAttached) AssetLibrary.attach(context)
         if (!AssetLibrary.isOnDevice(pack)) return
         val source = AssetLibrary.file(context, pack) ?: return
-        val signature = "e:${WatchEditionBuilder.FORMAT}:${source.length()}:${source.lastModified()}"
+        val format = if (pack.isSealed) "sealed" else WatchEditionBuilder.FORMAT
+        val signature = "e:$format:${source.length()}:${source.lastModified()}"
         if (WidgetPrefs.published(context, "edition.$translation") == signature) return
         // Most phones have no watch: don't write megabytes for no one. A watch paired later gets it at
         // the next launch or translation change.
         if (!hasWatch(context)) return
-        val edition = File(File(context.cacheDir, "WatchEditions"), WatchEditionBuilder.fileName(translation))
+        // A sealed package goes as it is; anything else as the compact edition written from it.
+        val edition = File(File(context.cacheDir, "WatchEditions"), if (pack.isSealed) "$translation.sabible" else WatchEditionBuilder.fileName(translation))
         try {
-            WatchEditions.write(source, edition)
+            if (pack.isSealed) {
+                edition.parentFile?.mkdirs()
+                source.copyTo(edition, overwrite = true)
+            } else {
+                WatchEditions.write(source, edition)
+            }
         } catch (e: Exception) {
             android.util.Log.i("WearPublisher", "Watch edition of $translation not written: ${e.message}")
             return

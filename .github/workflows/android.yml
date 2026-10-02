@@ -219,8 +219,10 @@ jobs:
 
       # The licensed NASB 2020 and 1995 (docs/lockman/README.md) are never in this public repository: they are
       # copied from the private repository in the SA_LICENSED_REPO variable, read with the
-      # SA_LICENSED_TOKEN secret, into the iOS resources the Android build syncs from. Without
-      # them the build ships no licensed translation and opens to the ASV.
+      # SA_LICENSED_TOKEN secret, into the iOS resources the Android build syncs from — the NASB 2020
+      # into the phone and Wear OS apps, the NASB 1995 into its on-demand pack. Since 1.1.1 every other
+      # Bible is a download, the ASV included, so a release without the NASB 2020 would open to a
+      # download: this step fails instead.
       - name: Fetch licensed translations
         env:
           SA_LICENSED_REPO: ${{ vars.SA_LICENSED_REPO }}
@@ -228,8 +230,8 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${SA_LICENSED_REPO:-}" ] || [ -z "${SA_LICENSED_TOKEN:-}" ]; then
-            echo "::notice title=No licensed translation::SA_LICENSED_REPO / SA_LICENSED_TOKEN not set, so the NASB is not bundled"
-            exit 0
+            echo "::error title=No licensed translation::SA_LICENSED_REPO / SA_LICENSED_TOKEN not set, so the NASB 2020 — the app's only bundled Bible — can't be bundled"
+            exit 1
           fi
           tmp="$(mktemp -d)"
           git -c credential.helper= clone -q --depth 1 "https://x-access-token:${SA_LICENSED_TOKEN}@github.com/${SA_LICENSED_REPO}.git" "$tmp"
@@ -240,6 +242,10 @@ jobs:
             fi
           done
           rm -rf "$tmp"
+          if [ ! -f ScriptureAlone/Resources/Packages/NASB2020.sabible ]; then
+            echo "::error title=No NASB 2020::$SA_LICENSED_REPO has no NASB2020.sabible and NASB2020-signing.pub; the app would open to a download"
+            exit 1
+          fi
 
       - name: Build release bundles (phone + Wear OS)
         working-directory: android
