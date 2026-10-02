@@ -3,6 +3,7 @@ package com.blainemiller.scripturealone
 import android.app.Application
 import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.canon.BookNames
+import com.blainemiller.scripturealone.data.sabible.PackageMessageText
 import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 import com.blainemiller.scripturealone.text.AppText
 
@@ -16,6 +17,8 @@ class ScriptureAloneApplication : Application() {
         super.onCreate()
         // The app's words outside Compose, in the reader's language (text/AppText.kt).
         AppText.install(this)
+        // …including the sealed-package reader's, which lives in :shared so the watch can use it.
+        PackageMessageText.install()
         // Which asset packs are on the device — before the reader decides what it can open.
         AssetLibrary.attach(this)
         TranslationLibrary.attach(this)

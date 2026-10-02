@@ -6,13 +6,6 @@ import com.blainemiller.scripturealone.data.sql.SqlSource
 import java.text.Normalizer
 
 /**
- * One verse a search found: where it is as the translation numbers it ([ref] — what the result shows),
- * its plain text for the results list, and the KJV key it is stored under ([kjv] — where tapping the
- * result goes; see [com.blainemiller.scripturealone.data.VerseNumbering]).
- */
-data class SearchHit(val ref: VerseRef, val text: String, val kjv: VerseRef = ref)
-
-/**
  * Full-text search over a plain Bible store's `verses_fts` table — `BibleStore.search` in
  * `ScriptureAloneCore`. Every bundled plain store (BSB, KJV) carries the same FTS5 index the iOS app
  * queries, built `unicode61 remove_diacritics 2`, so the same query finds the same verses on both.
@@ -78,7 +71,7 @@ class VerseSearch(
 
     companion object {
         /** iOS caps a search at 300 and the results header says "300+ verses" when it's hit. */
-        const val DEFAULT_LIMIT = 300
+        const val DEFAULT_LIMIT = SearchWords.DEFAULT_LIMIT
 
         /**
          * Whether a query is long enough to search as the reader types: three characters, as on iOS —
@@ -130,43 +123,9 @@ class VerseSearch(
 
         /**
          * The words of a query: runs of letters, marks, digits and apostrophes, the curly apostrophe
-         * straightened. Shared with the sealed index's query parser, which splits the same way.
+         * straightened ([SearchWords.words], shared with the sealed index's query parser).
          */
-        fun words(text: String): List<String> {
-            val words = mutableListOf<String>()
-            val word = StringBuilder()
-            var i = 0
-            while (i < text.length) {
-                val cp = text.codePointAt(i)
-                if (isWordCodePoint(cp)) {
-                    word.appendCodePoint(if (cp == RIGHT_SINGLE_QUOTE) '\''.code else cp)
-                } else if (word.isNotEmpty()) {
-                    words += word.toString()
-                    word.clear()
-                }
-                i += Character.charCount(cp)
-            }
-            if (word.isNotEmpty()) words += word.toString()
-            return words
-        }
-
-        private const val RIGHT_SINGLE_QUOTE = 0x2019
-
-        /**
-         * Foundation's `CharacterSet.alphanumerics` — the L*, M* and N* general categories — plus the
-         * two apostrophes.
-         */
-        private fun isWordCodePoint(cp: Int): Boolean {
-            if (cp == '\''.code || cp == RIGHT_SINGLE_QUOTE) return true
-            return when (Character.getType(cp).toByte()) {
-                Character.UPPERCASE_LETTER, Character.LOWERCASE_LETTER, Character.TITLECASE_LETTER,
-                Character.MODIFIER_LETTER, Character.OTHER_LETTER,
-                Character.NON_SPACING_MARK, Character.ENCLOSING_MARK, Character.COMBINING_SPACING_MARK,
-                Character.DECIMAL_DIGIT_NUMBER, Character.LETTER_NUMBER, Character.OTHER_NUMBER,
-                -> true
-                else -> false
-            }
-        }
+        fun words(text: String): List<String> = SearchWords.words(text)
     }
 }
 

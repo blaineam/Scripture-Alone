@@ -19,6 +19,10 @@ kotlin {
 dependencies {
     // The JSON tree API only (no compiler plugin), as the phone's other readers use it.
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    // The sealed-package reader's Ed25519 and HKDF. Compile-only: the phone and the watch each supply
+    // tink-android (the same classes), and the JVM tests the plain artifact.
+    compileOnly("com.google.crypto.tink:tink:1.16.0")
+    testImplementation("com.google.crypto.tink:tink:1.16.0")
 
     testImplementation("junit:junit:4.13.2")
 }

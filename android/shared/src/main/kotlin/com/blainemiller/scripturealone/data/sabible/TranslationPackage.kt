@@ -2,7 +2,7 @@ package com.blainemiller.scripturealone.data.sabible
 
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.search.SearchHit
-import com.blainemiller.scripturealone.data.search.VerseSearch
+import com.blainemiller.scripturealone.data.search.SearchWords
 import com.blainemiller.scripturealone.data.sabible.PackageHeaderParser.array
 import com.blainemiller.scripturealone.data.sabible.PackageHeaderParser.field
 import com.blainemiller.scripturealone.data.sabible.PackageHeaderParser.obj
@@ -115,7 +115,7 @@ class TranslationPackage private constructor(
      * ever passes the same chapter twice; the test suite passes a different one to prove the AAD
      * binding is what refuses a blob relabelled as another chapter.
      */
-    internal fun openChapter(stored: ChapterRef, boundAs: ChapterRef): ByteArray {
+    fun openChapter(stored: ChapterRef, boundAs: ChapterRef): ByteArray {
         val entry = index[stored] ?: throw TranslationPackageException.ChapterMissing(stored)
         val sealed = readBody(entry.offset, entry.length)
         val associated = associatedData(header.packageId, header.translation.id, boundAs, headerDigest)
@@ -159,7 +159,7 @@ class TranslationPackage private constructor(
      * that actually matched, because a hit has to carry its text. A search never opens the whole index
      * and never decrypts the whole Bible; [accessCounts] says exactly how much it did open.
      */
-    fun search(query: String, limit: Int = VerseSearch.DEFAULT_LIMIT): List<SearchHit> {
+    fun search(query: String, limit: Int = SearchWords.DEFAULT_LIMIT): List<SearchHit> {
         val parameters = header.index
         if (parameters == null || buckets.isEmpty()) {
             throw TranslationPackageException.NotSearchable("this package was built without a search index")
@@ -291,7 +291,7 @@ class TranslationPackage private constructor(
          * decrypted when asked for, so this costs a signature check, not a 16 MB decryption.
          *
          * @param keyring the Ed25519 keys this build pins; a package signed by anything else is refused.
-         * @param contentKey the 32-byte AES key — see [ContentKey].
+         * @param contentKey the 32-byte AES key — see [SealedKeys].
          * @param now for the expiry check; explicit so tests can state the rule.
          */
         fun open(
@@ -305,7 +305,7 @@ class TranslationPackage private constructor(
          * `checkKeyId = false` skips the courtesy check that the header names the key we hold, so a
          * test can prove that AES-GCM — not that check — is what refuses a wrong key.
          */
-        internal fun open(
+        fun open(
             file: File,
             keyring: PublisherKeyring,
             contentKey: ByteArray,

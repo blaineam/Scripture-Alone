@@ -1,6 +1,6 @@
 package com.blainemiller.scripturealone.data.sabible
 
-import com.blainemiller.scripturealone.data.search.VerseSearch
+import com.blainemiller.scripturealone.data.search.SearchWords
 import com.google.crypto.tink.subtle.Hkdf
 import java.text.Normalizer
 import java.util.Locale
@@ -193,7 +193,7 @@ object PackageSearchIndex {
 /**
  * A query, in the shape the index answers — `PackagedSearchQuery` in Swift: groups that must all
  * appear in one verse, each a phrase of one or more adjacent tokens, with the last token of the last
- * group optionally matching as a prefix. It mirrors what [VerseSearch.ftsQuery] asks SQLite for, so
+ * group optionally matching as a prefix. It mirrors what `VerseSearch.ftsQuery` (in the phone app) asks SQLite for, so
  * search feels the same whichever kind of translation is open.
  */
 data class PackagedSearchQuery(val groups: List<Group>) {
@@ -215,7 +215,7 @@ data class PackagedSearchQuery(val groups: List<Group>) {
             }
             // Split the way the store's query builder does: words keep their apostrophes here and are
             // then tokenised, so "lord's" becomes the phrase lord + s — what FTS5 does with it too.
-            val groups = VerseSearch.words(trimmed).mapNotNull { word ->
+            val groups = SearchWords.words(trimmed).mapNotNull { word ->
                 PackageSearchIndex.tokens(word).takeIf { it.isNotEmpty() }?.let { Group(it, prefix = false) }
             }.toMutableList()
             if (groups.isEmpty()) return null
