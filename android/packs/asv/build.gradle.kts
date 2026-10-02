@@ -1,5 +1,5 @@
-// The ASV, sealed — installed with the app. iOS's `asv` pack is `essential` for the same reason: the
-// default translation must read offline on the very first launch.
+// The ASV, sealed — fetched the first time it is chosen. Since 1.1.1 the translation a fresh install
+// opens to is the NASB 2020, inside the app; iOS's `asv` pack is on demand too.
 //
 // A Play Asset Delivery pack. Its one file is copied in from the iOS app's resources at build time,
 // as `syncBundledData` does for the app, so the repository holds exactly one copy of it; `src/` is
@@ -12,7 +12,7 @@ plugins {
 assetPack {
     packName.set("asv")
     dynamicDelivery {
-        deliveryType.set("install-time")
+        deliveryType.set("on-demand")
     }
 }
 

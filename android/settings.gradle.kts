@@ -26,6 +26,9 @@ include(":wear")
 for (pack in listOf(
     "asv", "bsb", "kjv", "study_commentary", "study_interlinear",
     "cuvs", "bungo", "lut1912", "lsg", "rvr1909", "krv", "blivre", "riv1927",
+    // The licensed NASB 1995: its file arrives only in a release build (docs/lockman/README.md), and the
+    // app lists the pack only then.
+    "nasb1995",
 )) {
     include(":$pack")
     project(":$pack").projectDir = file("packs/$pack")

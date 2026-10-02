@@ -42,7 +42,10 @@ class AssetPackDefinitionsTest {
             assertEquals(pack.packName, module.name)
             assertEquals("${pack.packName} delivery", pack.delivery.gradleName, module.delivery)
             assertEquals("${pack.packName} file", pack.file, File(module.source).name)
-            assertTrue("${module.source} is not in the iOS resources", File(resources, module.source).isFile)
+            // A licensed package is never in this repository; its pack is filled at release time.
+            if (!pack.isLicensed) {
+                assertTrue("${module.source} is not in the iOS resources", File(resources, module.source).isFile)
+            }
         }
         // …and no module the table doesn't know.
         val modules = packsDir.listFiles { f -> File(f, "build.gradle.kts").isFile }.orEmpty().map { it.name }.toSet()
@@ -83,10 +86,8 @@ class AssetPackDefinitionsTest {
             assertTrue("${manifest.name} names another file", text.contains("\"fileDestination\": \"${pack.file}\""))
             val iosEssential = text.contains("\"essential\"")
             // The BSB arrives with the install on Android (Study's word data is keyed to it); on iOS
-            // it is on demand. The ASV is in the iOS app bundle itself since App Review's endless
-            // spinner (its pack, now on demand, only carries updates); on Android the install-time
-            // pack is how it arrives with the install. Every other pack's timing matches.
-            val expectedInstallTime = iosEssential || pack == AssetPack.BSB || pack == AssetPack.ASV
+            // it is on demand. Every other pack's timing matches.
+            val expectedInstallTime = iosEssential || pack == AssetPack.BSB
             assertEquals("${pack.packName} timing", expectedInstallTime, pack.delivery == AssetPack.Delivery.INSTALL_TIME)
         }
     }

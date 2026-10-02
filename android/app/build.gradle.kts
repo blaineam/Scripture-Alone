@@ -125,6 +125,9 @@ android {
         ":asv", ":bsb", ":kjv", ":study_commentary", ":study_interlinear",
         ":cuvs", ":bungo", ":lut1912", ":lsg", ":rvr1909", ":krv", ":blivre", ":riv1927",
     )
+    // The NASB 1995 only when its package is here (a release build, from private storage): an empty
+    // pack is nothing to offer.
+    if ("NASB1995" in licensedTranslations) assetPacks += ":nasb1995"
 
     // `-PsideloadApk` with `assembleRelease`: a release APK for installing outside Google Play, with
     // every pack's file in its own assets (about 225 MB with the big-8 Bibles), since only Play can
@@ -216,11 +219,10 @@ val syncBundledData by tasks.registering(Sync::class) {
         include(
             "Study/CrossReferences.sqlite", "Study/Context.sqlite", "Study/Basemap.bin", "Study/Topics.sqlite",
             "Packages/bundled-signing.pub",
-            // The licensed NASB 2020 and 1995 and the keys they were signed with, when this build
-            // carries them (`licensedTranslations`). In the base module, as on iOS: the 2020 is the
-            // default translation.
-            "Packages/NASB2020.sabible", "Packages/NASB2020-signing.pub",
-            "Packages/NASB1995.sabible", "Packages/NASB1995-signing.pub",
+            // The licensed NASB 2020 and the key it was signed with, when this build carries them
+            // (`licensedTranslations`): in the base module, as on iOS, because it is the default
+            // translation. The NASB 1995's package is its own on-demand pack; only its key is here.
+            "Packages/NASB2020.sabible", "Packages/NASB2020-signing.pub", "Packages/NASB1995-signing.pub",
         )
         eachFile { path = name }          // flatten, as the iOS bundle does
         includeEmptyDirs = false
@@ -248,6 +250,8 @@ val syncLocalPackData by tasks.registering(Sync::class) {
             // The big-8 locales' Bibles — docs/localization.md.
             "Bibles/CUVS.sqlite", "Bibles/BUNGO.sqlite", "Bibles/LUT1912.sqlite", "Bibles/LSG.sqlite",
             "Bibles/RVR1909.sqlite", "Bibles/KRV.sqlite", "Bibles/BLIVRE.sqlite", "Bibles/RIV1927.sqlite",
+            // The licensed NASB 1995, when its package is here; it is never committed.
+            "Packages/NASB1995.sabible",
         )
         eachFile { path = name }
         includeEmptyDirs = false

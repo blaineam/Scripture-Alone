@@ -212,9 +212,11 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
         viewModelScope.launch {
-            // Reading the online copy of what is now imported: carry on in the imported one.
+            // Reading the online copy of what is now imported, or API.Bible's NASB in a build that
+            // carries a licensed one: carry on in that one.
             TranslationLibrary.state.collect {
-                TranslationLibrary.importedReplacing(translationId)?.let(::selectTranslation)
+                (TranslationLibrary.importedReplacing(translationId) ?: TranslationLibrary.licensedReplacing(translationId))
+                    ?.let(::selectTranslation)
             }
         }
         awaitedTranslation?.let { awaited ->

@@ -15,7 +15,8 @@ import com.blainemiller.scripturealone.text.AppText
  *
  * | Pack | Delivery | Why |
  * |---|---|---|
- * | ASV | install-time | The default translation: a fresh install reads offline on first launch. |
+ * | ASV | on-demand | Sealed. Since 1.1.1 the default is the NASB 2020, inside the app; the ASV is fetched when chosen, as on iOS. |
+ * | NASB 1995 | on-demand | Licensed and sealed; its package comes from private storage at release time, never this repository (docs/lockman/README.md). |
  * | BSB | install-time | On iOS it is on demand; here it arrives with the install, because Study's original-language words are keyed to its text. |
  * | KJV | on-demand | Fetched the first time the reader chooses it, as on iOS. |
  * | Commentary, Original Languages | on-demand | 55 MB many readers never open, as on iOS. |
@@ -37,7 +38,7 @@ enum class AssetPack(
     /** The language this Bible is for, as a BCP 47 tag — which device languages it is chosen for. */
     val locale: String? = null,
 ) {
-    ASV("asv", "ASV.sabible", Delivery.INSTALL_TIME, "American Standard Version", 16),
+    ASV("asv", "ASV.sabible", Delivery.ON_DEMAND, "American Standard Version", 16),
     BSB("bsb", "BSB.sqlite", Delivery.INSTALL_TIME, "Berean Standard Bible", 15),
     KJV("kjv", "KJV.sqlite", Delivery.ON_DEMAND, "King James Version", 15),
     COMMENTARY("study_commentary", "Study.sqlite", Delivery.ON_DEMAND, "Commentary", 44),
@@ -53,6 +54,9 @@ enum class AssetPack(
     KRV("krv", "KRV.sqlite", Delivery.ON_DEMAND, "개역한글", 20, locale = "ko"),
     BLIVRE("blivre", "BLIVRE.sqlite", Delivery.ON_DEMAND, "Bíblia Livre", 13, locale = "pt-BR"),
     RIV1927("riv1927", "RIV1927.sqlite", Delivery.ON_DEMAND, "Riveduta 1927", 14, locale = "it"),
+
+    // Never "NASB" alone: the agreement allows the name only with its year.
+    NASB1995("nasb1995", "NASB1995.sabible", Delivery.ON_DEMAND, "New American Standard Bible — NASB 1995", 18),
     ;
 
     /** Play's delivery modes, by the names the Gradle `deliveryType` uses. */
@@ -79,6 +83,12 @@ enum class AssetPack(
         }
 
     val isTranslation: Boolean get() = this != COMMENTARY && this != INTERLINEAR
+
+    /** A sealed package rather than a database — opened as a `TranslationPackage`. */
+    val isSealed: Boolean get() = file.endsWith(".sabible")
+
+    /** A licensed translation's pack: its file is never in this repository (docs/lockman/README.md). */
+    val isLicensed: Boolean get() = this == NASB1995
 
     /** The translation this pack carries (its `meta.id`), or null for a study pack. */
     val translationId: String? get() = if (isTranslation) name else null

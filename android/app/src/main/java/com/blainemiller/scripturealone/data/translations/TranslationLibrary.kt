@@ -189,7 +189,35 @@ object TranslationLibrary {
     @Synchronized
     private fun publish(imported: List<ImportedTranslation>, online: List<OnlineEntry>) {
         allOnline = online
-        _state.value = State(imported, online.filter { entry -> imported.none { sameTranslation(it.info, entry) } }, importsLoaded)
+        // API.Bible's NASB isn't offered beside the licensed one this build carries: the same text, but
+        // over the network and under someone else's key.
+        val licensedNasb = BundledTranslations.LICENSED.any { it.startsWith("NASB") }
+        val shown = online.filter { entry ->
+            imported.none { sameTranslation(it.info, entry) } && !(licensedNasb && isNasb(entry))
+        }
+        _state.value = State(imported, shown, importsLoaded)
+    }
+
+    /** An online NASB, under any of the names a provider gives it ("NASB", "NASB1995", "New American Standard Bible"). */
+    fun isNasb(entry: OnlineEntry): Boolean {
+        fun key(text: String) = text.uppercase().filter { it.isLetterOrDigit() }
+        return key(entry.id).startsWith("NASB") || key(entry.translation.abbreviation).startsWith("NASB") ||
+            entry.name.contains("New American Standard", ignoreCase = true)
+    }
+
+    /**
+     * The licensed NASB edition that now stands in for online translation [id], when one does: the
+     * 1995 for an online 1995 when this build carries it, else the 2020.
+     */
+    fun licensedReplacing(id: String): String? {
+        val hidden = allOnline.firstOrNull { it.id == id }?.takeIf(::isNasb) ?: return null
+        val licensed = BundledTranslations.LICENSED.filter { it.startsWith("NASB") }.ifEmpty { return null }
+        val wants1995 = "95" in hidden.id || "95" in hidden.name
+        return when {
+            wants1995 && "NASB1995" in licensed -> "NASB1995"
+            "NASB2020" in licensed -> "NASB2020"
+            else -> licensed.first()
+        }
     }
 
     /** The imported translation that now stands in for online translation [id], when one does. */

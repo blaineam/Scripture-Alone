@@ -2,6 +2,7 @@ package com.blainemiller.scripturealone.data
 
 import android.content.Context
 import com.blainemiller.scripturealone.BuildConfig
+import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.layout.ChapterLayout
 import com.blainemiller.scripturealone.data.rights.PublisherTerms
@@ -300,6 +301,19 @@ object BundledTranslations {
     private val open = mutableMapOf<String, ChapterSource>()
 
     /**
+     * Opens a sealed package. A downloaded copy that won't open — signed with a key this build no
+     * longer pins (the ASV was re-signed for 1.1.1), or damaged — is removed, so choosing the
+     * translation downloads it again instead of failing the same way for ever (iOS's
+     * `SealedTranslations.open`).
+     */
+    private inline fun <T> openDownloaded(file: java.io.File, open: () -> T): T = try {
+        open()
+    } catch (e: Exception) {
+        AssetPack.forFile(file.name)?.let(AssetLibrary::remove)
+        throw e
+    }
+
+    /**
      * Opens (once) and returns the source for [id]. Blocks on the first call; call off the main
      * thread. An online translation's source goes to the network for a chapter it hasn't cached.
      */
@@ -319,7 +333,7 @@ object BundledTranslations {
                     // the Keystore-wrapped blob is on disk. Zeroed once the package holds its copy.
                     val contentKey = SealedTranslationKeys.contentKey(app, "ASV", ContentKey.BUNDLED_SEED)
                     try {
-                        PackageChapterSource(TranslationPackage.open(file, PublisherKeyring(listOf(publisher)), contentKey))
+                        openDownloaded(file) { PackageChapterSource(TranslationPackage.open(file, PublisherKeyring(listOf(publisher)), contentKey)) }
                     } finally {
                         contentKey.fill(0)
                     }
@@ -336,7 +350,7 @@ object BundledTranslations {
                         seed.fill(0)
                     }
                     try {
-                        PackageChapterSource(TranslationPackage.open(file, PublisherKeyring(listOf(publisher)), contentKey))
+                        openDownloaded(file) { PackageChapterSource(TranslationPackage.open(file, PublisherKeyring(listOf(publisher)), contentKey)) }
                     } finally {
                         contentKey.fill(0)
                     }
