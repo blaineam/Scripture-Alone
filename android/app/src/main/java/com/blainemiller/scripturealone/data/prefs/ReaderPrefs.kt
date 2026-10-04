@@ -74,6 +74,9 @@ object ReaderKeys {
     // until the reader turns them on.
     val SEARCH_NOTES = booleanPreferencesKey("spotlight.notes")
     val SEARCH_FAVORITES = booleanPreferencesKey("spotlight.favorites")
+
+    /** Whether the first-launch User Guide prompt has been shown (ui/guide/GuideWelcome.kt) — once per install. */
+    val USER_GUIDE_WELCOME = booleanPreferencesKey("userGuide.welcomeShown")
 }
 
 /**

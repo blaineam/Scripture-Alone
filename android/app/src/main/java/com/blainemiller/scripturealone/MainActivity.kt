@@ -15,6 +15,9 @@ import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.ui.guide.GuideDebug
+import com.blainemiller.scripturealone.ui.guide.GuideDebugHost
+import com.blainemiller.scripturealone.ui.guide.GuideWelcome
 import com.blainemiller.scripturealone.ui.listen.ListenController
 import com.blainemiller.scripturealone.ui.reader.ReaderScreen
 import com.blainemiller.scripturealone.ui.reader.ReaderShortcuts
@@ -33,7 +36,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Debug builds: the User Guide or its first-launch prompt alone, without the reader — for
+        // checking them on an emulator without a Bible on screen.
+        GuideDebug.mode(this, intent)?.let { mode ->
+            setContent { GuideDebugHost(mode, onDone = ::finish) }
+            return
+        }
         AssetLibrary.confirmationLauncher = packConfirmation
+        // The User Guide prompt may appear on a plain cold launch only — not a link, file, shortcut or
+        // test run, and not when the activity is recreated.
+        val offerWelcome = savedInstanceState == null && GuideWelcome.mayOffer(this, intent)
         if (savedInstanceState == null) {
             openFromIntent(intent)
             // A cold launch, for the review gate (MillerKit's `recordLaunch`).
@@ -54,6 +66,7 @@ class MainActivity : ComponentActivity() {
                     studyCovers = panels.studyCovers(),
                     onStudyBack = panels.studyBack,
                     onMaps = panels.openMaps,
+                    offerWelcome = offerWelcome,
                 )
             }
         }

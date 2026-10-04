@@ -150,6 +150,8 @@ import com.blainemiller.scripturealone.ui.navigation.GoToSheet
 import com.blainemiller.scripturealone.ui.appearance.AppearanceSheet
 import com.blainemiller.scripturealone.ui.export.NotesExportSheet
 import com.blainemiller.scripturealone.ui.importnotes.NotesImportSheet
+import com.blainemiller.scripturealone.ui.guide.GuideWelcome
+import com.blainemiller.scripturealone.ui.guide.GuideWelcomeDialog
 import com.blainemiller.scripturealone.ui.guide.UserGuideSheet
 import com.blainemiller.scripturealone.ui.keepsake.KeepsakeBuilder
 import com.blainemiller.scripturealone.ui.keepsake.KeepsakeImportSheet
@@ -191,14 +193,19 @@ fun ReaderScreen(
     /** Study's back trail (⌥⌘[) and Maps & Timeline (⇧⌘M), for the keyboard shortcuts. */
     onStudyBack: () -> Unit = {},
     onMaps: () -> Unit = {},
+    /** A plain launch on which the first-launch User Guide prompt may appear (`GuideWelcome.mayOffer`). */
+    offerWelcome: Boolean = false,
 ) {
     val palette = model.theme.palette(isSystemInDarkTheme()).accented(model.accent)
     val style = model.style(palette)
     var sheet by rememberSaveable { mutableStateOf<ReaderSheet?>(null) }
     /** The Appearance sheet, from the AA button — the reader stays live behind it as the preview. */
     var appearance by rememberSaveable { mutableStateOf(false) }
-    // The bundled user guide (ui/guide/), opened from Appearance.
+    // The User Guide (ui/guide/), opened from Appearance or the first-launch prompt.
     var userGuide by rememberSaveable { mutableStateOf(false) }
+    /** The first-launch prompt pointing at the guide (ui/guide/GuideWelcome.kt). */
+    var welcome by rememberSaveable { mutableStateOf(false) }
+    var welcomeChecked by rememberSaveable { mutableStateOf(false) }
     /** The note the Notes panel opens on — set by Add Note and by a marker's "Open Note". */
     var openNote by rememberSaveable { mutableStateOf<String?>(null) }
     /** What a search link or shortcut asked the Go To sheet to search for, and the scope a notes link asked for. */
@@ -254,7 +261,7 @@ fun ReaderScreen(
     // a sheet is modal and the reader's shortcuts are out of reach until it closes.
     val legacyState = model.legacy
     val modalUp by rememberUpdatedState(
-        sheet != null || appearance || userGuide || legacyState.settingsOpen || legacyState.importing || legacyState.export != null ||
+        sheet != null || appearance || userGuide || welcome || legacyState.settingsOpen || legacyState.importing || legacyState.export != null ||
             legacyState.pendingFile != null || model.designer != null || model.sharedPassage != null,
     )
     LaunchedEffect(model) {
@@ -283,6 +290,7 @@ fun ReaderScreen(
         val kind = request.kind
         appearance = false
         userGuide = false
+        welcome = false
         legacyState.settingsOpen = false
         legacyState.importing = false
         legacyState.export = null
@@ -310,6 +318,21 @@ fun ReaderScreen(
             }
         }
         model.consumeRequest(request)
+    }
+
+    // The User Guide prompt, once per install: on a plain launch, after the first chapter has settled,
+    // and only over a bare reader — never stacked on a sheet, a link's request, a keepsake or a shared
+    // passage. Passed over on a launch where something else is up; the next plain launch offers it.
+    val welcomeContext = LocalContext.current
+    LaunchedEffect(offerWelcome) {
+        if (!offerWelcome || welcomeChecked) return@LaunchedEffect
+        welcomeChecked = true
+        if (GuideWelcome.seen(welcomeContext)) return@LaunchedEffect
+        withTimeoutOrNull(10_000) { snapshotFlow { model.chapter != null }.first { it } } ?: return@LaunchedEffect
+        kotlinx.coroutines.delay(900)
+        if (modalUp || model.request != null || model.selection.isNotEmpty() || model.legacy.reading != null) return@LaunchedEffect
+        GuideWelcome.markSeen(welcomeContext)
+        welcome = true
     }
 
     // Back — and Esc, which Android turns into Back when nothing takes it — clears a selection first,
@@ -528,6 +551,12 @@ fun ReaderScreen(
             })
             FullSheet(userGuide, onDismiss = { userGuide = false }) {
                 UserGuideSheet(palette, onDone = { userGuide = false })
+            }
+            if (welcome) {
+                GuideWelcomeDialog(palette, onRead = {
+                    welcome = false
+                    userGuide = true
+                }, onSkip = { welcome = false })
             }
 
             // Keepsake & Export, a keepsake file being opened, a notes export and the notes import —

@@ -583,8 +583,15 @@
     <string name="keepsake_note_copy">メモをコピー</string>
     <string name="keepsake_settings_title">思い出の聖書と書き出し</string>
     <string name="user_guide_title">ユーザガイド</string>
-    <string name="user_guide_unavailable">ユーザガイドを利用できません。</string>
-    <string name="user_guide_page">%2$dページ中%1$dページ</string>
+    <string name="user_guide_welcome_title">Scripture Alone へようこそ</string>
+    <string name="user_guide_welcome_message">図解入りのガイドで、聖書の閲覧、研究、メモなど、このアプリでできることをすべてご紹介します。</string>
+    <string name="user_guide_welcome_read">ガイドを読む</string>
+    <string name="user_guide_welcome_skip">スキップ</string>
+    <string name="user_guide_welcome_footnote">ガイドはいつでも Aa › ユーザガイド から開けます。</string>
+    <string name="user_guide_downloading">ユーザガイドをダウンロード中…</string>
+    <string name="user_guide_download_failed">ユーザガイドをダウンロードできませんでした。接続を確認して、もう一度お試しください。</string>
+    <string name="user_guide_contents">目次</string>
+    <string name="user_guide_chapters">章</string>
     <string name="keepsake_settings_section_yours">あなたの思い出の聖書</string>
     <string name="keepsake_settings_give_footer">ハイライトとメモのコピーをご家族に。長年書き込んできた聖書のデジタル版です。ご自身で手渡すファイルで、どこにも送信されません。</string>
     <string name="keepsake_settings_section_given">受け取った思い出の聖書</string>

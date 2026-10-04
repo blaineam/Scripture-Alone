@@ -49,12 +49,14 @@ final class FamilyShareAppDelegate: NSObject, UIApplicationDelegate {
     }
 
     private func accept(_ metadata: CKShare.Metadata) {
+        AppCommandCenter.shared.noteOpenedFromOutside()
         Task { await SharedBibleLibrary.shared.accept(metadata) }
     }
 }
 
 final class FamilyShareSceneDelegate: NSObject, UIWindowSceneDelegate {
     func windowScene(_ windowScene: UIWindowScene, userDidAcceptCloudKitShareWith cloudKitShareMetadata: CKShare.Metadata) {
+        AppCommandCenter.shared.noteOpenedFromOutside()
         Task { await SharedBibleLibrary.shared.accept(cloudKitShareMetadata) }
     }
 }
@@ -62,6 +64,7 @@ final class FamilyShareSceneDelegate: NSObject, UIWindowSceneDelegate {
 /// The native macOS build (compiled, not shipped) accepts shares through the app delegate.
 final class FamilyShareAppDelegate: NSObject, NSApplicationDelegate {
     func application(_ application: NSApplication, userDidAcceptCloudKitShareWith metadata: CKShare.Metadata) {
+        AppCommandCenter.shared.noteOpenedFromOutside()
         Task { await SharedBibleLibrary.shared.accept(metadata) }
     }
 

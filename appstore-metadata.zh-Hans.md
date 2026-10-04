@@ -66,7 +66,7 @@ NASB 2020 与 NASB 1995 © The Lockman Foundation。经许可使用。www.Lockma
 现已支持 NASB 2020。找到圣经对你正在经历之事的话语，并借助注释、地图与时间线离线研读。无广告，无需账户。
 
 ## whats_new
-1.1.1 — 新美国标准圣经 NASB 2020 现已内置，Scripture Alone 在你的 iPhone、iPad、Mac 和 Apple Watch 上以及小组件中，都会直接打开这个译本。NASB 1995 只需下载即可使用，ASV、BSB 和 KJV 也是如此。应用本身更小了：除 NASB 2020 以外的每个圣经译本，都会在你首次选用时下载。经 The Lockman Foundation 许可收录。
+1.1.2 — 全新的图文用户指南，以你的语言介绍 Scripture Alone 的全部功能。指南由应用本身绘制，因此会适配你的屏幕并跟随你的文字大小，无需像 PDF 那样双指缩放。它会在你首次打开时下载（Aa › 用户指南），让应用保持小巧。首次启动时，欢迎卡片会推荐它，你也可以跳过。此外还修正了一些翻译，包括日语、韩语和法语中自动滚动速度的名称。
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

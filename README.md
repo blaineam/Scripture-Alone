@@ -96,9 +96,10 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   read it from their shared database through the keepsake reader ("Reading Dad's Bible ·
   shared live, updated 5 min. ago"), cached for offline reading. Stop sharing any time; family
   keep the last copy and can save it as a keepsake. Design in [docs/heir-mode.md](docs/heir-mode.md).
-- **User Guide** — an illustrated PDF guide in all nine languages, bundled in the app (Aa › User
-  Guide) and on Android, including step-by-step setup of your own ESV and API.Bible keys. Source and
-  build: [docs/manual/](docs/manual/README.md).
+- **User Guide** — an illustrated guide in all nine languages, drawn natively (it reflows and
+  follows Dynamic Type) and downloaded on demand the first time it's opened (Aa › User Guide), with
+  a one-time welcome card offering it. Includes step-by-step setup of your own ESV and API.Bible
+  keys. Also a PDF on the website. Source and build: [docs/manual/](docs/manual/README.md).
 - **Notes export** — all notes, the ones you've filtered, or one note, as a typeset PDF,
   Markdown (one file or a folder) or plain text, with the verses quoted in your translation.
 
@@ -118,6 +119,8 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   own notes. Stop Sharing deletes the shared copy from iCloud. Data travels only between your
   iCloud and theirs, on Apple's servers.
 - Camera notes and verse images are processed on device.
+- Opening the User Guide downloads it once from this project's GitHub releases (and checks there for
+  a newer edition when you open it again); no cookies or identifiers are sent.
 
 ## On the way
 

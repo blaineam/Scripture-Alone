@@ -583,8 +583,15 @@
     <string name="keepsake_note_copy">메모 복사</string>
     <string name="keepsake_settings_title">기념 성경 및 내보내기</string>
     <string name="user_guide_title">사용 설명서</string>
-    <string name="user_guide_unavailable">사용 설명서를 사용할 수 없습니다.</string>
-    <string name="user_guide_page">%2$d페이지 중 %1$d페이지</string>
+    <string name="user_guide_welcome_title">Scripture Alone에 오신 것을 환영합니다</string>
+    <string name="user_guide_welcome_message">그림으로 된 설명서에서 읽기, 연구, 노트 등 앱의 모든 기능을 확인할 수 있습니다.</string>
+    <string name="user_guide_welcome_read">설명서 읽기</string>
+    <string name="user_guide_welcome_skip">건너뛰기</string>
+    <string name="user_guide_welcome_footnote">언제든지 Aa › 사용 설명서에서 열 수 있습니다.</string>
+    <string name="user_guide_downloading">사용 설명서 다운로드 중…</string>
+    <string name="user_guide_download_failed">사용 설명서를 다운로드할 수 없습니다. 연결 상태를 확인하고 다시 시도하세요.</string>
+    <string name="user_guide_contents">목차</string>
+    <string name="user_guide_chapters">장</string>
     <string name="keepsake_settings_section_yours">나의 기념 성경</string>
     <string name="keepsake_settings_give_footer">형광펜과 메모를 담은 사본을 가족에게 전해 주세요. 오랜 세월 표시해 온 성경의 디지털 판입니다. 직접 건네주는 파일이며, 어디로도 전송되지 않습니다.</string>
     <string name="keepsake_settings_section_given">내가 받은 기념 성경</string>

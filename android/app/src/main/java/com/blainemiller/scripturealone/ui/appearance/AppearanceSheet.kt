@@ -74,7 +74,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.text.countedString
-import com.blainemiller.scripturealone.ui.guide.UserGuide
 import com.blainemiller.scripturealone.ui.notes.PanelColors
 import com.blainemiller.scripturealone.ui.notes.PanelGroup
 import com.blainemiller.scripturealone.ui.notes.PanelHeader
@@ -112,7 +111,7 @@ fun AppearanceSheet(
     onDismiss: () -> Unit,
     /** Keepsake & Export — `LegacyAndExportRow`, which opens its own sheet. */
     onKeepsake: () -> Unit = {},
-    /** User Guide — `UserGuideRow`, which opens the bundled PDF guide. */
+    /** User Guide — `UserGuideRow`, which opens the guide (downloaded the first time it is opened). */
     onUserGuide: () -> Unit = {},
 ) {
     val density = LocalDensity.current
@@ -298,14 +297,11 @@ private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKee
         }
 
         // Keepsake & Export — `Section { LegacyAndExportRow() }` — then the User Guide, as `UserGuideRow()`
-        // follows it on iOS; only when this build carries a guide.
-        val hasGuide = remember { UserGuide.current(context) != null }
+        // follows it on iOS.
         PanelGroup(palette, Modifier.padding(top = 18.dp)) {
             LinkRow(stringResource(R.string.keepsake_settings_title), palette, push = true, onClick = onKeepsake)
-            if (hasGuide) {
-                PanelSeparator(palette)
-                LinkRow(stringResource(R.string.user_guide_title), palette, push = true, onClick = onUserGuide)
-            }
+            PanelSeparator(palette)
+            LinkRow(stringResource(R.string.user_guide_title), palette, push = true, onClick = onUserGuide)
         }
 
         // Feedback & Support — MillerKit's SupportSection.

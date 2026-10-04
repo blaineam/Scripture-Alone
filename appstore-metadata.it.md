@@ -66,7 +66,7 @@ bibbia,riveduta,diodati,cei,argomenti,ansia,lutto,conforto,devozionale,sermone,r
 Ora con la NASB 2020. Scopri che cosa dice la Bibbia di ciò che stai vivendo e studia offline con commentari, mappe e cronologie. Senza pubblicità né account.
 
 ## whats_new
-1.1.1 — La New American Standard Bible — NASB 2020 è ora integrata nell'app ed è la versione con cui Scripture Alone si apre, su iPhone, iPad, Mac e Apple Watch e nei tuoi widget. La NASB 1995 è a portata di download, insieme ad ASV, BSB e KJV. L'app stessa è più leggera: ogni Bibbia tranne la NASB 2020 viene scaricata la prima volta che la scegli. Inclusa su autorizzazione di The Lockman Foundation.
+1.1.2 — Una nuova Guida all'uso illustrata, nella tua lingua, spiega tutto ciò che fa Scripture Alone. È l'app stessa a disegnarla, quindi si adatta allo schermo e segue la dimensione del testo: niente pizzicare e zoomare come con un PDF. Si scarica la prima volta che la apri (Aa › Guida all'uso), così l'app resta leggera. Al primo avvio una scheda di benvenuto te la propone, con un pulsante per saltarla. Inoltre, piccole correzioni di traduzione, tra cui i nomi delle velocità di scorrimento automatico in giapponese, coreano e francese.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

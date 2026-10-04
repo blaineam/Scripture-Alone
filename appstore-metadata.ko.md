@@ -66,7 +66,7 @@ NASB 2020,KJV,개역개정,개역한글,성경앱,오프라인성경,성경통�
 이제 NASB 2020 지원. 지금 겪는 일에 성경이 하는 말을 찾고, 주석·지도·연표로 오프라인에서 공부하세요. 광고도 계정도 없습니다.
 
 ## whats_new
-1.1.1 — New American Standard Bible — NASB 2020이 이제 기본으로 내장되어, iPhone, iPad, Mac, Apple Watch와 위젯에서 Scripture Alone을 열면 바로 NASB 2020이 펼쳐집니다. NASB 1995는 ASV, BSB, KJV와 함께 내려받아 쓸 수 있습니다. 앱 자체는 더 가벼워졌습니다. NASB 2020을 제외한 모든 성경은 처음 선택할 때 다운로드됩니다. The Lockman Foundation의 허가를 받아 수록했습니다.
+1.1.2 — 그림이 담긴 새 사용 설명서가 추가되었습니다. 사용하는 언어로 Scripture Alone의 모든 기능을 안내합니다. 앱이 직접 그려 화면에 맞게 표시되고 글자 크기 설정을 따르므로, PDF처럼 손가락으로 확대하고 움직일 필요가 없습니다. 처음 열 때 다운로드되므로(Aa › 사용 설명서) 앱은 가볍게 유지됩니다. 처음 실행하면 환영 카드가 설명서를 안내하며, 건너뛸 수도 있습니다. 또한 일본어, 한국어, 프랑스어의 자동 스크롤 속도 이름 등 번역을 조금 다듬었습니다.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

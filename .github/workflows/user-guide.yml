@@ -1,13 +1,15 @@
 name: user-guide
 
-# The User Guide: builds the nine PDFs from docs/manual/ (Tools/build_manual.py, headless Chrome on
-# macOS, whose system fonts the template names) whenever their sources change, then
-#   - commits the rebuilt PDFs to ScriptureAlone/Resources/Manual/ (the apps bundle them; [ci skip]
-#     so Xcode Cloud doesn't start a build for it), and
-#   - publishes them as assets of the `user-guide` GitHub release, which the website links to:
-#     https://github.com/blaineam/Scripture-Alone/releases/download/user-guide/UserGuide-<code>.pdf
-#     (codes: en, zh-Hans, ja, de, fr, es, ko, pt-BR, it). The release is never marked latest, so
-#     it doesn't stand in front of the app releases.
+# The User Guide: whenever docs/manual/ changes, builds per language (Tools/build_manual.py, headless
+# Chrome on macOS, whose system fonts the template names) into dist/manual/:
+#   - UserGuide-<code>.pdf — the website's download, and
+#   - UserGuide-<code>.zip — guide.json + screenshots, which the apps download on demand and draw
+#     natively (ScriptureAloneCore/Guide/UserGuide.swift; Android ui/guide), plus
+#   - UserGuide-index.json — each zip's SHA-256, so an app re-downloads only a changed guide,
+# and publishes them all as assets of the `user-guide` GitHub release:
+#   https://github.com/blaineam/Scripture-Alone/releases/download/user-guide/<file>
+# (codes: en, zh-Hans, ja, de, fr, es, ko, pt-BR, it). Nothing is committed and nothing is bundled
+# in the apps. The release is never marked latest, so it doesn't stand in front of app releases.
 #
 # Run it by hand (workflow_dispatch) to republish without a source change.
 
@@ -17,11 +19,12 @@ on:
     paths:
       - "docs/manual/**"
       - "Tools/build_manual.py"
+      - "Tools/manual_json.py"
       - ".github/workflows/user-guide.yml"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write  # the release assets
 
 concurrency:
   group: user-guide
@@ -34,16 +37,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build the PDFs
+      - name: Build the PDFs and packages
         run: python3 Tools/build_manual.py
 
       - name: Show what was built
         run: |
-          ls -l ScriptureAlone/Resources/Manual/
+          ls -l dist/manual/
           {
             echo "### User Guide"
-            echo "| PDF | Size |"; echo "|---|---|"
-            for f in ScriptureAlone/Resources/Manual/UserGuide-*.pdf; do
+            echo "| File | Size |"; echo "|---|---|"
+            for f in dist/manual/UserGuide-*; do
               echo "| $(basename "$f") | $(du -h "$f" | cut -f1) |"
             done
           } >> "$GITHUB_STEP_SUMMARY"
@@ -56,20 +59,7 @@ jobs:
             gh release create user-guide --title "Scripture Alone User Guide" --latest=false \
               --notes "The illustrated Scripture Alone User Guide, one PDF per language: en, zh-Hans, ja, de, fr, es, ko, pt-BR, it. Rebuilt automatically from docs/manual/ whenever it changes; the same guide is inside the app under Aa › User Guide."
           fi
-          gh release upload user-guide ScriptureAlone/Resources/Manual/UserGuide-*.pdf --clobber
-
-      - name: Commit the rebuilt PDFs
-        run: |
-          git add ScriptureAlone/Resources/Manual/
-          if git diff --cached --quiet; then
-            echo "PDFs unchanged."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "User Guide: rebuild the PDFs from ${GITHUB_SHA::7} [ci skip]"
-          for attempt in 1 2 3; do
-            git pull --rebase origin main && git push origin HEAD:main && exit 0
-            sleep 5
-          done
-          exit 1
+          # The packages and PDFs first, the index last: an app that reads the new index finds the
+          # new package already there.
+          gh release upload user-guide dist/manual/UserGuide-*.pdf dist/manual/UserGuide-*.zip --clobber
+          gh release upload user-guide dist/manual/UserGuide-index.json --clobber

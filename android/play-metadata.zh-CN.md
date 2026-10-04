@@ -55,4 +55,4 @@
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.1.1 — New American Standard Bible — NASB 2020 现已内置，Scripture Alone 在你的手机、Wear OS 手表和小组件中都会默认打开它。NASB 1995 与 ASV、BSB 和 KJV 一样，只需一次下载即可获得。应用本身也更小了：除 NASB 2020 外，每本圣经都会在你首次选择时下载。经 The Lockman Foundation 许可收录。
+1.1.2 — 全新的图文用户指南，以你的语言介绍 Scripture Alone 的全部功能。指南由应用本身绘制，因此会适配你的屏幕并跟随你的文字大小，无需像 PDF 那样双指缩放。它会在你首次打开时下载（Aa › 用户指南），让应用保持小巧。首次启动时，欢迎卡片会推荐它，你也可以跳过。此外还修正了一些翻译，包括日语、韩语和法语中自动滚动速度的名称。

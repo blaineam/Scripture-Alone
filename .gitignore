@@ -12,3 +12,4 @@ ScriptureAlone/Generated/
 
 # Licensed translations: fetched from private storage at build time, never committed (docs/lockman/README.md).
 ScriptureAlone/Resources/Packages/NASB*
+dist/

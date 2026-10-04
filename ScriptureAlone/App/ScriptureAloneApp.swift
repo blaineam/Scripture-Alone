@@ -29,7 +29,16 @@ struct ScriptureAloneApp: App {
 
     var body: some Scene {
         WindowGroup {
+            #if DEBUG
+            if UserGuideDebugRoot.guideOnly || UserGuideDebugRoot.promptOnly {
+                // No reader is built at all in these modes (see UserGuideDebugRoot).
+                UserGuideDebugRootView()
+            } else {
+                RootView()
+            }
+            #else
             RootView()
+            #endif
         }
         .modelContainer(container)
         #if os(macOS)

@@ -1,7 +1,16 @@
 # User Guide
 
-The illustrated PDF guide bundled in the app (Aa › User Guide on iPhone, iPad and Mac; Settings on
-Android). One PDF per app language, written to `ScriptureAlone/Resources/Manual/UserGuide-<code>.pdf`.
+The illustrated User Guide, in nine languages. The apps draw it natively (SwiftUI on iPhone, iPad
+and Mac; Compose on Android) from a package they download the first time it's opened — Aa › User
+Guide, or the one-time welcome card. The website offers the same guide as a PDF.
+
+Per language, `Tools/build_manual.py` writes to `dist/manual/` (gitignored):
+
+| File | What |
+|---|---|
+| `UserGuide-<code>.zip` | `guide.json` (by `Tools/manual_json.py`, whose docstring is the schema; decoded by `ScriptureAloneCore/Guide/UserGuide.swift` and Android's `ui/guide`) + the screenshots it uses. Deterministic, so an unchanged guide keeps its hash. |
+| `UserGuide-index.json` | Each package's SHA-256 and size: the apps re-download only a changed guide. |
+| `UserGuide-<code>.pdf` | The website's download (headless Chrome). |
 
 | Path | What |
 |---|---|
@@ -11,9 +20,10 @@ Android). One PDF per app language, written to `ScriptureAlone/Resources/Manual/
 | `images/<locale>/` | Screenshots from `screenshots/`, framed in Apple's device bezels (Monkr's `static/devices/`) by `Tools/frame_manual_screens.swift` as transparent PNGs, then `pngquant --quality 65-90` |
 
 ```bash
-python3 Tools/build_manual.py           # all nine PDFs (headless Chrome)
-python3 Tools/build_manual.py en ja     # just these
-python3 Tools/build_manual.py --check   # non-zero if any PDF is missing or older than its sources
+python3 Tools/build_manual.py              # all nine: PDFs and packages
+python3 Tools/build_manual.py en ja        # just these
+python3 Tools/build_manual.py --packages   # packages only, no Chrome
+python3 Tools/build_manual.py --check      # non-zero if any output is missing or older than its sources
 ```
 
 Framing a screenshot (iPhone 17 Pro Max for the 6.9" captures, Watch Series 10 46 mm):
@@ -25,11 +35,13 @@ D=~/Documents/scripts/monkr/static/devices
 /tmp/frame $D/apple-watch-series-10-46mm/silver.png watch.png 72 192 112 420 docs/manual/images/<locale>/w02-verse.png
 ```
 
-**CI builds them.** `.github/workflows/user-guide.yml` runs on any push to main that touches
-`docs/manual/` or the builder: it renders all nine PDFs on a macOS runner, commits them to
-`ScriptureAlone/Resources/Manual/` (`[ci skip]`) and uploads them to the `user-guide` GitHub release,
-which the website links to — `https://github.com/blaineam/Scripture-Alone/releases/download/user-guide/UserGuide-<code>.pdf`.
-So edit the sources, push, and let CI produce the PDFs; build locally only to preview.
+**CI builds and publishes them.** `.github/workflows/user-guide.yml` runs on any push to main that
+touches `docs/manual/` or the builders: it builds everything on a macOS runner and uploads it to the
+`user-guide` GitHub release (`https://github.com/blaineam/Scripture-Alone/releases/download/user-guide/<file>`),
+packages first and the index last. Nothing is committed or bundled, so a guide change reaches the
+apps without an app release. Edit the sources, push, and let CI publish; build locally only to
+preview. A new block kind needs both renderers (and `UserGuide.supportedSchema` bumped if old apps
+can't skip it).
 
 ## Keeping it right
 

@@ -1143,13 +1143,27 @@
     <!-- When a keepsake was made. %1$s is a date. -->
     <string name="keepsake_row_made">made %1$s</string>
 
-    <!-- ===== User Guide (ui/guide/UserGuide.kt) ===== -->
-    <!-- Settings row and screen title: the bundled PDF user guide. -->
+    <!-- ===== User Guide (ui/guide/) ===== -->
+    <!-- Settings row and screen title: the User Guide. -->
     <string name="user_guide_title">User Guide</string>
-    <!-- Shown when this build has no user guide to open. -->
-    <string name="user_guide_unavailable">The user guide isn’t available.</string>
-    <!-- Accessibility label of a guide page. %1$d is the page number, %2$d the page count. -->
-    <string name="user_guide_page">Page %1$d of %2$d</string>
+    <!-- First-launch prompt (ui/guide/GuideWelcome.kt): its title. -->
+    <string name="user_guide_welcome_title">Welcome to Scripture Alone</string>
+    <!-- First-launch prompt: the one sentence under the title. -->
+    <string name="user_guide_welcome_message">An illustrated guide shows everything the app can do — reading, study, notes and more.</string>
+    <!-- First-launch prompt: the primary button, which opens the User Guide. -->
+    <string name="user_guide_welcome_read">Read the Guide</string>
+    <!-- First-launch prompt: the secondary button, which closes it. -->
+    <string name="user_guide_welcome_skip">Skip</string>
+    <!-- First-launch prompt: where to find the guide later. Aa is the Appearance button; the last part is user_guide_title. -->
+    <string name="user_guide_welcome_footnote">You can open it any time from Aa › User Guide.</string>
+    <!-- Shown while the User Guide downloads the first time it is opened. -->
+    <string name="user_guide_downloading">Downloading the User Guide…</string>
+    <!-- Shown when the User Guide can't be downloaded; a Try Again button follows. -->
+    <string name="user_guide_download_failed">The User Guide couldn\'t be downloaded. Check your connection and try again.</string>
+    <!-- Heading over the guide's list of chapters (when the guide itself names none). -->
+    <string name="user_guide_contents">Contents</string>
+    <!-- Accessibility label of the guide's chapters menu button. -->
+    <string name="user_guide_chapters">Chapters</string>
 
     <!-- ===== Share image designer (ShareStyle.kt, ShareDesigner.kt, ShareExport.kt) ===== -->
 

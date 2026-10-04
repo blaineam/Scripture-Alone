@@ -6,6 +6,4 @@
     <cache-path name="slide_capture" path="slide_capture/" />
     <!-- Notes exports and keepsakes, for the share sheet (ui/export/ExportFiles.kt). -->
     <cache-path name="exports" path="exports/" />
-    <!-- The bundled user guide, copied out of the assets to read and share (ui/guide/UserGuide.kt). -->
-    <cache-path name="user_guide" path="user_guide/" />
 </paths>

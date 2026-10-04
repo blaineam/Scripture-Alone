@@ -583,8 +583,15 @@
     <string name="keepsake_note_copy">Copiar anotação</string>
     <string name="keepsake_settings_title">Recordação &amp; exportação</string>
     <string name="user_guide_title">Guia do usuário</string>
-    <string name="user_guide_unavailable">O guia do usuário não está disponível.</string>
-    <string name="user_guide_page">Página %1$d de %2$d</string>
+    <string name="user_guide_welcome_title">Boas-vindas ao Scripture Alone</string>
+    <string name="user_guide_welcome_message">Um guia ilustrado mostra tudo o que o app faz — leitura, estudo, notas e muito mais.</string>
+    <string name="user_guide_welcome_read">Ler o guia</string>
+    <string name="user_guide_welcome_skip">Pular</string>
+    <string name="user_guide_welcome_footnote">Você pode abri-lo a qualquer momento em Aa › Guia do usuário.</string>
+    <string name="user_guide_downloading">Baixando o Guia do usuário…</string>
+    <string name="user_guide_download_failed">Não foi possível baixar o Guia do usuário. Verifique sua conexão e tente novamente.</string>
+    <string name="user_guide_contents">Sumário</string>
+    <string name="user_guide_chapters">Capítulos</string>
     <string name="keepsake_settings_section_yours">Sua Bíblia de recordação</string>
     <string name="keepsake_settings_give_footer">Dê à sua família uma cópia dos seus destaques e anotações — uma versão digital da Bíblia que você marcou ao longo dos anos. É um arquivo que você mesmo entrega; nada é enviado a lugar nenhum.</string>
     <string name="keepsake_settings_section_given">Recordações que você recebeu</string>

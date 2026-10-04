@@ -55,4 +55,4 @@ DRM フリーの ePub、テキストレイヤーのある聖書 PDF、USFM フ�
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.1.1 — New American Standard Bible — NASB 2020 を内蔵しました。Scripture Alone はスマートフォン、Wear OS ウォッチ、ウィジェットで、まずこの訳を開きます。NASB 1995 も ASV、BSB、KJV と同じく、ダウンロード1回で追加できます。アプリ自体も軽くなりました。NASB 2020 以外の聖書は、最初に選んだときにダウンロードされます。The Lockman Foundation の許可を得て収録しています。
+1.1.2 — イラスト入りの新しいユーザガイドを追加しました。お使いの言語で、Scripture Alone のすべての機能を紹介します。アプリ自身が描画するので、画面に合わせて表示され、文字サイズの設定にも従います。PDF のようにピンチで拡大する必要はありません。初めて開いたときにダウンロードされるため（Aa › ユーザガイド）、アプリは軽いままです。初回起動時にはウェルカムカードでご案内します（スキップもできます）。このほか、日本語・韓国語・フランス語の自動スクロールの速度名など、翻訳を細かく修正しました。

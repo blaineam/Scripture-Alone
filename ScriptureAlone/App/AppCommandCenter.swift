@@ -29,6 +29,10 @@ final class AppCommandCenter {
 
     private(set) var pending: [AppCommand] = []
 
+    /// Set once anything outside the app — a link, a file, an intent, Spotlight, a family share —
+    /// has asked it for something this launch. The one-time User Guide offer stays out of the way.
+    private(set) var openedFromOutside = false
+
     /// Which scope the Notes panel should show next time it is up. One-shot; the panel clears it.
     var notesScope: NotesScopeRequest?
 
@@ -40,15 +44,22 @@ final class AppCommandCenter {
     private init() {}
 
     func post(_ command: AppCommand) {
+        openedFromOutside = true
         pending.append(command)
     }
 
     /// Posts a URL the app understands. Returns false when it isn't one.
     @discardableResult
     func open(_ url: URL) -> Bool {
+        openedFromOutside = true
         guard let link = AppLink(url: url) else { return false }
         post(.link(link))
         return true
+    }
+
+    /// Something arrived that isn't a command — a keepsake file, a family share invitation.
+    func noteOpenedFromOutside() {
+        openedFromOutside = true
     }
 
     /// Hands every waiting command to the caller, oldest first.

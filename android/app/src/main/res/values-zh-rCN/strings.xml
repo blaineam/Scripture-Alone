@@ -583,8 +583,15 @@
     <string name="keepsake_note_copy">复制笔记</string>
     <string name="keepsake_settings_title">珍藏与导出</string>
     <string name="user_guide_title">用户指南</string>
-    <string name="user_guide_unavailable">用户指南不可用。</string>
-    <string name="user_guide_page">第 %1$d 页，共 %2$d 页</string>
+    <string name="user_guide_welcome_title">欢迎使用 Scripture Alone</string>
+    <string name="user_guide_welcome_message">一份图文并茂的指南，介绍本应用的全部功能——阅读、研读、笔记等等。</string>
+    <string name="user_guide_welcome_read">阅读指南</string>
+    <string name="user_guide_welcome_skip">跳过</string>
+    <string name="user_guide_welcome_footnote">你可以随时从 Aa › 用户指南 打开它。</string>
+    <string name="user_guide_downloading">正在下载用户指南…</string>
+    <string name="user_guide_download_failed">无法下载用户指南。请检查网络连接后重试。</string>
+    <string name="user_guide_contents">目录</string>
+    <string name="user_guide_chapters">章节</string>
     <string name="keepsake_settings_section_yours">你的珍藏圣经</string>
     <string name="keepsake_settings_give_footer">把你的标记和笔记做成一份副本送给家人——一本你多年来圈画过的数字圣经。文件由你亲手交给对方，不会上传到任何地方。</string>
     <string name="keepsake_settings_section_given">别人送你的珍藏</string>

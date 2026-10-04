@@ -583,8 +583,15 @@
     <string name="keepsake_note_copy">Copia nota</string>
     <string name="keepsake_settings_title">Ricordo e esportazione</string>
     <string name="user_guide_title">Guida all’uso</string>
-    <string name="user_guide_unavailable">La guida all’uso non è disponibile.</string>
-    <string name="user_guide_page">Pagina %1$d di %2$d</string>
+    <string name="user_guide_welcome_title">Benvenuto in Scripture Alone</string>
+    <string name="user_guide_welcome_message">Una guida illustrata mostra tutto ciò che l\'app sa fare: lettura, studio, note e altro ancora.</string>
+    <string name="user_guide_welcome_read">Leggi la guida</string>
+    <string name="user_guide_welcome_skip">Salta</string>
+    <string name="user_guide_welcome_footnote">Puoi aprirla in qualsiasi momento da Aa › Guida all’uso.</string>
+    <string name="user_guide_downloading">Download della Guida all’uso in corso…</string>
+    <string name="user_guide_download_failed">Impossibile scaricare la Guida all’uso. Controlla la connessione e riprova.</string>
+    <string name="user_guide_contents">Indice</string>
+    <string name="user_guide_chapters">Capitoli</string>
     <string name="keepsake_settings_section_yours">La tua Bibbia ricordo</string>
     <string name="keepsake_settings_give_footer">Dona alla tua famiglia una copia delle tue evidenziazioni e note: una versione digitale della Bibbia che hai annotato negli anni. È un file che consegni tu; non viene inviato nulla.</string>
     <string name="keepsake_settings_section_given">Ricordi che hai ricevuto</string>

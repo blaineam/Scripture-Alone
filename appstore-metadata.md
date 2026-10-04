@@ -64,7 +64,7 @@ nasb 2020,nasb 1995,kjv,asv,bsb,topical,anxiety,grief,comfort,commentary,devotio
 Now with the NASB 2020. Find what the Bible says about what you're going through and study offline with commentary, maps and timelines. No ads, no accounts.
 
 ## whats_new
-1.1.1 — The New American Standard Bible — NASB 2020 is now built in, and it's what Scripture Alone opens to, on your iPhone, iPad, Mac and Apple Watch and in your widgets. The NASB 1995 is a download away, with the ASV, BSB and KJV. The app itself is smaller: every Bible but the NASB 2020 downloads the first time you choose it. Included by permission of The Lockman Foundation.
+1.1.2 — A new illustrated User Guide, in your language, covers everything Scripture Alone does. The app draws it itself, so it fits your screen and follows your text size — no pinching and zooming around a PDF. It downloads the first time you open it (Aa › User Guide), so the app stays small, and on first launch a welcome card offers it, with a Skip button. Also: small translation fixes, including the auto-scroll speed names in Japanese, Korean and French.
 
 ## review_notes
 Scripture Alone is an open-source Bible app (AGPL-3.0, https://github.com/blaineam/Scripture-Alone). No account or login is required for any feature, and the app reads offline from its first launch.
@@ -81,7 +81,7 @@ Cross-references, maps, timeline and charts ship inside the app and need no down
 
 Optional iCloud: highlights, notes and favorites sync through the user's own private CloudKit database. The developer operates no server and collects no data.
 
-Quick tour: tap the passage title to jump anywhere (try "jn 3 16"). Tap verses to select them, then highlight, favorite, add a note, copy, share or listen. The book-and-wrench button turns on Study mode (cross-references, commentary, context); the map button opens maps, timeline and charts. The notes button opens the Notes panel, where the camera button scans a sermon slide (the camera is optional; a photo from the library works too). The Aa button holds reading options, Keepsake & Export, and the illustrated User Guide (Aa › User Guide), which reads offline.
+Quick tour: tap the passage title to jump anywhere (try "jn 3 16"). Tap verses to select them, then highlight, favorite, add a note, copy, share or listen. The book-and-wrench button turns on Study mode (cross-references, commentary, context); the map button opens maps, timeline and charts. The notes button opens the Notes panel, where the camera button scans a sermon slide (the camera is optional; a photo from the library works too). The Aa button holds reading options, Keepsake & Export, and the illustrated User Guide (Aa › User Guide), which downloads once from the project's GitHub releases (github.com/blaineam/Scripture-Alone; no identifiers are sent and no account is needed) the first time it is opened; a one-time welcome card on first launch offers it, with Skip. Nothing else in the review depends on it.
 
 Original languages: with a verse selected, choose Original Languages to see it word by word in Hebrew or Greek with parsing, Strong's numbers and a lexicon. This works in every translation; it downloads once on first use.
 

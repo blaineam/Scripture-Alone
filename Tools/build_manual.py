@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""Builds the bundled user guide: one PDF per app language.
+"""Builds the User Guide: per app language, a PDF (the website's download) and a package the apps
+download on demand and draw natively (guide.json + its screenshots, zipped).
 
-    python3 Tools/build_manual.py            # every language
-    python3 Tools/build_manual.py en ja      # just these
-    python3 Tools/build_manual.py --check    # fail if a PDF is missing or older than its sources
+    python3 Tools/build_manual.py              # every language: PDFs and packages
+    python3 Tools/build_manual.py en ja        # just these
+    python3 Tools/build_manual.py --packages   # packages only (no Chrome needed)
+    python3 Tools/build_manual.py --check      # fail if an output is missing or older than its sources
 
 Sources live in docs/manual/: `template.html` (layout and print styles), `content/<locale>.html`
 (the words, one file per language — English is the source the others are translated from) and
 `images/<locale>/` (screenshots, downscaled from screenshots/ by hand; the English set predates
-the NASB 2020 so the guide never carries licensed text). The PDFs are written to
-ScriptureAlone/Resources/Manual/, where the iOS app bundles them and Android's sync task copies them.
+the NASB 2020 so the guide never carries licensed text). Everything is written to dist/manual/ —
+UserGuide-<code>.pdf, UserGuide-<code>.zip and UserGuide-index.json — which CI
+(.github/workflows/user-guide.yml) publishes to the `user-guide` GitHub release. Nothing is bundled
+in the apps: they fetch the zip for their language when the guide is first opened.
 
 Rendering is Chrome's own print-to-PDF, headless, so the page boxes, page numbers and fonts match
 what a reader would get printing the HTML.
@@ -22,11 +26,17 @@ import subprocess
 import sys
 import tempfile
 import time
+import hashlib
+import json
+import zipfile
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import manual_json  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 MANUAL = ROOT / "docs" / "manual"
-OUT = ROOT / "ScriptureAlone" / "Resources" / "Manual"
+OUT = ROOT / "dist" / "manual"
 CHROME = os.environ.get("CHROME", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 
 # Content file locale → the PDF's language code (what the apps look up).
@@ -89,11 +99,49 @@ def build(locale: str) -> None:
     print(f"{target.relative_to(ROOT)}  {target.stat().st_size / 1e6:.1f} MB")
 
 
+def zip_path(locale: str) -> Path:
+    return OUT / f"UserGuide-{LOCALES[locale]}.zip"
+
+
+def package(locale: str) -> None:
+    """The guide as the apps read it. Deterministic (fixed timestamps, sorted names), so an
+    unchanged guide keeps its hash and the apps never download it twice."""
+    doc = manual_json.convert((MANUAL / "content" / f"{locale}.html").read_text(), LOCALES[locale])
+    images = MANUAL / "images" / locale
+    missing = [n for n in manual_json.images_used(doc) if not (images / n).exists()]
+    if missing:
+        sys.exit(f"{locale}: images missing: {', '.join(sorted(missing))}")
+    OUT.mkdir(parents=True, exist_ok=True)
+    target = zip_path(locale)
+    with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as z:
+        def add(name: str, data: bytes, compress: bool = True):
+            info = zipfile.ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED if compress else zipfile.ZIP_STORED
+            info.external_attr = 0o644 << 16
+            z.writestr(info, data)
+        add("guide.json", json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode())
+        for name in sorted(manual_json.images_used(doc)):
+            add(f"images/{name}", (images / name).read_bytes(), compress=False)
+    print(f"{target.relative_to(ROOT)}  {target.stat().st_size / 1e6:.1f} MB")
+
+
+def write_index() -> None:
+    """UserGuide-index.json: each package's SHA-256 and size, read by the apps to see whether the
+    copy they hold is current."""
+    index = {"schema": 1, "packages": {}}
+    for locale, code in LOCALES.items():
+        z = zip_path(locale)
+        if z.exists():
+            index["packages"][code] = {"sha256": hashlib.sha256(z.read_bytes()).hexdigest(),
+                                       "size": z.stat().st_size}
+    (OUT / "UserGuide-index.json").write_text(json.dumps(index, indent=2, sort_keys=True) + "\n")
+
+
 def stale(locale: str) -> bool:
-    target = pdf_path(locale)
-    if not target.exists():
-        return True
-    return any(s.stat().st_mtime > target.stat().st_mtime for s in sources(locale))
+    for target in (pdf_path(locale), zip_path(locale)):
+        if not target.exists() or any(s.stat().st_mtime > target.stat().st_mtime for s in sources(locale)):
+            return True
+    return False
 
 
 def main(args: list[str]) -> int:
@@ -109,7 +157,10 @@ def main(args: list[str]) -> int:
         if not (MANUAL / "content" / f"{locale}.html").exists():
             print(f"skipping {locale}: no content/{locale}.html")
             continue
-        build(locale)
+        if "--packages" not in args:
+            build(locale)
+        package(locale)
+    write_index()
     return 0
 
 

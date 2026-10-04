@@ -174,6 +174,10 @@ struct ReaderView: View {
         .background(keyboardShortcuts)
         // Links, intents and Spotlight results, including any that arrived before this view did.
         .onChange(of: AppCommandCenter.shared.pending, initial: true) { performCommands() }
+        // The one-time offer of the User Guide, never over anything else.
+        .userGuidePrompt(blocked: showPicker || showAppearance || showTranslations || showCompare || showNotes
+                         || study.isOn || popover != nil || legacy.reading != nil
+                         || shareCoordinator.designer != nil)
         #if DEBUG
         .task { await stageScreenshotScene() }
         #endif
