@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.text.countedString
+import com.blainemiller.scripturealone.ui.guide.UserGuide
 import com.blainemiller.scripturealone.ui.notes.PanelColors
 import com.blainemiller.scripturealone.ui.notes.PanelGroup
 import com.blainemiller.scripturealone.ui.notes.PanelHeader
@@ -111,6 +112,8 @@ fun AppearanceSheet(
     onDismiss: () -> Unit,
     /** Keepsake & Export — `LegacyAndExportRow`, which opens its own sheet. */
     onKeepsake: () -> Unit = {},
+    /** User Guide — `UserGuideRow`, which opens the bundled PDF guide. */
+    onUserGuide: () -> Unit = {},
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
@@ -181,7 +184,7 @@ fun AppearanceSheet(
                     if (licences) {
                         FontLicences(palette, onBack = { licences = false })
                     } else {
-                        AppearanceForm(model, palette, onKeepsake = onKeepsake, onLicences = {
+                        AppearanceForm(model, palette, onKeepsake = onKeepsake, onUserGuide = onUserGuide, onLicences = {
                             licences = true
                             scope.launch {
                                 expanded = true
@@ -196,7 +199,7 @@ fun AppearanceSheet(
 }
 
 @Composable
-private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKeepsake: () -> Unit, onLicences: () -> Unit) {
+private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKeepsake: () -> Unit, onUserGuide: () -> Unit, onLicences: () -> Unit) {
     val context = LocalContext.current
     val fontScale = LocalDensity.current.fontScale
     // Each swatch shows its theme as it would look now — Auto follows the device, as `palette(for: colorScheme)`.
@@ -294,9 +297,15 @@ private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKee
             SectionFooter(stringResource(R.string.appearance_search_footer), palette)
         }
 
-        // Keepsake & Export — `Section { LegacyAndExportRow() }`.
+        // Keepsake & Export — `Section { LegacyAndExportRow() }` — then the User Guide, as `UserGuideRow()`
+        // follows it on iOS; only when this build carries a guide.
+        val hasGuide = remember { UserGuide.current(context) != null }
         PanelGroup(palette, Modifier.padding(top = 18.dp)) {
             LinkRow(stringResource(R.string.keepsake_settings_title), palette, push = true, onClick = onKeepsake)
+            if (hasGuide) {
+                PanelSeparator(palette)
+                LinkRow(stringResource(R.string.user_guide_title), palette, push = true, onClick = onUserGuide)
+            }
         }
 
         // Feedback & Support — MillerKit's SupportSection.

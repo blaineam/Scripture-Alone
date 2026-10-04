@@ -96,6 +96,9 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   read it from their shared database through the keepsake reader ("Reading Dad's Bible ·
   shared live, updated 5 min. ago"), cached for offline reading. Stop sharing any time; family
   keep the last copy and can save it as a keepsake. Design in [docs/heir-mode.md](docs/heir-mode.md).
+- **User Guide** — an illustrated PDF guide in all nine languages, bundled in the app (Aa › User
+  Guide) and on Android, including step-by-step setup of your own ESV and API.Bible keys. Source and
+  build: [docs/manual/](docs/manual/README.md).
 - **Notes export** — all notes, the ones you've filtered, or one note, as a typeset PDF,
   Markdown (one file or a folder) or plain text, with the verses quoted in your translation.
 
@@ -118,8 +121,8 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 
 ## On the way
 
-- **More translations** — CSB, ESV, NKJV and NASB licenses are being requested from their
-  publishers. Licensed texts will never be committed to this repository. A licensed translation
+- **More translations** — the NASB 2020 and NASB 1995 are licensed from The Lockman Foundation and
+  built in; CSB, ESV, NKJV and LSB licenses are being requested from their publishers. Licensed texts will never be committed to this repository. A licensed translation
   ships as a signed, encrypted package (`.sabible`): chapters sealed one at a time with
   AES-256-GCM, terms in a header signed with the publisher's Ed25519 key and enforced by the same
   code that governs the bundled texts, and a sealed search index so a packaged translation is fully

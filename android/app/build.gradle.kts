@@ -235,6 +235,12 @@ val syncBundledData by tasks.registering(Sync::class) {
     from(rootProject.layout.projectDirectory.dir("../ScriptureAloneCore/Sources/ScriptureAloneCore/Resources")) {
         include("LifeThemes.json")
     }
+    // The user guide, a PDF per app language (Tools/build_manual.py), as iOS bundles it — read by
+    // ui/guide/UserGuide.kt from assets/manual/.
+    from(rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources/Manual")) {
+        include("UserGuide-*.pdf")
+        into("manual")
+    }
     into(layout.buildDirectory.dir("generated/bundledData"))
 }
 tasks.named("preBuild") { dependsOn(syncBundledData) }

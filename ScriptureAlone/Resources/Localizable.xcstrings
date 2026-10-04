@@ -28040,7 +28040,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Détendue"
+            "value" : "Détendu"
           }
         },
         "it" : {
@@ -28052,13 +28052,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ゆっくり"
+            "value" : "ゆるやか"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "느리게"
+            "value" : "여유롭게"
           }
         },
         "pt-BR" : {
@@ -38955,6 +38955,59 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用我的个人声音…"
+          }
+        }
+      }
+    },
+    "User Guide" : {
+      "comment" : "Settings row and title of the bundled PDF user guide",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benutzerhandbuch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guía de uso"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guide d’utilisation"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guida all’uso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ユーザガイド"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용 설명서"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guia do usuário"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用户指南"
           }
         }
       }

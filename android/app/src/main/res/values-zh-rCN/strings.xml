@@ -582,6 +582,9 @@
     <string name="keepsake_note_copied">已复制</string>
     <string name="keepsake_note_copy">复制笔记</string>
     <string name="keepsake_settings_title">珍藏与导出</string>
+    <string name="user_guide_title">用户指南</string>
+    <string name="user_guide_unavailable">用户指南不可用。</string>
+    <string name="user_guide_page">第 %1$d 页，共 %2$d 页</string>
     <string name="keepsake_settings_section_yours">你的珍藏圣经</string>
     <string name="keepsake_settings_give_footer">把你的标记和笔记做成一份副本送给家人——一本你多年来圈画过的数字圣经。文件由你亲手交给对方，不会上传到任何地方。</string>
     <string name="keepsake_settings_section_given">别人送你的珍藏</string>

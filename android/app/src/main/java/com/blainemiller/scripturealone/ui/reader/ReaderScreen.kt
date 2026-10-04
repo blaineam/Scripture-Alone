@@ -150,6 +150,7 @@ import com.blainemiller.scripturealone.ui.navigation.GoToSheet
 import com.blainemiller.scripturealone.ui.appearance.AppearanceSheet
 import com.blainemiller.scripturealone.ui.export.NotesExportSheet
 import com.blainemiller.scripturealone.ui.importnotes.NotesImportSheet
+import com.blainemiller.scripturealone.ui.guide.UserGuideSheet
 import com.blainemiller.scripturealone.ui.keepsake.KeepsakeBuilder
 import com.blainemiller.scripturealone.ui.keepsake.KeepsakeImportSheet
 import com.blainemiller.scripturealone.ui.keepsake.LegacyBanner
@@ -196,6 +197,8 @@ fun ReaderScreen(
     var sheet by rememberSaveable { mutableStateOf<ReaderSheet?>(null) }
     /** The Appearance sheet, from the AA button — the reader stays live behind it as the preview. */
     var appearance by rememberSaveable { mutableStateOf(false) }
+    // The bundled user guide (ui/guide/), opened from Appearance.
+    var userGuide by rememberSaveable { mutableStateOf(false) }
     /** The note the Notes panel opens on — set by Add Note and by a marker's "Open Note". */
     var openNote by rememberSaveable { mutableStateOf<String?>(null) }
     /** What a search link or shortcut asked the Go To sheet to search for, and the scope a notes link asked for. */
@@ -251,7 +254,7 @@ fun ReaderScreen(
     // a sheet is modal and the reader's shortcuts are out of reach until it closes.
     val legacyState = model.legacy
     val modalUp by rememberUpdatedState(
-        sheet != null || appearance || legacyState.settingsOpen || legacyState.importing || legacyState.export != null ||
+        sheet != null || appearance || userGuide || legacyState.settingsOpen || legacyState.importing || legacyState.export != null ||
             legacyState.pendingFile != null || model.designer != null || model.sharedPassage != null,
     )
     LaunchedEffect(model) {
@@ -279,6 +282,7 @@ fun ReaderScreen(
         val request = model.request ?: return@LaunchedEffect
         val kind = request.kind
         appearance = false
+        userGuide = false
         legacyState.settingsOpen = false
         legacyState.importing = false
         legacyState.export = null
@@ -518,7 +522,13 @@ fun ReaderScreen(
             AppearanceSheet(model, palette, visible = appearance, onDismiss = { appearance = false }, onKeepsake = {
                 appearance = false
                 model.legacy.settingsOpen = true
+            }, onUserGuide = {
+                appearance = false
+                userGuide = true
             })
+            FullSheet(userGuide, onDismiss = { userGuide = false }) {
+                UserGuideSheet(palette, onDone = { userGuide = false })
+            }
 
             // Keepsake & Export, a keepsake file being opened, a notes export and the notes import —
             // full-height sheets over the reader, in that order of depth.

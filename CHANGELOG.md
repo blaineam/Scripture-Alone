@@ -2,6 +2,12 @@
 
 ## After 1.0.0
 
+- A User Guide is built into the app, in all nine languages: under Aa › User Guide, an illustrated
+  guide to everything the app does — reading, Go To and Topics, adding and importing Bibles (with the
+  Reformation Study Bible ePub and the CSB pew Bible PDF as known-good imports), step-by-step setup of
+  your own free Crossway (ESV) and API.Bible (CSB, NKJV) keys, notes and sermon slides, Study, Listen,
+  sharing, keepsakes, widgets and the watch. It reads offline and can be shared as a PDF. On Android
+  too. Built by `Tools/build_manual.py` from `docs/manual/`.
 - The NASB 2020 is the Bible inside the app, and what it opens to — on iPhone, iPad, Mac, Apple Watch,
   Android and Wear OS, and in the widgets and complications. The NASB 1995, the ASV and every other Bible
   download the first time you choose them, so the app itself is smaller. The watches carry the NASB 2020

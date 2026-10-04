@@ -582,6 +582,9 @@
     <string name="keepsake_note_copied">Copiado</string>
     <string name="keepsake_note_copy">Copiar anotação</string>
     <string name="keepsake_settings_title">Recordação &amp; exportação</string>
+    <string name="user_guide_title">Guia do usuário</string>
+    <string name="user_guide_unavailable">O guia do usuário não está disponível.</string>
+    <string name="user_guide_page">Página %1$d de %2$d</string>
     <string name="keepsake_settings_section_yours">Sua Bíblia de recordação</string>
     <string name="keepsake_settings_give_footer">Dê à sua família uma cópia dos seus destaques e anotações — uma versão digital da Bíblia que você marcou ao longo dos anos. É um arquivo que você mesmo entrega; nada é enviado a lugar nenhum.</string>
     <string name="keepsake_settings_section_given">Recordações que você recebeu</string>

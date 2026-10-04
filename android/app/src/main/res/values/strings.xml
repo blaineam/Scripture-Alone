@@ -1143,6 +1143,14 @@
     <!-- When a keepsake was made. %1$s is a date. -->
     <string name="keepsake_row_made">made %1$s</string>
 
+    <!-- ===== User Guide (ui/guide/UserGuide.kt) ===== -->
+    <!-- Settings row and screen title: the bundled PDF user guide. -->
+    <string name="user_guide_title">User Guide</string>
+    <!-- Shown when this build has no user guide to open. -->
+    <string name="user_guide_unavailable">The user guide isn’t available.</string>
+    <!-- Accessibility label of a guide page. %1$d is the page number, %2$d the page count. -->
+    <string name="user_guide_page">Page %1$d of %2$d</string>
+
     <!-- ===== Share image designer (ShareStyle.kt, ShareDesigner.kt, ShareExport.kt) ===== -->
 
     <!-- Verse-card template names. -->

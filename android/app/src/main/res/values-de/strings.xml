@@ -582,6 +582,9 @@
     <string name="keepsake_note_copied">Kopiert</string>
     <string name="keepsake_note_copy">Notiz kopieren</string>
     <string name="keepsake_settings_title">Erinnerung &amp; Export</string>
+    <string name="user_guide_title">Benutzerhandbuch</string>
+    <string name="user_guide_unavailable">Das Benutzerhandbuch ist nicht verfügbar.</string>
+    <string name="user_guide_page">Seite %1$d von %2$d</string>
     <string name="keepsake_settings_section_yours">Deine Erinnerungs-Bibel</string>
     <string name="keepsake_settings_give_footer">Schenk deiner Familie eine Kopie deiner Markierungen und Notizen — eine digitale Fassung der Bibel, die du über die Jahre angestrichen hast. Es ist eine Datei, die du selbst weitergibst; nichts wird irgendwohin gesendet.</string>
     <string name="keepsake_settings_section_given">Erinnerungen, die du bekommen hast</string>

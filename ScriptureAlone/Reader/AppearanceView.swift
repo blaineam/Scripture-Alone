@@ -98,7 +98,10 @@ struct AppearanceView: View {
                      comment: "Footer under the Spotlight toggles in Settings")
             }
 
-            Section { LegacyAndExportRow() }
+            Section {
+                LegacyAndExportRow()
+                UserGuideRow()
+            }
 
             SupportSection(app: .scriptureAlone,
                            extraContext: ["Translation": model.source?.info.id ?? "—"])

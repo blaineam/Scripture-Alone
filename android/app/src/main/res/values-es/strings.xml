@@ -582,6 +582,9 @@
     <string name="keepsake_note_copied">Copiada</string>
     <string name="keepsake_note_copy">Copiar nota</string>
     <string name="keepsake_settings_title">Recuerdo y exportación</string>
+    <string name="user_guide_title">Guía de uso</string>
+    <string name="user_guide_unavailable">La guía de uso no está disponible.</string>
+    <string name="user_guide_page">Página %1$d de %2$d</string>
     <string name="keepsake_settings_section_yours">Tu Biblia de recuerdo</string>
     <string name="keepsake_settings_give_footer">Regala a tu familia una copia de tus subrayados y notas: una versión digital de la Biblia que has marcado con los años. Es un archivo que entregas tú; no se envía nada a ninguna parte.</string>
     <string name="keepsake_settings_section_given">Recuerdos que te han dado</string>
