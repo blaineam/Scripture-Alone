@@ -54,7 +54,9 @@ Android's text names only what the Android app does (`docs/android-parity.md`, i
 An edition's own picture goes in `images/<locale>/<platform>/<name>` and wins over the shared one:
 the Android shots are `android/play-assets/<Play locale>/phone/*` in Monkr's Pixel 7 Pro bezel
 (upscaled ×2.25; screen hole 480×1039 at 60,131, corner 26; the 1080×2160 capture scaled to fill and
-cropped evenly at the sides) and `wear/02-verse.png` in a circle.
+cropped evenly at the sides) and `wear/02-verse.png` in a circle. After a new Play capture
+(`android/play-assets/README.md`), `python3 Tools/frame_android_guide_screens.py [guide locale …]`
+redoes all nine languages' `android/` pictures that way, pngquant included.
 
 **PDF-only and app-only passages.** Wrap what only the website's PDF may carry in
 `data-only="pdf"` (block or inline), and its replacement for the apps in `data-only="app"`:

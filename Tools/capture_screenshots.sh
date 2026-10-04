@@ -34,7 +34,11 @@ read -r -a LOCALES <<<"${SHOT_LOCALES:-en-US zh-Hans ja de-DE fr-FR es-ES ko pt-
 #
 # THE NASB TEXT MUST NEVER BE SHOWN TO AN AI SYSTEM (docs/lockman/README.md). This rig only writes PNGs
 # and prints file names; the owner looks at the NASB shots. Never open them with an AI tool.
-if [ -f "$PROJECT_ROOT/ScriptureAlone/Resources/Packages/NASB2020.sabible" ] &&
+# ENGLISH_BIBLE in the environment overrides the detection (ENGLISH_BIBLE=BSB for an English set
+# without the NASB, e.g. the User Guide's).
+if [ -n "${ENGLISH_BIBLE:-}" ]; then
+    echo "note: English shows the $ENGLISH_BIBLE (ENGLISH_BIBLE override)" >&2
+elif [ -f "$PROJECT_ROOT/ScriptureAlone/Resources/Packages/NASB2020.sabible" ] &&
     ! grep -q 'masked: \[UInt8\] = \[\]' "$PROJECT_ROOT/ScriptureAlone/Generated/ContentKeySeed.swift" 2>/dev/null; then
     ENGLISH_BIBLE=NASB2020
 else
@@ -52,7 +56,8 @@ locale_bible() {  # locale_bible <asc locale> -> the Bible a reader in that loca
 locale_dir() {  # locale_dir <base dir> <asc locale> -> where that locale's captures go
     if [ "$2" = "en-US" ]; then echo "$1"; else echo "$1/$2"; fi
 }
-OUT_DIR="$PROJECT_ROOT/screenshots"
+# SHOTS_DIR overrides where the captures go (default: the App Store sets in screenshots/).
+OUT_DIR="${SHOTS_DIR:-$PROJECT_ROOT/screenshots}"
 SLIDE="$PROJECT_ROOT/docs/appstore-screenshots/sample-slide.jpg"
 
 # Dedicated simulators, so this rig never shares a device (or its status-bar breadcrumbs) with

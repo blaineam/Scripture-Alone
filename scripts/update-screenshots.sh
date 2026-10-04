@@ -56,7 +56,21 @@ if [[ "$NO_UPLOAD" = "1" ]]; then
     exit 0
 fi
 
-# ASC auth, as the shared pipeline does it.
+# ASC auth, as the shared pipeline does it — but first the key, id and issuer rocket uses
+# (~/.rocket/config.json), which belong together. Two .p8 files in private_keys and an issuer from
+# the shell that belongs to the other one gave a 401 (2026-10-04).
+ROCKET_CONFIG="$HOME/.rocket/config.json"
+if [[ -z "${ASC_API_KEY_PATH:-}" && -f "$ROCKET_CONFIG" ]]; then
+    eval "$(python3 - "$ROCKET_CONFIG" <<'PY'
+import json, os, shlex, sys
+c = json.load(open(sys.argv[1]))
+path = os.path.expanduser(c.get("ascKeyPath", ""))
+if path and os.path.isfile(path) and c.get("ascIssuerId") and c.get("ascKeyId"):
+    print(f"ASC_API_KEY_PATH={shlex.quote(path)} ASC_API_KEY_ID={shlex.quote(c['ascKeyId'])} "
+          f"ASC_API_ISSUER_ID={shlex.quote(c['ascIssuerId'])}")
+PY
+)"
+fi
 if [[ -z "${ASC_API_KEY_PATH:-}" ]]; then
     for DIR in "$HOME/.appstoreconnect/private_keys" "$HOME/private_keys"; do
         CAND=$(ls "$DIR"/AuthKey_*.p8 2>/dev/null | head -1 || true)

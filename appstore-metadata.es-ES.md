@@ -66,7 +66,7 @@ rvr1960,reina valera,lbla,biblia,ansiedad,duelo,consuelo,devocional,sermones,com
 Ahora con la NASB 2020. Descubre lo que la Biblia dice de lo que estás viviendo y estudia sin conexión con comentarios, mapas y cronologías. Sin anuncios ni cuentas.
 
 ## whats_new
-1.1.2 — Una nueva Guía de uso ilustrada, en tu idioma, explica todo lo que hace Scripture Alone. La dibuja la propia app, así que se ajusta a tu pantalla y sigue tu tamaño de texto: nada de pellizcar y hacer zoom como en un PDF. Se descarga la primera vez que la abres (Aa › Guía de uso), así la app sigue siendo ligera. En el primer inicio, una tarjeta de bienvenida te la ofrece, con un botón para omitirla. Además, pequeñas correcciones de traducción, como los nombres de las velocidades del desplazamiento automático en japonés, coreano y francés.
+1.1.3 — En el iPhone, el título del pasaje (tócalo para ir a cualquier parte: Ir a) ahora siempre cabe en la barra de herramientas. El botón de traducción ahora es un icono, y la traducción que estás leyendo aparece marcada en su menú. Si el nombre de un libro es demasiado largo para el espacio, se abrevia, por ejemplo «1Ts 5». En el iPad y el Mac, el botón conserva el nombre de la traducción. Las imágenes de la Guía de uso muestran la nueva barra de herramientas.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

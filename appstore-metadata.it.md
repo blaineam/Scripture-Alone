@@ -66,7 +66,7 @@ bibbia,riveduta,diodati,cei,argomenti,ansia,lutto,conforto,devozionale,sermone,r
 Ora con la NASB 2020. Scopri che cosa dice la Bibbia di ciò che stai vivendo e studia offline con commentari, mappe e cronologie. Senza pubblicità né account.
 
 ## whats_new
-1.1.2 — Una nuova Guida all'uso illustrata, nella tua lingua, spiega tutto ciò che fa Scripture Alone. È l'app stessa a disegnarla, quindi si adatta allo schermo e segue la dimensione del testo: niente pizzicare e zoomare come con un PDF. Si scarica la prima volta che la apri (Aa › Guida all'uso), così l'app resta leggera. Al primo avvio una scheda di benvenuto te la propone, con un pulsante per saltarla. Inoltre, piccole correzioni di traduzione, tra cui i nomi delle velocità di scorrimento automatico in giapponese, coreano e francese.
+1.1.3 — Su iPhone il titolo del passo (toccalo per andare ovunque: Vai a) ora entra sempre nella barra degli strumenti. Il pulsante della traduzione ora è un'icona e la traduzione che stai leggendo è spuntata nel suo menu. Se il nome di un libro è troppo lungo per lo spazio, viene abbreviato, ad esempio «1Ts 5». Su iPad e Mac il pulsante mantiene il nome della traduzione. Le immagini della Guida all'uso mostrano la nuova barra degli strumenti.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.1.2 — A new illustrated User Guide, in your language, covers everything Scripture Alone does. The app draws it itself, so it fits your screen and follows your text size — no pinching and zooming around a PDF. It downloads the first time you open it (Aa › User Guide), so the app stays small, and on first launch a welcome card offers it, with a Skip button. Also: small translation fixes, including the auto-scroll speed names in Japanese, Korean and French.
+1.1.3 — On phones, the passage title (tap it to go anywhere — Go To) now always fits in the toolbar. The translation button is now an icon, with the translation you're reading checked in its menu, and a book name too long for the space shortens to its abbreviation, like "1 Thess 5". On tablets, the translation's name stays on its button when there's room. The User Guide's pictures show the new toolbar.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

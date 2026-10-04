@@ -66,7 +66,7 @@ bible,louis segond,darby,kjv,commentaire,méditation,thèmes,anxiété,deuil,ré
 Désormais avec la NASB 2020. Trouvez ce que la Bible dit de ce que vous traversez et étudiez hors ligne avec commentaires, cartes et chronologies. Sans pub, sans compte.
 
 ## whats_new
-1.1.2 — Un nouveau guide d'utilisation illustré, dans votre langue, présente tout ce que fait Scripture Alone. L'app le dessine elle-même : il s'adapte à votre écran et suit votre taille de texte, sans pincer ni zoomer comme dans un PDF. Il se télécharge la première fois que vous l'ouvrez (Aa › Guide d'utilisation), pour que l'app reste légère. Au premier lancement, une carte de bienvenue vous le propose, avec un bouton pour passer. Et quelques corrections de traduction, dont les noms des vitesses de défilement automatique en japonais, en coréen et en français.
+1.1.3 — Sur iPhone, le titre du passage (touchez-le pour aller n'importe où : Aller à) tient désormais toujours dans la barre d'outils. Le bouton de traduction devient une icône, et la traduction que vous lisez est cochée dans son menu. Un nom de livre trop long pour la place s'abrège, par exemple « 1Th 5 ». Sur iPad et Mac, le bouton garde le nom de la traduction. Les images du guide d'utilisation montrent la nouvelle barre d'outils.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

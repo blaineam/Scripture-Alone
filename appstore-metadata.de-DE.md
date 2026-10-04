@@ -66,7 +66,7 @@ andacht,predigt,kommentar,themen,trost,angst,trauer,lutherbibel,elberfelder,kjv,
 Jetzt mit der NASB 2020. Finde, was die Bibel zu dem sagt, was dich bewegt, und studiere offline mit Kommentaren, Karten und Zeitleisten. Ohne Werbung, ohne Konto.
 
 ## whats_new
-1.1.2 — Ein neues, illustriertes Benutzerhandbuch in deiner Sprache zeigt alles, was Scripture Alone kann. Die App zeichnet es selbst, daher passt es auf deinen Bildschirm und folgt deiner Textgröße – kein Zoomen und Verschieben wie bei einem PDF. Es wird beim ersten Öffnen geladen (Aa › Benutzerhandbuch), so bleibt die App klein. Beim ersten Start bietet eine Willkommenskarte es an; du kannst sie überspringen. Außerdem kleine Übersetzungskorrekturen, darunter die Namen der Geschwindigkeiten für automatisches Scrollen auf Japanisch, Koreanisch und Französisch.
+1.1.3 — Auf dem iPhone passt der Titel der Stelle (tippe darauf, um überallhin zu springen – Gehe zu) jetzt immer in die Symbolleiste. Die Schaltfläche für die Übersetzung ist jetzt ein Symbol; in ihrem Menü ist die Übersetzung, die du gerade liest, abgehakt. Ist ein Buchname zu lang für den Platz, wird er abgekürzt, etwa „1Thess 5“. Auf iPad und Mac zeigt die Schaltfläche weiterhin den Namen der Übersetzung. Die Bilder im Benutzerhandbuch zeigen die neue Symbolleiste.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

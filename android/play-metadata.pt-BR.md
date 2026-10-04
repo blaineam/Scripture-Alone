@@ -53,4 +53,4 @@ As suas marcações, notas e favoritos ficam no seu aparelho. Não há servidor 
 Feito para ajudar as pessoas a estudar a Palavra de Deus e a se aproximar de Cristo.
 
 ## release_notes
-1.1.2 — Um novo Guia do usuário ilustrado, no seu idioma, mostra tudo o que o Scripture Alone faz. Ele é desenhado pelo próprio app, então se ajusta à sua tela e acompanha o tamanho do seu texto — nada de dar zoom como num PDF. Ele é baixado na primeira vez que você o abre (Aa › Guia do usuário), e o app continua leve. Na primeira abertura, um cartão de boas-vindas o oferece, com um botão para pular. E pequenas correções de tradução em japonês, coreano e francês.
+1.1.3 — No celular, o título da passagem (toque nele para ir a qualquer lugar: Ir para) agora sempre cabe na barra de ferramentas. O botão de tradução agora é um ícone, e a tradução que você está lendo aparece marcada no menu dele. Se o nome de um livro for longo demais, ele é abreviado, como “1Ts 5”. Nos tablets, o botão mostra o nome da tradução quando há espaço. As imagens do Guia do usuário mostram a nova barra.

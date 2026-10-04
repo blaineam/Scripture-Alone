@@ -53,4 +53,4 @@ Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 
 ## release_notes
-1.1.2 — Ein neues, illustriertes Benutzerhandbuch in deiner Sprache zeigt alles, was Scripture Alone kann. Die App zeichnet es selbst: Es passt auf deinen Bildschirm und folgt deiner Textgröße – kein Zoomen wie bei einem PDF. Es wird beim ersten Öffnen geladen (Aa › Benutzerhandbuch), so bleibt die App klein. Beim ersten Start bietet eine Willkommenskarte es an; du kannst sie überspringen. Dazu kleine Übersetzungskorrekturen, etwa beim Tempo des automatischen Scrollens.
+1.1.3 — Auf dem Handy passt der Titel der Stelle (tippe darauf, um überallhin zu springen – Gehe zu) jetzt immer in die Symbolleiste. Die Schaltfläche für die Übersetzung ist jetzt ein Symbol; in ihrem Menü ist die Übersetzung, die du liest, abgehakt. Ist ein Buchname zu lang für den Platz, wird er abgekürzt, etwa „1Thess 5“. Auf Tablets zeigt die Schaltfläche den Namen der Übersetzung, wenn Platz ist. Die Bilder im Benutzerhandbuch zeigen die neue Symbolleiste.

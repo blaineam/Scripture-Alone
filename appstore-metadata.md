@@ -64,7 +64,7 @@ nasb 2020,nasb 1995,kjv,asv,bsb,topical,anxiety,grief,comfort,commentary,devotio
 Now with the NASB 2020. Find what the Bible says about what you're going through and study offline with commentary, maps and timelines. No ads, no accounts.
 
 ## whats_new
-1.1.2 — A new illustrated User Guide, in your language, covers everything Scripture Alone does. The app draws it itself, so it fits your screen and follows your text size — no pinching and zooming around a PDF. It downloads the first time you open it (Aa › User Guide), so the app stays small, and on first launch a welcome card offers it, with a Skip button. Also: small translation fixes, including the auto-scroll speed names in Japanese, Korean and French.
+1.1.3 — On iPhone, the passage title (tap it to go anywhere — Go To) now always fits in the toolbar. The translation button is now an icon, with the translation you're reading checked in its menu, and a book name too long for the space shortens to its abbreviation, like "1 Thess 5". On iPad and Mac, the translation's name stays on its button. The User Guide's pictures show the new toolbar.
 
 ## review_notes
 Scripture Alone is an open-source Bible app (AGPL-3.0, https://github.com/blaineam/Scripture-Alone). No account or login is required for any feature, and the app reads offline from its first launch.
