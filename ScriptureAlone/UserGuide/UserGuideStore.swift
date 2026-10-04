@@ -26,6 +26,9 @@ final class UserGuideStore {
 
     /// The package language: the app's own language, or English.
     let language: String
+    /// This device's edition of it (`en`, `ipad-en`, `mac-en`): the guide speaks of the reader's
+    /// own device.
+    let edition: String
     private(set) var phase = Phase.idle
     private(set) var guide: UserGuide?
     /// The package's size from the index, shown while it downloads.
@@ -39,15 +42,17 @@ final class UserGuideStore {
     @ObservationIgnored private var images: [String: Image] = [:]
 
     init(language: String = UserGuideStore.preferredLanguage,
+         device: UserGuidePackage.Device = UserGuideStore.currentDevice,
          root: URL = UserGuideStore.defaultRoot,
          session: URLSession = UserGuideStore.makeSession()) {
         self.language = language
+        self.edition = UserGuidePackage.edition(language: language, device: device)
         self.root = root
         self.session = session
     }
 
-    /// Where this language's copy is unpacked.
-    var directory: URL { root.appending(path: language, directoryHint: .isDirectory) }
+    /// Where this edition's copy is unpacked.
+    var directory: URL { root.appending(path: edition, directoryHint: .isDirectory) }
 
     /// Called when the guide is shown: shows a held copy at once (and looks for a newer one
     /// behind it), or fetches the first copy.
@@ -91,9 +96,10 @@ final class UserGuideStore {
             defer { task = nil }
             do {
                 let index = try await Self.fetchIndex(session: session)
-                guard let entry = index.packages[language] else { throw URLError(.fileDoesNotExist) }
+                let name = UserGuidePackage.entryName(edition: edition, language: language, index: index)
+                guard let entry = index.packages[name] else { throw URLError(.fileDoesNotExist) }
                 downloadSize = entry.size
-                let data = try await Self.fetch(UserGuidePackage.packageURL(language: language), session: session,
+                let data = try await Self.fetch(UserGuidePackage.packageURL(language: name), session: session,
                                                 expected: entry.size) { fraction in
                     Task { @MainActor in self.progressed(fraction) }
                 }
@@ -122,9 +128,10 @@ final class UserGuideStore {
             defer { task = nil }
             do {
                 let index = try await Self.fetchIndex(session: session)
-                guard UserGuidePackage.needsUpdate(held: held, index: index, language: language),
-                      let entry = index.packages[language] else { return }
-                let data = try await Self.fetch(UserGuidePackage.packageURL(language: language), session: session,
+                let name = UserGuidePackage.entryName(edition: edition, language: language, index: index)
+                guard UserGuidePackage.needsUpdate(held: held, index: index, language: name),
+                      let entry = index.packages[name] else { return }
+                let data = try await Self.fetch(UserGuidePackage.packageURL(language: name), session: session,
                                                 expected: entry.size) { _ in }
                 let installed = try await Self.install(data, sha256: entry.sha256, into: directory)
                 images = [:]
@@ -201,6 +208,17 @@ final class UserGuideStore {
         }
         #endif
         return UserGuidePackage.language(for: Bundle.main.preferredLocalizations)
+    }
+
+    /// The device the guide speaks to: the Mac edition on a Mac (this app, or an iPhone/iPad build
+    /// running there), the iPad edition on an iPad, the iPhone edition otherwise.
+    static var currentDevice: UserGuidePackage.Device {
+        #if os(macOS)
+        return .mac
+        #else
+        if ProcessInfo.processInfo.isiOSAppOnMac || ProcessInfo.processInfo.isMacCatalystApp { return .mac }
+        return UIDevice.current.userInterfaceIdiom == .pad ? .ipad : .iphone
+        #endif
     }
 
     nonisolated static var defaultRoot: URL {

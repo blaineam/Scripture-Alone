@@ -1,4 +1,6 @@
 <!-- title: Scripture Alone — 사용 설명서 -->
+<!-- Editions (docs/manual/README.md): data-only="iphone ipad mac android apple app pdf". The PDF reads
+     as the iPhone edition. "누르다" reads "클릭하다" on the Mac: <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span>. -->
 <div class="cover">
   <div class="sun"></div>
   <div class="eyebrow">사용 설명서</div>
@@ -9,7 +11,7 @@
     <img src="IMG/03-study.png" alt="">
     <img src="IMG/02-topics.png" alt="">
   </div>
-  <div class="edition">iPhone, iPad, Mac, Apple Watch용 · 버전 1.1</div>
+  <div class="edition"><span data-only="pdf">iPhone, iPad, Mac, Apple Watch용</span><span data-only="app"><span data-only="iphone">iPhone, Apple Watch용</span><span data-only="ipad">iPad용</span><span data-only="mac">Mac용</span><span data-only="android">Android 휴대전화, 태블릿, Wear OS용</span></span> · 버전 1.1</div>
 </div>
 
 <div class="toc">
@@ -27,7 +29,8 @@
     <li>나에게 맞게 <span>테마, 글꼴, 레이아웃</span></li>
     <li>공유 <span>구절 이미지, 텍스트, 링크</span></li>
     <li>기념 성경, 가족, 내보내기 <span>내 성경을 물려주기</span></li>
-    <li>위젯, Apple Watch, Siri, Spotlight</li>
+    <li data-only="apple">위젯, Apple Watch, Siri, Spotlight</li>
+    <li data-only="android">위젯, Wear OS, 바로가기</li>
     <li>동기화와 개인정보 보호</li>
     <li>자주 묻는 질문</li>
   </ol>
@@ -36,34 +39,36 @@
 <section class="chapter">
   <h2>환영합니다</h2>
   <p class="lede">Scripture Alone은 하나님의 말씀을 아무 방해 없이 공부할 수 있는 성경 앱입니다. 광고도, 추적기도, 계정도 없고, 여러분의 데이터를 보관하는 서버도 없습니다.</p>
-  <p>성경 전체가 기기 안에 들어 있어서, 설치하는 순간부터 언제 어디서나 인터넷 없이 읽을 수 있습니다. 새미국표준성경(New American Standard Bible — NASB 2020)이 기본으로 들어 있으며, 앱을 열면 이 성경이 나타납니다. 다른 성경이나 주석, 원어 자료처럼 나중에 추가하는 것도 한 번만 다운로드하면 그 뒤로는 오프라인에서 사용할 수 있습니다.</p>
-  <p>하이라이트, 메모, 즐겨찾기는 여러분의 개인 iCloud를 통해 내 기기끼리만 동기화됩니다. 개발자를 포함해 다른 누구도 볼 수 없습니다.</p>
+  <p>성경 전체가 <span data-only="pdf">기기</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">기기</span></span> 안에 들어 있어서, 설치하는 순간부터 언제 어디서나 인터넷 없이 읽을 수 있습니다. 새미국표준성경(New American Standard Bible — NASB 2020)이 기본으로 들어 있으며, 앱을 열면 이 성경이 나타납니다. 다른 성경이나 주석, 원어 자료처럼 나중에 추가하는 것도 한 번만 다운로드하면 그 뒤로는 오프라인에서 사용할 수 있습니다.</p>
+  <p data-only="apple">하이라이트, 메모, 즐겨찾기는 여러분의 개인 iCloud를 통해 내 기기끼리만 동기화됩니다. 개발자를 포함해 다른 누구도 볼 수 없습니다.</p>
+  <p data-only="android">하이라이트, 메모, 즐겨찾기는 기기에만 보관됩니다. 개발자를 포함해 다른 누구도 볼 수 없습니다.</p>
   <div class="tip"><span class="note-label">화면 구성</span>
-  읽기 화면 위쪽 왼편에는 <span class="ui">메모</span>와 <span class="ui">연구</span>가, 가운데에는 본문 제목(누르면 어디로든 이동할 수 있습니다)이, 오른편에는 번역본(<span class="ui">NASB</span>)과 모양·설정을 여는 <span class="ui">Aa</span>가 있습니다. 아래쪽에는 이전 장, 자동 스크롤, <span class="ui">듣기</span>, 다음 장 버튼이 있습니다. Mac에서는 같은 버튼들이 창의 도구 막대에 모여 있습니다.</div>
+  <span data-only="iphone ipad android">읽기 화면 위쪽 왼편에는 <span class="ui"><span data-only="apple">메모</span><span data-only="android">노트</span></span>와 <span class="ui">연구</span>가, 가운데에는 본문 제목(누르면 어디로든 이동할 수 있습니다)이, 오른편에는 번역본(<span class="ui">NASB</span>)과 모양·설정을 여는 <span class="ui">Aa</span>가 있습니다. 아래쪽에는 이전 장, 자동 스크롤, <span class="ui">듣기</span>, 다음 장 버튼이 있습니다.</span><span data-only="pdf"> Mac에서는 같은 버튼들이 창의 도구 막대에 모여 있습니다.</span><span data-only="mac">모든 버튼이 창의 도구 막대에 있습니다. 왼쪽에는 이전·다음 장 화살표가, 가운데에는 본문 제목(클릭하면 어디로든 이동할 수 있습니다)이, 오른쪽에는 <span class="ui">자동 스크롤</span>, <span class="ui">듣기</span>, 번역본(<span class="ui">NASB</span>), 모양·설정을 여는 <span class="ui">Aa</span>, <span class="ui">메모</span>, <span class="ui">연구</span>가 있습니다.</span></div>
   <h3>지원하는 언어</h3>
-  <p>앱은 기기의 언어 설정을 따릅니다. 한국어로 사용하시면 <b>개역한글</b>(1952/61) 성경 전체가 함께 제공되며, 처음 필요할 때 한 번 다운로드됩니다. 영어와 한국어 외에도 중국어 간체, 일본어, 독일어, 프랑스어, 스페인어, 브라질 포르투갈어, 이탈리아어를 지원하고, 언어마다 그 언어의 성경(和合本, 文語訳, Lutherbibel 1912, Louis Segond, Reina-Valera 1909, Bíblia Livre, Riveduta)이 함께 제공됩니다. 어떤 성경이든 어떤 언어 설정에서나 읽을 수 있습니다.</p>
+  <p>앱은 <span data-only="pdf">기기</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">기기</span></span>의 언어 설정을 따릅니다. 한국어로 사용하시면 <b>개역한글</b>(1952/61) 성경 전체가 함께 제공되며, 처음 필요할 때 한 번 다운로드됩니다. 영어와 한국어 외에도 중국어 간체, 일본어, 독일어, 프랑스어, 스페인어, 브라질 포르투갈어, 이탈리아어를 지원하고, 언어마다 그 언어의 성경(和合本, 文語訳, Lutherbibel 1912, Louis Segond, Reina-Valera 1909, Bíblia Livre, Riveduta)이 함께 제공됩니다. 어떤 성경이든 어떤 언어 설정에서나 읽을 수 있습니다.</p>
 </section>
 
 <section class="chapter">
   <h2>읽기</h2>
-  <p class="lede">앱을 열면 바로 성경을 읽을 수 있습니다. 다른 기능은 모두 한 번만 누르면 나타나고, 원하기 전까지는 어떤 것도 본문을 가리지 않습니다.</p>
+  <p class="lede">앱을 열면 바로 성경을 읽을 수 있습니다. 다른 기능은 모두 한 번만 <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> 나타나고, 원하기 전까지는 어떤 것도 본문을 가리지 않습니다.</p>
   <div class="feature">
     <div class="text">
       <h3>페이지 넘기기</h3>
       <ul>
-        <li>스크롤하며 읽다가 장 끝에서 계속 내리거나 다음 장 링크를 누르세요.</li>
-        <li>아래쪽 막대의 화살표로 이전·다음 장으로 갑니다(키보드: <kbd>⌘[</kbd>, <kbd>⌘]</kbd>).</li>
-        <li>가로로 돌린 iPhone, iPad, 넓은 Mac 창에서는 인쇄된 성경처럼 두 단으로 펼쳐집니다. 쓸어 넘기거나 화살표 키, 스페이스 바, 트랙패드로 넘기세요.</li>
+        <li>스크롤하며 읽다가 장 끝에서 계속 내리거나 다음 장 링크를 <span data-only="iphone ipad android">누르세요</span><span data-only="mac">클릭하세요</span>.</li>
+        <li><span data-only="iphone ipad android">아래쪽 막대</span><span data-only="mac">도구 막대</span>의 화살표로 이전·다음 장으로 갑니다<span data-only="ipad mac pdf">(키보드: <kbd>⌘[</kbd>, <kbd>⌘]</kbd>)</span><span data-only="android">(키보드: <kbd>Ctrl+[</kbd>, <kbd>Ctrl+]</kbd>). 옆으로 쓸어 넘겨도 됩니다</span>.</li>
+        <li data-only="pdf">가로로 돌린 iPhone, iPad, 넓은 Mac 창에서는 인쇄된 성경처럼 두 단으로 펼쳐집니다. 쓸어 넘기거나 화살표 키, 스페이스 바, 트랙패드로 넘기세요.</li>
+        <li data-only="app"><span data-only="iphone">iPhone을 가로로 돌리면 인쇄된 성경처럼 두 단으로 펼쳐집니다. 쓸어서 페이지를 넘기세요.</span><span data-only="ipad">iPad에서는 화면이 충분히 넓으면 인쇄된 성경처럼 두 단으로 펼쳐집니다. 쓸어 넘기거나 키보드의 화살표 키, 스페이스 바로 넘기세요.</span><span data-only="mac">창이 넓으면 인쇄된 성경처럼 두 단으로 펼쳐집니다. 화살표 키, 스페이스 바, 또는 트랙패드에서 쓸어서 페이지를 넘기세요.</span></li>
       </ul>
       <h3>손대지 않고 읽기</h3>
-      <p><span class="ui">자동 스크롤</span>을 누르면 본문이 저절로 넘어가 다음 장까지 이어집니다. 길게 누르면 네 가지 속도 중에서 고를 수 있습니다.</p>
+      <p><span data-only="iphone ipad android">아래쪽 막대</span><span data-only="mac">도구 막대</span>의 <span class="ui">자동 스크롤</span>을 <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> 본문이 저절로 넘어가 다음 장까지 이어집니다. <span data-only="iphone ipad android">길게 누르면</span><span data-only="mac">옆의 화살표를 클릭하면</span> 네 가지 속도 중에서 고를 수 있습니다.</p>
       <h3>각주와 그리스도의 말씀</h3>
-      <p>각주 표시를 누르면 각주가 열립니다. 그리스도의 말씀은 붉은색, 시는 시의 형식으로 표시되고 소제목도 보이며, 각각 <span class="ui">Aa</span>에서 끌 수 있습니다.</p>
+      <p>각주 표시를 <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> 각주가 열립니다. 그리스도의 말씀은 붉은색, 시는 시의 형식으로 표시되고 소제목도 보이며, 각각 <span class="ui">Aa</span>에서 끌 수 있습니다.</p>
     </div>
     <figure><img class="phone" src="IMG/01-reader.png" alt=""><figcaption>읽기 화면</figcaption></figure>
   </div>
   <h3>구절 선택하기</h3>
-  <p>구절을 누르면 선택되고, 다른 구절을 더 누르면 함께 선택됩니다. 선택한 구절로 할 수 있는 일이 모인 막대가 나타납니다.</p>
+  <p>구절을 <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> 선택되고, 다른 구절을 더 <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> 함께 선택됩니다. 선택한 구절로 할 수 있는 일이 모인 막대가 나타납니다.</p>
   <table class="facts">
     <tr><th>버튼</th><th>하는 일</th></tr>
     <tr><td>색 점</td><td>다섯 가지 색 중 하나로 하이라이트합니다. 지우개는 하이라이트를 지웁니다.</td></tr>
@@ -71,18 +76,18 @@
     <tr><td>연필</td><td>구절에 메모를 씁니다.</td></tr>
     <tr><td>복사</td><td>구절을 장절 표기와 함께 복사합니다.</td></tr>
     <tr><td>공유</td><td>꾸민 이미지, 텍스트, 링크로 공유합니다.</td></tr>
-    <tr><td>글자가 있는 책</td><td>원어 자료: 구절을 히브리어나 그리스어로 한 단어씩 보여 줍니다(한 번에 한 구절).</td></tr>
+    <tr><td><span data-only="apple">글자가 있는 책</span><span data-only="android">文A</span></td><td>원어 자료: 구절을 히브리어나 그리스어로 한 단어씩 보여 줍니다(한 번에 한 구절).</td></tr>
     <tr><td>듣기</td><td>선택한 구절을 소리 내어 읽어 줍니다.</td></tr>
     <tr><td>✕</td><td>선택을 해제합니다.</td></tr>
   </table>
   <div class="note"><span class="note-label">출판사 제한</span>일부 번역본은 한 번에 복사하거나 공유할 수 있는 분량을 제한합니다. 제한을 넘으면 어느 출판사의 제한인지, 몇 절까지 허용되는지 앱이 알려 드립니다.</div>
   <h3>번역본 비교하기</h3>
-  <p>오른쪽 위의 번역본 버튼을 누르고 <span class="ui">번역본 비교…</span>를 선택하면 한 본문을 여러 번역본으로 나란히 읽을 수 있습니다.</p>
+  <p><span data-only="iphone ipad android">오른쪽 위의 번역본 버튼을 누르고</span><span data-only="mac">도구 막대의 번역본 버튼을 클릭하고</span> <span class="ui">번역본 비교…</span>를 선택하면 한 본문을 두 번역본으로 나란히 읽을 수 있습니다.</p>
 </section>
 
 <section class="chapter">
   <h2>찾아가기</h2>
-  <p class="lede">맨 위의 본문 제목을 누르거나 키보드에서 <kbd>⌘L</kbd>을 누르면 이동 화면이 열립니다. 입력란 하나로 모든 것을 할 수 있습니다.</p>
+  <p class="lede"><span data-only="app"><span data-only="iphone">맨 위의 본문 제목을 누르면</span></span><span data-only="ipad pdf">맨 위의 본문 제목을 누르거나 키보드에서 <kbd>⌘L</kbd>을 누르면</span><span data-only="mac">도구 막대의 본문 제목을 클릭하거나 <kbd>⌘L</kbd>을 누르면</span><span data-only="android">맨 위의 본문 제목을 누르거나 키보드에서 <kbd>Ctrl+L</kbd>을 누르면</span> 이동 화면이 열립니다. 입력란 하나로 모든 것을 할 수 있습니다.</p>
   <div class="feature flip">
     <div class="text">
       <h3>장절 입력하기</h3>
@@ -94,17 +99,17 @@
         <li><b>시 23</b>, <b>창세기 1</b>, <b>요한복음 3장 16절</b></li>
       </ul>
       <h3>단어 검색하기</h3>
-      <p>단어나 구절을 입력하면 지금 읽고 있는 번역본에서 검색합니다. 기기에 있는 성경은 구절 검색까지 오프라인에서 됩니다.</p>
+      <p>단어나 구절을 입력하면 지금 읽고 있는 번역본에서 검색합니다. <span data-only="pdf">기기</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">기기</span></span>에 있는 성경은 구절 검색까지 오프라인에서 됩니다.</p>
       <h3>둘러보기</h3>
       <p>책을 고른 다음 장을 고를 수도 있습니다. 최근에 읽은 장과 검색한 내용이 맨 위에 있어 바로 다시 열 수 있습니다.</p>
     </div>
-    <figure><img class="phone" src="IMG/10-jump.png" alt=""><figcaption>이동</figcaption></figure>
+    <figure data-only="apple"><img class="phone" src="IMG/10-jump.png" alt=""><figcaption>이동</figcaption></figure>
   </div>
   <div class="feature">
     <div class="text">
       <h3>주제: 지금 겪는 일에 대해 성경이 하는 말씀</h3>
-      <p>이동 화면에는 불안과 염려, 두려움, 슬픔과 상실, 외로움 같은 주제가 한 줄로 나와 있습니다. <span class="ui">모두 보기</span>를 누르면 우울과 절망, 죄책감과 수치심부터 결혼과 부부, 자녀 양육, 일과 직장, 기다림, 하나님의 임재까지 일곱 묶음 72개 주제가 모두 열립니다.</p>
-      <p>주제마다 사랑받는 본문이 열두 개 남짓 모여 있고, 지금 읽는 번역본으로 표시됩니다. 누르면 그 본문으로 이동하고, 길게 누르면 즐겨찾기·복사·공유할 수 있습니다.</p>
+      <p>이동 화면에는 불안과 염려, 두려움, 슬픔과 상실, 외로움 같은 주제가 한 줄로 나와 있습니다. <span class="ui">모두 보기</span>를 <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> 우울과 절망, 죄책감과 수치심부터 결혼과 부부, 자녀 양육, 일과 직장, 기다림, 하나님의 임재까지 일곱 묶음 72개 주제가 모두 열립니다.</p>
+      <p>주제마다 사랑받는 본문이 열두 개 남짓 모여 있고, 지금 읽는 번역본으로 표시됩니다. <span data-only="iphone ipad android">누르면 그 본문으로 이동하고, 길게 누르면</span><span data-only="mac">클릭하면 그 본문으로 이동하고, 오른쪽 클릭하면</span> 즐겨찾기·복사·공유할 수 있습니다.</p>
       <p>주제 이름을 몰라도 괜찮습니다. "불안해요", "외로워요", "지쳤어요"처럼 지금 마음을 입력하면 맞는 주제가 구절 위에 나타납니다. 앱이 지원하는 모든 언어에서 됩니다.</p>
       <p>영어로 사용할 때는 <b>Nave's Topical Bible</b>(네이브 주제별 성경)의 5,000개가 넘는 주제도 A부터 Z까지 들어 있으며, 모든 본문이 링크로 연결됩니다.</p>
     </div>
@@ -115,14 +120,16 @@
 
 <section class="chapter">
   <h2>내 성경</h2>
-  <p class="lede">오른쪽 위의 번역본 버튼을 눌러 성경을 바꿉니다. 메뉴 맨 아래의 <span class="ui">번역본 관리…</span>에서 성경을 추가하고, 다운로드하고, 제거할 수 있습니다.</p>
+  <p class="lede"><span data-only="iphone ipad android">오른쪽 위의 번역본 버튼을 눌러</span><span data-only="mac">도구 막대의 번역본 버튼을 클릭해</span> 성경을 바꿉니다. 메뉴 맨 아래의 <span class="ui">번역본 관리…</span>에서 성경을 추가하고, 다운로드하고, 제거할 수 있습니다.</p>
   <h3>앱에 포함된 성경</h3>
   <table class="facts">
     <tr><th>번역본</th><th>받는 방법</th></tr>
-    <tr><td>새미국표준성경 — NASB 2020</td><td><span class="tag">기본 내장</span> 앱을 설치하는 순간부터 기기에 들어 있습니다. Apple Watch도 마찬가지입니다.</td></tr>
+    <tr><td>새미국표준성경 — NASB 2020</td><td><span class="tag">기본 내장</span> 앱을 설치하는 순간부터 <span data-only="pdf">기기</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">기기</span></span>에 들어 있습니다. <span data-only="apple">Apple Watch</span><span data-only="android">Wear OS 시계</span>도 마찬가지입니다.</td></tr>
     <tr><td>NASB 1995</td><td>처음 선택할 때 한 번 다운로드됩니다.</td></tr>
-    <tr><td>미국표준역(ASV), 베뢰아표준성경(BSB), 킹제임스 성경(KJV)</td><td>처음 선택할 때 한 번 다운로드됩니다. 퍼블릭 도메인입니다.</td></tr>
-    <tr><td>내 언어로 된 성경</td><td>기기가 앱의 다른 여덟 개 언어 중 하나를 쓰면 처음 실행할 때 다운로드됩니다. 한국어라면 개역한글입니다.</td></tr>
+    <tr data-only="apple"><td>미국표준역(ASV), 베뢰아표준성경(BSB), 킹제임스 성경(KJV)</td><td>처음 선택할 때 한 번 다운로드됩니다. 퍼블릭 도메인입니다.</td></tr>
+    <tr data-only="android"><td>베뢰아표준성경(BSB)</td><td>앱과 함께 설치됩니다. 퍼블릭 도메인입니다.</td></tr>
+    <tr data-only="android"><td>미국표준역(ASV), 킹제임스 성경(KJV)</td><td>처음 선택할 때 한 번 다운로드됩니다. 퍼블릭 도메인입니다.</td></tr>
+    <tr><td>내 언어로 된 성경</td><td><span data-only="pdf">기기</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">기기</span></span>에서 앱의 다른 여덟 개 언어 중 하나를 쓰면 처음 실행할 때 다운로드됩니다. 한국어라면 개역한글입니다.</td></tr>
   </table>
   <p>한 번 다운로드한 성경은 계속 오프라인에서 읽고 검색할 수 있습니다.</p>
 
@@ -131,7 +138,7 @@
   <div class="feature">
     <div class="text">
       <ol class="steps">
-        <li><b>무료 번역본 둘러보기…</b>는 eBible.org의 공개 라이선스 성경을 내 언어부터 보여 주며, <span class="ui">기타 언어</span>에 나머지 수백 종이 있습니다. 누르면 다운로드되고, 누르기 전에는 아무것도 받지 않습니다.</li>
+        <li><b>무료 번역본 둘러보기…</b>는 eBible.org의 공개 라이선스 성경을 내 언어부터 보여 주며, <span class="ui">기타 언어</span>에 나머지 수백 종이 있습니다. <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> 다운로드되고, <span data-only="iphone ipad android">누르기</span><span data-only="mac">클릭하기</span> 전에는 아무것도 받지 않습니다.</li>
         <li><b>파일 가져오기…</b>로 갖고 계신 성경을 들여옵니다. <b>USFM zip</b>, <b>DRM 없는 ePub</b>, 스캔본이 아닌 <b>텍스트가 든 PDF</b>를 쓸 수 있습니다(다음 쪽 참고).</li>
         <li><b>온라인 번역본…</b>으로 나만의 무료 키를 써서 ESV, CSB, NKJV를 인터넷으로 읽습니다. 5장을 보세요.</li>
       </ol>
@@ -159,7 +166,8 @@
   <ul>
     <li><b>스터디 바이블</b>은 해설, 책 서론, 글, 지도까지 들어오며, 해설은 연구의 주석 탭에 나타납니다.</li>
     <li><b>그리스도의 말씀</b>은 붉은색 그대로 옮겨집니다.</li>
-    <li>가져온 성경은 내 iCloud로 내 기기에(조건이 허락하면 Apple Watch에도) 전달되며, 다른 누구와도 공유되지 않습니다.</li>
+    <li data-only="apple">가져온 성경은 내 iCloud로 내 기기에(조건이 허락하면 Apple Watch에도) 전달되며, 다른 누구와도 공유되지 않습니다.</li>
+    <li data-only="android">가져온 성경은 이 기기에 있으며, 조건이 허락하면 Wear OS 시계에도 전달됩니다. 다른 누구와도 공유되지 않습니다.</li>
     <li>복사 방지(DRM) 파일은 거부됩니다. 앱에는 이를 푸는 코드가 없습니다.</li>
   </ul>
 
@@ -180,21 +188,21 @@
     <p>ESV와 CSB를 앱에 담을 수 있을 때까지는 가지고 계신 판을 불러와 쓸 수 있습니다. 깔끔하게 불러와지는 판과 구하는 곳은 웹사이트의 자주 묻는 질문에 정리해 두었습니다: <a href="https://wemiller.com/apps/scripture-alone/faq/?lang=ko#esv-csb">ESV나 CSB는 어디에서 구해 가져올 수 있나요?</a></p>
   </div>
   <ol class="steps">
-    <li>파일을 파일 앱(또는 Mac)에 저장합니다.<span data-only="pdf"> Ligonier에서는 구매 후 계정에서 ePub을 받을 수 있습니다.</span></li>
-    <li><span class="ui">번역본 관리…</span>를 열고 <span class="ui">파일 가져오기…</span>를 누릅니다.</li>
-    <li>파일을 선택하고 요약 화면을 기다린 뒤, 다른 성경처럼 번역본 버튼에서 고르면 됩니다. 파일은 내 기기에만 있으며 업로드되거나 공유되지 않습니다.</li>
+    <li><span data-only="pdf">파일을 파일 앱(또는 Mac)에 저장합니다. Ligonier에서는 구매 후 계정에서 ePub을 받을 수 있습니다.</span><span data-only="app"><span data-only="iphone">파일을 iPhone에 받아 파일 앱에 저장합니다.</span><span data-only="ipad">파일을 iPad에 받아 파일 앱에 저장합니다.</span><span data-only="mac">파일을 Mac에 받아 다운로드 폴더 등 원하는 곳에 저장합니다.</span><span data-only="android">파일을 기기에 받아 다운로드 폴더 등 기기 저장공간에 저장합니다.</span></span></li>
+    <li><span class="ui">번역본 관리…</span>를 열고 <span class="ui">파일 가져오기…</span>를 <span data-only="iphone ipad android">누릅니다</span><span data-only="mac">클릭합니다</span>.</li>
+    <li>파일을<span data-only="android"> 파일 선택기에서</span> 선택하고 요약 화면을 기다린 뒤, 다른 성경처럼 번역본 버튼에서 고르면 됩니다. 파일은 내 기기에만 있으며 업로드되거나 공유되지 않습니다.</li>
   </ol>
 
   <h3>더 많은 번역본을 오프라인으로</h3>
   <p>NASB 2020과 NASB 1995는 The Lockman Foundation의 허락을 받아 들어 있습니다. ESV, CSB, NKJV, LSB 출판사에도 허락을 요청해 두었으며, 라이선스를 받으면 그 번역본이 오프라인으로 앱에 나타나고 이 설명서의 해당 절차는 필요 없게 됩니다.</p>
   <h3>번역본 제거하기</h3>
-  <p><span class="ui">번역본 관리…</span>에서 추가한 번역본을 쓸어 넘기거나 길게 누른 다음 <span class="ui">제거</span>를 선택합니다. 하이라이트와 메모는 번역본이 아니라 구절에 속하므로 그대로 남습니다.</p>
+  <p><span data-only="iphone ipad"><span class="ui">번역본 관리…</span>에서 추가한 번역본을 쓸어 넘기거나 길게 누른 다음 <span class="ui">제거</span>를 선택합니다.</span><span data-only="mac"><span class="ui">번역본 관리…</span>에서 추가한 번역본을 오른쪽 클릭하고 <span class="ui">제거</span>를 선택합니다.</span><span data-only="android"><span class="ui">번역본 관리…</span>에서 추가한 번역본 옆의 제거 버튼을 누르거나 번역본을 길게 누른 다음 <span class="ui">제거</span>를 눌러 확인합니다.</span> 하이라이트와 메모는 번역본이 아니라 구절에 속하므로 그대로 남습니다.</p>
 </section>
 
 <section class="chapter">
   <h2>온라인 번역본</h2>
   <p class="lede">ESV, CSB, NKJV는 출판사 서비스의 무료 키를 사용해 Scripture Alone 안에서 인터넷으로 읽을 수 있습니다. 처음 한 번, 5분 정도면 됩니다.</p>
-  <p>왜 나만의 키가 필요할까요? 무료 등급은 개인에게 주어지는 사용량입니다. 앱에 키를 넣어 배포하면 하루도 안 되어 모르는 사람들이 다 써 버리고, 서비스 이용 약관에도 어긋납니다. 키는 기기의 키체인에 저장되고, iCloud 키체인을 통해 종단간 암호화되어 내 다른 기기로 동기화됩니다.</p>
+  <p>왜 나만의 키가 필요할까요? 무료 등급은 개인에게 주어지는 사용량입니다. 앱에 키를 넣어 배포하면 하루도 안 되어 모르는 사람들이 다 써 버리고, 서비스 이용 약관에도 어긋납니다. <span data-only="apple">키는 기기의 키체인에 저장되고, iCloud 키체인을 통해 종단간 암호화되어 내 다른 기기로 동기화됩니다.</span><span data-only="android">키는 기기에 암호화되어 저장되고, Google Block Store가 종단간 암호화로 백업해 두므로 이 기기에서 옮겨 설정한 새 기기에서도 다시 나타납니다.</span></p>
   <table class="facts">
     <tr><th>서비스</th><th>제공 내용</th><th>무료 사용량</th></tr>
     <tr><td>Crossway ESV API<br><small>api.esv.org</small></td><td>English Standard Version(영어 표준역)</td><td>하루 5,000회 요청, 기기에 최대 500절 저장</td></tr>
@@ -206,12 +214,12 @@
   <div class="feature">
     <div class="text">
       <ol class="steps">
-        <li>Scripture Alone에서 번역본 버튼을 누르고 <span class="ui">번역본 관리…</span> › <span class="ui">온라인 번역본…</span>으로 갑니다.</li>
-        <li><b>Crossway (ESV)</b> 아래의 <span class="ui">무료 키 발급받기…</span>를 누르면 <a href="https://api.esv.org/account/create-application/">api.esv.org</a>가 열립니다.</li>
+        <li>Scripture Alone에서 번역본 버튼을 <span data-only="iphone ipad android">누르고</span><span data-only="mac">클릭하고</span> <span class="ui">번역본 관리…</span> › <span class="ui">온라인 번역본…</span>으로 갑니다.</li>
+        <li><b>Crossway (ESV)</b> 아래의 <span class="ui"><span data-only="apple">무료 키 발급받기…</span><span data-only="android">무료 키 받기…</span></span>를 <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> <a href="https://api.esv.org/account/create-application/">api.esv.org</a>가 열립니다.</li>
         <li>로그인하거나 무료 ESV.org 계정을 만듭니다.</li>
         <li>짧은 <b>Create Application</b> 양식을 채웁니다. 이름은 아무것이나 괜찮습니다("My Bible reading"). 용도는 Scripture Alone에서 하는 개인적·비상업적 성경 읽기라고 적고, 약관에 동의합니다.</li>
         <li>만든 애플리케이션 페이지를 열고 <b>API key</b>(긴 영문자와 숫자 문자열)를 복사합니다.</li>
-        <li>Scripture Alone으로 돌아와 Crossway 아래의 <b>API 키</b>에 붙여 넣고 <span class="ui">완료</span>를 누릅니다.</li>
+        <li>Scripture Alone으로 돌아와 Crossway 아래의 <b>API 키</b>에 붙여 넣고 <span class="ui">완료</span>를 <span data-only="iphone ipad android">누릅니다</span><span data-only="mac">클릭합니다</span>.</li>
       </ol>
       <p>이제 번역본 메뉴에 ESV가 <b>온라인</b> 표시와 함께 나타납니다.</p>
     </div>
@@ -235,13 +243,13 @@
   <div class="feature">
     <div class="text">
       <ol class="steps">
-        <li><span class="ui">온라인 번역본…</span>의 <b>API.Bible</b> 아래에서 <span class="ui">무료 키 발급받기…</span>를 누르면 <a href="https://api.bible/">api.bible</a>이 열립니다.</li>
+        <li><span class="ui">온라인 번역본…</span>의 <b>API.Bible</b> 아래에서 <span class="ui"><span data-only="apple">무료 키 발급받기…</span><span data-only="android">무료 키 받기…</span></span>를 <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> <a href="https://api.bible/">api.bible</a>이 열립니다.</li>
         <li>무료 <b>Starter</b> 플랜을 골라 가입하고 이메일을 인증합니다.</li>
         <li>API.Bible 대시보드에서 앱을 만듭니다(이름과 개인 성경 읽기라는 짧은 설명이면 충분합니다).</li>
         <li>API.Bible 사이트에서 <b>저작권 번역본 3종</b>을 고릅니다. 예를 들어 CSB와 NKJV입니다. (Scripture Alone에는 이미 NASB가 들어 있으니 NASB에 선택권을 쓸 필요는 없습니다.)</li>
         <li>앱의 <b>API key</b>를 복사합니다.</li>
-        <li>API.Bible 아래의 <b>API 키</b>에 붙여 넣고 <span class="ui">내 번역본 확인</span>을 누릅니다.</li>
-        <li>메뉴에 넣을 번역본에 체크하고 <span class="ui">완료</span>를 누릅니다.</li>
+        <li>API.Bible 아래의 <b>API 키</b>에 붙여 넣고 <span class="ui">내 번역본 확인</span>을 <span data-only="iphone ipad android">누릅니다</span><span data-only="mac">클릭합니다</span>.</li>
+        <li>메뉴에 넣을 번역본에 체크하고 <span class="ui">완료</span>를 <span data-only="iphone ipad android">누릅니다</span><span data-only="mac">클릭합니다</span>.</li>
       </ol>
     </div>
     <div class="mock">
@@ -261,8 +269,9 @@
   <div class="tip"><span class="note-label">알아 두면 좋은 점</span>
   <ul style="margin:0">
     <li>온라인 번역본은 인터넷 연결이 필요합니다. 읽은 내용은 출판사 한도까지 기기에 보관되며, 오프라인에서는 검색할 수 없습니다.</li>
-    <li>새 기기나 앱을 다시 설치한 뒤에도 선택한 번역본과 키가 iCloud를 통해 저절로 돌아옵니다.</li>
-    <li>서비스를 그만 쓰려면 <span class="ui">키 제거</span>를 누르세요. 그 번역본은 메뉴에서 빠지지만 메모와 하이라이트는 남습니다.</li>
+    <li data-only="apple">새 기기나 앱을 다시 설치한 뒤에도 선택한 번역본과 키가 iCloud를 통해 저절로 돌아옵니다.</li>
+    <li data-only="android">새 기기나 앱을 다시 설치한 뒤에도 선택한 번역본과 키가 저절로 돌아옵니다. 키는 Block Store가, 선택한 번역본은 Android 백업이 되살려 줍니다.</li>
+    <li>서비스를 그만 쓰려면 <span class="ui"><span data-only="apple">키 제거</span><span data-only="android">키 삭제</span></span>를 <span data-only="iphone ipad android">누르세요</span><span data-only="mac">클릭하세요</span>. 그 번역본은 메뉴에서 빠지지만 메모와 하이라이트는 남습니다.</li>
     <li>잘 안 되나요? 키를 앞뒤 공백 없이 전부 붙여 넣었는지, 그 번역본이 API.Bible 사이트에서 고른 번역본인지 확인하세요.</li>
   </ul></div>
 </section>
@@ -273,19 +282,19 @@
   <div class="feature">
     <div class="text">
       <h3>하이라이트</h3>
-      <p>구절을 선택하고 다섯 색 중 하나를 누릅니다. 지우개를 누르면 지워집니다.</p>
+      <p>구절을 선택하고 다섯 색 중 하나를 <span data-only="iphone ipad android">누릅니다</span><span data-only="mac">클릭합니다</span>. 지우개를 <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> 지워집니다.</p>
       <h3>메모</h3>
-      <p>구절을 선택하고 연필을 눌러 메모를 씁니다. 로마서 8:1–17 설교 메모에 시편 23편을 함께 연결하듯, 메모 하나를 여러 본문에 연결할 수 있습니다. 메모는 구절 옆에 표시되며, 누르면 열립니다.</p>
+      <p>구절을 선택하고 연필을 <span data-only="iphone ipad android">눌러</span><span data-only="mac">클릭해</span> 메모를 씁니다. 로마서 8:1–17 설교 메모에 시편 23편을 함께 연결하듯, 메모 하나를 여러 본문에 연결할 수 있습니다. 메모는 구절 옆에 표시되며, <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> 열립니다.</p>
       <h3>즐겨찾기</h3>
-      <p>자주 찾는 구절은 하트를 눌러 간직하세요.</p>
+      <p>자주 찾는 구절은 하트를 <span data-only="iphone ipad android">눌러</span><span data-only="mac">클릭해</span> 간직하세요.</p>
       <h3>다시 찾기</h3>
-      <p>왼쪽 위의 <span class="ui">메모</span>를 누르세요. <b>메모</b>, <b>하이라이트</b>, <b>즐겨찾기</b> 세 목록을 각각 모든 책, 이 책, 이 장으로 좁혀 볼 수 있고, 메모는 검색도 됩니다. 하이라이트는 성경 순서로, 같은 색의 이웃 구절은 한 본문으로 묶여 나옵니다. 누르면 이동하고, 쓸어 넘기면 삭제됩니다.</p>
-      <p>구절 선택 없이 시작하려면 <span class="ui">새 노트</span>를 누르세요.</p>
+      <p><span data-only="iphone ipad android">왼쪽 위의 <span class="ui"><span data-only="apple">메모</span><span data-only="android">노트</span></span>를 누르세요.</span><span data-only="mac">도구 막대의 <span class="ui">메모</span>를 클릭하세요.</span> <b>메모</b>, <b>하이라이트</b>, <b>즐겨찾기</b> 세 목록을 각각 모든 책, 이 책, 이 장으로 좁혀 볼 수 있고, 메모는 검색도 됩니다. 하이라이트는 성경 순서로, 같은 색의 이웃 구절은 한 본문으로 묶여 나옵니다. <span data-only="iphone ipad">누르면 이동하고, 쓸어 넘기면 삭제됩니다.</span><span data-only="mac">클릭하면 이동합니다.</span><span data-only="android">누르면 이동하고, 길게 누르면 삭제됩니다.</span></p>
+      <p>구절 선택 없이 시작하려면 <span class="ui">새 노트</span>를 <span data-only="iphone ipad android">누르세요</span><span data-only="mac">클릭하세요</span>.</p>
     </div>
     <figure><img class="phone" src="IMG/06-highlights.png" alt=""><figcaption>하이라이트와 메모</figcaption></figure>
   </div>
   <h3>다른 앱의 메모 가져오기</h3>
-  <p><span class="ui">Aa</span> › <span class="ui">기념 보관 및 내보내기</span> › <span class="ui">다른 앱에서 메모 가져오기…</span>를 엽니다.</p>
+  <p><span class="ui">Aa</span> › <span class="ui"><span data-only="apple">기념 보관 및 내보내기</span><span data-only="android">기념 성경 및 내보내기</span></span> › <span class="ui">다른 앱에서 메모 가져오기…</span>를 엽니다.</p>
   <ul>
     <li><b>Life Bible에서</b>(이전 이름 Tecarta Bible): 그 앱에서 전체를 내보낸 다음 파일을 선택합니다. 메모, 하이라이트, 저장한 구절이 넘어옵니다.</li>
     <li><b>기타 위치에서:</b> 메모를 붙여 넣거나 CSV 파일을 선택합니다. 각 항목이 "요한복음 3:16"처럼 장절로 시작해야 올바른 구절에 들어갑니다.</li>
@@ -299,13 +308,13 @@
   <div class="feature">
     <div class="text">
       <ol class="steps">
-        <li><span class="ui">메모</span>에서 <span class="ui">슬라이드 스캔</span> › <span class="ui">슬라이드 사진 찍기</span>를 선택하거나, 찍어 둔 사진을 고릅니다(Mac에서는 이미지 파일, 클립보드, iPhone에서 가져오기). 메모 안에서는 <span class="ui">카메라로 추가</span>로 슬라이드를 덧붙입니다.</li>
-        <li>확대 버튼이나 두 손가락으로 화면이 틀을 가득 채우게 한 뒤 찍습니다.</li>
+        <li><span data-only="iphone ipad"><span class="ui">메모</span>에서 <span class="ui">슬라이드 스캔</span> › <span class="ui">슬라이드 사진 찍기</span>를 선택하거나, 찍어 둔 사진을 고릅니다<span data-only="pdf">(Mac에서는 이미지 파일, 클립보드, iPhone에서 가져오기)</span>.</span><span data-only="mac"><span class="ui">메모</span>에서 <span class="ui">슬라이드 스캔</span>을 클릭해 이미지 파일을 고르거나, 옆의 화살표를 클릭해 <span class="ui">사진에서 선택…</span>이나 <span class="ui">이미지 붙여넣기</span>를 고릅니다. iPhone 카메라를 사용하려면 <span class="ui">파일 › iPhone에서 가져오기</span>를 선택하세요.</span><span data-only="android"><span class="ui">노트</span>에서 <span class="ui">슬라이드 스캔</span> › <span class="ui">슬라이드 사진 찍기</span>를 선택하거나, 이미 있는 사진이라면 <span class="ui">사진에서 선택</span>, <span class="ui">이미지 파일 선택…</span>, <span class="ui">이미지 붙여넣기</span> 중에서 고릅니다.</span> 메모 안에서는 <span class="ui">카메라로 추가</span>로 슬라이드를 덧붙입니다.</li>
+        <li data-only="iphone ipad android">확대 버튼이나 두 손가락으로 화면이 틀을 가득 채우게 한 뒤 찍습니다<span data-only="android">(셔터나 강조 표시된 텍스트를 누르세요)</span>.</li>
         <li>앱이 사진 속 스크린, TV, 모니터를 찾아 반듯하게 펴고 슬라이드만 읽습니다. 사진 전체를 읽으려면 <span class="ui">화면에 맞춰 자르기</span>를 끄세요.</li>
         <li>제목, 본문, 요점을 확인하고 고칩니다. <b>새 메모</b>로 저장할지 시작해 둔 메모에 추가할지 고르세요. 같은 설교의 다음 슬라이드는 같은 메모에 이어집니다.</li>
-        <li><span class="ui">메모 작성</span>을 누릅니다.</li>
+        <li><span class="ui"><span data-only="apple">메모 작성</span><span data-only="android">노트 작성</span></span>을 <span data-only="iphone ipad android">누릅니다</span><span data-only="mac">클릭합니다</span>.</li>
       </ol>
-      <div class="note"><span class="note-label">개인정보</span>사진은 기기에서 읽히며 업로드되지 않고, <span class="ui">이 사진을 메모와 함께 보관</span>을 켜지 않으면 삭제됩니다.</div>
+      <div class="note"><span class="note-label">개인정보</span>사진은 <span data-only="pdf">기기</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">기기</span></span>에서 읽히며 업로드되지 않고, <span class="ui"><span data-only="apple">이 사진을 메모와 함께 보관</span><span data-only="android">이 사진을 노트와 함께 보관</span></span>을 켜지 않으면 삭제됩니다.</div>
     </div>
     <figure><img class="phone" src="IMG/05-sermon-notes.png" alt=""><figcaption>슬라이드로 만든 메모</figcaption></figure>
   </div>
@@ -313,25 +322,25 @@
 
 <section class="chapter">
   <h2>연구</h2>
-  <p class="lede">왼쪽 위의 펼친 책 버튼을 누르면 연구가 켜집니다. 연구 패널은 누르는 구절을 따라갑니다. iPad와 Mac에서는 본문 옆에, iPhone에서는 위아래로 끌어 올리고 내리는 시트에 나타납니다.</p>
+  <p class="lede"><span data-only="iphone ipad android">왼쪽 위의 펼친 책 버튼을 누르면</span><span data-only="mac">도구 막대의 펼친 책 버튼을 클릭하면</span> 연구가 켜집니다. 연구 패널은 <span data-only="iphone ipad android">누르는</span><span data-only="mac">클릭하는</span> 구절을 따라갑니다. <span data-only="pdf">iPad와 Mac에서는 본문 옆에, iPhone에서는 위아래로 끌어 올리고 내리는 시트에 나타납니다.</span><span data-only="app"><span data-only="iphone">패널은 위아래로 끌어 올리고 내리는 시트에 나타납니다.</span><span data-only="ipad mac">패널은 본문 옆에 나타납니다.</span><span data-only="android">패널은 휴대전화에서는 위아래로 끌어 올리고 내리는 시트에, 태블릿에서는 본문 옆에 나타납니다.</span></span></p>
   <div class="feature">
     <div class="text">
       <h3>참조</h3>
-      <p>관련성이 강한 순서로 정렬된 관주가 지금 읽는 번역본으로 표시됩니다. 누르면 그 구절로 이동하고, 뒤로 버튼을 누르면 돌아옵니다. (출처: OpenBible.info)</p>
+      <p>관련성이 강한 순서로 정렬된 관주가 지금 읽는 번역본으로 표시됩니다. <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> 그 구절로 이동하고, 뒤로 버튼을 누르면 돌아옵니다. (출처: OpenBible.info)</p>
       <h3>주석</h3>
       <p>장 칼뱅, 존 길, 제미슨·포셋·브라운의 고전 주석을 볼 수 있으며, 주석 속 장절은 링크로 연결됩니다. 탭을 처음 열 때 다운로드됩니다. 가져온 스터디 바이블의 해설도 여기에 나타납니다. (주석은 영어로만 제공됩니다.)</p>
       <h3>문맥</h3>
-      <p>지금 읽는 장에 대해 <b>개요</b>, 그 장에 나오는 모든 지명을 표시한 <b>지도</b>(지명을 누르면 그곳이 언급된 모든 구절이 나옵니다), 성경 시대를 정리한 <b>연표</b> 속 위치, 그리고 이스라엘과 유다의 왕들, 바울의 전도 여행, 열두 지파, 이스라엘의 절기를 담은 <b>도표</b>를 보여 줍니다. 지도는 기기에서 그려지므로 인터넷 없이도 볼 수 있습니다.</p>
+      <p>지금 읽는 장에 대해 <b>개요</b>, 그 장에 나오는 모든 지명을 표시한 <b>지도</b>(지명을 <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> 그곳이 언급된 모든 구절이 나옵니다), 성경 시대를 정리한 <b>연표</b> 속 위치, 그리고 이스라엘과 유다의 왕들, 바울의 전도 여행, 열두 지파, 이스라엘의 절기를 담은 <b>도표</b>를 보여 줍니다. 지도는 <span data-only="pdf">기기</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">기기</span></span>에서 그려지므로 인터넷 없이도 볼 수 있습니다.</p>
     </div>
-    <figure><img class="phone" src="IMG/03-study.png" alt=""><figcaption>요한복음 3:16을 따라가는 연구</figcaption></figure>
+    <figure><img class="phone" src="IMG/03-study.png" alt=""><figcaption><span data-only="apple">요한복음 3:16을 따라가는 연구</span><span data-only="android">요한복음 10:11을 따라가는 연구</span></figcaption></figure>
   </div>
   <div class="feature flip">
     <div class="text">
       <h3>원어 자료</h3>
-      <p>구절 하나를 선택하고 선택 막대의 원어 버튼을 누르세요. 구절이 히브리어나 그리스어로 한 단어씩 나타나고, 단어마다 문법 분석, 스트롱 번호(Strong's), 사전 항목이 표시됩니다. 모든 번역본에서 쓸 수 있으며, 처음 사용할 때 한 번 다운로드됩니다.</p>
-      <p>연구에서 <b>ⓘ</b>(<span class="ui">학습 자료 정보</span>)를 누르면 각 자료의 출처와 라이선스를 볼 수 있습니다.</p>
+      <p>구절 하나를 선택하고 선택 막대의 원어 버튼을 <span data-only="iphone ipad android">누르세요</span><span data-only="mac">클릭하세요</span>. <span data-only="apple">구절이</span><span data-only="android">연구의 <span class="ui">원어</span> 탭이 열리며, 구절이</span> 히브리어나 그리스어로 한 단어씩 나타나고, 단어마다 문법 분석, 스트롱 번호(Strong's), 사전 항목이 표시됩니다. 모든 번역본에서 쓸 수 있으며, 처음 사용할 때 한 번 다운로드됩니다.</p>
+      <p>연구에서 <b>ⓘ</b>(<span class="ui"><span data-only="apple">학습 자료 정보</span><span data-only="android">연구 자료 정보</span></span>)를 <span data-only="iphone ipad android">누르면</span><span data-only="mac">클릭하면</span> 각 자료의 출처와 라이선스를 볼 수 있습니다.</p>
     </div>
-    <figure><img class="phone" src="IMG/04-maps.png" alt=""><figcaption>문맥: 한 장에 나오는 장소들</figcaption></figure>
+    <figure data-only="apple"><img class="phone" src="IMG/04-maps.png" alt=""><figcaption>문맥: 한 장에 나오는 장소들</figcaption></figure>
   </div>
 </section>
 
@@ -341,44 +350,47 @@
   <div class="feature">
     <div class="text">
       <ul>
-        <li>아래쪽 막대의 <span class="ui">듣기</span>를 누르면 화면 맨 위부터 읽습니다. 구절을 선택한 뒤 선택 막대의 <span class="ui">듣기</span>를 눌러도 됩니다.</li>
+        <li><span data-only="iphone ipad android">아래쪽 막대의 <span class="ui">듣기</span>를 누르면</span><span data-only="mac">도구 막대의 <span class="ui">듣기</span>를 클릭하면</span> 화면 맨 위부터 읽습니다. 구절을 선택한 뒤 선택 막대의 <span class="ui">듣기</span>를 <span data-only="iphone ipad android">눌러도</span><span data-only="mac">클릭해도</span> 됩니다.</li>
         <li>장이 끝나면 다음 장으로 이어서 읽습니다. 플레이어에서 음성, 속도, 취침 타이머를 고를 수 있습니다.</li>
-        <li>화면을 잠그거나 다른 앱을 써도 계속 재생되며, 잠금 화면에서도 조절할 수 있습니다.</li>
-        <li>기기에 설치된 어떤 음성으로도 읽을 수 있습니다. 프리미엄·향상된 음성과 개인 음성도 됩니다. 더 좋은 음성은 기기의 설정 › 손쉬운 사용 › 읽기 및 말하기에서 다운로드하세요.</li>
-        <li>iPhone과 iPad에서는 별도 앱인 <b>Mi Speaks</b>의 구독자라면 그 앱의 스튜디오 음성으로 장을 읽게 할 수도 있습니다.</li>
+        <li data-only="iphone ipad">화면을 잠그거나 다른 앱을 써도 계속 재생되며, 잠금 화면에서도 조절할 수 있습니다.</li>
+        <li data-only="mac">다른 앱으로 작업하는 동안에도 계속 재생되며, 제어 센터에서 조절할 수 있습니다.</li>
+        <li data-only="android">화면이 꺼지거나 다른 앱을 써도 계속 재생되며, 알림과 헤드셋에서 조절할 수 있습니다.</li>
+        <li data-only="pdf">기기에 설치된 어떤 음성으로도 읽을 수 있습니다. 프리미엄·향상된 음성과 개인 음성도 됩니다. 더 좋은 음성은 기기의 설정 › 손쉬운 사용 › 읽기 및 말하기에서 다운로드하세요.</li>
+        <li data-only="app"><span data-only="iphone">iPhone에 설치된 어떤 음성으로도 읽을 수 있습니다. 프리미엄·향상된 음성과 개인 음성도 됩니다. 더 좋은 음성은 설정 › 손쉬운 사용 › 읽기 및 말하기에서 다운로드하세요.</span><span data-only="ipad">iPad에 설치된 어떤 음성으로도 읽을 수 있습니다. 프리미엄·향상된 음성과 개인 음성도 됩니다. 더 좋은 음성은 설정 › 손쉬운 사용 › 읽기 및 말하기에서 다운로드하세요.</span><span data-only="mac">Mac에 설치된 어떤 음성으로도 읽을 수 있습니다. 프리미엄·향상된 음성과 개인 음성도 됩니다. 더 좋은 음성은 시스템 설정 › 손쉬운 사용 › 읽기 및 말하기에서 다운로드하세요.</span><span data-only="android">기기에 설치된 어떤 텍스트 음성 변환(TTS) 음성으로도 읽을 수 있습니다. 더 많은 음성은 기기 설정의 텍스트 음성 변환 출력에서 다운로드하세요.</span></li>
+        <li data-only="iphone ipad"><span data-only="pdf">iPhone과 iPad에서는 </span>별도 앱인 <b>Mi Speaks</b>의 구독자라면 그 앱의 스튜디오 음성으로 장을 읽게 할 수도 있습니다.</li>
       </ul>
     </div>
-    <figure><img class="phone" src="IMG/07-listen.png" alt=""><figcaption>듣기</figcaption></figure>
+    <figure data-only="apple"><img class="phone" src="IMG/07-listen.png" alt=""><figcaption>듣기</figcaption></figure>
   </div>
 </section>
 
 <section class="chapter">
   <h2>나에게 맞게</h2>
-  <p class="lede">오른쪽 위의 <span class="ui">Aa</span>를 누르세요. 바꾼 내용은 바로 반영되고, 내 다른 기기에도 그대로 적용됩니다.</p>
+  <p class="lede"><span data-only="iphone ipad android">오른쪽 위의 <span class="ui">Aa</span>를 누르세요.</span><span data-only="mac">도구 막대의 <span class="ui">Aa</span>를 클릭하세요.</span> <span data-only="apple">바꾼 내용은 바로 반영되고, 내 다른 기기에도 그대로 적용됩니다.</span><span data-only="android">바꾼 내용은 바로 반영되고, 새 기기를 위해 Android 백업에 보관됩니다.</span></p>
   <div class="feature">
     <div class="text">
       <ul>
         <li><b>테마:</b> 자동, 밝게, 세피아, 다크, 블랙과 강조 색.</li>
-        <li><b>본문:</b> 글자 크기(또는 <kbd>⌘+</kbd>와 <kbd>⌘−</kbd>), 줄 간격, 그리고 다이내믹 타입 완전 지원.</li>
+        <li><b>본문:</b> <span data-only="app"><span data-only="iphone">글자 크기, 줄 간격, 그리고 다이내믹 타입 완전 지원.</span></span><span data-only="ipad pdf">글자 크기(또는 <kbd>⌘+</kbd>와 <kbd>⌘−</kbd>), 줄 간격, 그리고 다이내믹 타입 완전 지원.</span><span data-only="mac">글자 크기(또는 <kbd>⌘+</kbd>와 <kbd>⌘−</kbd>)와 줄 간격.</span><span data-only="android">글자 크기(키보드에서는 <kbd>Ctrl+=</kbd>와 <kbd>Ctrl+−</kbd>)와 줄 간격. 기기의 글꼴 크기 설정에 맞춰 조절됩니다.</span></li>
         <li><b>서체:</b> 일곱 가지 서체.</li>
-        <li><b>레이아웃:</b> 문단 또는 절별 보기, <span class="ui">넓은 화면에서 단 나누기</span> 켜기·끄기.</li>
+        <li><b>레이아웃:</b> 문단 또는 절별 보기<span data-only="apple">, <span class="ui">넓은 화면에서 단 나누기</span> 켜기·끄기</span>.</li>
         <li><b>보기:</b> 그리스도의 말씀 붉은색 표시, 절 번호, 소제목, 각주.</li>
-        <li><b>Spotlight:</b> 메모와 즐겨찾기를 기기 검색에 나타나게 합니다.</li>
+        <li><span data-only="apple"><b>Spotlight:</b> 메모와 즐겨찾기를 <span data-only="pdf">기기</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span></span> 검색에 나타나게 합니다.</span><span data-only="android"><b>검색:</b> 메모와 즐겨찾기를 기기 검색에 나타나게 합니다.</span></li>
         <li><b>이 번역본 정보:</b> 읽고 있는 성경의 저작권과 라이선스.</li>
       </ul>
-      <p>같은 시트에서 <span class="ui">기념 보관 및 내보내기</span>, 이 설명서, 지원, 앱 정보도 볼 수 있습니다.</p>
+      <p>같은 시트에서 <span class="ui"><span data-only="apple">기념 보관 및 내보내기</span><span data-only="android">기념 성경 및 내보내기</span></span>, 이 설명서, 지원, 앱 정보도 볼 수 있습니다.</p>
     </div>
-    <figure><img class="phone" src="IMG/08-themes.png" alt=""><figcaption>테마와 글꼴</figcaption></figure>
+    <figure data-only="apple"><img class="phone" src="IMG/08-themes.png" alt=""><figcaption>테마와 글꼴</figcaption></figure>
   </div>
 </section>
 
 <section class="chapter">
   <h2>공유</h2>
-  <p class="lede">구절을 선택하고 공유를 누르세요.</p>
+  <p class="lede">구절을 선택하고 공유를 <span data-only="iphone ipad android">누르세요</span><span data-only="mac">클릭하세요</span>.</p>
   <div class="feature">
     <div class="text">
       <ul>
-        <li><b>구절 이미지:</b> 여덟 가지 템플릿과 세 가지 모양(정사각형, 스토리, 와이드), 그리고 읽기 화면의 모든 서체로 기기에서 직접 디자인합니다. 사진 앱에 저장하거나 보낼 수 있습니다.</li>
+        <li><b>구절 이미지:</b> 여덟 가지 템플릿과 세 가지 모양(정사각형, 스토리, 와이드), 그리고 읽기 화면의 모든 서체로 <span data-only="pdf">기기</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">기기</span></span>에서 직접 디자인합니다. 사진 앱에 저장하거나 보낼 수 있습니다.</li>
         <li><b>텍스트:</b> 구절과 장절 표기.</li>
         <li><b>링크:</b> 어느 웹 브라우저에서나 링크만으로 구절 카드를 다시 그려 내는 링크입니다. 구절이 링크 안에 담겨 전달되므로 어떤 서버에도 저장되지 않습니다.</li>
       </ul>
@@ -390,46 +402,62 @@
 
 <section class="chapter">
   <h2>기념 성경, 가족, 내보내기</h2>
-  <p class="lede">손때 묻은 내 성경은 물려줄 만한 가치가 있습니다. <span class="ui">Aa</span> › <span class="ui">기념 보관 및 내보내기</span>를 여세요.</p>
+  <p class="lede">손때 묻은 내 성경은 물려줄 만한 가치가 있습니다. <span class="ui">Aa</span> › <span class="ui"><span data-only="apple">기념 보관 및 내보내기</span><span data-only="android">기념 성경 및 내보내기</span></span>를 여세요.</p>
   <h3>기념 성경</h3>
   <ol class="steps">
-    <li><span class="ui">기념 성경 만들기</span>를 누릅니다. 이름과 헌정 문구("사랑하는 지수에게, 아빠가")를 쓰고, 열릴 때 보여 줄 번역본을 고릅니다.</li>
+    <li><span class="ui">기념 성경 만들기</span>를 <span data-only="iphone ipad android">누릅니다</span><span data-only="mac">클릭합니다</span>. 이름과 헌정 문구("사랑하는 지수에게, 아빠가")를 쓰고, 열릴 때 보여 줄 번역본을 고릅니다.</li>
     <li>보호하고 싶다면 암호문구를 추가합니다.</li>
-    <li>파일을 가족에게 건넵니다. AirDrop, 메시지, USB 드라이브로 주거나 유언장과 함께 보관해도 됩니다.</li>
+    <li>파일을 가족에게 건넵니다. <span data-only="apple">AirDrop</span><span data-only="android">Quick Share, 이메일</span>, 메시지, USB 드라이브로 주거나 유언장과 함께 보관해도 됩니다.</li>
   </ol>
-  <p>가족은 <span class="ui">기념 파일 열기…</span>로 파일을 열어, 여러분이 표시해 둔 그대로의 성경을 읽을 수 있습니다. 읽기 전용이며 가족 자신의 메모와는 따로 보관됩니다. 형식은 JSON을 담은 공개 ZIP 파일이라 여러 세대가 지나도 읽을 수 있습니다.</p>
-  <h3>가족과 공유</h3>
-  <p>가족을 초대하면 여러분이 계속 읽어 가는 동안 하이라이트, 메모, 즐겨찾기를 실시간으로, 읽기 전용으로 볼 수 있습니다. <span class="ui">공유 시작 및 초대…</span>를 누르고 초대장을 보내세요. 가족에게는 "아빠의 성경 읽는 중 · 5분 전 업데이트"처럼 보이며, 오프라인에서도 읽을 수 있습니다. 언제든 <span class="ui">공유 중지</span>할 수 있고, 가족에게는 마지막 사본이 남습니다. 모든 과정이 여러분의 iCloud와 가족의 iCloud 사이에서만 이루어집니다.</p>
+  <p>가족은 <span class="ui"><span data-only="apple">기념 파일 열기…</span><span data-only="android">기념 성경 파일 열기…</span></span>로 파일을 열어, 여러분이 표시해 둔 그대로의 성경을 읽을 수 있습니다. 읽기 전용이며 가족 자신의 메모와는 따로 보관됩니다. 형식은 JSON을 담은 공개 ZIP 파일이라 여러 세대가 지나도 읽을 수 있습니다.<span data-only="android"> 기념 성경은 Android와 iPhone의 Scripture Alone에서 똑같이 열립니다.</span></p>
+  <div data-only="apple">
+    <h3>가족과 공유</h3>
+    <p>가족을 초대하면 여러분이 계속 읽어 가는 동안 하이라이트, 메모, 즐겨찾기를 실시간으로, 읽기 전용으로 볼 수 있습니다. <span class="ui">공유 시작 및 초대…</span>를 <span data-only="iphone ipad">누르고</span><span data-only="mac">클릭하고</span> 초대장을 보내세요. 가족에게는 "아빠의 성경 읽는 중 · 5분 전 업데이트"처럼 보이며, 오프라인에서도 읽을 수 있습니다. 언제든 <span class="ui">공유 중지</span>할 수 있고, 가족에게는 마지막 사본이 남습니다. 모든 과정이 여러분의 iCloud와 가족의 iCloud 사이에서만 이루어집니다.</p>
+  </div>
   <h3>메모 내보내기</h3>
   <p>메모의 <span class="ui">내보내기</span> 메뉴에서 모든 메모, 필터로 고른 메모, 또는 메모 하나를 깔끔하게 조판된 <b>PDF</b>, <b>Markdown</b>(파일 하나 또는 폴더), <b>일반 텍스트</b>로 저장할 수 있으며, 구절은 내 번역본으로 인용됩니다.</p>
 </section>
 
 <section class="chapter">
-  <h2>위젯, Apple Watch, Siri, Spotlight</h2>
+  <h2><span data-only="apple">위젯, Apple Watch, Siri, Spotlight</span><span data-only="android">위젯, Wear OS, 바로가기</span></h2>
   <div class="feature">
     <div class="text">
       <h3>위젯</h3>
-      <p><b>오늘의 말씀</b>(성경 전체에서 엄선한 365개 본문)이나 <b>즐겨찾기 및 노트</b> 위젯을 iPhone 홈 화면과 잠금 화면, iPad, Mac 데스크탑에 추가하세요. 홈 화면을 길게 누르고 편집 › 위젯 추가를 누른 다음 Scripture Alone을 검색하면 됩니다. 구절은 지금 읽는 번역본으로 나옵니다.</p>
-      <h3>Apple Watch</h3>
-      <p>Watch 앱에는 NASB 2020이 기본으로 들어 있어 iPhone이 가까이 없어도 오프라인으로 읽을 수 있습니다. iPhone에서 고른 번역본을 따르고(다른 성경을 읽으면 iPhone이 보내 줍니다), 오늘의 말씀, 즐겨찾기, 하이라이트, 메모, 읽기 화면, 읽어주기를 내가 고른 강조 색으로 담고 있습니다. 시계 페이스에 컴플리케이션을 추가하면 오늘의 말씀을 볼 수 있습니다.</p>
+      <p data-only="pdf"><b>오늘의 말씀</b>(성경 전체에서 엄선한 365개 본문)이나 <b>즐겨찾기 및 노트</b> 위젯을 iPhone 홈 화면과 잠금 화면, iPad, Mac 데스크탑에 추가하세요. 홈 화면을 길게 누르고 편집 › 위젯 추가를 누른 다음 Scripture Alone을 검색하면 됩니다. 구절은 지금 읽는 번역본으로 나옵니다.</p>
+      <p data-only="app"><b>오늘의 말씀</b>(성경 전체에서 엄선한 365개 본문)이나 <b><span data-only="apple">즐겨찾기 및 노트</span><span data-only="android">즐겨찾기 &amp; 노트</span></b> 위젯을 <span data-only="iphone">홈 화면과 잠금 화면에 추가하세요. 홈 화면을 길게 누르고 편집 › 위젯 추가를 누른 다음 Scripture Alone을 검색하면 됩니다.</span><span data-only="ipad">홈 화면에 추가하세요. 홈 화면을 길게 누르고 편집 › 위젯 추가를 누른 다음 Scripture Alone을 검색하면 됩니다.</span><span data-only="mac">데스크탑이나 알림 센터에 추가하세요. 데스크탑을 오른쪽 클릭하고 위젯 편집을 선택한 다음 Scripture Alone을 검색하면 됩니다.</span><span data-only="android">홈 화면에 추가하세요. 홈 화면의 빈 곳을 길게 누르고 위젯을 누른 다음 Scripture Alone을 찾으면 됩니다.</span> 구절은 지금 읽는 번역본으로 나옵니다.</p>
+      <h3 data-only="apple">Apple Watch</h3>
+      <p data-only="apple">Watch 앱에는 NASB 2020이 기본으로 들어 있어 iPhone이 가까이 없어도 오프라인으로 읽을 수 있습니다. iPhone에서 고른 번역본을 따르고(다른 성경을 읽으면 iPhone이 보내 줍니다), 오늘의 말씀, 즐겨찾기, 하이라이트, 메모, 읽기 화면, 읽어주기를 내가 고른 강조 색으로 담고 있습니다. 시계 페이스에 컴플리케이션을 추가하면 오늘의 말씀을 볼 수 있습니다.</p>
+      <h3 data-only="android">Wear OS</h3>
+      <p data-only="android">Wear OS 앱에는 NASB 2020이 기본으로 들어 있어 휴대전화가 가까이 없어도 오프라인으로 읽을 수 있습니다. 휴대전화에서 고른 번역본을 따르고(다른 성경을 읽으면 휴대전화가 보내 주며, 가져온 성경도 조건이 허락하면 보내 줍니다), 오늘의 말씀, 즐겨찾기, 하이라이트, 메모, 읽기 화면, 읽어주기를 내가 고른 강조 색으로 담고 있습니다. 타일을 추가하거나 시계 페이스에 컴플리케이션을 추가하면 오늘의 말씀을 볼 수 있습니다.</p>
     </div>
-    <figure><img class="watch" src="IMG/w02-verse.png" alt=""><figcaption>Apple Watch</figcaption></figure>
+    <figure><img class="watch" src="IMG/w02-verse.png" alt=""><figcaption><span data-only="apple">Apple Watch</span><span data-only="android">Wear OS</span></figcaption></figure>
   </div>
-  <h3>Siri와 단축어</h3>
-  <p>어느 번역본으로든 구절을 찾고, 구절 이미지를 만들고, 메모나 즐겨찾기를 찾을 수 있습니다. "Scripture Alone에서 내 노트 찾기"라고 말하거나 단축어 앱에서 나만의 단계를 만들어 보세요.</p>
-  <h3>Spotlight</h3>
-  <p><span class="ui">Aa</span>에서 <span class="ui">Spotlight의 메모</span>와 <span class="ui">Spotlight의 즐겨찾기</span>를 켜면 기기 검색에서 찾을 수 있습니다.</p>
+  <div data-only="apple">
+    <h3>Siri와 단축어</h3>
+    <p>어느 번역본으로든 구절을 찾고, 구절 이미지를 만들고, 메모나 즐겨찾기를 찾을 수 있습니다. "Scripture Alone에서 내 노트 찾기"라고 말하거나 단축어 앱에서 나만의 단계를 만들어 보세요.</p>
+    <h3>Spotlight</h3>
+    <p><span class="ui">Aa</span>에서 <span class="ui">Spotlight의 메모</span>와 <span class="ui">Spotlight의 즐겨찾기</span>를 켜면 <span data-only="pdf">기기</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span></span> 검색에서 찾을 수 있습니다.</p>
+  </div>
+  <div data-only="android">
+    <h3>앱 바로가기</h3>
+    <p>Scripture Alone 아이콘을 길게 누르면 <span class="ui">오늘의 말씀</span>, <span class="ui">이어서 읽기</span>, <span class="ui">검색</span>, <span class="ui">새 노트</span>, <span class="ui">즐겨찾기</span>가 나타납니다.</p>
+    <h3>기기 검색</h3>
+    <p><span class="ui">Aa</span>에서 <span class="ui">검색에 노트 포함</span>과 <span class="ui">검색에 즐겨찾기 포함</span>을 켜면 기기 검색에서 찾을 수 있습니다(Android 12 이상).</p>
+  </div>
 </section>
 
 <section class="chapter">
   <h2>동기화와 개인정보 보호</h2>
   <ul>
     <li>광고, 추적기, 분석 도구, 계정이 없습니다. 여러분의 데이터를 보관하는 저희 서버는 지금도, 앞으로도 없습니다.</li>
-    <li>하이라이트, 메모, 즐겨찾기, 읽던 위치, 설정은 <b>여러분 자신의 iCloud</b>를 통해서만 동기화됩니다. 기기의 설정에서 Scripture Alone의 iCloud가 켜져 있는지 확인하세요.</li>
-    <li>입력한 API 키는 iCloud 키체인으로 종단간 암호화되어 동기화됩니다.</li>
-    <li>가져온 성경은 내 iCloud를 통해 내 기기에만 전달되며, 다른 누구에게도 가지 않습니다.</li>
+    <li data-only="apple">하이라이트, 메모, 즐겨찾기, 읽던 위치, 설정은 <b>여러분 자신의 iCloud</b>를 통해서만 동기화됩니다. <span data-only="pdf">기기의 설정</span><span data-only="app"><span data-only="iphone">iPhone의 설정</span><span data-only="ipad">iPad의 설정</span><span data-only="mac">시스템 설정</span></span>에서 Scripture Alone의 iCloud가 켜져 있는지 확인하세요.</li>
+    <li data-only="apple">입력한 API 키는 iCloud 키체인으로 종단간 암호화되어 동기화됩니다.</li>
+    <li data-only="apple">가져온 성경은 내 iCloud를 통해 내 기기에만 전달되며, 다른 누구에게도 가지 않습니다.</li>
+    <li data-only="android">하이라이트, 메모, 즐겨찾기, 읽던 위치, 설정은 기기에 보관됩니다. 내 Google 계정으로 하는 <b>Android 백업</b>이 새 기기나 앱을 다시 설치한 뒤에 설정을 되살려 주며, 백업 용량 안에 들어가는 동안에는 하이라이트, 메모, 즐겨찾기도 함께 되살려 줍니다. 사용 중인 두 기기 사이에서 동기화되지는 않습니다.</li>
+    <li data-only="android">입력한 API 키는 기기에 암호화되어 저장되고, Google Block Store를 통해 종단간 암호화로 백업됩니다.</li>
+    <li data-only="android">가져온 성경은 기기에만 있습니다.</li>
     <li>설교 슬라이드와 구절 이미지는 기기 안에서 처리됩니다.</li>
-    <li>기념 성경은 여러분이 직접 건네는 파일입니다. 가족과 공유는 직접 누를 때만 시작되고, 공유 중지를 누르면 공유된 사본이 삭제됩니다.</li>
+    <li><span data-only="apple">기념 성경은 여러분이 직접 건네는 파일입니다. 가족과 공유는 직접 <span data-only="iphone ipad">누를</span><span data-only="mac">클릭할</span> 때만 시작되고, 공유를 중지하면 공유된 사본이 삭제됩니다.</span><span data-only="android">기념 성경은 여러분이 직접 건네는 파일입니다.</span></li>
     <li>Scripture Alone은 오픈 소스(AGPL)이므로 누구나 앱이 하는 일을 정확히 확인할 수 있습니다: <a href="https://github.com/blaineam/Scripture-Alone">github.com/blaineam/Scripture-Alone</a>.</li>
   </ul>
   <p class="closing">NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. <a href="https://www.lockman.org">www.Lockman.org</a><br>
@@ -445,8 +473,14 @@
   <p>네. 그동안 NASB 2020을 읽으세요. 실패하면 배너에 <span class="ui">다시 시도</span>가 나타납니다.</p>
   <h3>ESV, CSB, NKJV는 왜 그냥 들어 있지 않나요?</h3>
   <p>출판사 소유의 번역본이라 앱에 넣으려면 라이선스가 필요하며, 이미 요청해 두었습니다. 그동안에는 나만의 키로 읽거나(5장) 갖고 계신 사본을 가져오세요(4장).</p>
-  <h3>메모가 다른 기기에 보이지 않아요.</h3>
-  <p>두 기기가 같은 Apple 계정에 로그인되어 있고 Scripture Alone의 iCloud가 켜져 있는지 확인한 뒤, Wi-Fi에서 잠시 기다려 보세요.</p>
+  <div data-only="apple">
+    <h3>메모가 다른 기기에 보이지 않아요.</h3>
+    <p>두 기기가 같은 Apple 계정에 로그인되어 있고 Scripture Alone의 iCloud가 켜져 있는지 확인한 뒤, Wi-Fi에서 잠시 기다려 보세요.</p>
+  </div>
+  <div data-only="android">
+    <h3>새 기기에서도 메모를 볼 수 있나요?</h3>
+    <p>네. 예전 기기나 그 백업으로 새 기기를 설정하면 Android 백업을 통해 옮겨집니다. 단, 라이브러리가 백업 용량 안에 들어가야 합니다. 기기 설정에서 백업이 켜져 있는지 확인하세요. Scripture Alone은 사용 중인 두 기기 사이에서 동기화하지 않습니다.</p>
+  </div>
   <h3>가져오기에서 빠진 부분이 있다고 나와요.</h3>
   <p>실제로 구절을 생략하는 번역본도, 불완전한 파일도 있습니다. 가져온 부분은 읽을 수 있으며, 더 깔끔한 판의 파일이면 대개 해결됩니다.</p>
   <h3>정말 무료인가요?</h3>

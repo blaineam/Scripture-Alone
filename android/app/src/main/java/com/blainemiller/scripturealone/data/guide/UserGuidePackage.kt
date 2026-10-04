@@ -43,7 +43,21 @@ object UserGuidePackage {
         return "en"
     }
 
-    fun packageUrl(language: String) = "${RELEASE_BASE}UserGuide-$language.zip"
+    /**
+     * Android's edition of a language's guide (`android-en`): it speaks of Android phones, Wear OS
+     * and Android's backup, where the Apple editions (`en`, `ipad-en`, `mac-en`) speak of theirs.
+     */
+    fun edition(language: String) = "android-$language"
+
+    /**
+     * The package to read: Android's edition when the index lists it, else the plain language
+     * (the iPhone edition), so the app never waits on a package CI hasn't built yet.
+     */
+    fun entryName(language: String, index: Map<String, Entry>): String =
+        edition(language).takeIf { it in index } ?: language
+
+    /** [name] is a package name: a language code or an edition (`android-en`). */
+    fun packageUrl(name: String) = "${RELEASE_BASE}UserGuide-$name.zip"
 
     /** The printable PDF of the same guide — what Share hands on. */
     fun pdfUrl(language: String) = "${RELEASE_BASE}UserGuide-$language.pdf"

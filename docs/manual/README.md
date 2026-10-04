@@ -43,6 +43,19 @@ apps without an app release. Edit the sources, push, and let CI publish; build l
 preview. A new block kind needs both renderers (and `UserGuide.supportedSchema` bumped if old apps
 can't skip it).
 
+**Per-device editions.** Each language is built as four packages — `UserGuide-<code>.zip` (iPhone),
+`ipad-<code>`, `mac-<code>`, `android-<code>` — and the PDF, which reads as the iPhone edition. Any
+element may carry `data-only="<tokens>"` (space-separated; kept where any token matches): `apple`,
+`iphone` (also the PDF), `ipad`, `mac`, `android`, `app` (every app, not the PDF), `pdf`. Nest them
+for "iPhone app but not the PDF": `<span data-only="app"><span data-only="iphone">…</span></span>`.
+Words: `your <span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span>…`; on the Mac
+"tap" reads "click" (`<span data-only="iphone ipad android">tap</span><span data-only="mac">click</span>`).
+Android's text names only what the Android app does (`docs/android-parity.md`, its `strings.xml`).
+An edition's own picture goes in `images/<locale>/<platform>/<name>` and wins over the shared one:
+the Android shots are `android/play-assets/<Play locale>/phone/*` in Monkr's Pixel 7 Pro bezel
+(upscaled ×2.25; screen hole 480×1039 at 60,131, corner 26; the 1080×2160 capture scaled to fill and
+cropped evenly at the sides) and `wear/02-verse.png` in a circle.
+
 **PDF-only and app-only passages.** Wrap what only the website's PDF may carry in
 `data-only="pdf"` (block or inline), and its replacement for the apps in `data-only="app"`:
 `manual_json.py` drops the first, the template's stylesheet hides the second. The apps carry no

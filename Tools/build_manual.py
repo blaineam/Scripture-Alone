@@ -52,7 +52,7 @@ def pdf_path(locale: str) -> Path:
 
 def sources(locale: str) -> list[Path]:
     return [MANUAL / "template.html", MANUAL / "content" / f"{locale}.html",
-            *sorted((MANUAL / "images" / locale).glob("*.png"))]
+            *sorted((MANUAL / "images" / locale).rglob("*.png"))]
 
 
 def build(locale: str) -> None:
@@ -99,20 +99,36 @@ def build(locale: str) -> None:
     print(f"{target.relative_to(ROOT)}  {target.stat().st_size / 1e6:.1f} MB")
 
 
-def zip_path(locale: str) -> Path:
-    return OUT / f"UserGuide-{LOCALES[locale]}.zip"
+PLATFORMS = ("iphone", "ipad", "mac", "android")
 
 
-def package(locale: str) -> None:
-    """The guide as the apps read it. Deterministic (fixed timestamps, sorted names), so an
-    unchanged guide keeps its hash and the apps never download it twice."""
-    doc = manual_json.convert((MANUAL / "content" / f"{locale}.html").read_text(), LOCALES[locale])
+def package_name(locale: str, platform: str) -> str:
+    """The index key and file stem: `en` for iPhone (the name 1.1.2 reads on every Apple device),
+    `ipad-en`, `mac-en`, `android-en` for the others."""
+    code = LOCALES[locale]
+    return code if platform == "iphone" else f"{platform}-{code}"
+
+
+def zip_path(locale: str, platform: str = "iphone") -> Path:
+    return OUT / f"UserGuide-{package_name(locale, platform)}.zip"
+
+
+def package(locale: str, platform: str) -> None:
+    """The guide as one platform's app reads it. Deterministic (fixed timestamps, sorted names), so
+    an unchanged guide keeps its hash and the apps never download it twice."""
+    doc = manual_json.convert((MANUAL / "content" / f"{locale}.html").read_text(), LOCALES[locale], platform)
     images = MANUAL / "images" / locale
-    missing = [n for n in manual_json.images_used(doc) if not (images / n).exists()]
+
+    def image(name: str) -> Path:
+        """An edition's own picture (images/<locale>/<platform>/name) before the shared one."""
+        own = images / platform / name
+        return own if own.exists() else images / name
+
+    missing = [n for n in manual_json.images_used(doc) if not image(n).exists()]
     if missing:
         sys.exit(f"{locale}: images missing: {', '.join(sorted(missing))}")
     OUT.mkdir(parents=True, exist_ok=True)
-    target = zip_path(locale)
+    target = zip_path(locale, platform)
     with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as z:
         def add(name: str, data: bytes, compress: bool = True):
             info = zipfile.ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
@@ -121,7 +137,7 @@ def package(locale: str) -> None:
             z.writestr(info, data)
         add("guide.json", json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode())
         for name in sorted(manual_json.images_used(doc)):
-            add(f"images/{name}", (images / name).read_bytes(), compress=False)
+            add(f"images/{name}", image(name).read_bytes(), compress=False)
     print(f"{target.relative_to(ROOT)}  {target.stat().st_size / 1e6:.1f} MB")
 
 
@@ -129,16 +145,17 @@ def write_index() -> None:
     """UserGuide-index.json: each package's SHA-256 and size, read by the apps to see whether the
     copy they hold is current."""
     index = {"schema": 1, "packages": {}}
-    for locale, code in LOCALES.items():
-        z = zip_path(locale)
-        if z.exists():
-            index["packages"][code] = {"sha256": hashlib.sha256(z.read_bytes()).hexdigest(),
-                                       "size": z.stat().st_size}
+    for locale in LOCALES:
+        for platform in PLATFORMS:
+            z = zip_path(locale, platform)
+            if z.exists():
+                index["packages"][package_name(locale, platform)] = {"sha256": hashlib.sha256(z.read_bytes()).hexdigest(),
+                                                                     "size": z.stat().st_size}
     (OUT / "UserGuide-index.json").write_text(json.dumps(index, indent=2, sort_keys=True) + "\n")
 
 
 def stale(locale: str) -> bool:
-    for target in (pdf_path(locale), zip_path(locale)):
+    for target in (pdf_path(locale), *(zip_path(locale, p) for p in PLATFORMS)):
         if not target.exists() or any(s.stat().st_mtime > target.stat().st_mtime for s in sources(locale)):
             return True
     return False
@@ -159,7 +176,8 @@ def main(args: list[str]) -> int:
             continue
         if "--packages" not in args:
             build(locale)
-        package(locale)
+        for platform in PLATFORMS:
+            package(locale, platform)
     write_index()
     return 0
 

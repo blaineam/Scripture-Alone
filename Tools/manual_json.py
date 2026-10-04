@@ -44,7 +44,8 @@ class Node:
         return set(self.attrs.get("class", "").split())
 
     def elements(self) -> list["Node"]:
-        return [c for c in self.children if isinstance(c, Node)]
+        """Child elements, less those `data-only` keeps out of the edition being written."""
+        return [c for c in self.children if isinstance(c, Node) and not pdf_only(c)]
 
     def find(self, tag: str | None = None, cls: str | None = None) -> "Node | None":
         for c in self.elements():
@@ -56,7 +57,7 @@ class Node:
         return None
 
     def text(self) -> str:
-        return "".join(c if isinstance(c, str) else c.text() for c in self.children)
+        return "".join(c if isinstance(c, str) else "" if pdf_only(c) else c.text() for c in self.children)
 
 
 class Parser(HTMLParser):
@@ -91,13 +92,45 @@ def squash(s: str) -> str:
 
 # MARK: Inline
 
+# `data-only` marks a passage for some outputs only; it may list several, space-separated
+# (docs/manual/README.md). A marked passage is kept where any of its tokens is in the target's set:
+#   pdf      the website's PDF only — e.g. links the apps can't carry
+#   app      every app, not the PDF
+#   apple    every Apple device (and the PDF, which reads as the iPhone edition)
+#   iphone / ipad / mac / android   that device's app only (iphone also in the PDF)
+TARGETS = {
+    "pdf": {"pdf", "apple", "iphone"},
+    "iphone": {"app", "apple", "iphone"},
+    "ipad": {"app", "apple", "ipad"},
+    "mac": {"app", "apple", "mac"},
+    "android": {"app", "android"},
+}
+TOKENS = set().union(*TARGETS.values())
+_target = "iphone"
+
+
+def kept(node: "Node | str", target: str) -> bool:
+    if not isinstance(node, Node) or "data-only" not in node.attrs:
+        return True
+    tokens = set(node.attrs["data-only"].split())
+    unknown = tokens - TOKENS
+    if unknown:
+        raise ValueError(f"unknown data-only token(s): {', '.join(sorted(unknown))}")
+    return bool(tokens & TARGETS[target])
+
+
 def pdf_only(node: "Node | str") -> bool:
-    """`data-only="pdf"`: in the printed guide (the website's PDF) but not in the apps — links the
-    apps can't carry, for one. Its twin, `data-only="app"`, is hidden by the PDF's stylesheet."""
-    return isinstance(node, Node) and node.attrs.get("data-only") == "pdf"
+    """True for a node the current target's package leaves out."""
+    return not kept(node, _target)
 
 
 def inline(node: Node, marks: dict | None = None) -> list[dict]:
+    return merge(trim(runs(node, marks)))
+
+
+def runs(node: Node, marks: dict | None = None) -> list[dict]:
+    """A node's text runs, untrimmed: the space at the edge of a nested span (`file<span> in the
+    picker</span>`) is part of the sentence."""
     marks = dict(marks or {})
     out: list[dict] = []
     for c in node.children:
@@ -129,8 +162,8 @@ def inline(node: Node, marks: dict | None = None) -> list[dict]:
             continue
         elif c.tag in ("ul", "ol", "div", "p", "table"):
             continue  # block content inside an inline context is collected by the caller
-        out += inline(c, m)
-    return merge(trim(out))
+        out += runs(c, m)
+    return out
 
 
 def merge(runs: list[dict]) -> list[dict]:
@@ -146,6 +179,10 @@ def merge(runs: list[dict]) -> list[dict]:
 
 def trim(runs: list[dict]) -> list[dict]:
     runs = [dict(r) for r in runs]
+    # One space where two runs meet ("a " + " b"), as HTML collapses it.
+    for prev, r in zip(runs, runs[1:]):
+        if prev["text"].endswith(" ") and r["text"].startswith(" "):
+            r["text"] = r["text"].lstrip(" ")
     while runs and not runs[0]["text"].strip() and not runs[0].get("br"):
         runs.pop(0)
     while runs and not runs[-1]["text"].strip() and not runs[-1].get("br"):
@@ -213,7 +250,8 @@ def block(n: Node):
     if n.tag == "h3":
         return {"type": "heading", "inline": inline(n)}
     if n.tag == "ul":
-        return {"type": "list", "items": [inline(li) for li in n.elements() if li.tag == "li"]}
+        # An item whose words are all for other editions leaves nothing behind.
+        return {"type": "list", "items": [r for r in (inline(li) for li in n.elements() if li.tag == "li") if r]}
     if n.tag == "ol":
         items = []
         for li in n.elements():
@@ -305,7 +343,8 @@ def mock_row(r: Node) -> dict:
     skip = {id(x) for x in (icon, check, sub) if x is not None}
 
     def own(node: Node) -> str:
-        return "".join(c if isinstance(c, str) else ("" if id(c) in skip else own(c)) for c in node.children)
+        return "".join(c if isinstance(c, str) else ("" if id(c) in skip or pdf_only(c) else own(c))
+                       for c in node.children)
 
     style = "link" if "link" in cls else "field" if "field" in cls else "plain"
     if "color:#c33" in r.attrs.get("style", "").replace(" ", ""):
@@ -324,7 +363,12 @@ def mock_row(r: Node) -> dict:
 
 # MARK: Document
 
-def convert(html: str, language: str) -> dict:
+def convert(html: str, language: str, platform: str = "iphone") -> dict:
+    """`platform`: iphone, ipad, mac or android — which device's edition to write."""
+    global _target
+    if platform not in TARGETS or platform == "pdf":
+        raise ValueError(f"platform must be one of iphone, ipad, mac, android")
+    _target = platform
     title = re.search(r"<!--\s*title:\s*(.*?)\s*-->", html)
     p = Parser()
     p.feed(html)

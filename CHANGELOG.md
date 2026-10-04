@@ -8,7 +8,9 @@
   (CSB, NKJV) keys, notes and sermon slides, Study, Listen, sharing, keepsakes, widgets and the watch.
   It is drawn natively, so it fits the screen and follows your text size, and it downloads the first
   time you open it (Aa › User Guide), so the app stays small. On first launch a welcome card offers
-  it, with Skip. On iPhone, iPad, Mac and Android. `docs/manual/` is the source;
+  it, with Skip. Each device gets its own edition — the iPhone, iPad and Mac editions speak of that
+  device (and a Mac's say click, not tap), and Android's is written for Android, with Android
+  screenshots, Wear OS and Android's backup. On iPhone, iPad, Mac and Android. `docs/manual/` is the source;
   `.github/workflows/user-guide.yml` builds each language's package (and a PDF for the website) and
   publishes them to the `user-guide` GitHub release.
 - The NASB 2020 is the Bible inside the app, and what it opens to — on iPhone, iPad, Mac, Apple Watch,

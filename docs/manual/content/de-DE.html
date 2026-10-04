@@ -1,4 +1,6 @@
 <!-- title: Scripture Alone — Benutzerhandbuch -->
+<!-- Editions (docs/manual/README.md): data-only="iphone ipad mac android apple app pdf". The PDF reads
+     as the iPhone edition. "tippe" reads "klicke" on the Mac: <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span>. -->
 <div class="cover">
   <div class="sun"></div>
   <div class="eyebrow">Benutzerhandbuch</div>
@@ -9,7 +11,7 @@
     <img src="IMG/03-study.png" alt="">
     <img src="IMG/02-topics.png" alt="">
   </div>
-  <div class="edition">Für iPhone, iPad, Mac und Apple Watch · Version 1.1</div>
+  <div class="edition"><span data-only="pdf">Für iPhone, iPad, Mac und Apple Watch</span><span data-only="app"><span data-only="iphone">Für iPhone und Apple Watch</span><span data-only="ipad">Für iPad</span><span data-only="mac">Für Mac</span><span data-only="android">Für Android-Smartphones, -Tablets und Wear OS</span></span> · Version 1.1</div>
 </div>
 
 <div class="toc">
@@ -27,7 +29,8 @@
     <li>Ganz nach deinem Geschmack <span>Designs, Schrift und Layout</span></li>
     <li>Teilen <span>Versbilder, Text und Links</span></li>
     <li>Erinnerungen, Familie und Export <span>Deine Bibel weitergeben</span></li>
-    <li>Widgets, Apple Watch, Siri und Spotlight</li>
+    <li data-only="apple">Widgets, Apple Watch, Siri und Spotlight</li>
+    <li data-only="android">Widgets, Wear OS und App-Verknüpfungen</li>
     <li>Synchronisierung und Datenschutz</li>
     <li>Fragen und Antworten</li>
   </ol>
@@ -36,34 +39,36 @@
 <section class="chapter">
   <h2>Willkommen</h2>
   <p class="lede">Scripture Alone ist eine Bibel, mit der du Gottes Wort studieren kannst, ohne dass dir etwas im Weg steht: keine Werbung, kein Tracking, kein Konto und kein Server, der deine Daten speichert.</p>
-  <p>Die ganze Bibel liegt auf deinem Gerät. Darum liest die App offline, überall, vom ersten Moment nach der Installation an. Fest eingebaut ist die New American Standard Bible (NASB 2020), eine englische Übersetzung. Alles, was du hinzufügst – weitere Bibeln, Kommentare, die Ursprachen –, wird einmal geladen und funktioniert danach ebenfalls offline.</p>
-  <p>Deine Markierungen, Notizen und Favoriten werden über deine private iCloud zwischen deinen eigenen Geräten synchronisiert. Niemand sonst kann sie sehen, auch nicht der Entwickler.</p>
+  <p>Die ganze Bibel liegt auf deinem <span data-only="pdf">Gerät</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">Gerät</span></span>. Darum liest die App offline, überall, vom ersten Moment nach der Installation an. Fest eingebaut ist die New American Standard Bible (NASB 2020), eine englische Übersetzung. Alles, was du hinzufügst – weitere Bibeln, Kommentare, die Ursprachen –, wird einmal geladen und funktioniert danach ebenfalls offline.</p>
+  <p data-only="apple">Deine Markierungen, Notizen und Favoriten werden über deine private iCloud zwischen deinen eigenen Geräten synchronisiert. Niemand sonst kann sie sehen, auch nicht der Entwickler.</p>
+  <p data-only="android">Deine Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Niemand sonst kann sie sehen, auch nicht der Entwickler.</p>
   <div class="tip"><span class="note-label">Wo du was findest</span>
-  Oben im Leser: links <span class="ui">Notizen</span> und <span class="ui">Studium</span>, in der Mitte der Titel der Bibelstelle (tippe darauf, um überallhin zu springen), rechts die Übersetzung (z.&nbsp;B. <span class="ui">NASB</span>) und <span class="ui">Aa</span> für Darstellung und Einstellungen. Unten: vorheriges Kapitel, automatisches Scrollen, <span class="ui">Anhören</span> und nächstes Kapitel. Auf dem Mac liegen dieselben Tasten zusammen in der Symbolleiste des Fensters.</div>
+  <span data-only="iphone ipad android">Oben im Leser: links <span class="ui">Notizen</span> und <span class="ui">Studium</span>, in der Mitte der Titel der Bibelstelle (tippe darauf, um überallhin zu springen), rechts die Übersetzung (z.&nbsp;B. <span class="ui">NASB</span>) und <span class="ui">Aa</span> für Darstellung und Einstellungen. Unten: vorheriges Kapitel, automatisches Scrollen, <span class="ui">Anhören</span> und nächstes Kapitel.</span><span data-only="pdf"> Auf dem Mac liegen dieselben Tasten zusammen in der Symbolleiste des Fensters.</span><span data-only="mac">Alles liegt in der Symbolleiste des Fensters: links die Pfeile für das vorherige und nächste Kapitel, in der Mitte der Titel der Bibelstelle (klicke darauf, um überallhin zu springen), rechts <span class="ui">Auto-Scrollen</span>, <span class="ui">Anhören</span>, die Übersetzung (z.&nbsp;B. <span class="ui">NASB</span>), <span class="ui">Aa</span> für Darstellung und Einstellungen, <span class="ui">Notizen</span> und <span class="ui">Studium</span>.</span></div>
   <h3>Die Sprachen der App</h3>
-  <p>Die App richtet sich nach der Sprache deines Geräts. Ist sie auf Deutsch eingestellt, lädt Scripture Alone beim ersten Start die <b>Lutherbibel 1912</b> herunter und öffnet sie, sobald sie da ist – bis dahin kannst du schon in einer anderen Bibel lesen. Neben Deutsch und Englisch spricht die App auch vereinfachtes Chinesisch, Japanisch, Französisch, Spanisch, Koreanisch, brasilianisches Portugiesisch und Italienisch, jeweils mit einer eigenen vollständigen Bibel (和合本, 文語訳, Louis Segond, Reina-Valera 1909, 개역한글, Bíblia Livre und Riveduta). Jede Bibel lässt sich in jeder Sprache lesen.</p>
+  <p>Die App richtet sich nach der Sprache deines <span data-only="pdf">Geräts</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">Geräts</span></span>. Ist sie auf Deutsch eingestellt, lädt Scripture Alone beim ersten Start die <b>Lutherbibel 1912</b> herunter und öffnet sie, sobald sie da ist – bis dahin kannst du schon in einer anderen Bibel lesen. Neben Deutsch und Englisch spricht die App auch vereinfachtes Chinesisch, Japanisch, Französisch, Spanisch, Koreanisch, brasilianisches Portugiesisch und Italienisch, jeweils mit einer eigenen vollständigen Bibel (和合本, 文語訳, Louis Segond, Reina-Valera 1909, 개역한글, Bíblia Livre und Riveduta). Jede Bibel lässt sich in jeder Sprache lesen.</p>
 </section>
 
 <section class="chapter">
   <h2>Lesen</h2>
-  <p class="lede">Du öffnest die App und liest. Alles andere ist nur einen Tipp entfernt, und nichts schiebt sich vor den Text, bis du danach fragst.</p>
+  <p class="lede">Du öffnest die App und liest. Alles andere ist nur einen <span data-only="iphone ipad android">Tipp</span><span data-only="mac">Klick</span> entfernt, und nichts schiebt sich vor den Text, bis du danach fragst.</p>
   <div class="feature">
     <div class="text">
       <h3>Weiterblättern</h3>
       <ul>
-        <li>Scrolle durch ein Kapitel; am Ende liest du einfach weiter oder tippst auf den Link zum nächsten Kapitel.</li>
-        <li>Mit den Pfeilen in der unteren Leiste gehst du zum vorherigen und nächsten Kapitel (auf der Tastatur <kbd>⌘[</kbd> und <kbd>⌘]</kbd>).</li>
-        <li>Auf einem breiten Bildschirm – ein quer gehaltenes iPhone, ein iPad, ein breites Mac-Fenster – steht ein Kapitel in zwei Spalten wie in einer gedruckten Bibel. Wische zum Umblättern oder nutze Pfeiltasten, Leertaste oder Trackpad.</li>
+        <li>Scrolle durch ein Kapitel; am Ende liest du einfach weiter oder <span data-only="iphone ipad android">tippst</span><span data-only="mac">klickst</span> auf den Link zum nächsten Kapitel.</li>
+        <li>Mit den Pfeilen in der <span data-only="iphone ipad android">unteren Leiste</span><span data-only="mac">Symbolleiste</span> gehst du zum vorherigen und nächsten Kapitel<span data-only="ipad mac pdf"> (auf der Tastatur <kbd>⌘[</kbd> und <kbd>⌘]</kbd>)</span><span data-only="android"> (auf der Tastatur <kbd>Strg+[</kbd> und <kbd>Strg+]</kbd>), oder du wischst seitlich</span>.</li>
+        <li data-only="pdf">Auf einem breiten Bildschirm – ein quer gehaltenes iPhone, ein iPad, ein breites Mac-Fenster – steht ein Kapitel in zwei Spalten wie in einer gedruckten Bibel. Wische zum Umblättern oder nutze Pfeiltasten, Leertaste oder Trackpad.</li>
+        <li data-only="app"><span data-only="iphone">Halte dein iPhone quer, und ein Kapitel steht in zwei Spalten wie in einer gedruckten Bibel. Wische zum Umblättern.</span><span data-only="ipad">Auf dem iPad steht ein Kapitel in zwei Spalten wie in einer gedruckten Bibel, sobald der Bildschirm breit genug ist. Wische zum Umblättern oder nutze Pfeiltasten oder Leertaste auf der Tastatur.</span><span data-only="mac">In einem breiten Fenster steht ein Kapitel in zwei Spalten wie in einer gedruckten Bibel. Umblättern kannst du mit den Pfeiltasten, der Leertaste oder durch Wischen auf dem Trackpad.</span></li>
       </ul>
       <h3>Freihändig</h3>
-      <p>Tippe unten auf <span class="ui">Auto-Scrollen</span>, und das Kapitel läuft von selbst weiter – am Ende gleich ins nächste. Halte die Taste gedrückt, um das Tempo zu wählen: Langsam, Gemächlich, Gleichmäßig oder Zügig.</p>
+      <p><span data-only="iphone ipad">Tippe unten auf <span class="ui">Auto-Scrollen</span></span><span data-only="android">Tippe unten auf <span class="ui">Auto-Scroll</span></span><span data-only="mac">Klicke in der Symbolleiste auf <span class="ui">Auto-Scrollen</span></span>, und das Kapitel läuft von selbst weiter – am Ende gleich ins nächste. <span data-only="iphone ipad android">Halte die Taste gedrückt</span><span data-only="mac">Klicke auf den Pfeil daneben</span>, um das Tempo zu wählen: Langsam, Gemächlich, Gleichmäßig oder Zügig.</p>
       <h3>Fußnoten und die Worte Jesu</h3>
-      <p>Tippe auf ein Fußnotenzeichen, um die Anmerkung zu lesen. Die Worte Jesu stehen in Rot, Poesie ist als Poesie gesetzt, und Abschnittsüberschriften werden angezeigt – alles lässt sich unter <span class="ui">Aa</span> abschalten.</p>
+      <p><span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> auf ein Fußnotenzeichen, um die Anmerkung zu lesen. Die Worte Jesu stehen in Rot, Poesie ist als Poesie gesetzt, und Abschnittsüberschriften werden angezeigt – alles lässt sich unter <span class="ui">Aa</span> abschalten.</p>
     </div>
     <figure><img class="phone" src="IMG/01-reader.png" alt=""><figcaption>Der Leser</figcaption></figure>
   </div>
   <h3>Verse auswählen</h3>
-  <p>Tippe auf einen Vers, um ihn auszuwählen; tippe auf weitere, um sie hinzuzufügen. Eine Leiste erscheint mit allem, was du damit tun kannst:</p>
+  <p><span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> auf einen Vers, um ihn auszuwählen; <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> auf weitere, um sie hinzuzufügen. Eine Leiste erscheint mit allem, was du damit tun kannst:</p>
   <table class="facts">
     <tr><th>Taste</th><th>Was sie tut</th></tr>
     <tr><td>Farbige Punkte</td><td>In einer von fünf Farben markieren. Der Radierer entfernt eine Markierung.</td></tr>
@@ -71,18 +76,18 @@
     <tr><td>Stift</td><td>Eine Notiz dazu schreiben.</td></tr>
     <tr><td>Kopieren</td><td>Die Verse mit ihrer Stellenangabe kopieren.</td></tr>
     <tr><td>Teilen</td><td>Als gestaltetes Bild, als Text oder als Link teilen.</td></tr>
-    <tr><td>Buch mit Schriftzeichen</td><td>Ursprachen: der Vers Wort für Wort auf Hebräisch oder Griechisch (jeweils ein Vers).</td></tr>
+    <tr><td><span data-only="apple">Buch mit Schriftzeichen</span><span data-only="android">文A</span></td><td>Ursprachen: der Vers Wort für Wort auf Hebräisch oder Griechisch (jeweils ein Vers).</td></tr>
     <tr><td>Anhören</td><td>Die Auswahl vorlesen lassen.</td></tr>
     <tr><td>✕</td><td>Die Auswahl aufheben.</td></tr>
   </table>
   <div class="note"><span class="note-label">Grenzen der Verlage</span>Manche Übersetzungen begrenzen, wie viel auf einmal kopiert oder geteilt werden darf. Gehst du darüber hinaus, sagt dir die App, von wem die Grenze stammt und wie viele Verse erlaubt sind.</div>
   <h3>Übersetzungen vergleichen</h3>
-  <p>Tippe oben rechts auf die Übersetzungstaste und wähle <span class="ui">Übersetzungen vergleichen…</span>, um eine Stelle in mehreren Übersetzungen nebeneinander zu lesen.</p>
+  <p><span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> <span data-only="iphone ipad android">oben rechts</span><span data-only="mac">in der Symbolleiste</span> auf die Übersetzungstaste und wähle <span class="ui">Übersetzungen vergleichen…</span>, um eine Stelle in zwei Übersetzungen nebeneinander zu lesen.</p>
 </section>
 
 <section class="chapter">
   <h2>Sich zurechtfinden</h2>
-  <p class="lede">Tippe oben auf den Titel der Bibelstelle – oder drücke <kbd>⌘L</kbd> auf der Tastatur –, um „Gehe zu“ zu öffnen. Ein einziges Feld erledigt alles.</p>
+  <p class="lede"><span data-only="iphone ipad android">Tippe oben auf den Titel der Bibelstelle</span><span data-only="mac">Klicke in der Symbolleiste auf den Titel der Bibelstelle</span><span data-only="ipad pdf"> – oder drücke <kbd>⌘L</kbd> auf der Tastatur –</span><span data-only="mac"> – oder drücke <kbd>⌘L</kbd> –</span><span data-only="android"> – oder drücke <kbd>Strg+L</kbd> auf der Tastatur –</span>, um „Gehe zu“ zu öffnen. Ein einziges Feld erledigt alles.</p>
   <div class="feature flip">
     <div class="text">
       <h3>Eine Stelle eingeben</h3>
@@ -94,17 +99,17 @@
         <li><b>ps 23</b>, <b>1. Mose 1</b>, <b>offb 21,4</b></li>
       </ul>
       <h3>Nach Wörtern suchen</h3>
-      <p>Gib ein Wort oder eine Wendung ein, um die Übersetzung zu durchsuchen, die du gerade liest. Bibeln auf deinem Gerät werden offline durchsucht, auch nach ganzen Wendungen.</p>
+      <p>Gib ein Wort oder eine Wendung ein, um die Übersetzung zu durchsuchen, die du gerade liest. Bibeln auf deinem <span data-only="pdf">Gerät</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">Gerät</span></span> werden offline durchsucht, auch nach ganzen Wendungen.</p>
       <h3>Blättern</h3>
       <p>Oder wähle ein Buch und dann ein Kapitel. Zuletzt gelesene Kapitel und deine Suchen stehen oben bereit, damit du sie wieder öffnen kannst.</p>
     </div>
-    <figure><img class="phone" src="IMG/10-jump.png" alt=""><figcaption>Gehe zu</figcaption></figure>
+    <figure data-only="apple"><img class="phone" src="IMG/10-jump.png" alt=""><figcaption>Gehe zu</figcaption></figure>
   </div>
   <div class="feature">
     <div class="text">
       <h3>Themen: was die Bibel zu dem sagt, was du gerade erlebst</h3>
       <p>„Gehe zu“ zeigt eine Reihe von Themen – Angst &amp; Sorgen, Furcht, Trauer &amp; Verlust, Einsamkeit und mehr. <span class="ui">Alle anzeigen</span> öffnet alle 72 in sieben Gruppen, von Depression &amp; Verzweiflung und Schuld &amp; Scham bis zu Ehe, Erziehung, Arbeit &amp; Beruf, Warten und Gottes Gegenwart.</p>
-      <p>Jedes Thema sammelt etwa ein Dutzend vertrauter Bibelstellen, angezeigt in der Übersetzung, die du gerade liest. Tippe auf eine, um dorthin zu gehen; halte sie gedrückt, um sie zu favorisieren, zu kopieren oder zu teilen.</p>
+      <p>Jedes Thema sammelt etwa ein Dutzend vertrauter Bibelstellen, angezeigt in der Übersetzung, die du gerade liest. <span data-only="iphone ipad android">Tippe auf eine, um dorthin zu gehen; halte sie gedrückt</span><span data-only="mac">Klicke auf eine, um dorthin zu gehen; klicke mit der rechten Maustaste darauf</span>, um sie zu favorisieren, zu kopieren oder zu teilen.</p>
       <p>Du musst den Namen eines Themas nicht kennen: Schreib einfach, wie es dir geht – „ängstlich“, „einsam“, „ausgebrannt“ –, und das passende Thema erscheint über den Versen, in jeder Sprache der App.</p>
       <p>Auf Englisch enthält das Verzeichnis außerdem <b>Nave's Topical Bible</b> von A bis Z: mehr als 5.000 Themen, jede Stelle ein Link.</p>
     </div>
@@ -115,14 +120,16 @@
 
 <section class="chapter">
   <h2>Deine Bibeln</h2>
-  <p class="lede">Tippe oben rechts auf die Übersetzungstaste, um die Bibel zu wechseln. Unter <span class="ui">Übersetzungen verwalten…</span> am Ende dieses Menüs fügst du Bibeln hinzu, lädst sie und entfernst sie.</p>
+  <p class="lede"><span data-only="iphone ipad android">Tippe oben rechts auf die Übersetzungstaste</span><span data-only="mac">Klicke in der Symbolleiste auf die Übersetzungstaste</span>, um die Bibel zu wechseln. Unter <span class="ui">Übersetzungen verwalten…</span> am Ende dieses Menüs fügst du Bibeln hinzu, lädst sie und entfernst sie.</p>
   <h3>In der App enthalten</h3>
   <table class="facts">
     <tr><th>Übersetzung</th><th>So bekommst du sie</th></tr>
-    <tr><td>New American Standard Bible – NASB 2020</td><td><span class="tag">EINGEBAUT</span> Ab der Installation auf deinem Gerät, auch auf der Apple Watch.</td></tr>
+    <tr><td>New American Standard Bible – NASB 2020</td><td><span class="tag">EINGEBAUT</span> Ab der Installation auf deinem <span data-only="pdf">Gerät</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">Gerät</span></span>, auch auf der <span data-only="apple">Apple Watch</span><span data-only="android">Wear-OS-Uhr</span>.</td></tr>
     <tr><td>NASB 1995</td><td>Wird einmal geladen, wenn du sie zum ersten Mal wählst.</td></tr>
-    <tr><td>American Standard Version (ASV), Berean Standard Bible (BSB), King James Version (KJV)</td><td>Werden einmal geladen, wenn du eine davon zum ersten Mal wählst. Gemeinfrei.</td></tr>
-    <tr><td>Eine Bibel in deiner Sprache – auf Deutsch die Lutherbibel 1912</td><td>Wird beim ersten Start geladen, wenn dein Gerät eine der acht weiteren Sprachen der App nutzt.</td></tr>
+    <tr data-only="apple"><td>American Standard Version (ASV), Berean Standard Bible (BSB), King James Version (KJV)</td><td>Werden einmal geladen, wenn du eine davon zum ersten Mal wählst. Gemeinfrei.</td></tr>
+    <tr data-only="android"><td>Berean Standard Bible (BSB)</td><td>Wird mit der App installiert. Gemeinfrei.</td></tr>
+    <tr data-only="android"><td>American Standard Version (ASV), King James Version (KJV)</td><td>Werden einmal geladen, wenn du eine davon zum ersten Mal wählst. Gemeinfrei.</td></tr>
+    <tr><td>Eine Bibel in deiner Sprache – auf Deutsch die Lutherbibel 1912</td><td>Wird beim ersten Start geladen, wenn dein <span data-only="pdf">Gerät</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">Gerät</span></span> eine der acht weiteren Sprachen der App nutzt.</td></tr>
   </table>
   <p>Einmal geladen, lässt sich eine Bibel dauerhaft offline lesen und durchsuchen.</p>
 
@@ -131,8 +138,8 @@
   <div class="feature">
     <div class="text">
       <ol class="steps">
-        <li><b>Kostenlose Übersetzungen durchstöbern…</b> listet die frei lizenzierten Bibeln von eBible.org auf, zuerst die in deinen Sprachen (<span class="ui">Andere Sprachen</span> zeigt den Rest – Hunderte). Tippe auf eine, um sie zu laden. Geladen wird erst, wenn du tippst.</li>
-        <li><b>Datei importieren …</b> holt eine Bibel herein, die dir gehört: ein <b>USFM-ZIP</b>, ein <b>DRM-freies ePub</b> oder ein <b>PDF mit echtem Text</b> (kein Scan). Mehr dazu auf den nächsten Seiten.</li>
+        <li><b><span data-only="apple">Kostenlose Übersetzungen durchstöbern…</span><span data-only="android">Kostenlose Übersetzungen durchsuchen…</span></b> listet die frei lizenzierten Bibeln von eBible.org auf, zuerst die in deinen Sprachen (<span class="ui">Andere Sprachen</span> zeigt den Rest – Hunderte). <span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> auf eine, um sie zu laden. Geladen wird erst, wenn du <span data-only="iphone ipad android">tippst</span><span data-only="mac">klickst</span>.</li>
+        <li><b><span data-only="apple">Datei importieren …</span><span data-only="android">Datei importieren…</span></b> holt eine Bibel herein, die dir gehört: ein <b>USFM-ZIP</b>, ein <b>DRM-freies ePub</b> oder ein <b>PDF mit echtem Text</b> (kein Scan). Mehr dazu auf den nächsten Seiten.</li>
         <li><b>Online-Übersetzungen…</b> liest die ESV, CSB oder NKJV über das Netz, mit deinem eigenen kostenlosen Schlüssel. Siehe Kapitel 5.</li>
       </ol>
     </div>
@@ -146,8 +153,8 @@
       </div>
       <div class="head">Übersetzung hinzufügen</div>
       <div class="group">
-        <div class="row link"><span class="ico">🌐</span>Kostenlose Übersetzungen durchstöbern…</div>
-        <div class="row link hl"><span class="ico">📁</span>Datei importieren …</div>
+        <div class="row link"><span class="ico">🌐</span><span data-only="apple">Kostenlose Übersetzungen durchstöbern…</span><span data-only="android">Kostenlose Übersetzungen durchsuchen…</span></div>
+        <div class="row link hl"><span class="ico">📁</span><span data-only="apple">Datei importieren …</span><span data-only="android">Datei importieren…</span></div>
         <div class="row link"><span class="ico">🔑</span>Online-Übersetzungen…</div>
       </div>
       <div class="foot">Eine Datei kann ein USFM-ZIP, ein ePub oder ein PDF sein, das dir gehört – alles Kopiergeschützte wird abgelehnt.</div>
@@ -159,7 +166,8 @@
   <ul>
     <li><b>Studienbibeln</b> bringen ihre Anmerkungen, Bucheinleitungen, Aufsätze und Karten mit; die Anmerkungen erscheinen im Studium unter „Kommentare“.</li>
     <li><b>Die Worte Jesu</b> bleiben rot.</li>
-    <li>Deine Importe gelangen über deine eigene iCloud auf deine anderen Geräte – und auf deine Apple Watch, wenn die Bedingungen der Übersetzung es erlauben. Mit anderen werden sie nie geteilt.</li>
+    <li data-only="apple">Deine Importe gelangen über deine eigene iCloud auf deine anderen Geräte – und auf deine Apple Watch, wenn die Bedingungen der Übersetzung es erlauben. Mit anderen werden sie nie geteilt.</li>
+    <li data-only="android">Deine Importe bleiben auf diesem Gerät – und gelangen auf deine Wear-OS-Uhr, wenn die Bedingungen der Übersetzung es erlauben. Mit anderen werden sie nie geteilt.</li>
     <li>Kopiergeschützte Dateien (DRM) werden abgelehnt. Die App enthält keinen Code, um sie zu entsperren.</li>
   </ul>
 
@@ -180,21 +188,21 @@
     <p>Bis ESV und CSB in der App enthalten sein können, kannst du eine Ausgabe importieren, die dir gehört. Die FAQ auf unserer Website nennt die Ausgaben, die sich sauber importieren lassen, und wo es sie gibt: <a href="https://wemiller.com/apps/scripture-alone/faq/?lang=de#esv-csb">Wo bekomme ich die ESV oder die CSB zum Importieren?</a></p>
   </div>
   <ol class="steps">
-    <li>Sichere die Datei in der Dateien-App (oder auf deinem Mac).<span data-only="pdf"> Ligonier stellt das ePub nach dem Kauf in deinem Konto bereit.</span></li>
-    <li>Öffne <span class="ui">Übersetzungen verwalten…</span> und tippe auf <span class="ui">Datei importieren …</span>.</li>
-    <li>Wähle die Datei und warte auf die Übersicht. Dann wählst du sie wie jede andere Bibel über die Übersetzungstaste. Sie bleibt auf deinen Geräten und wird nie hochgeladen.</li>
+    <li><span data-only="pdf">Sichere die Datei in der Dateien-App (oder auf deinem Mac). Ligonier stellt das ePub nach dem Kauf in deinem Konto bereit.</span><span data-only="app"><span data-only="iphone">Hol die Datei auf dein iPhone: Sichere sie in der Dateien-App.</span><span data-only="ipad">Hol die Datei auf dein iPad: Sichere sie in der Dateien-App.</span><span data-only="mac">Hol die Datei auf deinen Mac: Sichere sie irgendwo, etwa im Ordner „Downloads“.</span><span data-only="android">Hol die Datei auf dein Gerät: Speichere sie im Gerätespeicher, etwa im Ordner „Downloads“.</span></span></li>
+    <li>Öffne <span class="ui">Übersetzungen verwalten…</span> und <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> auf <span data-only="apple"><span class="ui">Datei importieren …</span></span><span data-only="android"><span class="ui">Datei importieren…</span></span>.</li>
+    <li>Wähle die Datei<span data-only="android"> in der Dateiauswahl</span> und warte auf die Übersicht. Dann wählst du sie wie jede andere Bibel über die Übersetzungstaste. Sie bleibt <span data-only="apple">auf deinen Geräten</span><span data-only="android">auf deinem Gerät</span> und wird nie hochgeladen.</li>
   </ol>
 
   <h3>Weitere Übersetzungen offline</h3>
   <p>NASB 2020 und NASB 1995 sind mit Genehmigung der Lockman Foundation enthalten. Auch die Verlage von ESV, CSB, NKJV und LSB haben wir um Erlaubnis gebeten. Wird eine Lizenz erteilt, erscheint die Übersetzung einfach offline in der App, und die Schritte dafür entfallen.</p>
   <h3>Eine Übersetzung entfernen</h3>
-  <p>Wische in <span class="ui">Übersetzungen verwalten…</span> über eine hinzugefügte Übersetzung (oder halte sie gedrückt) und wähle <span class="ui">Entfernen</span>. Markierungen und Notizen bleiben – sie gehören zum Vers.</p>
+  <p><span data-only="iphone ipad">Wische in <span class="ui">Übersetzungen verwalten…</span> über eine hinzugefügte Übersetzung (oder halte sie gedrückt) und wähle <span class="ui">Entfernen</span>.</span><span data-only="mac">Klicke in <span class="ui">Übersetzungen verwalten…</span> mit der rechten Maustaste auf eine hinzugefügte Übersetzung und wähle <span class="ui">Entfernen</span>.</span><span data-only="android">Tippe in <span class="ui">Übersetzungen verwalten…</span> neben einer hinzugefügten Übersetzung auf die Entfernen-Taste (oder halte sie gedrückt) und bestätige mit <span class="ui">Entfernen</span>.</span> Markierungen und Notizen bleiben – sie gehören zum Vers.</p>
 </section>
 
 <section class="chapter">
   <h2>Online-Übersetzungen</h2>
   <p class="lede">ESV, CSB und NKJV lassen sich in Scripture Alone über das Internet lesen – mit einem kostenlosen Schlüssel vom Dienst des jeweiligen Verlags. Das dauert einmalig etwa fünf Minuten.</p>
-  <p>Warum ein eigener Schlüssel? Die kostenlosen Tarife sind persönliche Kontingente. Ein in die App eingebauter Schlüssel wäre binnen eines Tages von Fremden aufgebraucht und würde gegen die Bedingungen der Dienste verstoßen. Dein Schlüssel liegt im Schlüsselbund deines Geräts und wird über den iCloud-Schlüsselbund Ende-zu-Ende-verschlüsselt mit deinen anderen Geräten synchronisiert.</p>
+  <p>Warum ein eigener Schlüssel? Die kostenlosen Tarife sind persönliche Kontingente. Ein in die App eingebauter Schlüssel wäre binnen eines Tages von Fremden aufgebraucht und würde gegen die Bedingungen der Dienste verstoßen. <span data-only="apple">Dein Schlüssel liegt im Schlüsselbund deines Geräts und wird über den iCloud-Schlüsselbund Ende-zu-Ende-verschlüsselt mit deinen anderen Geräten synchronisiert.</span><span data-only="android">Dein Schlüssel liegt verschlüsselt auf deinem Gerät, und Googles Block Store sichert ihn Ende-zu-Ende-verschlüsselt – so kommt er auf einem neuen Gerät zurück, das du von diesem aus einrichtest.</span></p>
   <div class="note"><span class="note-label">Auf Englisch</span>Die Websites von Crossway (api.esv.org) und API.Bible gibt es nur auf Englisch. Die Schritte unten nennen die Bezeichnungen, die du dort siehst.</div>
   <table class="facts">
     <tr><th>Dienst</th><th>Liefert dir</th><th>Kostenloses Kontingent</th></tr>
@@ -207,12 +215,12 @@
   <div class="feature">
     <div class="text">
       <ol class="steps">
-        <li>Tippe in Scripture Alone auf die Übersetzungstaste, dann auf <span class="ui">Übersetzungen verwalten…</span> › <span class="ui">Online-Übersetzungen…</span>.</li>
-        <li>Tippe unter <b>Crossway (ESV)</b> auf <span class="ui">Kostenlosen Schlüssel holen…</span>. Das öffnet <a href="https://api.esv.org/account/create-application/">api.esv.org</a>.</li>
+        <li><span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> in Scripture Alone auf die Übersetzungstaste, dann auf <span class="ui">Übersetzungen verwalten…</span> › <span class="ui">Online-Übersetzungen…</span>.</li>
+        <li><span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> unter <b>Crossway (ESV)</b> auf <span class="ui">Kostenlosen Schlüssel holen…</span>. Das öffnet <a href="https://api.esv.org/account/create-application/">api.esv.org</a>.</li>
         <li>Melde dich an oder lege ein kostenloses ESV.org-Konto an.</li>
         <li>Fülle das kurze Formular <b>Create Application</b> aus. Jeder Name geht („Meine Bibellese“); beschreibe es als persönliches, nicht-kommerzielles Bibellesen in Scripture Alone und stimme den Bedingungen zu.</li>
         <li>Öffne die Seite deiner Anwendung und kopiere ihren <b>API key</b> (eine lange Folge aus Buchstaben und Ziffern).</li>
-        <li>Füge ihn in Scripture Alone unter Crossway in <b>API-Schlüssel</b> ein und tippe auf <span class="ui">Fertig</span>.</li>
+        <li>Füge ihn in Scripture Alone unter Crossway in <b>API-Schlüssel</b> ein und <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> auf <span class="ui">Fertig</span>.</li>
       </ol>
       <p>Die ESV erscheint jetzt im Übersetzungsmenü mit dem Hinweis <b>Online</b>.</p>
     </div>
@@ -236,13 +244,13 @@
   <div class="feature">
     <div class="text">
       <ol class="steps">
-        <li>Tippe in <span class="ui">Online-Übersetzungen…</span> unter <b>API.Bible</b> auf <span class="ui">Kostenlosen Schlüssel holen…</span>. Das öffnet <a href="https://api.bible/">api.bible</a>.</li>
+        <li><span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> in <span class="ui">Online-Übersetzungen…</span> unter <b>API.Bible</b> auf <span class="ui">Kostenlosen Schlüssel holen…</span>. Das öffnet <a href="https://api.bible/">api.bible</a>.</li>
         <li>Wähle den kostenlosen Tarif <b>Starter</b>, registriere dich und bestätige deine E-Mail-Adresse.</li>
         <li>Lege in deinem API.Bible-Dashboard eine App an (ein Name und eine kurze Beschreibung als persönliches Bibellesen genügen).</li>
         <li>Wähle auf der Website von API.Bible deine <b>drei geschützten Bibeln</b> – zum Beispiel CSB und NKJV. (Die NASB ist in Scripture Alone schon enthalten, dafür musst du keine Wahl verbrauchen.)</li>
         <li>Kopiere den <b>API key</b> deiner App.</li>
-        <li>Füge ihn unter API.Bible in <b>API-Schlüssel</b> ein und tippe auf <span class="ui">Meine Übersetzungen prüfen</span>.</li>
-        <li>Hake die Übersetzungen ab, die du im Menü haben willst, und tippe auf <span class="ui">Fertig</span>.</li>
+        <li>Füge ihn unter API.Bible in <b>API-Schlüssel</b> ein und <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> auf <span class="ui">Meine Übersetzungen prüfen</span>.</li>
+        <li>Hake die Übersetzungen ab, die du im Menü haben willst, und <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> auf <span class="ui">Fertig</span>.</li>
       </ol>
     </div>
     <div class="mock">
@@ -262,8 +270,9 @@
   <div class="tip"><span class="note-label">Gut zu wissen</span>
   <ul style="margin:0">
     <li>Online-Übersetzungen brauchen eine Verbindung. Was du liest, bleibt bis zur Grenze des Verlags auf dem Gerät; offline durchsuchen lassen sie sich nicht.</li>
-    <li>Deine Auswahl und deine Schlüssel kommen auf einem neuen Gerät oder nach einer Neuinstallation über iCloud von selbst zurück.</li>
-    <li>Um einen Dienst nicht mehr zu nutzen, tippe auf <span class="ui">Schlüssel entfernen</span>. Seine Übersetzungen verschwinden aus dem Menü; Notizen und Markierungen bleiben.</li>
+    <li data-only="apple">Deine Auswahl und deine Schlüssel kommen auf einem neuen Gerät oder nach einer Neuinstallation über iCloud von selbst zurück.</li>
+    <li data-only="android">Deine Auswahl und deine Schlüssel kommen auf einem neuen Gerät oder nach einer Neuinstallation von selbst zurück: die Schlüssel über Block Store, deine Auswahl über die Android-Sicherung.</li>
+    <li>Um einen Dienst nicht mehr zu nutzen, <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> auf <span class="ui">Schlüssel entfernen</span>. Seine Übersetzungen verschwinden aus dem Menü; Notizen und Markierungen bleiben.</li>
     <li>Es hat nicht geklappt? Prüfe, ob der Schlüssel vollständig eingefügt ist, ohne Leerzeichen am Anfang oder Ende, und ob die Übersetzung auf der Website von API.Bible zu deiner Auswahl gehört.</li>
   </ul></div>
 </section>
@@ -274,19 +283,19 @@
   <div class="feature">
     <div class="text">
       <h3>Markieren</h3>
-      <p>Wähle Verse aus und tippe auf eine der fünf Farben; der Radierer entfernt eine Markierung.</p>
+      <p>Wähle Verse aus und <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> auf eine der fünf Farben; der Radierer entfernt eine Markierung.</p>
       <h3>Notizen</h3>
-      <p>Wähle Verse aus und tippe auf den Stift. Eine Notiz kann zu mehreren Stellen gehören – etwa eine Sonntagspredigt über Röm 8,1–17 mit Psalm 23. Beim Lesen stehen Notizen neben ihren Versen; tippe auf das Zeichen, um eine zu öffnen.</p>
+      <p>Wähle Verse aus und <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> auf den Stift. Eine Notiz kann zu mehreren Stellen gehören – etwa eine Sonntagspredigt über Röm 8,1–17 mit Psalm 23. Beim Lesen stehen Notizen neben ihren Versen; <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> auf das Zeichen, um eine zu öffnen.</p>
       <h3>Favoriten</h3>
-      <p>Tippe in der Auswahlleiste auf das Herz, um Verse zu behalten, die dir wichtig sind.</p>
+      <p><span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> in der Auswahlleiste auf das Herz, um Verse zu behalten, die dir wichtig sind.</p>
       <h3>Alles wiederfinden</h3>
-      <p>Tippe oben links auf <span class="ui">Notizen</span>. Dort gibt es drei Listen – <b>Notizen</b>, <b>Markierungen</b> und <b>Favoriten</b> –, eingrenzbar auf Alle Bücher, Dieses Buch oder Dieses Kapitel. Notizen sind durchsuchbar. Markierungen stehen in biblischer Reihenfolge; benachbarte Verse in einer Farbe zählen als eine Stelle. Tippe auf einen Eintrag, um hinzugehen; wische, um ihn zu entfernen.</p>
-      <p><span class="ui">Neue Notiz</span> beginnt eine Notiz ohne Auswahl.</p>
+      <p><span data-only="iphone ipad android">Tippe oben links auf <span class="ui">Notizen</span>.</span><span data-only="mac">Klicke in der Symbolleiste auf <span class="ui">Notizen</span>.</span> Dort gibt es drei Listen – <b>Notizen</b>, <b>Markierungen</b> und <b>Favoriten</b> –, eingrenzbar auf Alle Bücher, Dieses Buch oder Dieses Kapitel. Notizen sind durchsuchbar. Markierungen stehen in biblischer Reihenfolge; benachbarte Verse in einer Farbe zählen als eine Stelle. <span data-only="iphone ipad">Tippe auf einen Eintrag, um hinzugehen; wische, um ihn zu entfernen.</span><span data-only="mac">Klicke auf einen Eintrag, um hinzugehen.</span><span data-only="android">Tippe auf einen Eintrag, um hinzugehen; halte ihn gedrückt, um ihn zu löschen.</span></p>
+      <p><span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> auf <span class="ui">Neue Notiz</span>, um eine Notiz ohne Auswahl zu beginnen.</p>
     </div>
     <figure><img class="phone" src="IMG/06-highlights.png" alt=""><figcaption>Markierungen und Notizen</figcaption></figure>
   </div>
   <h3>Notizen aus einer anderen App mitnehmen</h3>
-  <p>Öffne <span class="ui">Aa</span> › <span class="ui">Erinnerung &amp; Export</span> › <span class="ui">Notizen aus anderer App übernehmen…</span>.</p>
+  <p>Öffne <span class="ui">Aa</span> › <span class="ui">Erinnerung &amp; Export</span> › <span data-only="apple"><span class="ui">Notizen aus anderer App übernehmen…</span></span><span data-only="android"><span class="ui">Notizen aus einer anderen App holen…</span></span>.</p>
   <ul>
     <li><b>Aus Life Bible</b> (früher Tecarta Bible): Exportiere dort alles und wähle dann die Datei. Notizen, Markierungen und gespeicherte Verse kommen mit.</li>
     <li><b>Von überall sonst:</b> Füge deine Notizen ein oder wähle eine CSV-Datei. Jeder Eintrag sollte mit einer Stellenangabe wie „Joh 3,16“ beginnen, damit er beim richtigen Vers landet.</li>
@@ -300,13 +309,13 @@
   <div class="feature">
     <div class="text">
       <ol class="steps">
-        <li>Öffne <span class="ui">Notizen</span>, tippe auf <span class="ui">Folie scannen</span> und wähle <span class="ui">Folie fotografieren</span> – oder ein vorhandenes Foto (auf dem Mac: Bilddatei, Zwischenablage oder „Vom iPhone importieren“). In einer Notiz fügt <span class="ui">Mit Kamera hinzufügen</span> eine Folie hinzu.</li>
-        <li>Zoome mit den Zoomtasten oder zwei Fingern heran, bis der Bildschirm das Bild füllt, und fotografiere.</li>
+        <li><span data-only="iphone ipad">Öffne <span class="ui">Notizen</span>, tippe auf <span class="ui">Folie scannen</span> und wähle <span class="ui">Folie fotografieren</span> – oder ein vorhandenes Foto<span data-only="pdf"> (auf dem Mac: Bilddatei, Zwischenablage oder „Vom iPhone importieren“)</span>.</span><span data-only="mac">Öffne <span class="ui">Notizen</span> und klicke auf <span class="ui">Folie scannen</span>, um eine Bilddatei zu wählen – oder klicke auf den Pfeil daneben für <span class="ui">Aus Fotos auswählen…</span> und <span class="ui">Bild einsetzen</span>. Um die Kamera deines iPhone zu nutzen, wähle <span class="ui">Ablage › Vom iPhone importieren</span>.</span><span data-only="android">Öffne <span class="ui">Notizen</span>, tippe auf <span class="ui">Dia scannen</span> und wähle <span class="ui">Foto vom Dia aufnehmen</span> – oder <span class="ui">Aus Fotos wählen</span>, <span class="ui">Bilddatei wählen…</span> oder <span class="ui">Bild einfügen</span> für ein Bild, das du schon hast.</span> In einer Notiz fügt <span class="ui">Mit Kamera hinzufügen</span> eine Folie hinzu.</li>
+        <li data-only="iphone ipad android">Zoome mit den Zoomtasten oder zwei Fingern heran, bis der Bildschirm das Bild füllt, und fotografiere<span data-only="android"> – tippe auf den Auslöser oder auf einen hervorgehobenen Text</span>.</li>
         <li>Die App findet Leinwand, Fernseher oder Monitor, richtet ihn gerade aus und liest nur die Folie. Schalte <span class="ui">Auf den Bildschirm zuschneiden</span> aus, um das ganze Foto zu lesen.</li>
         <li>Prüfe Titel, Stellen und Punkte und ändere, was nötig ist. Sichere in <b>eine neue Notiz</b> oder eine begonnene – weitere Folien derselben Predigt landen in derselben.</li>
-        <li>Tippe auf <span class="ui">Notiz erstellen</span>.</li>
+        <li><span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> auf <span class="ui">Notiz erstellen</span>.</li>
       </ol>
-      <div class="note"><span class="note-label">Privat</span>Das Foto wird auf deinem Gerät gelesen, nie hochgeladen und danach verworfen – außer du schaltest <span class="ui">Dieses Foto mit der Notiz behalten</span> ein.</div>
+      <div class="note"><span class="note-label">Privat</span>Das Foto wird auf deinem <span data-only="pdf">Gerät</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">Gerät</span></span> gelesen, nie hochgeladen und danach verworfen – außer du schaltest <span data-only="apple"><span class="ui">Dieses Foto mit der Notiz behalten</span></span><span data-only="android"><span class="ui">Foto bei der Notiz behalten</span></span> ein.</div>
     </div>
     <figure><img class="phone" src="IMG/05-sermon-notes.png" alt=""><figcaption>Eine Notiz aus einer Folie</figcaption></figure>
   </div>
@@ -314,25 +323,25 @@
 
 <section class="chapter">
   <h2>Studium</h2>
-  <p class="lede">Tippe oben links auf das offene Buch, um das Studium einzuschalten. Es folgt dem Vers, auf den du tippst: neben dem Text auf iPad und Mac, auf dem iPhone in einem verschiebbaren Blatt.</p>
+  <p class="lede"><span data-only="iphone ipad android">Tippe oben links auf das offene Buch</span><span data-only="mac">Klicke in der Symbolleiste auf das offene Buch</span>, um das Studium einzuschalten. Es folgt dem Vers, auf den du <span data-only="iphone ipad android">tippst</span><span data-only="mac">klickst</span><span data-only="pdf">: neben dem Text auf iPad und Mac, auf dem iPhone in einem verschiebbaren Blatt.</span><span data-only="app"><span data-only="iphone">, und erscheint in einem Blatt, das du nach oben oder unten ziehen kannst.</span><span data-only="ipad mac">, und steht neben dem Text.</span><span data-only="android">, und erscheint auf dem Smartphone in einem verschiebbaren Blatt, auf dem Tablet neben dem Text.</span></span></p>
   <div class="feature">
     <div class="text">
       <h3>Verweise</h3>
-      <p>Querverweise, die engsten zuerst, jeweils in der Übersetzung, die du liest. Tippe auf einen, um hinzugehen; die Zurück-Taste bringt dich zurück. (Von OpenBible.info.)</p>
+      <p>Querverweise, die engsten zuerst, jeweils in der Übersetzung, die du liest. <span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> auf einen, um hinzugehen; die Zurück-Taste bringt dich zurück. (Von OpenBible.info.)</p>
       <h3>Kommentare</h3>
       <p>Klassische Kommentare von Johannes Calvin, John Gill sowie Jamieson, Fausset &amp; Brown, mit verlinkten Stellenangaben. Sie werden beim ersten Öffnen des Reiters geladen. Auch Anmerkungen einer importierten Studienbibel stehen hier. (Kommentare gibt es nur auf Englisch.)</p>
       <h3>Kontext</h3>
-      <p>Zum aktuellen Kapitel: ein <b>Überblick</b>; eine <b>Karte</b> aller genannten Orte (tippe auf einen Ort für alle Verse, die ihn erwähnen); seine Epoche auf einer <b>Zeitleiste</b> der biblischen Zeit; und <b>Diagramme</b> – die Könige Israels und Judas, die Reisen des Paulus, die zwölf Stämme und die Feste Israels. Die Karten entstehen auf dem Gerät und funktionieren offline.</p>
+      <p>Zum aktuellen Kapitel: ein <b>Überblick</b>; eine <b>Karte</b> aller genannten Orte (<span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> auf einen Ort für alle Verse, die ihn erwähnen); seine Epoche auf einer <b>Zeitleiste</b> der biblischen Zeit; und <b>Diagramme</b> – die Könige Israels und Judas, die Reisen des Paulus, die zwölf Stämme und die Feste Israels. Die Karten entstehen auf deinem <span data-only="pdf">Gerät</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">Gerät</span></span> und funktionieren offline.</p>
     </div>
-    <figure><img class="phone" src="IMG/03-study.png" alt=""><figcaption>Studium zu Joh 3,16</figcaption></figure>
+    <figure><img class="phone" src="IMG/03-study.png" alt=""><figcaption><span data-only="apple">Studium zu Joh 3,16</span><span data-only="android">Studium zu Joh 10,11</span></figcaption></figure>
   </div>
   <div class="feature flip">
     <div class="text">
       <h3>Ursprachen</h3>
-      <p>Wähle einen einzelnen Vers aus und tippe in der Auswahlleiste auf die Ursprachen-Taste. Der Vers erscheint Wort für Wort auf Hebräisch oder Griechisch, mit der grammatischen Bestimmung jedes Wortes und seiner Strong's-Nummer. Das funktioniert in jeder Übersetzung und wird bei der ersten Nutzung einmal geladen. (Die Lexikon-Erklärungen gibt es nur auf Englisch.)</p>
-      <p>Tippe im Studium auf das <b>ⓘ</b> (<span class="ui">Über Studienmaterialien</span>), um zu sehen, woher jedes Material stammt und unter welcher Lizenz es steht.</p>
+      <p>Wähle einen einzelnen Vers aus und <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> in der Auswahlleiste auf die Ursprachen-Taste. <span data-only="apple">Der Vers erscheint</span><span data-only="android">Das Studium öffnet sich auf dem Reiter <span class="ui">Urtext</span>: der Vers</span> Wort für Wort auf Hebräisch oder Griechisch, mit der grammatischen Bestimmung jedes Wortes und seiner Strong's-Nummer. Das funktioniert in jeder Übersetzung und wird bei der ersten Nutzung einmal geladen. (Die Lexikon-Erklärungen gibt es nur auf Englisch.)</p>
+      <p><span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> im Studium auf das <b>ⓘ</b> (<span data-only="apple"><span class="ui">Über Studienmaterialien</span></span><span data-only="android"><span class="ui">Über Studienmaterial</span></span>), um zu sehen, woher jedes Material stammt und unter welcher Lizenz es steht.</p>
     </div>
-    <figure><img class="phone" src="IMG/04-maps.png" alt=""><figcaption>Kontext: die Orte eines Kapitels</figcaption></figure>
+    <figure data-only="apple"><img class="phone" src="IMG/04-maps.png" alt=""><figcaption>Kontext: die Orte eines Kapitels</figcaption></figure>
   </div>
 </section>
 
@@ -342,44 +351,47 @@
   <div class="feature">
     <div class="text">
       <ul>
-        <li>Tippe unten auf <span class="ui">Anhören</span>, um ab dem oberen Bildschirmrand vorzulesen, oder wähle Verse aus und tippe in der Auswahlleiste auf <span class="ui">Anhören</span>.</li>
+        <li><span data-only="iphone ipad android">Tippe unten auf <span class="ui">Anhören</span></span><span data-only="mac">Klicke in der Symbolleiste auf <span class="ui">Anhören</span></span>, um ab dem oberen Bildschirmrand vorzulesen, oder wähle Verse aus und <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> in der Auswahlleiste auf <span class="ui">Anhören</span>.</li>
         <li>Das Vorlesen geht ins nächste Kapitel weiter. Stimme, Tempo und Sleep-Timer wählst du im Player.</li>
-        <li>Es läuft weiter bei gesperrtem Bildschirm oder in einer anderen App, und der Sperrbildschirm zeigt die Steuerung.</li>
-        <li>Jede auf deinem Gerät installierte Stimme kann vorlesen, auch Premium- und erweiterte Stimmen und deine Eigene Stimme. Bessere Stimmen lädst du unter Einstellungen › Bedienungshilfen › Gesprochene Inhalte.</li>
-        <li>Auf iPhone und iPad können Abonnenten von <b>Mi Speaks</b> (einer eigenen App) das Kapitel stattdessen von dessen Studio-Stimmen lesen lassen.</li>
+        <li data-only="iphone ipad">Es läuft weiter bei gesperrtem Bildschirm oder in einer anderen App, und der Sperrbildschirm zeigt die Steuerung.</li>
+        <li data-only="mac">Es läuft weiter, während du in anderen Apps arbeitest, mit der Steuerung im Kontrollzentrum.</li>
+        <li data-only="android">Es läuft weiter bei ausgeschaltetem Bildschirm oder in einer anderen App, mit der Steuerung in der Benachrichtigung und am Headset.</li>
+        <li data-only="pdf">Jede auf deinem Gerät installierte Stimme kann vorlesen, auch Premium- und erweiterte Stimmen und deine Eigene Stimme. Bessere Stimmen lädst du unter Einstellungen › Bedienungshilfen › Gesprochene Inhalte.</li>
+        <li data-only="app"><span data-only="iphone">Jede auf deinem iPhone installierte Stimme kann vorlesen, auch Premium- und erweiterte Stimmen und deine Eigene Stimme. Bessere Stimmen lädst du unter Einstellungen › Bedienungshilfen › Gesprochene Inhalte.</span><span data-only="ipad">Jede auf deinem iPad installierte Stimme kann vorlesen, auch Premium- und erweiterte Stimmen und deine Eigene Stimme. Bessere Stimmen lädst du unter Einstellungen › Bedienungshilfen › Gesprochene Inhalte.</span><span data-only="mac">Jede auf deinem Mac installierte Stimme kann vorlesen, auch Premium- und erweiterte Stimmen und deine Eigene Stimme. Bessere Stimmen lädst du unter Systemeinstellungen › Bedienungshilfen › Gesprochene Inhalte.</span><span data-only="android">Jede auf deinem Gerät installierte Stimme für die Sprachausgabe kann vorlesen. Weitere Stimmen lädst du in den Einstellungen deines Geräts unter „Text-in-Sprache-Ausgabe“.</span></li>
+        <li data-only="iphone ipad"><span data-only="pdf">Auf iPhone und iPad können Abonnenten von <b>Mi Speaks</b> (einer eigenen App)</span><span data-only="app">Abonnenten von <b>Mi Speaks</b> (einer eigenen App) können</span> das Kapitel stattdessen von dessen Studio-Stimmen lesen lassen.</li>
       </ul>
     </div>
-    <figure><img class="phone" src="IMG/07-listen.png" alt=""><figcaption>Anhören</figcaption></figure>
+    <figure data-only="apple"><img class="phone" src="IMG/07-listen.png" alt=""><figcaption>Anhören</figcaption></figure>
   </div>
 </section>
 
 <section class="chapter">
   <h2>Ganz nach deinem Geschmack</h2>
-  <p class="lede">Tippe oben rechts auf <span class="ui">Aa</span>. Änderungen sind sofort zu sehen und folgen dir auf deine anderen Geräte.</p>
+  <p class="lede"><span data-only="iphone ipad android">Tippe oben rechts auf <span class="ui">Aa</span>.</span><span data-only="mac">Klicke in der Symbolleiste auf <span class="ui">Aa</span>.</span> <span data-only="apple">Änderungen sind sofort zu sehen und folgen dir auf deine anderen Geräte.</span><span data-only="android">Änderungen sind sofort zu sehen, und die Android-Sicherung bewahrt sie für ein neues Gerät auf.</span></p>
   <div class="feature">
     <div class="text">
       <ul>
         <li><b>Design:</b> Auto, Hell, Sepia, Dunkel oder Schwarz, dazu eine Akzentfarbe.</li>
-        <li><b>Text:</b> Größe (oder <kbd>⌘+</kbd> und <kbd>⌘−</kbd>), Zeilenabstand und volle Unterstützung für dynamische Schriftgrößen.</li>
+        <li><b>Text:</b> <span data-only="app"><span data-only="iphone">Größe, Zeilenabstand und volle Unterstützung für dynamische Schriftgrößen.</span></span><span data-only="ipad pdf">Größe (oder <kbd>⌘+</kbd> und <kbd>⌘−</kbd>), Zeilenabstand und volle Unterstützung für dynamische Schriftgrößen.</span><span data-only="mac">Größe (oder <kbd>⌘+</kbd> und <kbd>⌘−</kbd>) und Zeilenabstand.</span><span data-only="android">Größe (oder <kbd>Strg+=</kbd> und <kbd>Strg+−</kbd> auf der Tastatur) und Zeilenabstand, skaliert mit der Schriftgröße deines Geräts.</span></li>
         <li><b>Schrift:</b> sieben Schriftarten.</li>
-        <li><b>Layout:</b> Absätze oder Vers für Vers; <span class="ui">Spalten auf breiten Bildschirmen</span> an oder aus.</li>
+        <li><b>Layout:</b> Absätze oder Vers für Vers<span data-only="apple">; <span class="ui">Spalten auf breiten Bildschirmen</span> an oder aus</span>.</li>
         <li><b>Anzeigen:</b> Worte Jesu in Rot, Versnummern, Abschnittsüberschriften und Fußnoten.</li>
-        <li><b>Spotlight:</b> Notizen und Favoriten in der Suche deines Geräts finden.</li>
+        <li><span data-only="apple"><b>Spotlight:</b> Notizen und Favoriten in der Suche deines <span data-only="pdf">Geräts</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span></span> finden.</span><span data-only="android"><b>Suche:</b> Notizen und Favoriten in der Suche deines Geräts finden.</span></li>
         <li><b>Über diese Übersetzung:</b> Urheberrecht und Lizenz der Bibel, die du liest.</li>
       </ul>
       <p>Im selben Blatt findest du <span class="ui">Erinnerung &amp; Export</span>, dieses Handbuch, den Support und Angaben zur App.</p>
     </div>
-    <figure><img class="phone" src="IMG/08-themes.png" alt=""><figcaption>Designs und Schrift</figcaption></figure>
+    <figure data-only="apple"><img class="phone" src="IMG/08-themes.png" alt=""><figcaption>Designs und Schrift</figcaption></figure>
   </div>
 </section>
 
 <section class="chapter">
   <h2>Teilen</h2>
-  <p class="lede">Wähle Verse aus und tippe auf „Teilen“.</p>
+  <p class="lede">Wähle Verse aus und <span data-only="iphone ipad android">tippe</span><span data-only="mac">klicke</span> auf „Teilen“.</p>
   <div class="feature">
     <div class="text">
       <ul>
-        <li><b>Versbild:</b> auf deinem Gerät gestaltet, aus acht Vorlagen und drei Formaten (quadratisch, Story, breit), in jeder Schrift des Lesers. Sichere es in Fotos oder verschicke es.</li>
+        <li><b>Versbild:</b> auf deinem <span data-only="pdf">Gerät</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span><span data-only="android">Gerät</span></span> gestaltet, aus acht Vorlagen und drei Formaten (quadratisch, Story, breit), in jeder Schrift des Lesers. Sichere es in Fotos oder verschicke es.</li>
         <li><b>Text:</b> die Verse mit ihrer Stellenangabe.</li>
         <li><b>Link:</b> ein Link, der die Verskarte in jedem Webbrowser aus dem Link selbst wieder aufbaut. Der Vers reist im Link mit, kein Server speichert ihn.</li>
       </ul>
@@ -394,43 +406,59 @@
   <p class="lede">Deine gekennzeichnete Bibel ist es wert, weitergegeben zu werden. Öffne <span class="ui">Aa</span> › <span class="ui">Erinnerung &amp; Export</span>.</p>
   <h3>Eine Erinnerungs-Bibel</h3>
   <ol class="steps">
-    <li>Tippe auf <span class="ui">Erinnerungs-Bibel erstellen</span>. Gib ihr einen Namen und eine Widmung („Für Sarah, von Papa“) und wähle die Übersetzung, in der sie sich öffnet.</li>
+    <li><span data-only="iphone ipad android">Tippe</span><span data-only="mac">Klicke</span> auf <span data-only="apple"><span class="ui">Erinnerungs-Bibel erstellen</span></span><span data-only="android"><span class="ui">Erinnerung erstellen</span></span>. Gib ihr einen Namen und eine Widmung („Für Sarah, von Papa“) und wähle die Übersetzung, in der sie sich öffnet.</li>
     <li>Füge ein Passwort hinzu, wenn sie geschützt sein soll.</li>
-    <li>Gib die Datei deiner Familie: per AirDrop, Nachrichten, USB-Stick oder zusammen mit deinem Testament.</li>
+    <li>Gib die Datei deiner Familie: per <span data-only="apple">AirDrop</span><span data-only="android">Quick Share, E-Mail</span>, Nachrichten, USB-Stick oder zusammen mit deinem Testament.</li>
   </ol>
-  <p>Deine Familie öffnet sie mit <span class="ui">Erinnerungs-Datei öffnen…</span> und liest deine Bibel so, wie du sie gekennzeichnet hast – schreibgeschützt und getrennt von ihren eigenen Notizen. Das Format ist ein offenes ZIP mit JSON und bleibt so über Generationen lesbar.</p>
-  <h3>Mit Familie teilen</h3>
-  <p>Lade Familienmitglieder ein, deine Markierungen, Notizen und Favoriten live und schreibgeschützt mitzusehen, während du weiterliest. Tippe auf <span class="ui">Teilen starten und einladen…</span> und verschicke die Einladung. Sie sehen dann „Papas Bibel · aktualisiert vor 5 Min.“ und können sie offline lesen. Mit <span class="ui">Teilen beenden</span> hörst du jederzeit auf; die letzte Kopie behalten sie. Alles läuft direkt zwischen deiner iCloud und ihrer.</p>
+  <p>Deine Familie öffnet sie mit <span class="ui">Erinnerungs-Datei öffnen…</span> und liest deine Bibel so, wie du sie gekennzeichnet hast – schreibgeschützt und getrennt von ihren eigenen Notizen. Das Format ist ein offenes ZIP mit JSON und bleibt so über Generationen lesbar.<span data-only="android"> Eine Erinnerungs-Bibel öffnet sich in Scripture Alone auf Android und auf dem iPhone gleichermaßen.</span></p>
+  <div data-only="apple">
+    <h3>Mit Familie teilen</h3>
+    <p>Lade Familienmitglieder ein, deine Markierungen, Notizen und Favoriten live und schreibgeschützt mitzusehen, während du weiterliest. <span data-only="iphone ipad">Tippe</span><span data-only="mac">Klicke</span> auf <span class="ui">Teilen starten und einladen…</span> und verschicke die Einladung. Sie sehen dann „Papas Bibel · aktualisiert vor 5 Min.“ und können sie offline lesen. Mit <span class="ui">Teilen beenden</span> hörst du jederzeit auf; die letzte Kopie behalten sie. Alles läuft direkt zwischen deiner iCloud und ihrer.</p>
+  </div>
   <h3>Notizen exportieren</h3>
   <p>Im Menü <span class="ui">Export</span> unter „Notizen“ sicherst du alle Notizen, nur die gefilterten oder eine einzelne – als gesetztes <b>PDF</b>, als <b>Markdown</b> (eine Datei oder ein Ordner) oder als <b>reinen Text</b>, mit den Versen in deiner Übersetzung.</p>
 </section>
 
 <section class="chapter">
-  <h2>Widgets, Apple Watch, Siri und Spotlight</h2>
+  <h2><span data-only="apple">Widgets, Apple Watch, Siri und Spotlight</span><span data-only="android">Widgets, Wear OS und App-Verknüpfungen</span></h2>
   <div class="feature">
     <div class="text">
       <h3>Widgets</h3>
-      <p>Lege <b>Vers des Tages</b> (365 handverlesene Stellen aus der ganzen Bibel) oder <b>Favoriten &amp; Notizen</b> auf Home- und Sperrbildschirm deines iPhone, auf dein iPad oder deinen Mac-Schreibtisch. Halte den Home-Bildschirm gedrückt, tippe auf Bearbeiten › Widget hinzufügen und suche nach Scripture Alone. Der Vers steht in der Übersetzung, die du gerade liest.</p>
-      <h3>Apple Watch</h3>
-      <p>Die Watch-App hat die NASB 2020 eingebaut und liest offline, auch ohne iPhone in der Nähe. Sie folgt der Übersetzung, die du auf dem iPhone wählst (das iPhone schickt ihr jede andere Bibel, die du liest), und bietet Vers des Tages, deine Favoriten, Markierungen und Notizen, einen Leser und Vorlesen – in deiner Akzentfarbe. Mit der Komplikation auf dem Zifferblatt hast du den Vers des Tages immer im Blick.</p>
+      <p data-only="pdf">Lege <b>Vers des Tages</b> (365 handverlesene Stellen aus der ganzen Bibel) oder <b>Favoriten &amp; Notizen</b> auf Home- und Sperrbildschirm deines iPhone, auf dein iPad oder deinen Mac-Schreibtisch. Halte den Home-Bildschirm gedrückt, tippe auf Bearbeiten › Widget hinzufügen und suche nach Scripture Alone. Der Vers steht in der Übersetzung, die du gerade liest.</p>
+      <p data-only="app">Lege <b>Vers des Tages</b> (365 handverlesene Stellen aus der ganzen Bibel) oder <b>Favoriten &amp; Notizen</b> <span data-only="iphone">auf deinen Home- und Sperrbildschirm. Halte den Home-Bildschirm gedrückt, tippe auf Bearbeiten › Widget hinzufügen und suche nach Scripture Alone.</span><span data-only="ipad">auf deinen Home-Bildschirm. Halte den Home-Bildschirm gedrückt, tippe auf Bearbeiten › Widget hinzufügen und suche nach Scripture Alone.</span><span data-only="mac">auf deinen Schreibtisch oder in die Mitteilungszentrale. Klicke mit der rechten Maustaste auf den Schreibtisch, wähle „Widgets bearbeiten“ und suche nach Scripture Alone.</span><span data-only="android">auf deinen Startbildschirm. Halte eine freie Stelle auf dem Startbildschirm gedrückt, tippe auf „Widgets“ und suche Scripture Alone.</span> Der Vers steht in der Übersetzung, die du gerade liest.</p>
+      <h3 data-only="apple">Apple Watch</h3>
+      <p data-only="apple">Die Watch-App hat die NASB 2020 eingebaut und liest offline, auch ohne iPhone in der Nähe. Sie folgt der Übersetzung, die du auf dem iPhone wählst (das iPhone schickt ihr jede andere Bibel, die du liest), und bietet Vers des Tages, deine Favoriten, Markierungen und Notizen, einen Leser und Vorlesen – in deiner Akzentfarbe. Mit der Komplikation auf dem Zifferblatt hast du den Vers des Tages immer im Blick.</p>
+      <h3 data-only="android">Wear OS</h3>
+      <p data-only="android">Die Wear-OS-App hat die NASB 2020 eingebaut und liest offline, auch ohne dein Smartphone in der Nähe. Sie folgt der Übersetzung, die du auf dem Smartphone wählst (das Smartphone schickt ihr jede andere Bibel, die du liest, auch deine Importe, wenn ihre Bedingungen es erlauben), und bietet Vers des Tages, deine Favoriten, Markierungen und Notizen, einen Leser und Vorlesen – in deiner Akzentfarbe. Mit der Kachel oder der Komplikation auf dem Zifferblatt hast du den Vers des Tages immer im Blick.</p>
     </div>
-    <figure><img class="watch" src="IMG/w02-verse.png" alt=""><figcaption>Apple Watch</figcaption></figure>
+    <figure><img class="watch" src="IMG/w02-verse.png" alt=""><figcaption><span data-only="apple">Apple Watch</span><span data-only="android">Wear OS</span></figcaption></figure>
   </div>
-  <h3>Siri und Kurzbefehle</h3>
-  <p>Schlage einen Vers in jeder Übersetzung nach, erstelle ein Versbild, finde deine Notizen oder Favoriten – sag zum Beispiel „Finde meine Notizen in Scripture Alone“ oder baue eigene Abläufe in der Kurzbefehle-App.</p>
-  <h3>Spotlight</h3>
-  <p>Schalte unter <span class="ui">Aa</span> die Optionen <span class="ui">Notizen in Spotlight</span> und <span class="ui">Favoriten in Spotlight</span> ein, um sie über die Suche deines Geräts zu finden.</p>
+  <div data-only="apple">
+    <h3>Siri und Kurzbefehle</h3>
+    <p>Schlage einen Vers in jeder Übersetzung nach, erstelle ein Versbild, finde deine Notizen oder Favoriten – sag zum Beispiel „Finde meine Notizen in Scripture Alone“ oder baue eigene Abläufe in der Kurzbefehle-App.</p>
+    <h3>Spotlight</h3>
+    <p>Schalte unter <span class="ui">Aa</span> die Optionen <span class="ui">Notizen in Spotlight</span> und <span class="ui">Favoriten in Spotlight</span> ein, um sie über die Suche deines <span data-only="pdf">Geräts</span><span data-only="app"><span data-only="iphone">iPhone</span><span data-only="ipad">iPad</span><span data-only="mac">Mac</span></span> zu finden.</p>
+  </div>
+  <div data-only="android">
+    <h3>App-Verknüpfungen</h3>
+    <p>Halte das Symbol von Scripture Alone gedrückt, um <span class="ui">Vers des Tages</span>, <span class="ui">Weiterlesen</span>, <span class="ui">Suche</span>, <span class="ui">Neue Notiz</span> oder <span class="ui">Favoriten</span> direkt aufzurufen.</p>
+    <h3>Die Suche deines Geräts</h3>
+    <p>Schalte unter <span class="ui">Aa</span> die Optionen <span class="ui">Notizen in der Suche</span> und <span class="ui">Favoriten in der Suche</span> ein, um sie über die Suche deines Geräts zu finden (ab Android 12).</p>
+  </div>
 </section>
 
 <section class="chapter">
   <h2>Synchronisierung und Datenschutz</h2>
   <ul>
     <li>Keine Werbung, kein Tracking, keine Analyse und kein Konto. Es gibt keinen Server von uns, der deine Daten speichert – nicht jetzt und nie.</li>
-    <li>Markierungen, Notizen, Favoriten, Leseposition und Einstellungen werden nur über <b>deine eigene iCloud</b> synchronisiert. Achte darauf, dass iCloud in den Einstellungen deines Geräts für Scripture Alone eingeschaltet ist.</li>
-    <li>Eingegebene API-Schlüssel werden über den iCloud-Schlüsselbund synchronisiert, Ende-zu-Ende-verschlüsselt.</li>
-    <li>Importierte Bibeln gelangen über deine iCloud auf deine eigenen Geräte – und auf keine anderen.</li>
+    <li data-only="apple">Markierungen, Notizen, Favoriten, Leseposition und Einstellungen werden nur über <b>deine eigene iCloud</b> synchronisiert. Achte darauf, dass iCloud <span data-only="pdf">in den Einstellungen deines Geräts</span><span data-only="app"><span data-only="iphone">in den Einstellungen deines iPhone</span><span data-only="ipad">in den Einstellungen deines iPad</span><span data-only="mac">in den Systemeinstellungen</span></span> für Scripture Alone eingeschaltet ist.</li>
+    <li data-only="apple">Eingegebene API-Schlüssel werden über den iCloud-Schlüsselbund synchronisiert, Ende-zu-Ende-verschlüsselt.</li>
+    <li data-only="apple">Importierte Bibeln gelangen über deine iCloud auf deine eigenen Geräte – und auf keine anderen.</li>
+    <li data-only="android">Markierungen, Notizen, Favoriten, Leseposition und Einstellungen bleiben auf deinem Gerät. Die <b>Android-Sicherung</b> in dein eigenes Google-Konto bringt deine Einstellungen auf einem neuen Gerät oder nach einer Neuinstallation zurück – und auch deine Markierungen, Notizen und Favoriten, solange sie in die Sicherung passen. Zwischen zwei Geräten, die du gleichzeitig nutzt, werden sie nicht synchronisiert.</li>
+    <li data-only="android">Eingegebene API-Schlüssel werden verschlüsselt auf deinem Gerät gespeichert und über Googles Block Store gesichert, Ende-zu-Ende-verschlüsselt.</li>
+    <li data-only="android">Importierte Bibeln bleiben auf deinem Gerät.</li>
     <li>Predigtfolien und Versbilder werden auf deinem Gerät verarbeitet.</li>
-    <li>Erinnerungs-Bibeln sind Dateien, die du selbst weitergibst; „Mit Familie teilen“ beginnt erst, wenn du darauf tippst, und „Teilen beenden“ löscht die geteilte Kopie.</li>
+    <li><span data-only="apple">Erinnerungs-Bibeln sind Dateien, die du selbst weitergibst; „Mit Familie teilen“ beginnt erst, wenn du darauf <span data-only="iphone ipad">tippst</span><span data-only="mac">klickst</span>, und „Teilen beenden“ löscht die geteilte Kopie.</span><span data-only="android">Erinnerungs-Bibeln sind Dateien, die du selbst weitergibst.</span></li>
     <li>Scripture Alone ist Open Source (AGPL), jeder kann also genau nachlesen, was die App tut: <a href="https://github.com/blaineam/Scripture-Alone">github.com/blaineam/Scripture-Alone</a>.</li>
   </ul>
   <p class="closing">NASB 2020 und NASB 1995 © The Lockman Foundation. Used by permission. <a href="https://www.lockman.org">www.Lockman.org</a><br>
@@ -446,8 +474,14 @@
   <p>Ja – lies in einer anderen Bibel, bis der Download fertig ist. Schlägt er fehl, bietet ein Banner <span class="ui">Erneut versuchen</span> an.</p>
   <h3>Warum sind ESV, CSB oder NKJV nicht einfach dabei?</h3>
   <p>Diese Übersetzungen gehören ihren Verlagen; dafür braucht es eine Lizenz, um die wir gebeten haben. Bis dahin liest du sie mit eigenem Schlüssel (Kapitel 5) oder importierst eine eigene Ausgabe (Kapitel 4).</p>
-  <h3>Meine Notizen sind nicht auf meinem anderen Gerät.</h3>
-  <p>Prüfe, ob beide Geräte mit demselben Apple Account angemeldet sind und iCloud für Scripture Alone an ist, und gib ihnen eine Minute im WLAN.</p>
+  <div data-only="apple">
+    <h3>Meine Notizen sind nicht auf meinem anderen Gerät.</h3>
+    <p>Prüfe, ob beide Geräte mit demselben Apple Account angemeldet sind und iCloud für Scripture Alone an ist, und gib ihnen eine Minute im WLAN.</p>
+  </div>
+  <div data-only="android">
+    <h3>Kommen meine Notizen auf ein neues Gerät?</h3>
+    <p>Ja, über die Android-Sicherung, wenn du das neue Gerät von deinem alten aus oder aus einer Sicherung davon einrichtest – solange deine Bibliothek in die Sicherung passt. Achte darauf, dass die Sicherung in den Einstellungen deines Geräts eingeschaltet ist. Zwischen zwei Geräten, die du gleichzeitig nutzt, synchronisiert Scripture Alone nicht.</p>
+  </div>
   <h3>Ein Import meldet Lücken.</h3>
   <p>Manche Übersetzungen lassen tatsächlich Verse aus, manche Dateien sind unvollständig. Lesen kannst du das Importierte trotzdem; eine sauberere Ausgabe hilft meist.</p>
   <h3>Ist die App wirklich kostenlos?</h3>

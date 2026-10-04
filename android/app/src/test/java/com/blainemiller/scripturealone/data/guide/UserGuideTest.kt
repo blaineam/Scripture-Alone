@@ -228,6 +228,30 @@ class UserGuideTest {
         }
     }
 
+    /** Android's own edition (`android-en`) when the index lists it; the plain one until then. */
+    @Test fun storeReadsAndroidsEdition() {
+        val apple = zip("guide.json" to SAMPLE.toByteArray())
+        val android = zip("guide.json" to SAMPLE.replace("Welcome", "Android welcome").toByteArray())
+        var listsAndroid = false
+        val store = UserGuideStore(tempDir()) { url, _ ->
+            when (url) {
+                UserGuidePackage.INDEX_URL -> buildString {
+                    append("""{"schema":1,"packages":{"en":{"sha256":"${UserGuidePackage.sha256(apple)}","size":${apple.size}}""")
+                    if (listsAndroid) append(""","android-en":{"sha256":"${UserGuidePackage.sha256(android)}","size":${android.size}}""")
+                    append("}}")
+                }.toByteArray()
+                UserGuidePackage.packageUrl("en") -> apple
+                UserGuidePackage.packageUrl("android-en") -> android
+                else -> throw IOException("404 $url")
+            }
+        }
+        assertEquals("android-en", UserGuidePackage.edition("en"))
+        assertEquals("Welcome", store.refreshBlocking("en")!!.guide.chapters[0].title)
+        listsAndroid = true
+        assertEquals("Android welcome", store.refreshBlocking("en")!!.guide.chapters[0].title)
+        assertEquals("Android welcome", store.held("en")?.guide?.chapters?.get(0)?.title)
+    }
+
     /** The store against a fake network: download, verify, keep; then nothing when current; never a bad download. */
     @Test fun storeRefreshes() {
         val pkg = zip("guide.json" to SAMPLE.toByteArray(), "images/01-reader.png" to PNG)
@@ -279,6 +303,8 @@ class UserGuideTest {
      * every one decodes, holds every image it names, has no block this build can't draw, and matches
      * the index beside it.
      */
+    private val EDITIONS = setOf("ipad", "mac", "android")
+
     @Test fun everyBuiltPackageReads() {
         val resources = System.getProperty("scripturealone.resources") ?: return
         val dist = File(resources).parentFile?.parentFile?.let { File(it, "dist/manual") } ?: return
@@ -288,7 +314,9 @@ class UserGuideTest {
         for (file in zips) {
             val data = file.readBytes()
             val code = file.name.removePrefix("UserGuide-").removeSuffix(".zip")
-            assertTrue("${file.name} is a guide language", code in UserGuidePackage.LANGUAGES)
+            // `en` (iPhone), or a device's edition of it: `ipad-en`, `mac-en`, `android-en`.
+            val language = code.substringAfter('-').takeIf { code.substringBefore('-') in EDITIONS } ?: code
+            assertTrue("${file.name} is a guide language", language in UserGuidePackage.LANGUAGES)
             index?.get(code)?.let { assertTrue("${file.name} matches the index", UserGuidePackage.verify(data, it.sha256)) }
             val dir = File(tempDir(), code)
             val guide = UserGuidePackage.unpack(data, dir)

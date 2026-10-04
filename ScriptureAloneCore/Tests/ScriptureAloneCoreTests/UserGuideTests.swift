@@ -64,6 +64,18 @@ import Testing
         #expect(UserGuidePackage.language(for: ["nl"]) == "en")
     }
 
+    @Test func namesEachDevicesEdition() throws {
+        #expect(UserGuidePackage.edition(language: "ja", device: .iphone) == "ja")
+        #expect(UserGuidePackage.edition(language: "ja", device: .ipad) == "ipad-ja")
+        #expect(UserGuidePackage.edition(language: "pt-BR", device: .mac) == "mac-pt-BR")
+        let index = try JSONDecoder().decode(UserGuidePackage.Index.self, from: Data("""
+        {"schema":1,"packages":{"ja":{"sha256":"a","size":1},"ipad-ja":{"sha256":"b","size":1}}}
+        """.utf8))
+        #expect(UserGuidePackage.entryName(edition: "ipad-ja", language: "ja", index: index) == "ipad-ja")
+        #expect(UserGuidePackage.entryName(edition: "mac-ja", language: "ja", index: index) == "ja",
+                "an edition CI hasn't published yet falls back to the iPhone edition")
+    }
+
     @Test func unpacksAPackage() throws {
         let zip = ImportFixtures.zip([
             .init("guide.json", Self.sample, deflate: true),

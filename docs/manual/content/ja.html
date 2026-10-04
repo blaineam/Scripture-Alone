@@ -1,4 +1,6 @@
 <!-- title: Scripture Alone — ユーザーガイド -->
+<!-- Editions (docs/manual/README.md): data-only="iphone ipad mac android apple app pdf". The PDF reads
+     as the iPhone edition. "tap" reads "click" on the Mac: <span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>. -->
 <div class="cover">
   <div class="sun"></div>
   <div class="eyebrow">ユーザーガイド</div>
@@ -9,7 +11,7 @@
     <img src="IMG/03-study.png" alt="">
     <img src="IMG/02-topics.png" alt="">
   </div>
-  <div class="edition">iPhone・iPad・Mac・Apple Watch 対応 · バージョン 1.1</div>
+  <div class="edition"><span data-only="pdf">iPhone・iPad・Mac・Apple Watch 対応</span><span data-only="app"><span data-only="iphone">iPhone・Apple Watch 対応</span><span data-only="ipad">iPad 対応</span><span data-only="mac">Mac 対応</span><span data-only="android">Android スマートフォン・タブレット・Wear OS 対応</span></span> · バージョン 1.1</div>
 </div>
 
 <div class="toc">
@@ -27,7 +29,8 @@
     <li>自分好みに <span>テーマ、文字、レイアウト</span></li>
     <li>共有 <span>聖句画像、テキスト、リンク</span></li>
     <li>思い出の聖書、家族、書き出し <span>あなたの聖書を次の世代へ</span></li>
-    <li>ウィジェット、Apple Watch、Siri、Spotlight</li>
+    <li data-only="apple">ウィジェット、Apple Watch、Siri、Spotlight</li>
+    <li data-only="android">ウィジェット、Wear OS、ショートカット</li>
     <li>同期とプライバシー</li>
     <li>よくある質問</li>
   </ol>
@@ -36,34 +39,36 @@
 <section class="chapter">
   <h2>はじめに</h2>
   <p class="lede">Scripture Alone は、神のことばを学ぶことだけに集中できる聖書アプリです。広告も、トラッカーも、アカウントもなく、あなたのデータを預かるサーバーもありません。</p>
-  <p>聖書全体がデバイスの中に入っているので、インストールしたその時から、どこでもオフラインで読めます。新アメリカ標準訳（NASB 2020）が内蔵されていて、最初に開くのもこの聖書です。ほかに追加するもの（別の聖書、注解、原語データ）も、一度ダウンロードすればオフラインで使えます。</p>
-  <p>ハイライト、メモ、お気に入りは、あなた専用の iCloud を通して自分のデバイスの間で同期されます。開発者を含め、ほかの誰にも見えません。</p>
+  <p>聖書全体が<span data-only="pdf">デバイス</span><span data-only="app"><span data-only="iphone"> iPhone </span><span data-only="ipad"> iPad </span><span data-only="mac"> Mac </span><span data-only="android">デバイス</span></span>の中に入っているので、インストールしたその時から、どこでもオフラインで読めます。新アメリカ標準訳（NASB 2020）が内蔵されていて、最初に開くのもこの聖書です。ほかに追加するもの（別の聖書、注解、原語データ）も、一度ダウンロードすればオフラインで使えます。</p>
+  <p data-only="apple">ハイライト、メモ、お気に入りは、あなた専用の iCloud を通して自分のデバイスの間で同期されます。開発者を含め、ほかの誰にも見えません。</p>
+  <p data-only="android">ハイライト、メモ、お気に入りは、デバイスの中だけに保存されます。開発者を含め、ほかの誰にも見えません。</p>
   <div class="tip"><span class="note-label">ボタンの場所</span>
-  リーダーの上部には、左に <span class="ui">メモ</span> と <span class="ui">学習</span>、中央に箇所のタイトル（タップするとどこへでも移動できます）、右に翻訳（<span class="ui">NASB</span>）と、表示や設定のための <span class="ui">Aa</span> があります。下部には、前の章、自動スクロール、<span class="ui">聴く</span>、次の章が並びます。Mac では同じボタンがウインドウのツールバーにまとめられています。</div>
+  <span data-only="iphone ipad android">リーダーの上部には、左に <span class="ui">メモ</span> と <span class="ui">学習</span>、中央に箇所のタイトル（タップするとどこへでも移動できます）、右に翻訳（<span class="ui">NASB</span>）と、表示や設定のための <span class="ui">Aa</span> があります。下部には、前の章、自動スクロール、<span class="ui">聴く</span>、次の章が並びます。</span><span data-only="pdf">Mac では同じボタンがウインドウのツールバーにまとめられています。</span><span data-only="mac">ボタンはすべてウインドウのツールバーにあります。左に前後の章の矢印、中央に箇所のタイトル（クリックするとどこへでも移動できます）、右に <span class="ui">自動スクロール</span>、<span class="ui">聴く</span>、翻訳（<span class="ui">NASB</span>）、表示や設定のための <span class="ui">Aa</span>、<span class="ui">メモ</span>、<span class="ui">学習</span> が並びます。</span></div>
   <h3>対応している言語</h3>
-  <p>アプリはデバイスの言語に合わせて表示されます。日本語のデバイスでは、<b>文語訳聖書</b>（明治元訳の旧約 1887年＋大正改訳の新約 1917年）が丸ごと一冊付いてきて、初めて必要になったときにダウンロードされます。英語のほか、簡体字中国語、日本語、ドイツ語、フランス語、スペイン語、韓国語、ブラジルポルトガル語、イタリア語に対応し、それぞれの言語に一冊ずつ聖書があります（和合本、文語訳、Lutherbibel 1912、Louis Segond、Reina-Valera 1909、개역한글、Bíblia Livre、Riveduta）。どの聖書も、どの言語の画面からでも読めます。</p>
+  <p>アプリは<span data-only="pdf">デバイス</span><span data-only="app"><span data-only="iphone"> iPhone </span><span data-only="ipad"> iPad </span><span data-only="mac"> Mac </span><span data-only="android">デバイス</span></span>の言語に合わせて表示されます。日本語に設定されていれば、<b>文語訳聖書</b>（明治元訳の旧約 1887年＋大正改訳の新約 1917年）が丸ごと一冊付いてきて、初めて必要になったときにダウンロードされます。英語のほか、簡体字中国語、日本語、ドイツ語、フランス語、スペイン語、韓国語、ブラジルポルトガル語、イタリア語に対応し、それぞれの言語に一冊ずつ聖書があります（和合本、文語訳、Lutherbibel 1912、Louis Segond、Reina-Valera 1909、개역한글、Bíblia Livre、Riveduta）。どの聖書も、どの言語の画面からでも読めます。</p>
 </section>
 
 <section class="chapter">
   <h2>読む</h2>
-  <p class="lede">アプリを開けば、すぐに読み始められます。ほかの機能はワンタップで呼び出せ、求めるまで本文の前には何も現れません。</p>
+  <p class="lede">アプリを開けば、すぐに読み始められます。ほかの機能は<span data-only="iphone ipad android">ワンタップ</span><span data-only="mac">ワンクリック</span>で呼び出せ、求めるまで本文の前には何も現れません。</p>
   <div class="feature">
     <div class="text">
       <h3>ページをめくる</h3>
       <ul>
-        <li>スクロールして読みます。章の終わりでは、そのまま進むか次の章へのリンクをタップします。</li>
-        <li>下部バーの矢印で前後の章へ（キーボードでは <kbd>⌘[</kbd> と <kbd>⌘]</kbd>）。</li>
-        <li>iPad や横向きの iPhone、横長の Mac ウインドウでは、印刷された聖書のように2段組みになります。ページはスワイプ、矢印キー、スペースバー、トラックパッドでめくります。</li>
+        <li>スクロールして読みます。章の終わりでは、そのまま進むか次の章へのリンクを<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>します。</li>
+        <li><span data-only="iphone ipad android">下部バー</span><span data-only="mac">ツールバー</span>の矢印で前後の章へ移動します<span data-only="ipad mac pdf">（キーボードでは <kbd>⌘[</kbd> と <kbd>⌘]</kbd>）</span><span data-only="android">（キーボードでは <kbd>Ctrl+[</kbd> と <kbd>Ctrl+]</kbd>）。横にスワイプしても移動できます</span>。</li>
+        <li data-only="pdf">iPad や横向きの iPhone、横長の Mac ウインドウでは、印刷された聖書のように2段組みになります。ページはスワイプ、矢印キー、スペースバー、トラックパッドでめくります。</li>
+        <li data-only="app"><span data-only="iphone">iPhone を横向きにすると、印刷された聖書のように章が2段組みになります。ページはスワイプでめくります。</span><span data-only="ipad">iPad では、画面の幅が十分にあれば、印刷された聖書のように章が2段組みになります。ページはスワイプ、またはキーボードの矢印キーやスペースバーでめくります。</span><span data-only="mac">横長のウインドウでは、印刷された聖書のように章が2段組みになります。ページは矢印キー、スペースバー、トラックパッドのスワイプでめくります。</span></li>
       </ul>
       <h3>手を使わずに読む</h3>
-      <p>下部バーの <span class="ui">自動スクロール</span> で本文がひとりでに流れ、章が終われば次の章へ進みます。長押しで4段階の速さ（<span class="ui">ゆっくり</span>〜<span class="ui">速い</span>）を選べます。</p>
+      <p><span data-only="iphone ipad android">下部バー</span><span data-only="mac">ツールバー</span>の <span class="ui">自動スクロール</span> を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>すると、本文がひとりでに流れ、章が終われば次の章へ進みます。<span data-only="iphone ipad android">長押しすると</span><span data-only="mac">横の矢印をクリックすると</span>、4段階の速さ（<span class="ui">ゆっくり</span>〜<span class="ui">速い</span>）を選べます。</p>
       <h3>脚注とキリストの言葉</h3>
-      <p>脚注の印をタップすると注が読めます。キリストの言葉は赤字、詩は詩の形で組まれ、小見出しも付きます。どれも <span class="ui">Aa</span> でオフにできます。</p>
+      <p>脚注の印を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>すると注が読めます。キリストの言葉は赤字、詩は詩の形で組まれ、小見出しも付きます。どれも <span class="ui">Aa</span> でオフにできます。</p>
     </div>
     <figure><img class="phone" src="IMG/01-reader.png" alt=""><figcaption>リーダー</figcaption></figure>
   </div>
   <h3>節を選ぶ</h3>
-  <p>節をタップすると選択され、ほかの節をタップすると追加されます。選んだ節でできることを集めたバーが現れます。</p>
+  <p>節を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>すると選択され、ほかの節を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>すると追加されます。選んだ節でできることを集めたバーが現れます。</p>
   <table class="facts">
     <tr><th>ボタン</th><th>できること</th></tr>
     <tr><td>色の丸</td><td>5色のどれかでハイライトします。消しゴムでハイライトを消せます。</td></tr>
@@ -71,18 +76,18 @@
     <tr><td>鉛筆</td><td>メモを書きます。</td></tr>
     <tr><td>コピー</td><td>節を参照箇所付きでコピーします。</td></tr>
     <tr><td>共有</td><td>デザインした画像、テキスト、リンクとして共有します。</td></tr>
-    <tr><td>文字の入った本</td><td>原語データ：その節をヘブライ語またはギリシア語で一語ずつ表示します（一度に1節）。</td></tr>
+    <tr><td><span data-only="apple">文字の入った本</span><span data-only="android">文A</span></td><td>原語データ：その節をヘブライ語またはギリシア語で一語ずつ表示します（一度に1節）。</td></tr>
     <tr><td>聴く</td><td>選んだ節を読み上げます。</td></tr>
     <tr><td>✕</td><td>選択を解除します。</td></tr>
   </table>
   <div class="note"><span class="note-label">出版社による制限</span>翻訳によっては、一度にコピー・共有できる量に制限があります。制限を超えると、どの出版社の制限で、何節まで認められているかをアプリがお知らせします。</div>
   <h3>訳を比べる</h3>
-  <p>右上の翻訳ボタンをタップして <span class="ui">訳を比較…</span> を選ぶと、同じ箇所をいくつもの訳で並べて読めます。</p>
+  <p><span data-only="iphone ipad android">右上の翻訳ボタンをタップして</span><span data-only="mac">ツールバーの翻訳ボタンをクリックして</span> <span class="ui">訳を比較…</span> を選ぶと、同じ箇所を2つの訳で並べて読めます。</p>
 </section>
 
 <section class="chapter">
   <h2>移動する</h2>
-  <p class="lede">上部の箇所タイトルをタップする（キーボードでは <kbd>⌘L</kbd>）と「移動」が開きます。入力欄はひとつだけで、何でもここから始められます。</p>
+  <p class="lede"><span data-only="iphone ipad android">上部の箇所タイトルをタップする</span><span data-only="mac">ツールバーの箇所タイトルをクリックする</span><span data-only="ipad pdf">（キーボードでは <kbd>⌘L</kbd>）</span><span data-only="mac">（または <kbd>⌘L</kbd> を押す）</span><span data-only="android">（キーボードでは <kbd>Ctrl+L</kbd>）</span>と「移動」が開きます。入力欄はひとつだけで、何でもここから始められます。</p>
   <div class="feature flip">
     <div class="text">
       <h3>聖書箇所を入力する</h3>
@@ -94,17 +99,17 @@
         <li><b>詩 23</b>、<b>創世記 1</b>、<b>黙 21:4</b></li>
       </ul>
       <h3>言葉で検索する</h3>
-      <p>単語や語句を入力すると、いま読んでいる訳の中を検索します。デバイスに入っている聖書は、語句検索も含めてオフラインで検索できます。</p>
+      <p>単語や語句を入力すると、いま読んでいる訳の中を検索します。<span data-only="pdf">デバイス</span><span data-only="app"><span data-only="iphone">iPhone </span><span data-only="ipad">iPad </span><span data-only="mac">Mac </span><span data-only="android">デバイス</span></span>に入っている聖書は、語句検索も含めてオフラインで検索できます。</p>
       <h3>一覧から選ぶ</h3>
       <p>書を選び、章を選ぶこともできます。最近読んだ章や検索した言葉は上に並んでいて、すぐにまた開けます。</p>
     </div>
-    <figure><img class="phone" src="IMG/10-jump.png" alt=""><figcaption>移動</figcaption></figure>
+    <figure data-only="apple"><img class="phone" src="IMG/10-jump.png" alt=""><figcaption>移動</figcaption></figure>
   </div>
   <div class="feature">
     <div class="text">
       <h3>トピック：いま通っていることについて、聖書は何と言っているか</h3>
       <p>「移動」にはトピックが一列に並んでいます。「不安と思い煩い」「恐れ」「悲しみと喪失」「孤独」などです。<span class="ui">すべて表示</span> を開くと、7つのグループに分けられた72のトピックがすべて見られます。「うつと絶望」「罪責感と恥」から、「結婚と夫婦」「子育て」「仕事」「待つこと」「神の臨在」まであります。</p>
-      <p>各トピックには、よく親しまれている箇所が十数か所ずつ集められ、いま読んでいる訳で表示されます。タップするとその箇所へ移動し、長押しするとお気に入り・コピー・共有ができます。</p>
+      <p>各トピックには、よく親しまれている箇所が十数か所ずつ集められ、いま読んでいる訳で表示されます。<span data-only="iphone ipad android">タップするとその箇所へ移動し、長押しすると</span><span data-only="mac">クリックするとその箇所へ移動し、右クリックすると</span>お気に入り・コピー・共有ができます。</p>
       <p>トピックの名前を知らなくても大丈夫です。「不安」「さみしい」「燃え尽きた」など、いまの気持ちをそのまま入力すると、ぴったりのトピックが節の上に表示されます。アプリが対応しているどの言語でも使えます。</p>
       <p>英語では、<b>Nave's Topical Bible</b>（ネーヴの主題別聖書索引）の A〜Z も収録されています。5,000以上のトピックがあり、すべての箇所がリンクになっています。</p>
     </div>
@@ -115,14 +120,16 @@
 
 <section class="chapter">
   <h2>聖書を追加する</h2>
-  <p class="lede">右上の翻訳ボタンをタップすると、聖書を切り替えられます。そのメニューのいちばん下にある <span class="ui">翻訳を管理…</span> で、聖書の追加、ダウンロード、削除を行います。</p>
+  <p class="lede"><span data-only="iphone ipad android">右上の翻訳ボタンをタップすると</span><span data-only="mac">ツールバーの翻訳ボタンをクリックすると</span>、聖書を切り替えられます。そのメニューのいちばん下にある <span class="ui">翻訳を管理…</span> で、聖書の追加、ダウンロード、削除を行います。</p>
   <h3>アプリに含まれている聖書</h3>
   <table class="facts">
     <tr><th>翻訳</th><th>入手方法</th></tr>
-    <tr><td>新アメリカ標準訳 — NASB 2020</td><td><span class="tag">内蔵</span> インストールした時からデバイスに入っています。Apple Watch にも入っています。</td></tr>
+    <tr><td>新アメリカ標準訳 — NASB 2020</td><td><span class="tag">内蔵</span> インストールした時から<span data-only="pdf">デバイス</span><span data-only="app"><span data-only="iphone"> iPhone </span><span data-only="ipad"> iPad </span><span data-only="mac"> Mac </span><span data-only="android">デバイス</span></span>に入っています。<span data-only="apple">Apple Watch </span><span data-only="android">Wear OS のスマートウォッチ</span>にも入っています。</td></tr>
     <tr><td>NASB 1995</td><td>初めて選んだときに一度だけダウンロードされます。</td></tr>
-    <tr><td>アメリカ標準訳（ASV）、Berean Standard Bible（BSB）、欽定訳（KJV）</td><td>初めて選んだときに一度だけダウンロードされます。パブリックドメインです。</td></tr>
-    <tr><td>あなたの言語の聖書（日本語なら文語訳）</td><td>デバイスの言語が英語以外の8言語のどれかなら、初回起動時にダウンロードされます。</td></tr>
+    <tr data-only="apple"><td>アメリカ標準訳（ASV）、Berean Standard Bible（BSB）、欽定訳（KJV）</td><td>初めて選んだときに一度だけダウンロードされます。パブリックドメインです。</td></tr>
+    <tr data-only="android"><td>Berean Standard Bible（BSB）</td><td>アプリと一緒にインストールされます。パブリックドメインです。</td></tr>
+    <tr data-only="android"><td>アメリカ標準訳（ASV）、欽定訳（KJV）</td><td>初めて選んだときに一度だけダウンロードされます。パブリックドメインです。</td></tr>
+    <tr><td>あなたの言語の聖書（日本語なら文語訳）</td><td><span data-only="pdf">デバイス</span><span data-only="app"><span data-only="iphone">iPhone </span><span data-only="ipad">iPad </span><span data-only="mac">Mac </span><span data-only="android">デバイス</span></span>の言語が英語以外の8言語のどれかなら、初回起動時にダウンロードされます。</td></tr>
   </table>
   <p>一度ダウンロードした聖書は、その後ずっとオフラインで読み、検索できます。</p>
 
@@ -131,7 +138,7 @@
   <div class="feature">
     <div class="text">
       <ol class="steps">
-        <li><b>無料の翻訳を見る…</b> では、eBible.org で自由に使える聖書が、あなたの言語のものから順に一覧表示されます（<span class="ui">その他の言語</span> には残りの何百もの聖書があります）。タップするとダウンロードされます。タップするまで何も取得されません。</li>
+        <li><b>無料の翻訳を見る…</b> では、eBible.org で自由に使える聖書が、あなたの言語のものから順に一覧表示されます（<span class="ui">その他の言語</span> には残りの何百もの聖書があります）。<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>するとダウンロードされます。<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>するまで何も取得されません。</li>
         <li><b>ファイルから読み込む…</b> では、お持ちの聖書を取り込めます。<b>USFM の zip</b>、<b>DRM のない ePub</b>、本物のテキストが入った <b>PDF</b>（スキャン画像ではないもの）に対応しています。詳しくは次のページで説明します。</li>
         <li><b>オンラインの翻訳…</b> では、ESV、CSB、NKJV を、あなた自身の無料キーを使ってネットワーク経由で読めます。第5章をご覧ください。</li>
       </ol>
@@ -159,7 +166,8 @@
   <ul>
     <li><b>スタディバイブル</b>は、注、各書の緒論、解説記事、地図も一緒に取り込まれます。注は学習の「注解」タブに表示されます。</li>
     <li><b>キリストの言葉</b>は赤字のまま引き継がれます。</li>
-    <li>読み込んだ聖書は、あなた自身の iCloud を通してほかのデバイスに届きます。翻訳の利用条件が許せば Apple Watch にも届きます。ほかの誰とも共有されることはありません。</li>
+    <li data-only="apple">読み込んだ聖書は、あなた自身の iCloud を通してほかのデバイスに届きます。翻訳の利用条件が許せば Apple Watch にも届きます。ほかの誰とも共有されることはありません。</li>
+    <li data-only="android">読み込んだ聖書はこのデバイスの中にあり、翻訳の利用条件が許せば Wear OS のスマートウォッチにも届きます。ほかの誰とも共有されることはありません。</li>
     <li>コピー保護（DRM）されたファイルは受け付けません。アプリには保護を解除するコードは一切入っていません。</li>
   </ul>
 
@@ -180,21 +188,21 @@
     <p>ESV と CSB をアプリに収録できるようになるまでは、お持ちの版を読み込んで使えます。きれいに読み込める版とその入手先は、ウェブサイトのよくある質問で紹介しています： <a href="https://wemiller.com/apps/scripture-alone/faq/?lang=ja#esv-csb">ESV や CSB はどこで入手してインポートできますか？</a></p>
   </div>
   <ol class="steps">
-    <li>ファイルをデバイスに用意します。「ファイル」App（または Mac）に保存してください。<span data-only="pdf">Ligonier の ePub は、購入後にアカウントのダウンロードから入手できます。</span></li>
-    <li><span class="ui">翻訳を管理…</span> を開き、<span class="ui">ファイルから読み込む…</span> をタップします。</li>
-    <li>ファイルを選び、まとめが表示されるまで待ちます。あとはほかの聖書と同じように翻訳ボタンから選べます。ファイルはあなたのデバイスの中だけにあり、アップロードや共有はされません。</li>
+    <li><span data-only="pdf">ファイルをデバイスに用意します。「ファイル」App（または Mac）に保存してください。Ligonier の ePub は、購入後にアカウントのダウンロードから入手できます。</span><span data-only="app"><span data-only="iphone">ファイルを iPhone に用意します。「ファイル」App に保存してください。</span><span data-only="ipad">ファイルを iPad に用意します。「ファイル」App に保存してください。</span><span data-only="mac">ファイルを Mac に用意します。「ダウンロード」フォルダなど、どこに保存してもかまいません。</span><span data-only="android">ファイルをデバイスに用意します。「ダウンロード」フォルダなど、デバイスのストレージに保存してください。</span></span></li>
+    <li><span class="ui">翻訳を管理…</span> を開き、<span class="ui">ファイルから読み込む…</span> を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>します。</li>
+    <li><span data-only="android">ファイル選択画面で</span>ファイルを選び、まとめが表示されるまで待ちます。あとはほかの聖書と同じように翻訳ボタンから選べます。ファイルは<span data-only="apple">あなたのデバイス</span><span data-only="android">このデバイス</span>の中だけにあり、アップロードや共有はされません。</li>
   </ol>
 
   <h3>オフラインで読める訳をもっと</h3>
   <p>NASB 2020 と NASB 1995 は、The Lockman Foundation の許可を得て収録しています。ESV、CSB、NKJV、LSB の出版社にも収録の許可をお願いしています。許可が下りれば、その訳はほかの聖書と同じくオフラインで読める形でアプリに加わり、このガイドにある手順は必要なくなります。</p>
   <h3>翻訳を削除する</h3>
-  <p><span class="ui">翻訳を管理…</span> で追加した翻訳をスワイプ（または長押し）し、<span class="ui">削除</span> を選びます。ハイライトやメモは残ります。それらは翻訳ではなく、節に結びついているからです。</p>
+  <p><span data-only="iphone ipad"><span class="ui">翻訳を管理…</span> で追加した翻訳をスワイプ（または長押し）し、<span class="ui">削除</span> を選びます。</span><span data-only="mac"><span class="ui">翻訳を管理…</span> で追加した翻訳を右クリックし、<span class="ui">削除</span> を選びます。</span><span data-only="android"><span class="ui">翻訳を管理…</span> で、追加した翻訳の横にある削除ボタンをタップし（または翻訳を長押しし）、<span class="ui">取り除く</span> で確定します。</span>ハイライトやメモは残ります。それらは翻訳ではなく、節に結びついているからです。</p>
 </section>
 
 <section class="chapter">
   <h2>オンラインの翻訳</h2>
   <p class="lede">ESV、CSB、NKJV は、出版社のサービスから取得する無料キーを使えば、インターネット経由で Scripture Alone の中で読めます。設定は一度きりで、5分ほどで終わります。</p>
-  <p>なぜ自分のキーが必要なのでしょう？ 無料プランは個人ごとの利用枠だからです。アプリにキーを埋め込めば、一日もしないうちに見知らぬ人たちに使い切られてしまいますし、これらのサービスの利用条件にも反します。キーはデバイスのキーチェーンに保存され、iCloud キーチェーンを通してエンドツーエンドで暗号化されたまま、ほかのデバイスに同期されます。</p>
+  <p>なぜ自分のキーが必要なのでしょう？ 無料プランは個人ごとの利用枠だからです。アプリにキーを埋め込めば、一日もしないうちに見知らぬ人たちに使い切られてしまいますし、これらのサービスの利用条件にも反します。<span data-only="apple">キーはデバイスのキーチェーンに保存され、iCloud キーチェーンを通してエンドツーエンドで暗号化されたまま、ほかのデバイスに同期されます。</span><span data-only="android">キーはデバイスに暗号化して保存され、Google の Block Store がエンドツーエンドで暗号化したままバックアップするので、このデバイスから設定した新しいデバイスにも戻ってきます。</span></p>
   <table class="facts">
     <tr><th>サービス</th><th>読める訳</th><th>無料の利用枠</th></tr>
     <tr><td>Crossway ESV API<br><small>api.esv.org</small></td><td>English Standard Version（英語標準訳）</td><td>1日5,000リクエスト。デバイスに保存できるのは500節まで</td></tr>
@@ -207,12 +215,12 @@
   <div class="feature">
     <div class="text">
       <ol class="steps">
-        <li>翻訳ボタン › <span class="ui">翻訳を管理…</span> › <span class="ui">オンラインの翻訳…</span> を開きます。</li>
-        <li><b>Crossway (ESV)</b> の <span class="ui">無料キーを取得…</span> で <a href="https://api.esv.org/account/create-application/">api.esv.org</a> が開きます。</li>
+        <li>Scripture Alone で翻訳ボタンを<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>し、<span class="ui">翻訳を管理…</span> › <span class="ui">オンラインの翻訳…</span> を開きます。</li>
+        <li><b>Crossway (ESV)</b> の <span class="ui">無料キーを取得…</span> を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>すると、<a href="https://api.esv.org/account/create-application/">api.esv.org</a> が開きます。</li>
         <li>ESV.org にサインイン（または無料登録）します。</li>
         <li><b>Create Application</b> フォームに記入します。名前は自由（「My Bible reading」など）。用途は個人的・非商用の聖書通読とし、利用条件に同意します。</li>
         <li>アプリケーションのページで <b>API key</b>（長い英数字）をコピーします。</li>
-        <li>アプリに戻り、Crossway の <b>APIキー</b> に貼り付けて <span class="ui">完了</span> をタップします。</li>
+        <li>アプリに戻り、Crossway の <b>APIキー</b> に貼り付けて <span class="ui">完了</span> を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>します。</li>
       </ol>
       <p>ESV が <b>オンライン</b> のラベル付きでメニューに加わります。</p>
     </div>
@@ -236,13 +244,13 @@
   <div class="feature">
     <div class="text">
       <ol class="steps">
-        <li><span class="ui">オンラインの翻訳…</span> の <b>API.Bible</b> の下で <span class="ui">無料キーを取得…</span> をタップします。<a href="https://api.bible/">api.bible</a> が開きます。</li>
+        <li><span class="ui">オンラインの翻訳…</span> の <b>API.Bible</b> の下で <span class="ui">無料キーを取得…</span> を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>します。<a href="https://api.bible/">api.bible</a> が開きます。</li>
         <li>無料の <b>Starter</b> プランを選んで登録し、メールアドレスを確認します。</li>
         <li>API.Bible のダッシュボードでアプリを作成します（名前と、個人的な聖書通読という短い説明があれば十分です）。</li>
         <li>API.Bible のサイトで、<b>著作権付きの聖書を3つ</b>選びます。たとえば CSB と NKJV です（NASB は Scripture Alone にすでに入っているので、枠を使う必要はありません）。</li>
         <li>アプリの <b>API key</b> をコピーします。</li>
-        <li>API.Bible の下の <b>APIキー</b> に貼り付けて、<span class="ui">自分の訳を確認</span> をタップします。</li>
-        <li>メニューに入れたい訳にチェックを付け、<span class="ui">完了</span> をタップします。</li>
+        <li>API.Bible の下の <b>APIキー</b> に貼り付けて、<span class="ui">自分の訳を確認</span> を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>します。</li>
+        <li>メニューに入れたい訳にチェックを付け、<span class="ui">完了</span> を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>します。</li>
       </ol>
     </div>
     <div class="mock">
@@ -262,8 +270,9 @@
   <div class="tip"><span class="note-label">知っておくと便利なこと</span>
   <ul style="margin:0">
     <li>オンラインの翻訳はインターネット接続が必要です。読んだ部分は出版社の上限までデバイスに保存されますが、オフラインでは検索できません。</li>
-    <li>選んだ訳とキーは、新しいデバイスや再インストール後も iCloud を通して自動的に戻ってきます。</li>
-    <li>サービスの利用をやめるには <span class="ui">キーを削除</span> をタップします。その訳はメニューから消えますが、メモやハイライトは残ります。</li>
+    <li data-only="apple">選んだ訳とキーは、新しいデバイスや再インストール後も iCloud を通して自動的に戻ってきます。</li>
+    <li data-only="android">選んだ訳とキーは、新しいデバイスや再インストール後も自動的に戻ってきます。キーは Block Store を通して、選んだ訳は Android のバックアップで戻ります。</li>
+    <li>サービスの利用をやめるには <span class="ui">キーを削除</span> を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>します。その訳はメニューから消えますが、メモやハイライトは残ります。</li>
     <li>うまくいかないときは、キーが前後に空白なく丸ごと貼り付けられているか、その訳が API.Bible のサイトで選んだものに入っているかを確認してください。</li>
   </ul></div>
 </section>
@@ -274,14 +283,14 @@
   <div class="feature">
     <div class="text">
       <h3>ハイライト</h3>
-      <p>節を選び、5色のどれかをタップします。消しゴムをタップするとハイライトが消えます。</p>
+      <p>節を選び、5色のどれかを<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>します。消しゴムを<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>するとハイライトが消えます。</p>
       <h3>メモ</h3>
-      <p>節を選んで鉛筆をタップすると、メモが書けます。ひとつのメモを複数の箇所に結びつけることもできます。たとえば、ローマ人への手紙 8:1–17 の日曜の説教に詩篇 23 篇を添える、といった具合です。メモは読んでいる節の横に表示され、印をタップすると開きます。</p>
+      <p>節を選んで鉛筆を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>すると、メモが書けます。ひとつのメモを複数の箇所に結びつけることもできます。たとえば、ローマ人への手紙 8:1–17 の日曜の説教に詩篇 23 篇を添える、といった具合です。メモは読んでいる節の横に表示され、印を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>すると開きます。</p>
       <h3>お気に入り</h3>
-      <p>何度も読み返したい節は、選択バーのハートをタップして残しておきましょう。</p>
+      <p>何度も読み返したい節は、選択バーのハートを<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>して残しておきましょう。</p>
       <h3>もう一度見つける</h3>
-      <p>左上の <span class="ui">メモ</span> をタップします。パネルには <b>メモ</b>、<b>ハイライト</b>、<b>お気に入り</b> の3つの一覧があり、それぞれ「すべての書」「この書」「この章」で絞り込めます。メモは検索もできます。ハイライトは聖書の順に並び、同じ色で続いている節はひとつの箇所としてまとめて表示されます。タップするとその場所へ移動し、スワイプで削除できます。</p>
-      <p><span class="ui">新規メモ</span> をタップすると、選択した節に結びつかないメモを書き始められます。</p>
+      <p><span data-only="iphone ipad android">左上の <span class="ui">メモ</span> をタップします。</span><span data-only="mac">ツールバーの <span class="ui">メモ</span> をクリックします。</span>パネルには <b>メモ</b>、<b>ハイライト</b>、<b>お気に入り</b> の3つの一覧があり、それぞれ「すべての書」「この書」「この章」で絞り込めます。メモは検索もできます。ハイライトは聖書の順に並び、同じ色で続いている節はひとつの箇所としてまとめて表示されます。<span data-only="iphone ipad">タップするとその場所へ移動し、スワイプで削除できます。</span><span data-only="mac">クリックするとその場所へ移動します。</span><span data-only="android">タップするとその場所へ移動し、長押しで削除できます。</span></p>
+      <p><span class="ui">新規メモ</span> を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>すると、選択した節に結びつかないメモを書き始められます。</p>
     </div>
     <figure><img class="phone" src="IMG/06-highlights.png" alt=""><figcaption>ハイライトとメモ</figcaption></figure>
   </div>
@@ -300,13 +309,13 @@
   <div class="feature">
     <div class="text">
       <ol class="steps">
-        <li><span class="ui">メモ</span> を開いて <span class="ui">スライドをスキャン</span> をタップし、<span class="ui">スライドを撮影</span> を選びます。撮影済みの写真を選ぶこともできます（Mac では画像ファイル、クリップボード、または「iPhoneから読み込む」）。メモの中で <span class="ui">カメラから追加</span> を使うと、そのメモにスライドを加えられます。</li>
-        <li>ズームボタンかピンチで拡大し、スクリーンが画面いっぱいに収まるようにして撮影します。</li>
+        <li><span data-only="iphone ipad"><span class="ui">メモ</span> を開いて <span class="ui">スライドをスキャン</span> をタップし、<span class="ui">スライドを撮影</span> を選びます。撮影済みの写真を選ぶこともできます<span data-only="pdf">（Mac では画像ファイル、クリップボード、または「iPhoneから読み込む」）</span>。</span><span data-only="mac"><span class="ui">メモ</span> を開いて <span class="ui">スライドをスキャン</span> をクリックし、画像ファイルを選びます。横の矢印をクリックすると、<span class="ui">写真から選択…</span> と <span class="ui">画像を貼り付け</span> も選べます。iPhone のカメラを使うには、<span class="ui">ファイル › iPhoneから読み込む</span> を選択します。</span><span data-only="android"><span class="ui">メモ</span> を開いて <span class="ui">スライドをスキャン</span> をタップし、<span class="ui">スライドを撮影</span> を選びます。手元にある画像を使うなら、<span class="ui">写真から選択</span>、<span class="ui">画像ファイルを選択…</span>、<span class="ui">画像をペースト</span> も選べます。</span>メモの中で <span class="ui">カメラから追加</span> を使うと、そのメモにスライドを加えられます。</li>
+        <li data-only="iphone ipad android">ズームボタンかピンチで拡大し、スクリーンが画面いっぱいに収まるようにして撮影します<span data-only="android">（シャッターか、ハイライトされた文字をタップします）</span>。</li>
         <li>アプリが写真の中のプロジェクタースクリーン、テレビ、モニターを見つけ、まっすぐに補正して、スライドの部分だけを読み取ります。写真全体を読み取りたいときは <span class="ui">スクリーンに合わせて切り抜く</span> をオフにします。</li>
         <li>タイトル、聖書箇所、要点を確認し、必要なら直します。<b>新しいメモ</b>に保存するか、書きかけのメモに追加するかを選びます。同じ説教の次のスライドも、同じメモに追加できます。</li>
-        <li><span class="ui">メモを作成</span> をタップします。</li>
+        <li><span class="ui">メモを作成</span> を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>します。</li>
       </ol>
-      <div class="note"><span class="note-label">プライバシー</span>写真はデバイスの中で読み取られ、アップロードされることはありません。<span class="ui">この写真をメモと一緒に保存</span> をオンにしない限り、読み取り後に破棄されます。</div>
+      <div class="note"><span class="note-label">プライバシー</span>写真は<span data-only="pdf">デバイス</span><span data-only="app"><span data-only="iphone"> iPhone </span><span data-only="ipad"> iPad </span><span data-only="mac"> Mac </span><span data-only="android">デバイス</span></span>の中で読み取られ、アップロードされることはありません。<span class="ui">この写真をメモと一緒に保存</span> をオンにしない限り、読み取り後に破棄されます。</div>
     </div>
     <figure><img class="phone" src="IMG/05-sermon-notes.png" alt=""><figcaption>スライドから作ったメモ</figcaption></figure>
   </div>
@@ -314,25 +323,25 @@
 
 <section class="chapter">
   <h2>学習</h2>
-  <p class="lede">左上の開いた本のボタンで、学習がオンになります。学習パネルはタップした節に合わせて切り替わり、iPad と Mac では本文の横に、iPhone では引き出せるシートに表示されます。</p>
+  <p class="lede"><span data-only="iphone ipad android">左上の開いた本のボタンをタップすると</span><span data-only="mac">ツールバーの開いた本のボタンをクリックすると</span>、学習がオンになります。学習パネルは<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>した節に合わせて切り替わり、<span data-only="pdf">iPad と Mac では本文の横に、iPhone では引き出せるシートに表示されます。</span><span data-only="app"><span data-only="iphone">上下に引き出せるシートに表示されます。</span><span data-only="ipad mac">本文の横に表示されます。</span><span data-only="android">スマートフォンでは上下に引き出せるシートに、タブレットでは本文の横に表示されます。</span></span></p>
   <div class="feature">
     <div class="text">
       <h3>引照</h3>
-      <p>関連の強い順に並んだ引照聖句を、いま読んでいる訳で表示します。タップで移動し、戻るボタンで戻れます（OpenBible.info による）。</p>
+      <p>関連の強い順に並んだ引照聖句を、いま読んでいる訳で表示します。<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>で移動し、戻るボタンで戻れます（OpenBible.info による）。</p>
       <h3>注解</h3>
       <p>カルヴァン、ジョン・ギル、ジャミーソン・フォーセット・ブラウンの古典的な注解で、中の聖書箇所はリンクになっています。初めてタブを開いたときにダウンロードされます。読み込んだスタディバイブルの注もここに表示されます（注解は英語のみ）。</p>
       <h3>文脈</h3>
-      <p>読んでいる章の<b>概要</b>、章に出てくる場所の<b>地図</b>（場所をタップすると、それが出てくる節の一覧）、聖書の時代区分の<b>年表</b>、そして<b>図表</b>（イスラエルとユダの王、パウロの伝道旅行、十二部族、イスラエルの祭り）。地図はデバイス上で描かれ、オフラインで使えます。</p>
+      <p>読んでいる章の<b>概要</b>、章に出てくる場所の<b>地図</b>（場所を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>すると、それが出てくる節の一覧）、聖書の時代区分の<b>年表</b>、そして<b>図表</b>（イスラエルとユダの王、パウロの伝道旅行、十二部族、イスラエルの祭り）。地図は<span data-only="pdf">デバイス</span><span data-only="app"><span data-only="iphone"> iPhone </span><span data-only="ipad"> iPad </span><span data-only="mac"> Mac </span><span data-only="android">デバイス</span></span>上で描かれ、オフラインで使えます。</p>
     </div>
-    <figure><img class="phone" src="IMG/03-study.png" alt=""><figcaption>ヨハネの福音書 3:16 に合わせた学習パネル</figcaption></figure>
+    <figure><img class="phone" src="IMG/03-study.png" alt=""><figcaption><span data-only="apple">ヨハネの福音書 3:16 に合わせた学習パネル</span><span data-only="android">ヨハネの福音書 10:11 に合わせた学習パネル</span></figcaption></figure>
   </div>
   <div class="feature flip">
     <div class="text">
       <h3>原語</h3>
-      <p>節をひとつだけ選び、選択バーの原語ボタンをタップします。その節がヘブライ語またはギリシア語で一語ずつ表示され、各語の語形分析、ストロング番号（Strong's）、辞書の項目が見られます。どの訳でも使え、初めて使うときに一度だけダウンロードされます。</p>
-      <p>学習の <b>ⓘ</b>（<span class="ui">学習リソースについて</span>）をタップすると、各資料の出典とライセンスを確認できます。</p>
+      <p>節をひとつだけ選び、選択バーの原語ボタンを<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>します。<span data-only="apple">その節が</span><span data-only="android">学習の <span class="ui">原語</span> タブが開き、その節が</span>ヘブライ語またはギリシア語で一語ずつ表示され、各語の語形分析、ストロング番号（Strong's）、辞書の項目が見られます。どの訳でも使え、初めて使うときに一度だけダウンロードされます。</p>
+      <p>学習の <b>ⓘ</b>（<span class="ui">学習リソースについて</span>）を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>すると、各資料の出典とライセンスを確認できます。</p>
     </div>
-    <figure><img class="phone" src="IMG/04-maps.png" alt=""><figcaption>文脈：章に出てくる場所</figcaption></figure>
+    <figure data-only="apple"><img class="phone" src="IMG/04-maps.png" alt=""><figcaption>文脈：章に出てくる場所</figcaption></figure>
   </div>
 </section>
 
@@ -342,44 +351,47 @@
   <div class="feature">
     <div class="text">
       <ul>
-        <li>下部バーの <span class="ui">聴く</span> をタップすると画面のいちばん上から読み始めます。節を選んで選択バーの <span class="ui">聴く</span> をタップすることもできます。</li>
+        <li><span data-only="iphone ipad android">下部バーの <span class="ui">聴く</span> をタップすると</span><span data-only="mac">ツールバーの <span class="ui">聴く</span> をクリックすると</span>画面のいちばん上から読み始めます。節を選んで選択バーの <span class="ui">聴く</span> を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>することもできます。</li>
         <li>朗読は次の章へと続きます。音声、速度、スリープタイマーはプレーヤーで選べます。</li>
-        <li>画面をロックしても、ほかのアプリを使っていても再生は続き、ロック画面から操作できます。</li>
-        <li>デバイスにインストールされているどの音声でも読み上げられます。プレミアム音声、拡張音声、パーソナルボイスも使えます。より良い音声は、デバイスの「設定」›「アクセシビリティ」›「読み上げコンテンツ」からダウンロードできます。</li>
-        <li>iPhone と iPad では、<b>Mi Speaks</b>（別のアプリ）の購読者なら、そのスタジオ音声で章を読み上げることもできます。</li>
+        <li data-only="iphone ipad">画面をロックしても、ほかのアプリを使っていても再生は続き、ロック画面から操作できます。</li>
+        <li data-only="mac">ほかのアプリで作業していても再生は続き、コントロールセンターから操作できます。</li>
+        <li data-only="android">画面をオフにしても、ほかのアプリを使っていても再生は続き、通知やヘッドセットから操作できます。</li>
+        <li data-only="pdf">デバイスにインストールされているどの音声でも読み上げられます。プレミアム音声、拡張音声、パーソナルボイスも使えます。より良い音声は、デバイスの「設定」›「アクセシビリティ」›「読み上げコンテンツ」からダウンロードできます。</li>
+        <li data-only="app"><span data-only="iphone">iPhone にインストールされているどの音声でも読み上げられます。プレミアム音声、拡張音声、パーソナルボイスも使えます。より良い音声は、「設定」›「アクセシビリティ」›「読み上げコンテンツ」からダウンロードできます。</span><span data-only="ipad">iPad にインストールされているどの音声でも読み上げられます。プレミアム音声、拡張音声、パーソナルボイスも使えます。より良い音声は、「設定」›「アクセシビリティ」›「読み上げコンテンツ」からダウンロードできます。</span><span data-only="mac">Mac にインストールされているどの音声でも読み上げられます。プレミアム音声、拡張音声、パーソナルボイスも使えます。より良い音声は、「システム設定」›「アクセシビリティ」›「読み上げコンテンツ」からダウンロードできます。</span><span data-only="android">デバイスにインストールされているテキスト読み上げの音声なら、どれでも読み上げられます。ほかの音声は、デバイスの「設定」の「テキスト読み上げの出力」からダウンロードできます。</span></li>
+        <li data-only="iphone ipad"><span data-only="pdf">iPhone と iPad では、</span><b>Mi Speaks</b>（別のアプリ）の購読者なら、そのスタジオ音声で章を読み上げることもできます。</li>
       </ul>
     </div>
-    <figure><img class="phone" src="IMG/07-listen.png" alt=""><figcaption>朗読を聴く</figcaption></figure>
+    <figure data-only="apple"><img class="phone" src="IMG/07-listen.png" alt=""><figcaption>朗読を聴く</figcaption></figure>
   </div>
 </section>
 
 <section class="chapter">
   <h2>自分好みに</h2>
-  <p class="lede">右上の <span class="ui">Aa</span> をタップします。変更はすぐに反映され、ほかのデバイスにも引き継がれます。</p>
+  <p class="lede"><span data-only="iphone ipad android">右上の <span class="ui">Aa</span> をタップします。</span><span data-only="mac">ツールバーの <span class="ui">Aa</span> をクリックします。</span><span data-only="apple">変更はすぐに反映され、ほかのデバイスにも引き継がれます。</span><span data-only="android">変更はすぐに反映され、Android のバックアップによって新しいデバイスにも引き継がれます。</span></p>
   <div class="feature">
     <div class="text">
       <ul>
         <li><b>テーマ：</b>自動、ライト、セピア、ダーク、ブラック。アクセントカラーも選べます。</li>
-        <li><b>本文：</b>文字サイズ（または <kbd>⌘+</kbd> と <kbd>⌘−</kbd>）、行間。Dynamic Type にも完全に対応しています。</li>
+        <li><b>本文：</b><span data-only="app"><span data-only="iphone">文字サイズ、行間。Dynamic Type にも完全に対応しています。</span></span><span data-only="ipad pdf">文字サイズ（または <kbd>⌘+</kbd> と <kbd>⌘−</kbd>）、行間。Dynamic Type にも完全に対応しています。</span><span data-only="mac">文字サイズ（または <kbd>⌘+</kbd> と <kbd>⌘−</kbd>）、行間。</span><span data-only="android">文字サイズ（キーボードでは <kbd>Ctrl+=</kbd> と <kbd>Ctrl+−</kbd>）、行間。デバイスのフォントサイズの設定も反映されます。</span></li>
         <li><b>フォント：</b>7種類の書体。</li>
-        <li><b>レイアウト：</b>段落ごと、または1節ずつ。<span class="ui">横長の画面では段組み</span> のオン・オフ。</li>
+        <li><b>レイアウト：</b>段落ごと、または1節ずつ<span data-only="apple">。<span class="ui">横長の画面では段組み</span> のオン・オフ</span>。</li>
         <li><b>表示：</b>キリストの言葉を赤字で表示、節番号、小見出し、脚注。</li>
-        <li><b>Spotlight：</b>メモやお気に入りをデバイスの検索に表示します。</li>
+        <li><span data-only="apple"><b>Spotlight：</b>メモやお気に入りを<span data-only="pdf">デバイス</span><span data-only="app"><span data-only="iphone"> iPhone </span><span data-only="ipad"> iPad </span><span data-only="mac"> Mac </span></span>の検索に表示します。</span><span data-only="android"><b>検索：</b>メモやお気に入りをデバイスの検索に表示します。</span></li>
         <li><b>この翻訳について：</b>いま読んでいる聖書の著作権とライセンス。</li>
       </ul>
       <p>同じシートに、<span class="ui">思い出の保存と書き出し</span>、このガイド、サポート、アプリの情報もあります。</p>
     </div>
-    <figure><img class="phone" src="IMG/08-themes.png" alt=""><figcaption>テーマと文字</figcaption></figure>
+    <figure data-only="apple"><img class="phone" src="IMG/08-themes.png" alt=""><figcaption>テーマと文字</figcaption></figure>
   </div>
 </section>
 
 <section class="chapter">
   <h2>共有</h2>
-  <p class="lede">節を選び、「共有」をタップします。</p>
+  <p class="lede">節を選び、「共有」を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>します。</p>
   <div class="feature">
     <div class="text">
       <ul>
-        <li><b>聖句画像：</b>8つのテンプレートと3つの形（正方形、ストーリー、横長）から、リーダーのどの書体でもデバイス上でデザインできます。写真に保存したり、送ったりできます。</li>
+        <li><b>聖句画像：</b>8つのテンプレートと3つの形（正方形、ストーリー、横長）から、リーダーのどの書体でも<span data-only="pdf">デバイス</span><span data-only="app"><span data-only="iphone"> iPhone </span><span data-only="ipad"> iPad </span><span data-only="mac"> Mac </span><span data-only="android">デバイス</span></span>上でデザインできます。写真に保存したり、送ったりできます。</li>
         <li><b>テキスト：</b>節と参照箇所。</li>
         <li><b>リンク：</b>どのウェブブラウザでも、リンクそのものから聖句カードを再現します。聖句はリンクの中に入って届くので、サーバーに保存されることはありません。</li>
       </ul>
@@ -394,43 +406,59 @@
   <p class="lede">あなたが印をつけた聖書は、次の世代に手渡す価値のあるものです。<span class="ui">Aa</span> › <span class="ui">思い出の保存と書き出し</span> を開きます。</p>
   <h3>思い出の聖書</h3>
   <ol class="steps">
-    <li><span class="ui">思い出の聖書を作成</span> をタップします。名前と献辞（「さやかへ、父より」など）を入れ、開いたときに表示する訳を選びます。</li>
+    <li><span class="ui">思い出の聖書を作成</span> を<span data-only="iphone ipad android">タップ</span><span data-only="mac">クリック</span>します。名前と献辞（「さやかへ、父より」など）を入れ、開いたときに表示する訳を選びます。</li>
     <li>保護したい場合はパスフレーズを設定します。</li>
-    <li>ファイルを家族に渡します。AirDrop、メッセージ、USB ドライブのほか、遺言書と一緒に保管しておくこともできます。</li>
+    <li>ファイルを家族に渡します。<span data-only="apple">AirDrop</span><span data-only="android">Quick Share、メール</span>、メッセージ、USB ドライブのほか、遺言書と一緒に保管しておくこともできます。</li>
   </ol>
-  <p>家族は <span class="ui">思い出の聖書ファイルを開く…</span> で開き、あなたが印をつけたままの聖書を読めます。読み取り専用で、自分のメモとは別に保管されます。形式はオープンな JSON の ZIP なので、何世代先でも読めます。</p>
-  <h3>家族と共有</h3>
-  <p>家族を招待すると、あなたが読み進めるにつれて、ハイライト、メモ、お気に入りを読み取り専用でリアルタイムに見てもらえます。<span class="ui">共有を開始して招待…</span> をタップして招待を送ります。家族には「お父さんの聖書を読んでいます · 5分前に更新」のように表示され、オフラインでも読めます。<span class="ui">共有を停止</span> はいつでもでき、家族の手元には最後のコピーが残ります。すべてはあなたの iCloud と家族の iCloud の間だけで行われます。</p>
+  <p>家族は <span class="ui">思い出の聖書ファイルを開く…</span> で開き、あなたが印をつけたままの聖書を読めます。読み取り専用で、自分のメモとは別に保管されます。形式はオープンな JSON の ZIP なので、何世代先でも読めます。<span data-only="android">思い出の聖書は、Android でも iPhone でも Scripture Alone で開けます。</span></p>
+  <div data-only="apple">
+    <h3>家族と共有</h3>
+    <p>家族を招待すると、あなたが読み進めるにつれて、ハイライト、メモ、お気に入りを読み取り専用でリアルタイムに見てもらえます。<span class="ui">共有を開始して招待…</span> を<span data-only="iphone ipad">タップ</span><span data-only="mac">クリック</span>して招待を送ります。家族には「お父さんの聖書を読んでいます · 5分前に更新」のように表示され、オフラインでも読めます。<span class="ui">共有を停止</span> はいつでもでき、家族の手元には最後のコピーが残ります。すべてはあなたの iCloud と家族の iCloud の間だけで行われます。</p>
+  </div>
   <h3>メモを書き出す</h3>
   <p>メモの <span class="ui">書き出し</span> メニューで、すべてのメモ、絞り込んだメモだけ、または一つのメモを、組版された <b>PDF</b>、<b>Markdown</b>（1ファイルまたはフォルダ）、<b>プレーンテキスト</b>として保存できます。節はあなたの訳で引用されます。</p>
 </section>
 
 <section class="chapter">
-  <h2>ウィジェット、Apple Watch、Siri、Spotlight</h2>
+  <h2><span data-only="apple">ウィジェット、Apple Watch、Siri、Spotlight</span><span data-only="android">ウィジェット、Wear OS、ショートカット</span></h2>
   <div class="feature">
     <div class="text">
       <h3>ウィジェット</h3>
-      <p><b>今日の聖句</b>（聖書全体から厳選した365か所）や <b>お気に入りとメモ</b> を、iPhone のホーム画面とロック画面、iPad、Mac のデスクトップに追加できます。ホーム画面を長押しし、「編集」›「ウィジェットを追加」をタップして、Scripture Alone を検索してください。聖句はいま読んでいる訳で表示されます。</p>
-      <h3>Apple Watch</h3>
-      <p>Watch App には NASB 2020 が内蔵されていて、iPhone が近くになくてもオフラインで読めます。iPhone で選んだ訳に合わせて表示され（ほかの聖書を読んでいれば iPhone から送られます）、今日の聖句、お気に入り、ハイライト、メモ、リーダー、読み上げが、あなたの選んだアクセントカラーで使えます。文字盤にコンプリケーションを追加すれば、その日の聖句が表示されます。</p>
+      <p data-only="pdf"><b>今日の聖句</b>（聖書全体から厳選した365か所）や <b>お気に入りとメモ</b> を、iPhone のホーム画面とロック画面、iPad、Mac のデスクトップに追加できます。ホーム画面を長押しし、「編集」›「ウィジェットを追加」をタップして、Scripture Alone を検索してください。聖句はいま読んでいる訳で表示されます。</p>
+      <p data-only="app"><b>今日の聖句</b>（聖書全体から厳選した365か所）や <b>お気に入りとメモ</b> を、<span data-only="iphone">ホーム画面とロック画面に追加できます。ホーム画面を長押しし、「編集」›「ウィジェットを追加」をタップして、Scripture Alone を検索してください。</span><span data-only="ipad">ホーム画面に追加できます。ホーム画面を長押しし、「編集」›「ウィジェットを追加」をタップして、Scripture Alone を検索してください。</span><span data-only="mac">デスクトップや通知センターに追加できます。デスクトップを右クリックして「ウィジェットを編集」を選び、Scripture Alone を検索してください。</span><span data-only="android">ホーム画面に追加できます。ホーム画面の何もないところを長押しし、「ウィジェット」をタップして、Scripture Alone を探してください。</span>聖句はいま読んでいる訳で表示されます。</p>
+      <h3 data-only="apple">Apple Watch</h3>
+      <p data-only="apple">Watch App には NASB 2020 が内蔵されていて、iPhone が近くになくてもオフラインで読めます。iPhone で選んだ訳に合わせて表示され（ほかの聖書を読んでいれば iPhone から送られます）、今日の聖句、お気に入り、ハイライト、メモ、リーダー、読み上げが、あなたの選んだアクセントカラーで使えます。文字盤にコンプリケーションを追加すれば、その日の聖句が表示されます。</p>
+      <h3 data-only="android">Wear OS</h3>
+      <p data-only="android">Wear OS アプリには NASB 2020 が内蔵されていて、スマートフォンが近くになくてもオフラインで読めます。スマートフォンで選んだ訳に合わせて表示され（ほかの聖書を読んでいればスマートフォンから送られます。利用条件が許せば、読み込んだ聖書も送られます）、今日の聖句、お気に入り、ハイライト、メモ、リーダー、読み上げが、あなたの選んだアクセントカラーで使えます。タイルを追加するか、文字盤にコンプリケーションを追加すれば、その日の聖句が表示されます。</p>
     </div>
-    <figure><img class="watch" src="IMG/w02-verse.png" alt=""><figcaption>Apple Watch</figcaption></figure>
+    <figure><img class="watch" src="IMG/w02-verse.png" alt=""><figcaption><span data-only="apple">Apple Watch</span><span data-only="android">Wear OS</span></figcaption></figure>
   </div>
-  <h3>Siri とショートカット</h3>
-  <p>どの訳でも節を調べ、聖句画像を作り、メモやお気に入りを探せます。「Scripture Alone でメモを検索」のように話しかけるか、ショートカット App で自分だけの手順を組み立ててください。</p>
-  <h3>Spotlight</h3>
-  <p><span class="ui">Aa</span> で <span class="ui">Spotlight 内のメモ</span> と <span class="ui">Spotlight のお気に入り</span> をオンにすると、デバイスの検索から見つけられます。</p>
+  <div data-only="apple">
+    <h3>Siri とショートカット</h3>
+    <p>どの訳でも節を調べ、聖句画像を作り、メモやお気に入りを探せます。「Scripture Alone でメモを検索」のように話しかけるか、ショートカット App で自分だけの手順を組み立ててください。</p>
+    <h3>Spotlight</h3>
+    <p><span class="ui">Aa</span> で <span class="ui">Spotlight 内のメモ</span> と <span class="ui">Spotlight のお気に入り</span> をオンにすると、<span data-only="pdf">デバイス</span><span data-only="app"><span data-only="iphone">iPhone </span><span data-only="ipad">iPad </span><span data-only="mac">Mac </span></span>の検索から見つけられます。</p>
+  </div>
+  <div data-only="android">
+    <h3>アプリのショートカット</h3>
+    <p>Scripture Alone のアイコンを長押しすると、<span class="ui">今日の聖句</span>、<span class="ui">続きを読む</span>、<span class="ui">検索</span>、<span class="ui">新規ノート</span>、<span class="ui">お気に入り</span> が表示されます。</p>
+    <h3>デバイスの検索</h3>
+    <p><span class="ui">Aa</span> で <span class="ui">検索にノートを表示</span> と <span class="ui">検索にお気に入りを表示</span> をオンにすると、デバイスの検索から見つけられます（Android 12 以降）。</p>
+  </div>
 </section>
 
 <section class="chapter">
   <h2>同期とプライバシー</h2>
   <ul>
     <li>広告、トラッカー、分析、アカウントは一切ありません。あなたのデータを預かる私たちのサーバーもありません。今も、これからもです。</li>
-    <li>ハイライト、メモ、お気に入り、読んでいる位置、設定は、<b>あなた自身の iCloud</b> だけを通して同期されます。デバイスの「設定」で Scripture Alone の iCloud がオンになっていることを確認してください。</li>
-    <li>入力した API キーは、iCloud キーチェーンを通してエンドツーエンドで暗号化されて同期されます。</li>
-    <li>読み込んだ聖書は、あなたの iCloud を通してあなたのデバイスにだけ届き、ほかの誰のデバイスにも届きません。</li>
+    <li data-only="apple">ハイライト、メモ、お気に入り、読んでいる位置、設定は、<b>あなた自身の iCloud</b> だけを通して同期されます。<span data-only="pdf">デバイスの「設定」</span><span data-only="app"><span data-only="iphone">iPhone の「設定」</span><span data-only="ipad">iPad の「設定」</span><span data-only="mac">「システム設定」</span></span>で Scripture Alone の iCloud がオンになっていることを確認してください。</li>
+    <li data-only="apple">入力した API キーは、iCloud キーチェーンを通してエンドツーエンドで暗号化されて同期されます。</li>
+    <li data-only="apple">読み込んだ聖書は、あなたの iCloud を通してあなたのデバイスにだけ届き、ほかの誰のデバイスにも届きません。</li>
+    <li data-only="android">ハイライト、メモ、お気に入り、読んでいる位置、設定は、デバイスの中に保存されます。あなた自身の Google アカウントへの <b>Android のバックアップ</b> によって、新しいデバイスや再インストール後に設定が戻ります。ハイライト、メモ、お気に入りも、バックアップに収まる限り戻ります。使用中の2台のデバイスの間で同期されることはありません。</li>
+    <li data-only="android">入力した API キーはデバイスに暗号化して保存され、Google の Block Store を通してエンドツーエンドで暗号化されたままバックアップされます。</li>
+    <li data-only="android">読み込んだ聖書は、デバイスの中だけにあります。</li>
     <li>説教のスライドと聖句画像は、デバイス上で処理されます。</li>
-    <li>思い出の聖書は、あなたが自分で手渡すファイルです。家族との共有はあなたがタップしたときにだけ始まり、共有を停止すると共有コピーは削除されます。</li>
+    <li><span data-only="apple">思い出の聖書は、あなたが自分で手渡すファイルです。家族との共有はあなたが<span data-only="iphone ipad">タップ</span><span data-only="mac">クリック</span>したときにだけ始まり、共有を停止すると共有コピーは削除されます。</span><span data-only="android">思い出の聖書は、あなたが自分で手渡すファイルです。</span></li>
     <li>Scripture Alone はオープンソース（AGPL）なので、何をしているかを誰でも正確に確かめられます：<a href="https://github.com/blaineam/Scripture-Alone">github.com/blaineam/Scripture-Alone</a></li>
   </ul>
   <p class="closing">NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. <a href="https://www.lockman.org">www.Lockman.org</a><br>
@@ -446,8 +474,14 @@
   <p>はい、その間は NASB 2020 を読めます。失敗したときはバナーに <span class="ui">再試行</span> が出ます。</p>
   <h3>ESV、CSB、NKJV が最初から入っていないのはなぜですか？</h3>
   <p>出版社の訳なので、収録にはライセンスが必要です（申請中）。それまでは自分のキー（第5章）か、お持ちのファイルの読み込み（第4章）で読めます。</p>
-  <h3>メモがほかのデバイスに表示されません。</h3>
-  <p>両方のデバイスで同じ Apple アカウントにサインインし、Scripture Alone の iCloud をオンにして、Wi-Fi で少し待ってください。</p>
+  <div data-only="apple">
+    <h3>メモがほかのデバイスに表示されません。</h3>
+    <p>両方のデバイスで同じ Apple アカウントにサインインし、Scripture Alone の iCloud をオンにして、Wi-Fi で少し待ってください。</p>
+  </div>
+  <div data-only="android">
+    <h3>新しいデバイスにメモを移せますか？</h3>
+    <p>はい。古いデバイスから、またはそのバックアップから新しいデバイスを設定すれば、Android のバックアップを通して移ります（ライブラリがバックアップに収まる場合）。デバイスの「設定」でバックアップがオンになっていることを確認してください。Scripture Alone は、使用中の2台のデバイスの間では同期しません。</p>
+  </div>
   <h3>読み込むと「空白」があると表示されます。</h3>
   <p>節を省いている翻訳もあれば、ファイルが不完全なこともあります。読み込めた部分は読めます。整った版のファイルならたいてい解決します。</p>
   <h3>本当に無料ですか？</h3>

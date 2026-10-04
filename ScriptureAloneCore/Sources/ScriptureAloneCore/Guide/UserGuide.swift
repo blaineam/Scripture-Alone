@@ -221,6 +221,22 @@ public enum UserGuidePackage {
         return "en"
     }
 
+    /// The device a guide edition is written for: each speaks of the reader's own device.
+    public enum Device: String, Sendable, CaseIterable { case iphone, ipad, mac }
+
+    /// The package name for a language on a device: `en` for iPhone (the name every Apple device
+    /// read before editions existed), `ipad-en`, `mac-en`. Android's are `android-en`.
+    public static func edition(language: String, device: Device) -> String {
+        device == .iphone ? language : "\(device.rawValue)-\(language)"
+    }
+
+    /// The package to read: the device's own edition when the index lists it, else the plain
+    /// language (the iPhone edition), so a newer app never waits on a package CI hasn't built yet.
+    public static func entryName(edition: String, language: String, index: Index) -> String {
+        index.packages[edition] != nil ? edition : language
+    }
+
+    /// `language` is a package name: a language code or an edition (`ipad-en`).
     public static func packageURL(language: String) -> URL {
         releaseBase.appendingPathComponent("UserGuide-\(language).zip")
     }
@@ -282,6 +298,7 @@ public enum UserGuidePackage {
 
     /// Whether the index lists a different package for `language` than the copy held (whose
     /// SHA-256 is `held`, nil when there is none). A language the index doesn't list is left alone.
+    /// `language` is the package name read (see `entryName`).
     public static func needsUpdate(held: String?, index: Index, language: String) -> Bool {
         guard index.schema <= UserGuide.supportedSchema, let entry = index.packages[language] else { return false }
         return held?.lowercased() != entry.sha256.lowercased()

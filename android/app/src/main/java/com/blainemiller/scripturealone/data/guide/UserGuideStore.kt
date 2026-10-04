@@ -34,7 +34,8 @@ class UserGuideStore(private val root: File, private val transport: Transport = 
         fun image(name: String): File = File(directory, "images/$name")
     }
 
-    fun directory(language: String) = File(root, language)
+    /** Where [language]'s copy (Android's edition, or the plain one until that exists) is kept. */
+    fun directory(language: String) = File(root, UserGuidePackage.edition(language))
 
     /** The copy held for [language], if there is a readable one. Blocking (a small file read). */
     fun held(language: String): Copy? {
@@ -52,10 +53,11 @@ class UserGuideStore(private val root: File, private val transport: Transport = 
         val index = UserGuidePackage.parseIndex(
             transport.get(UserGuidePackage.INDEX_URL, 1L * 1024 * 1024).toString(Charsets.UTF_8),
         )
-        val entry = index[language] ?: throw GuideFormatException("the index has no \"$language\" guide")
+        val name = UserGuidePackage.entryName(language, index)
+        val entry = index[name] ?: throw GuideFormatException("the index has no \"$language\" guide")
         val dir = directory(language)
         if (UserGuidePackage.recordedSha(dir) == entry.sha256 && UserGuidePackage.load(dir) != null) return null
-        val data = transport.get(UserGuidePackage.packageUrl(language), UserGuidePackage.MAX_PACKAGE_BYTES)
+        val data = transport.get(UserGuidePackage.packageUrl(name), UserGuidePackage.MAX_PACKAGE_BYTES)
         if (!UserGuidePackage.verify(data, entry.sha256)) throw GuideFormatException("the download doesn't match the index")
         val guide = UserGuidePackage.unpack(data, dir, entry.sha256)
         return Copy(language, guide, dir)
