@@ -25,10 +25,19 @@
  *   WEB_USAGE             a sentence about the website, e.g. "The NASB is not offered on the website."
  *   EXTRA_NOTES           any further bullet lines
  *
+ * Hopps (local runs): when ~/.hopps/hopps.db exists (or HOPPS_DB points at one) the figures come from
+ * Hopps' archive of the same store reports first. Hopps keeps every day it collects, so Apple's
+ * daily sales still count after App Store Connect drops them at 365 days; it also supplies Apple
+ * active devices (App Analytics) and the website's page views, which the APIs path leaves to hand.
+ * A store whose days/months Hopps doesn't fully cover falls back to the APIs above (or is noted).
+ *   --no-hopps            ignore Hopps and use the APIs only
+ *
  * A source without credentials is left as "—" and said so in the notes; the report is still written.
  * No figure is invented: "—" means "not fetched", 0 means the store reported zero.
  */
-import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, appendFileSync, existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import { createPrivateKey, createSign, sign } from 'node:crypto';
 import { gunzipSync } from 'node:zlib';
 
@@ -208,6 +217,46 @@ async function play(from, to) {
 	return totals;
 }
 
+// ── Hopps: the local archive of the same store reports ───────────────────────────────
+const HOPPS_APP = 'Scripture Alone';
+/** Figures from Hopps for the counted range, per store only when Hopps covers every day/month of it. */
+async function hopps(from, to) {
+	const path = process.env.HOPPS_DB || join(homedir(), '.hopps', 'hopps.db');
+	if (!existsSync(path)) return null;
+	const { DatabaseSync } = await import('node:sqlite');
+	const db = new DatabaseSync(path, { readOnly: true });
+	const total = (source, metric) => db.prepare(`SELECT coalesce(sum(value), 0) v FROM facts WHERE source = ? AND app = ? AND metric = ? AND dim = '' AND date BETWEEN ? AND ?`)
+		.get(source, HOPPS_APP, metric, iso(from), iso(to)).v;
+	const last = (source, metric) => db.prepare(`SELECT date, value FROM facts WHERE source = ? AND app = ? AND metric = ? AND dim = '' AND date BETWEEN ? AND ? ORDER BY date DESC LIMIT 1`)
+		.get(source, HOPPS_APP, metric, iso(from), iso(to)) || null;
+	const kv = (k) => db.prepare('SELECT v FROM kv WHERE k = ?').get(k)?.v ?? null;
+	const out = { apple: null, play: null, appleActive: null, web: null };
+
+	// Apple: Hopps marks each day of Sales and Trends it has read ("done", or "empty" for no sales).
+	const missingDays = [];
+	for (let d = from; d <= to; d = addDays(d, 1)) if (!kv(`asc-sales:${iso(d)}`)) missingDays.push(iso(d));
+	if (!missingDays.length) out.apple = { downloads: total('asc-sales', 'downloads'), redownloads: total('asc-sales', 'redownloads'), updates: total('asc-sales', 'updates') };
+	else out.appleGap = missingDays;
+
+	// Google Play: Hopps marks each monthly installs report it has read.
+	const missingMonths = months(from, to).filter((m) => !kv(`play-rep:${PLAY_PACKAGE}:${m.key.replace('-', '')}`)).map((m) => m.key);
+	if (!missingMonths.length) {
+		const active = last('play', 'play_active_device_installs');
+		out.play = { downloads: total('play', 'play_daily_user_installs'), updates: total('play', 'play_update_events'), active: active ? active.value : null };
+	} else out.playGap = missingMonths;
+
+	// Apple active devices (App Analytics, "Unique Devices" with sessions) on the last day Hopps has.
+	const act = last('asc-analytics', 'active_devices');
+	if (act) out.appleActive = act;
+
+	// The app's page on the website: page views from people (Hopps sets crawlers aside), Cloudflare edge data.
+	const web = db.prepare(`SELECT coalesce(sum(value), 0) v, min(date) first FROM facts WHERE source = 'web' AND app = ? AND metric = 'page_views' AND dim = '' AND date BETWEEN ? AND ?`)
+		.get(HOPPS_APP, iso(from), iso(to));
+	if (web.first) out.web = { views: web.v, since: web.first };
+	db.close();
+	return out;
+}
+
 // ── fill the template ─────────────────────────────────────────────────────────────────
 const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('en-US'));
 const sum = (...xs) => (xs.some((x) => x == null) ? (xs.every((x) => x == null) ? null : xs.reduce((a, x) => a + (x ?? 0), 0)) : xs.reduce((a, x) => a + x, 0));
@@ -224,9 +273,19 @@ async function main() {
 	if (countFrom > to) throw new Error(`the NASB was not available during ${iso(from)}–${iso(to)}`);
 	log(`period ${iso(from)}–${iso(to)}, counting from ${iso(countFrom)}`);
 
-	const [a, p] = [await apple(countFrom, to), await play(countFrom, to)];
+	const h = args['no-hopps'] ? null : await hopps(countFrom, to);
+	if (h) log(`Hopps archive found — Apple ${h.apple ? 'covered' : `missing ${h.appleGap.length} day(s)`}, Play ${h.play ? 'covered' : `missing ${h.playGap.join(', ')}`}`);
+	const a = h?.apple || await apple(countFrom, to);
+	const p = h?.play || await play(countFrom, to);
+	if (h && !h.apple) notes.push(`- Hopps is missing Apple's daily sales for ${h.appleGap.length} day(s) (${h.appleGap[0]}…${h.appleGap.at(-1)}), so Apple's figures came from the App Store Connect API${a ? '' : ' — which was not configured'}.`);
+	if (h && !h.play) notes.push(`- Hopps is missing Google Play's installs report for ${h.playGap.join(', ')}, so Play's figures came from the Play bucket${p ? '' : ' — which was not configured'}.`);
+	if (h?.apple || h?.play) notes.push(`- ${[h.apple && 'Apple', h.play && 'Google Play'].filter(Boolean).join(' and ')} figures are from Hopps' archive of the stores' own reports (Sales and Trends; Play installs report).`);
 	if (a && a.downloads + a.redownloads + a.updates === 0) notes.push('- Apple reported no units for this app in the counted range; check the vendor number and the key\'s Sales access.');
-	const appleActive = process.env.APPLE_ACTIVE ? Number(process.env.APPLE_ACTIVE.replace(/,/g, '')) : null;
+	const appleActive = process.env.APPLE_ACTIVE ? Number(process.env.APPLE_ACTIVE.replace(/,/g, '')) : (h?.appleActive?.value ?? null);
+	if (!process.env.APPLE_ACTIVE && h?.appleActive) notes.push(`- Apple active devices is App Analytics' unique devices with sessions on ${h.appleActive.date} (from Hopps).`);
+	const webUsage = process.env.WEB_USAGE || (h?.web
+		? `The NASB is not offered on the website; it is distributed only inside the app. The app's page on the website had ${fmt(h.web.views)} page views from people${h.web.since > iso(countFrom) ? ` between ${longDate(day(h.web.since))} (when measurement began) and ${longDate(to)}` : ' during the counted period'} (automated crawlers excluded).`
+		: null);
 
 	const values = {
 		PERIOD_LABEL: `${longDate(from)} – ${longDate(to)}`,
@@ -240,7 +299,7 @@ async function main() {
 		TOTAL_DOWNLOADS: fmt(sum(a?.downloads ?? null, p?.downloads ?? null)),
 		TOTAL_UPDATES: fmt(sum(a?.updates ?? null, p?.updates ?? null)),
 		TOTAL_ACTIVE: fmt(sum(appleActive, p?.active ?? null)),
-		WEB_USAGE: process.env.WEB_USAGE || 'The NASB is not offered on the website; it is distributed only inside the app.',
+		WEB_USAGE: webUsage || 'The NASB is not offered on the website; it is distributed only inside the app.',
 		EXTRA_NOTES: (process.env.EXTRA_NOTES || '').trim(),
 	};
 	const template = readFileSync(TEMPLATE, 'utf8').replace(/^<!--[\s\S]*?-->\s*/, '');

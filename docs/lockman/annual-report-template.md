@@ -9,8 +9,10 @@
 
   Due: between October 1 and November 30 each year, for the twelve months ending September 30.
 
-  scripts/lockman-report.mjs fills every {{PLACEHOLDER}} it can from App Store Connect and Google
-  Play, and leaves the rest as "—" for you to fill in. The lockman-report workflow runs it every
+  scripts/lockman-report.mjs fills every {{PLACEHOLDER}} it can, from Hopps' local archive of the
+  store reports when it's run on the Mac (which also supplies Apple active devices and the website's
+  page views, and keeps Apple's daily sales past their 365-day expiry), otherwise from App Store
+  Connect and Google Play directly, and leaves the rest as "—" for you to fill in. The lockman-report workflow runs it every
   October 10 and attaches the filled-in copy to the run. To change the wording, edit this file;
   the script only substitutes placeholders and never rewrites the text around them.
 -->
