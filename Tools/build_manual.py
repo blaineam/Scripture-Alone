@@ -41,7 +41,7 @@ def pdf_path(locale: str) -> Path:
 
 def sources(locale: str) -> list[Path]:
     return [MANUAL / "template.html", MANUAL / "content" / f"{locale}.html",
-            *sorted((MANUAL / "images" / locale).glob("*.jpg"))]
+            *sorted((MANUAL / "images" / locale).glob("*.png"))]
 
 
 def build(locale: str) -> None:

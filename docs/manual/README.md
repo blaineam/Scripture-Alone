@@ -8,7 +8,7 @@ Android). One PDF per app language, written to `ScriptureAlone/Resources/Manual/
 | `template.html` | Page size (6 × 9 in), print styles, the drawn "mock" screens and callouts |
 | `content/en.html` | The English text — the source the other eight are translated from |
 | `content/<locale>.html` | zh-Hans, ja, de-DE, fr-FR, es-ES, ko, pt-BR, it |
-| `images/<locale>/` | Screenshots from `screenshots/`, framed in Apple's device bezels (Monkr's `static/devices/`) by `Tools/frame_manual_screens.swift` |
+| `images/<locale>/` | Screenshots from `screenshots/`, framed in Apple's device bezels (Monkr's `static/devices/`) by `Tools/frame_manual_screens.swift` as transparent PNGs, then `pngquant --quality 65-90` |
 
 ```bash
 python3 Tools/build_manual.py           # all nine PDFs (headless Chrome)
@@ -21,8 +21,8 @@ Framing a screenshot (iPhone 17 Pro Max for the 6.9" captures, Watch Series 10 4
 ```bash
 swiftc -O Tools/frame_manual_screens.swift -o /tmp/frame
 D=~/Documents/scripts/monkr/static/devices
-/tmp/frame $D/iphone-17-pro-max/silver.png shot.png 165 358 160 640 docs/manual/images/<locale>/01-reader.jpg
-/tmp/frame $D/apple-watch-series-10-46mm/silver.png watch.png 72 192 112 420 docs/manual/images/<locale>/w02-verse.jpg
+/tmp/frame $D/iphone-17-pro-max/silver.png shot.png 165 358 160 640 docs/manual/images/<locale>/01-reader.png
+/tmp/frame $D/apple-watch-series-10-46mm/silver.png watch.png 72 192 112 420 docs/manual/images/<locale>/w02-verse.png
 ```
 
 ## Keeping it right
