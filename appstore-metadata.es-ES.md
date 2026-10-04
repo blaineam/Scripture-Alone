@@ -11,19 +11,19 @@ Biblia Scripture Alone
 Biblia privada y sin conexión
 
 ## description
-Scripture Alone es una Biblia para iPhone, iPad, Mac y Apple Watch, creada con un solo fin: estudiar la palabra de Dios sin nada en medio. Sin anuncios. Sin rastreadores. Sin cuentas. La Biblia vive en tu dispositivo: funciona en cualquier lugar, con o sin conexión.
+Scripture Alone es una Biblia para iPhone, iPad, Mac y Apple Watch, creada con un solo fin: estudiar la palabra de Dios sin nada en medio. Sin anuncios. Sin rastreadores. Sin cuentas. La Biblia vive en tu dispositivo: funciona en todas partes, con o sin conexión.
 
 Lee toda la Biblia sin conexión
-La NASB 2020 viene ya en tu dispositivo. La NASB 1995, la American Standard Version, la Berean Standard Bible y la King James Version se descargan una sola vez, al elegirlas. Búsqueda de texto completo, las Palabras de Cristo en rojo, la poesía como poesía y las notas a un toque.
+La NASB 2020 viene ya en tu dispositivo. La NASB 1995, la American Standard Version, la Berean Standard Bible y la King James Version se descargan al elegirlas. Búsqueda de texto completo, las Palabras de Cristo en rojo, la poesía como poesía y las notas a un toque.
 
 Lo que la Biblia dice de lo que estás viviendo
 Temas reúne pasajes para 72 temas —ansiedad, duelo, soledad, miedo, matrimonio, espera y más— en la traducción que lees. Escribe un sentimiento como «ansioso» en Ir a y aparece su tema. En inglés, además, la Nave's Topical Bible de la A a la Z.
 
 Trae tus propias Biblias
-Importa un ePub sin DRM, un PDF de la Biblia con capa de texto o un archivo USFM, o explora las traducciones de licencia abierta de eBible.org. Una Biblia de estudio trae sus notas, introducciones, artículos y mapas; las Palabras de Cristo siguen en rojo; y tus importaciones llegan a tus otros dispositivos por tu propio iCloud. La ESV, la CSB y la NKJV, con tu clave de editorial o desde una copia importada.
+Importa un ePub sin DRM, un PDF de la Biblia con capa de texto o un archivo USFM, o explora las traducciones de licencia abierta de eBible.org. Una Biblia de estudio trae sus notas, introducciones, artículos y mapas; las Palabras de Cristo siguen en rojo; y lo importado llega a tus otros dispositivos por tu iCloud. La ESV, la CSB y la NKJV, con tu clave de editorial o desde una copia importada.
 
 En tu idioma
-También en chino, japonés, alemán, francés, español, coreano, portugués e italiano, cada uno con su Biblia completa.
+También en chino, japonés, alemán, francés, español, coreano, portugués e italiano, cada uno con su Biblia completa. Incluye una Guía de uso ilustrada, en tu idioma, que recorre cada función.
 
 Ponla a tu gusto
 Siete tipografías, tamaño e interlineado ajustables, cinco aspectos, párrafos o versículo a versículo, Dynamic Type, dos columnas en pantallas anchas y desplazamiento automático al capítulo siguiente.
@@ -50,10 +50,10 @@ En tu muñeca y en la pantalla de inicio
 Widgets de Versículo del día y Favoritas, y una app para Apple Watch con la NASB 2020 incluida y complicación. Lee sin conexión, sigue la traducción de tu iPhone y lleva tus subrayados, favoritos y notas, con tu color de acento.
 
 Una Biblia para heredar
-Crea una Biblia de recuerdo: un archivo con tus subrayados, tus notas y una dedicatoria, que tu familia podrá leer tal como tú la marcaste: la «Biblia de papá» digital.
+Crea una Biblia de recuerdo: un archivo con tus subrayados, tus notas y una dedicatoria, que tu familia podrá leer tal como la marcaste: la «Biblia de papá» digital.
 
 Privada por diseño
-Tus subrayados, notas y favoritos se sincronizan entre tus dispositivos por tu iCloud privado. No hay servidor ni cuenta, y el desarrollador nunca ve tus datos. Es de código abierto bajo la AGPL: cualquiera puede ver exactamente qué hace.
+Subrayados, notas y favoritos se sincronizan por tu iCloud privado. Sin servidor ni cuenta; el desarrollador nunca ve tus datos. Es de código abierto bajo la AGPL: cualquiera puede ver qué hace.
 
 Creada para ayudar a estudiar la palabra de Dios y acercarse más a Cristo.
 

@@ -9,10 +9,10 @@ Scripture Alone: Biblia
 Biblia privada y sin conexión: temas para días difíciles, estudio y notas.
 
 ## full_description
-Scripture Alone es una Biblia para teléfonos y tabletas Android y Wear OS, hecha con un solo propósito: estudiar la Palabra de Dios sin nada que estorbe. Sin anuncios. Sin rastreadores. Sin cuentas. La aplicación está por completo en español y, tras el primer inicio, todo funciona sin conexión.
+Scripture Alone es una Biblia para teléfonos y tabletas Android y Wear OS, hecha con un solo propósito: estudiar la Palabra de Dios sin nada que estorbe. Sin anuncios. Sin rastreadores. Sin cuentas. La aplicación está por completo en español y, tras el primer inicio, todo funciona sin conexión. Incluye una Guía de uso ilustrada, en tu idioma, que recorre cada función.
 
 Lee toda la Biblia, sin conexión
-La Reina-Valera 1909 se descarga la primera vez que abres la aplicación y desde entonces se lee sin conexión, con sus nombres de libros y su numeración de siempre. En inglés, la NASB 2020 viene integrada, y también están la NASB 1995, la ASV, la BSB y la KJV. Búsqueda de texto completo, las Palabras de Cristo en rojo, la poesía como poesía y las notas a un toque.
+La Reina-Valera 1909 se descarga en el primer inicio y desde entonces se lee sin conexión, con sus nombres de libros y su numeración de siempre. En inglés, la NASB 2020 viene integrada, y también están la NASB 1995, la ASV, la BSB y la KJV. Búsqueda de texto completo, las Palabras de Cristo en rojo, la poesía como poesía y las notas a un toque.
 
 Lo que la Biblia dice de lo que estás viviendo
 Temas reúne pasajes para 72 temas de la vida —ansiedad, duelo, soledad, miedo, matrimonio, espera y más— en la traducción que lees. Escribe un sentimiento como «ansioso» en Ir a y aparece su tema. En inglés, además, la Nave's Topical Bible de la A a la Z.
@@ -33,7 +33,7 @@ Fotografía la diapositiva del sermón
 Fotografía la diapositiva en la iglesia y Scripture Alone empieza tu nota: con título, enlazada a todos sus pasajes y con sus puntos listos para completar. La foto se lee en tu dispositivo y nunca se sube.
 
 Escucha
-Escucha cualquier capítulo en voz alta con las voces de tu teléfono, con el versículo señalado al avanzar: con la pantalla apagada, desde la pantalla de bloqueo o los auriculares, y con temporizador.
+Escucha cualquier capítulo con las voces de tu teléfono, con el versículo señalado al avanzar: con la pantalla apagada, desde la pantalla de bloqueo o los auriculares, y con temporizador.
 
 Modo de estudio, a un toque
 Referencias cruzadas por relevancia, el hebreo y el griego palabra por palabra con análisis morfológico y números de Strong, y el Contexto de cada capítulo: un resumen, un mapa de los lugares que nombra, su época en una cronología y tablas de los reyes, los viajes de Pablo, las tribus y las fiestas de Israel.
@@ -42,13 +42,13 @@ Comparte con belleza
 Diseña la imagen de un versículo con ocho plantillas, o comparte un enlace que la reconstruye en cualquier navegador: no se guarda nada en un servidor.
 
 En tu muñeca y en tu pantalla de inicio
-Widgets de Versículo del día y de Favoritas y Notas, y una aplicación para Wear OS con mosaico y complicación que lee sin conexión y lleva tus traducciones importadas, subrayados, favoritos y notas, en el color de acento que elegiste en el teléfono.
+Widgets de Versículo del día y de Favoritas y Notas, y una app para Wear OS con mosaico y complicación que lee sin conexión y lleva tus traducciones importadas, subrayados, favoritos y notas, en el color de acento que elegiste en el teléfono.
 
 Una Biblia para dejar en herencia
-Crea una Biblia de recuerdo: un archivo con tus subrayados, tus notas y una dedicatoria, que tu familia puede abrir y leer tal como tú la marcaste: la «Biblia de papá» en digital. Se abre igual en Android y iPhone.
+Crea una Biblia de recuerdo: un archivo con tus subrayados, tus notas y una dedicatoria, que tu familia puede abrir y leer tal como la marcaste: la «Biblia de papá» en digital. Se abre igual en Android y iPhone.
 
 Privada por diseño
-Tus subrayados, notas y favoritos se quedan en tu dispositivo. No hay servidor ni cuenta, y el desarrollador nunca ve tus datos. Scripture Alone es de código abierto bajo la licencia AGPL, así que cualquiera puede leer exactamente lo que hace.
+Subrayados, notas y favoritos se quedan en tu dispositivo. Sin servidor ni cuenta; el desarrollador nunca ve tus datos. Scripture Alone es de código abierto bajo la licencia AGPL, así que cualquiera puede ver lo que hace.
 
 Hecha para ayudar a estudiar la Palabra de Dios y acercarse más a Cristo.
 

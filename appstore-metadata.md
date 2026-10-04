@@ -9,19 +9,19 @@ Scripture Alone Bible
 Private, offline Bible study
 
 ## description
-Scripture Alone is a Bible for iPhone, iPad, Mac and Apple Watch, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. The Bible lives on your device, so it works anywhere, with or without a connection.
+Scripture Alone is a Bible for iPhone, iPad, Mac and Apple Watch, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. The Bible lives on your device, so it works anywhere, online or off.
 
 Read the whole Bible, offline
-The New American Standard Bible — NASB 2020 is on your device from the moment it installs. The NASB 1995, American Standard Version, Berean Standard Bible and King James Version download once, when you first choose one. Full-text search, the words of Christ in red, poetry set as poetry, and footnotes a tap away.
+The New American Standard Bible — NASB 2020 is on your device from the moment it installs. The NASB 1995, American Standard Version, Berean Standard Bible and King James Version download the first time you choose one. Full-text search, the words of Christ in red, poetry set as poetry, and footnotes a tap away.
 
 What the Bible says about what you're going through
 Topics gathers passages for 72 themes — anxiety, grief, loneliness, fear, marriage, waiting and more — in the translation you read. Type a feeling like "anxious" in Go To and its topic comes up. In English, Nave's Topical Bible is there too, A to Z.
 
 Bring your own Bibles
-Import a DRM-free ePub, a Bible PDF with a text layer or a USFM file you own, or browse the openly licensed translations on eBible.org. A study Bible brings its notes, introductions, essays and maps; the words of Christ carry over in red; and your imports reach your other devices through your own iCloud. The ESV, CSB and NKJV can be read with your own publisher key, or from a copy you've imported.
+Import a DRM-free ePub, a Bible PDF with a text layer or a USFM file you own, or browse the openly licensed translations on eBible.org. A study Bible brings its notes, introductions, essays and maps; the words of Christ carry over in red; and your imports reach your other devices through your iCloud. The ESV, CSB and NKJV can be read with your own publisher key, or from a copy you've imported.
 
 In your language
-Also in Chinese, Japanese, German, French, Spanish, Korean, Portuguese and Italian, each with a whole Bible of its own.
+Also in Chinese, Japanese, German, French, Spanish, Korean, Portuguese and Italian, each with a whole Bible of its own. A built-in, illustrated User Guide in your language covers every feature.
 
 Make it comfortable
 Seven typefaces, adjustable size and spacing, five themes, paragraphs or verse by verse, full Dynamic Type, two columns on a wide screen, and auto-scroll into the next chapter.
@@ -45,13 +45,13 @@ Share beautifully
 Design a verse image from eight templates, or share a link that rebuilds it in any browser — nothing is stored on a server.
 
 On your wrist and Home Screen
-Verse of the Day and Favorites widgets, and an Apple Watch app with the NASB 2020 built in and a complication. It reads offline, follows your iPhone's translation and carries your highlights, favorites and notes, in the accent color you chose on your iPhone.
+Verse of the Day and Favorites widgets, and an Apple Watch app with the NASB 2020 built in and a complication. It reads offline, follows your iPhone's translation and carries your highlights, favorites and notes, in your iPhone's accent color.
 
 A Bible to hand down
-Make a Keepsake Bible: a file of your highlights and notes, with a dedication, that your family can open and read as you marked it — a digital "Dad's Bible".
+Make a Keepsake Bible: a file of your highlights and notes, with a dedication, that your family can read as you marked it — a digital "Dad's Bible".
 
 Private by design
-Your highlights, notes and favorites sync across your devices through your own private iCloud. No server, no account, and the developer never sees your data. Scripture Alone is open source under the AGPL, so anyone can read exactly what it does.
+Your highlights, notes and favorites sync across your devices through your private iCloud. No server, no account; the developer never sees your data. Scripture Alone is open source under the AGPL, so anyone can read what it does.
 
 Built to help people study God's word and grow closer to Christ.
 
@@ -81,7 +81,7 @@ Cross-references, maps, timeline and charts ship inside the app and need no down
 
 Optional iCloud: highlights, notes and favorites sync through the user's own private CloudKit database. The developer operates no server and collects no data.
 
-Quick tour: tap the passage title to jump anywhere (try "jn 3 16"). Tap verses to select them, then highlight, favorite, add a note, copy, share or listen. The book-and-wrench button turns on Study mode (cross-references, commentary, context); the map button opens maps, timeline and charts. The notes button opens the Notes panel, where the camera button scans a sermon slide (the camera is optional; a photo from the library works too). The Aa button holds reading options and Keepsake & Export.
+Quick tour: tap the passage title to jump anywhere (try "jn 3 16"). Tap verses to select them, then highlight, favorite, add a note, copy, share or listen. The book-and-wrench button turns on Study mode (cross-references, commentary, context); the map button opens maps, timeline and charts. The notes button opens the Notes panel, where the camera button scans a sermon slide (the camera is optional; a photo from the library works too). The Aa button holds reading options, Keepsake & Export, and the illustrated User Guide (Aa › User Guide), which reads offline.
 
 Original languages: with a verse selected, choose Original Languages to see it word by word in Hebrew or Greek with parsing, Strong's numbers and a lexicon. This works in every translation; it downloads once on first use.
 

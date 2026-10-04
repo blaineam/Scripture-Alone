@@ -9,7 +9,7 @@ Bible Scripture Alone
 Bible hors ligne et privée : thèmes pour les jours difficiles, étude, notes.
 
 ## full_description
-Scripture Alone est une Bible pour téléphones et tablettes Android et pour Wear OS, conçue pour une seule chose : étudier la Parole de Dieu sans rien entre elle et vous. Aucun traceur, aucun compte. L'application est entièrement en français et, après le premier lancement, tout fonctionne sans connexion.
+Scripture Alone est une Bible pour téléphones et tablettes Android et pour Wear OS, conçue pour une seule chose : étudier la Parole de Dieu sans rien entre elle et vous. Aucun traceur, aucun compte. L'application est entièrement en français et, après le premier lancement, tout fonctionne sans connexion. Un Guide d'utilisation illustré, intégré et dans votre langue, présente chaque fonction.
 
 Lire toute la Bible, hors ligne
 La Louis Segond 1910 se télécharge au premier lancement, puis se lit hors ligne, avec ses noms de livres et sa numérotation. En anglais, la NASB 2020 est intégrée, et la NASB 1995, l'ASV, la BSB et la KJV sont aussi disponibles. Recherche plein texte, Paroles du Christ en rouge, poésie mise en forme, notes à portée de doigt.

@@ -9,7 +9,7 @@ Scripture Alone Lutherbibel
 Private Offline-Bibel: Themen für schwere Tage, Studienhilfen, Predigtnotizen.
 
 ## full_description
-Scripture Alone ist eine Bibel für Android-Smartphones, Tablets und Wear OS, gebaut für eine Sache: Gottes Wort zu studieren, ohne dass etwas im Weg steht. Keine Werbung. Keine Tracker. Keine Konten. Vollständig auf Deutsch – und nach dem ersten Start funktioniert alles auch ohne Verbindung.
+Scripture Alone ist eine Bibel für Android-Smartphones, Tablets und Wear OS, gebaut für eine Sache: Gottes Wort zu studieren, ohne dass etwas im Weg steht. Keine Werbung. Keine Tracker. Keine Konten. Vollständig auf Deutsch – und nach dem ersten Start funktioniert alles auch ohne Verbindung. Ein eingebautes, bebildertes Benutzerhandbuch in deiner Sprache erklärt jede Funktion.
 
 Die ganze Bibel lesen, offline
 Die Lutherbibel 1912 lädt beim ersten Start und liest sich dann offline, mit eigenen Buchnamen und eigener Verszählung. Auf Englisch ist die NASB 2020 eingebaut; dazu kommen NASB 1995, ASV, BSB und KJV. Volltextsuche, die Worte Jesu in Rot, Poesie als Poesie gesetzt, Fußnoten einen Fingertipp entfernt.
@@ -42,13 +42,13 @@ Schön weitergeben
 Gestalte ein Versbild aus acht Vorlagen, oder teile einen Link, der es in jedem Browser neu aufbaut – nichts liegt auf einem Server.
 
 Am Handgelenk und auf dem Startbildschirm
-Widgets für den Vers des Tages und für Favoriten und Notizen, dazu eine Wear-OS-App mit Kachel und Komplikation, die offline liest und deine importierten Übersetzungen, Markierungen, Favoriten und Notizen dabeihat – in der Akzentfarbe, die du auf dem Telefon gewählt hast.
+Widgets für den Vers des Tages und für Favoriten und Notizen, dazu eine Wear-OS-App mit Kachel und Komplikation, die offline liest und deine importierten Übersetzungen, Markierungen, Favoriten und Notizen dabeihat – in deiner Akzentfarbe vom Telefon.
 
 Eine Bibel zum Weitergeben
 Erstelle eine Erinnerungs-Bibel: eine Datei mit deinen Markierungen und Notizen samt Widmung, die deine Familie so lesen kann, wie du sie markiert hast – eine digitale „Bibel von Papa“. Sie öffnet sich unter Android wie auf dem iPhone.
 
 Von Grund auf privat
-Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein Konto, und der Entwickler sieht deine Daten nie. Scripture Alone ist quelloffen unter der AGPL: Jeder kann nachlesen, was die App tut.
+Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein Konto; der Entwickler sieht deine Daten nie. Scripture Alone ist quelloffen unter der AGPL: Jeder kann nachlesen, was die App tut.
 
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 

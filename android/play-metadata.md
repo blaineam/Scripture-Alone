@@ -12,7 +12,7 @@ Scripture Alone Bible
 A private, offline Bible: topics for hard days, study tools, sermon notes.
 
 ## full_description
-Scripture Alone is a Bible for Android phones, tablets and Wear OS, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. Reading, searching, highlighting and notes work anywhere, with or without a connection.
+Scripture Alone is a Bible for Android phones, tablets and Wear OS, built for one thing: studying God's word without anything in the way. No ads. No trackers. No accounts. Reading, searching, highlighting and notes work anywhere, with or without a connection. A built-in, illustrated User Guide in your language covers every feature.
 
 Read the whole Bible, offline
 The New American Standard Bible — NASB 2020 is on your device from the moment it installs, and the Berean Standard Bible arrives with it; the NASB 1995, the American Standard Version and the King James Version download once, when you first choose one. Full-text search, the words of Christ in red, poetry set as poetry, and footnotes a tap away.

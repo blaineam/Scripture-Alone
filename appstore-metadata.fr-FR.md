@@ -23,7 +23,7 @@ Apportez vos Bibles
 Importez un ePub sans DRM, un PDF de Bible avec couche texte ou un USFM, ou parcourez les traductions libres d'eBible.org. Une Bible d'étude apporte notes, introductions, articles et cartes ; les Paroles du Christ restent en rouge ; vos imports vous suivent via votre iCloud. L'ESV, la CSB et la NKJV se lisent avec votre clé d'éditeur ou un exemplaire importé.
 
 Dans votre langue
-Également en chinois, japonais, allemand, français, espagnol, coréen, portugais et italien, chacun avec sa Bible.
+Également en chinois, japonais, allemand, français, espagnol, coréen, portugais et italien, chacun avec sa Bible. Un Guide d'utilisation illustré, intégré et dans votre langue, présente chaque fonction.
 
 Comme vous aimez lire
 Sept polices, taille et interligne réglables, cinq apparences, en paragraphes ou verset par verset, Dynamic Type, deux colonnes sur grand écran et défilement automatique vers le chapitre suivant.

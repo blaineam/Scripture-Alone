@@ -11,49 +11,49 @@ Scripture Alone Bibel
 Bibelstudium: privat, offline
 
 ## description
-Scripture Alone ist eine Bibel für iPhone, iPad, Mac und Apple Watch – gebaut für eines: Gottes Wort studieren, ohne dass etwas im Weg steht. Keine Werbung. Kein Tracking. Keine Konten. Die Bibel liegt auf deinem Gerät – überall nutzbar, mit oder ohne Verbindung.
+Scripture Alone ist eine Bibel für iPhone, iPad, Mac und Apple Watch – gebaut für eines: Gottes Wort studieren, ohne dass etwas im Weg steht. Keine Werbung. Kein Tracking. Keine Konten. Die Bibel liegt auf deinem Gerät – überall nutzbar, online wie offline.
 
 Die ganze Bibel lesen, offline
-Die New American Standard Bible – NASB 2020 ist ab Installation dabei. NASB 1995, ASV, BSB und KJV lädst du einmal beim ersten Auswählen. Volltextsuche, die Worte Jesu in Rot, Poesie als Poesie gesetzt, Fußnoten einen Tipp entfernt.
+Die New American Standard Bible – NASB 2020 ist ab Installation dabei. NASB 1995, ASV, BSB und KJV lädst du beim ersten Auswählen. Volltextsuche, die Worte Jesu in Rot, Poesie als Poesie gesetzt, Fußnoten einen Tipp entfernt.
 
 Was die Bibel zu dem sagt, was dich bewegt
 Themen sammelt Stellen zu 72 Lebensthemen – Angst, Trauer, Einsamkeit, Furcht, Ehe, Warten und mehr – in der Übersetzung, die du liest. Tippe ein Gefühl wie „ängstlich“ in „Gehe zu“ – das Thema erscheint. Auf Englisch dazu Nave's Topical Bible von A bis Z.
 
 Eigene Bibeln mitbringen
-Importiere ein DRM-freies ePub, ein Bibel-PDF mit Textebene oder eine eigene USFM-Datei, oder stöbere in offen lizenzierten Übersetzungen auf eBible.org. Eine Studienbibel bringt Anmerkungen, Einleitungen, Essays und Karten mit, die Worte Jesu bleiben rot, und deine Importe kommen per iCloud auf deine anderen Geräte. ESV, CSB und NKJV liest du mit eigenem Verlagsschlüssel – oder aus einer importierten Ausgabe.
+Importiere ein DRM-freies ePub, ein Bibel-PDF mit Textebene oder eine eigene USFM-Datei, oder stöbere in offen lizenzierten Übersetzungen auf eBible.org. Eine Studienbibel bringt Anmerkungen, Einleitungen, Essays und Karten mit, die Worte Jesu bleiben rot, deine Importe kommen per iCloud auf all deine Geräte. ESV, CSB und NKJV liest du mit eigenem Verlagsschlüssel – oder aus einer importierten Ausgabe.
 
 In deiner Sprache
-Auch auf Chinesisch, Japanisch, Deutsch, Französisch, Spanisch, Koreanisch, Portugiesisch und Italienisch – jede mit einer eigenen Bibel.
+Auch auf Chinesisch, Japanisch, Deutsch, Französisch, Spanisch, Koreanisch, Portugiesisch und Italienisch – jede mit einer eigenen Bibel. Ein eingebautes, bebildertes Benutzerhandbuch in deiner Sprache erklärt jede Funktion.
 
 Mach es dir bequem
-Sieben Schriften, Größe und Zeilenabstand einstellbar, fünf Themes, Absätze oder Vers für Vers, Dynamic Type, zwei Spalten auf breiten Bildschirmen, Auto-Scroll ins nächste Kapitel.
+Sieben Schriften, Größe und Abstand einstellbar, fünf Themes, Absätze oder Vers für Vers, Dynamic Type, zwei Spalten auf breitem Display, Auto-Scroll ins nächste Kapitel.
 
 Direkt hinspringen
-Tippe „joh 3 16“ oder „röm 8:28-39“, um zur Stelle zu springen – oder suche jedes Wort und jede Wendung.
+Tippe „joh 3 16“ oder „röm 8:28-39“, um zur Stelle zu springen – oder suche nach Wort oder Wendung.
 
 Markieren, notieren, merken
-Markiere in fünf Farben, merke dir Verse und hänge Notizen an eine oder mehrere Stellen – etwa eine Predigt zu Römer 8,1–17. Die Liste „Markierungen“ zeigt alle markierten Verse in biblischer Reihenfolge; Notizen, Markierungen und Favoriten filtern nach Buch oder Kapitel. Exportiere Notizen als PDF, Markdown oder Text – oder hol Jahre davon aus Life Bible (früher Tecarta) oder per CSV.
+Markiere in fünf Farben, merke dir Verse und hänge Notizen an eine oder mehrere Stellen – etwa eine Predigt zu Römer 8,1–17. „Markierungen“ zeigt alle markierten Verse in biblischer Reihenfolge; Notizen, Markierungen und Favoriten filtern nach Buch oder Kapitel. Exportiere Notizen als PDF, Markdown oder Text – oder hol sie aus Life Bible (früher Tecarta) oder per CSV.
 
 Predigtfolie abfotografieren
 Fotografiere die Folie im Gottesdienst – Scripture Alone beginnt deine Notiz: mit Titel, verlinkt mit jeder Stelle darauf, Punkte bereit zum Ausfüllen. Das Foto wird auf dem Gerät gelesen, nie hochgeladen.
 
 Hören
-Lass dir jedes Kapitel mit den Stimmen deines Geräts vorlesen, der gesprochene Vers wird markiert – oder mit Studio-Stimmen per Mi Speaks Premium-Abo (eigene App).
+Lass dir jedes Kapitel mit den Stimmen deines Geräts vorlesen, mit markiertem Vers – oder mit Studio-Stimmen per Mi Speaks Premium-Abo (eigene App).
 
 Studienmodus, ein Schalter genügt
 Gewichtete Querverweise, Kommentare von Calvin, Gill und Jamieson-Fausset-Brown, Hebräisch und Griechisch Wort für Wort mit Analyse, Strong's Nummern und Lexikon in jeder Übersetzung sowie Kontext zu jedem Kapitel: Überblick, Karte der genannten Orte, Epoche auf einer Zeitleiste und Diagramme zu Königen, Paulusreisen, Stämmen und Festen.
 
 Schön teilen
-Gestalte ein Versbild aus acht Vorlagen oder teile einen Link, der es in jedem Browser neu aufbaut – nichts liegt auf einem Server.
+Gestalte ein Versbild aus acht Vorlagen oder teile einen Link, der es in jedem Browser neu aufbaut – nichts liegt auf Servern.
 
 Am Handgelenk und auf dem Home-Bildschirm
 Widgets für Vers des Tages und Favoriten sowie eine Apple Watch App mit NASB 2020 und Komplikation. Sie liest offline, folgt der Übersetzung deines iPhones und hat Markierungen, Favoriten und Notizen dabei – in deiner Akzentfarbe.
 
 Eine Bibel zum Vererben
-Erstelle eine Erinnerungs-Bibel: deine Markierungen und Notizen samt Widmung als Datei, die deine Familie so lesen kann, wie du sie markiert hast – eine digitale „Bibel von Papa“.
+Erstelle eine Erinnerungs-Bibel: deine Markierungen und Notizen samt Widmung als Datei, die deine Familie so liest, wie du sie markiert hast – eine digitale „Bibel von Papa“.
 
 Privat von Grund auf
-Markierungen, Notizen und Favoriten synchronisieren über deine private iCloud. Kein Server, kein Konto, der Entwickler sieht deine Daten nie. Scripture Alone ist Open Source unter der AGPL – jeder kann nachlesen, was sie tut.
+Markierungen, Notizen und Favoriten synchronisieren über deine private iCloud. Kein Server, kein Konto, der Entwickler sieht deine Daten nie. Scripture Alone ist quelloffen (AGPL) – jeder kann nachlesen, was sie tut.
 
 Gebaut, damit Menschen Gottes Wort studieren und Christus näherkommen.
 

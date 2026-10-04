@@ -9,7 +9,7 @@ Bíblia Scripture Alone
 Bíblia offline e privada: temas para dias difíceis, estudo e notas de sermão.
 
 ## full_description
-O Scripture Alone é uma Bíblia para celulares, tablets e relógios Wear OS, feita para uma coisa só: estudar a Palavra de Deus sem nada no caminho. Sem rastreadores. Sem contas. O app inteiro está em português e, depois da primeira abertura, tudo funciona com ou sem conexão.
+O Scripture Alone é uma Bíblia para celulares, tablets e relógios Wear OS, feita para uma coisa só: estudar a Palavra de Deus sem nada no caminho. Sem rastreadores. Sem contas. O app inteiro está em português e, depois da primeira abertura, tudo funciona com ou sem conexão. Um Guia do usuário ilustrado, integrado e no seu idioma, mostra cada recurso.
 
 Leia a Bíblia inteira, offline
 A Bíblia Livre é baixada uma única vez, quando você abre o app, e daí em diante é lida offline, com os nomes dos livros e a numeração dos versículos em português. Em inglês, a NASB 2020 vem embutida, e também há a NASB 1995, a ASV, a BSB e a KJV. Busca em texto completo, as Palavras de Cristo em vermelho, poesia composta como poesia e notas de rodapé a um toque.

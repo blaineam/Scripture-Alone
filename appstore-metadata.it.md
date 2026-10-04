@@ -14,16 +14,16 @@ Studio biblico privato offline
 Scripture Alone è una Bibbia per iPhone, iPad, Mac e Apple Watch, pensata per una cosa sola: studiare la Parola di Dio senza distrazioni. Niente pubblicità. Niente tracciamenti. Nessun account. La Bibbia è sul tuo dispositivo: funziona con o senza connessione.
 
 Leggi tutta la Bibbia, offline
-La New American Standard Bible — NASB 2020 c'è già dall'installazione. NASB 1995, American Standard Version, Berean Standard Bible e King James Version si scaricano una volta sola, quando le scegli. Ricerca full-text, Parole di Cristo in rosso, poesia composta come poesia, note a un tocco.
+La New American Standard Bible — NASB 2020 c'è già dall'installazione. NASB 1995, American Standard Version, Berean Standard Bible e King James Version si scaricano quando le scegli. Ricerca full-text, Parole di Cristo in rosso, poesia composta come poesia, note a un tocco.
 
 Che cosa dice la Bibbia di ciò che stai vivendo
 Argomenti raccoglie passi per 72 temi — ansia, lutto, solitudine, paura, matrimonio, attesa e altro — nella traduzione che leggi. Scrivi uno stato d'animo come "ansioso" in Vai a e compare l'argomento. In inglese c'è anche la Nave's Topical Bible dalla A alla Z.
 
 Porta le tue Bibbie
-Importa un ePub senza DRM, un PDF della Bibbia con livello di testo o un file USFM tuo, oppure sfoglia le traduzioni a licenza aperta di eBible.org. Una Bibbia di studio porta con sé note, introduzioni, saggi e mappe; le Parole di Cristo restano in rosso; e ciò che importi arriva sugli altri dispositivi tramite il tuo iCloud. ESV, CSB e NKJV si leggono con la tua chiave editore o da una copia importata.
+Importa un ePub senza DRM, un PDF della Bibbia con livello di testo o un file USFM tuo, o sfoglia le traduzioni a licenza aperta di eBible.org. Una Bibbia di studio porta note, introduzioni, saggi e mappe; le Parole di Cristo restano in rosso; e ciò che importi arriva sugli altri dispositivi via iCloud. ESV, CSB e NKJV si leggono con la tua chiave editore o da una copia importata.
 
 Nella tua lingua
-Anche in cinese, giapponese, tedesco, francese, spagnolo, coreano, portoghese e italiano, ognuna con la sua Bibbia.
+Anche in cinese, giapponese, tedesco, francese, spagnolo, coreano, portoghese e italiano, ognuna con la sua Bibbia. Una Guida all'uso illustrata, integrata e nella tua lingua, spiega ogni funzione.
 
 Leggi come preferisci
 Sette caratteri, dimensione e interlinea regolabili, cinque temi grafici, a paragrafi o versetto per versetto, Dynamic Type completo, due colonne sugli schermi ampi e scorrimento automatico nel capitolo successivo.
@@ -47,15 +47,15 @@ Condividi con stile
 Crea l'immagine di un versetto con otto modelli, o condividi un link che la ricostruisce in qualsiasi browser: niente finisce su un server.
 
 Al polso e nella schermata Home
-Widget Versetto del giorno e Preferiti, e un'app per Apple Watch con NASB 2020 integrata e complicazione. Legge offline, segue la traduzione dell'iPhone e porta con sé evidenziazioni, preferiti e note, nel colore scelto sull'iPhone.
+Widget Versetto del giorno e Preferiti, e un'app per Apple Watch con NASB 2020 integrata e complicazione. Legge offline, segue la traduzione dell'iPhone e porta con sé evidenziazioni, preferiti e note, nel tuo colore d'accento.
 
 Una Bibbia da tramandare
 Crea una Bibbia ricordo: un file con le tue evidenziazioni, note e una dedica, che la famiglia potrà leggere come l'hai segnata — una "Bibbia di papà" digitale.
 
 Privata per principio
-Evidenziazioni, note e preferiti si sincronizzano tra i dispositivi tramite il tuo iCloud privato. Nessun server, nessun account: lo sviluppatore non vede mai i tuoi dati. Scripture Alone è open source con licenza AGPL: chiunque può verificare cosa fa.
+Evidenziazioni, note e preferiti si sincronizzano tramite il tuo iCloud privato. Nessun server, nessun account: lo sviluppatore non vede mai i tuoi dati. Scripture Alone è open source (AGPL): chiunque può verificare cosa fa.
 
-Creata per aiutare le persone a studiare la Parola di Dio e ad avvicinarsi a Cristo.
+Creata per aiutare a studiare la Parola di Dio e ad avvicinarsi a Cristo.
 
 NASB 2020 e NASB 1995 © The Lockman Foundation. Usate con permesso. www.Lockman.org
 

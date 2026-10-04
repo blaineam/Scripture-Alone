@@ -11,7 +11,7 @@ Bíblia Scripture Alone
 Estudo bíblico offline privado
 
 ## description
-O Scripture Alone é uma Bíblia para iPhone, iPad, Mac e Apple Watch, feita para uma só coisa: estudar a Palavra de Deus sem nada no caminho. Sem anúncios. Sem rastreadores. Sem contas. A Bíblia fica no seu dispositivo e funciona em qualquer lugar, com ou sem conexão.
+O Scripture Alone é uma Bíblia para iPhone, iPad, Mac e Apple Watch, feita para uma só coisa: estudar a Palavra de Deus sem nada no caminho. Sem anúncios. Sem rastreadores. Sem contas. A Bíblia fica no seu dispositivo e funciona em qualquer lugar, online ou offline.
 
 Leia a Bíblia inteira, offline
 A Bíblia Livre baixa na primeira abertura e, daí em diante, lê offline, com seus nomes de livros e sua numeração de versículos. Em inglês, há a American Standard Version, a Berean Standard Bible e a King James Version. Busca em texto completo, as Palavras de Cristo em vermelho, poesia como poesia e notas de rodapé a um toque.
@@ -20,10 +20,10 @@ O que a Bíblia diz sobre o que você está vivendo
 Temas reúne passagens para 72 temas da vida — ansiedade, luto, solidão, medo, casamento, espera e mais — na tradução que você lê. Digite um sentimento como "ansioso" em Ir para e o tema aparece. Em inglês, também a Nave's Topical Bible de A a Z.
 
 Traga as suas Bíblias
-Importe um ePub sem DRM, um PDF da Bíblia com camada de texto ou um arquivo USFM seu, ou explore as traduções de licença aberta do eBible.org. Uma Bíblia de estudo traz notas, introduções, artigos e mapas; as Palavras de Cristo continuam em vermelho; e o que você importa chega aos seus outros dispositivos pelo seu próprio iCloud. ESV, CSB e NKJV são lidas com sua chave de editora ou a partir de uma cópia importada.
+Importe um ePub sem DRM, um PDF da Bíblia com camada de texto ou um arquivo USFM seu, ou explore as traduções de licença aberta do eBible.org. Uma Bíblia de estudo traz notas, introduções, artigos e mapas; as Palavras de Cristo continuam em vermelho; e o que você importa chega aos seus outros dispositivos pelo seu iCloud. ESV, CSB e NKJV são lidas com sua chave de editora ou a partir de uma cópia importada.
 
 No seu idioma
-Inteiramente em português do Brasil, com a Bíblia Livre — uma revisão de Almeida a partir do Textus Receptus —, e em mais oito idiomas, cada um com sua Bíblia.
+Inteiramente em português do Brasil, com a Bíblia Livre — uma revisão de Almeida a partir do Textus Receptus —, e em mais oito idiomas, cada um com sua Bíblia. Um Guia do usuário ilustrado, integrado e no seu idioma, mostra cada recurso.
 
 Deixe do seu jeito
 Sete fontes, tamanho e entrelinha ajustáveis, cinco aparências, parágrafos ou versículo a versículo, Dynamic Type, duas colunas em telas largas e rolagem automática.
@@ -53,7 +53,7 @@ Uma Bíblia de herança
 Crie uma Bíblia de recordação: um arquivo com seus destaques, notas e uma dedicatória, que sua família pode abrir e ler como você marcou — uma "Bíblia do Pai" digital.
 
 Privacidade por princípio
-Destaques, notas e favoritos sincronizam entre seus dispositivos pelo seu iCloud privado. Não há servidor nem conta, e o desenvolvedor nunca vê seus dados. O Scripture Alone é código aberto sob a AGPL, então qualquer um pode ver exatamente o que ele faz.
+Destaques, notas e favoritos sincronizam pelo seu iCloud privado. Não há servidor nem conta, e o desenvolvedor nunca vê seus dados. O Scripture Alone é código aberto sob a AGPL, então qualquer um pode ver o que ele faz.
 
 Feito para ajudar as pessoas a estudar a Palavra de Deus e se aproximar de Cristo.
 
