@@ -43,6 +43,12 @@ apps without an app release. Edit the sources, push, and let CI publish; build l
 preview. A new block kind needs both renderers (and `UserGuide.supportedSchema` bumped if old apps
 can't skip it).
 
+**PDF-only and app-only passages.** Wrap what only the website's PDF may carry in
+`data-only="pdf"` (block or inline), and its replacement for the apps in `data-only="app"`:
+`manual_json.py` drops the first, the template's stylesheet hides the second. The apps carry no
+links to third-party stores or files — the import section points to the website FAQ
+(`…/faq/?lang=<code>#esv-csb`) instead.
+
 ## Keeping it right
 
 - **Change English first**, then carry the change into the eight other files. Every button or menu

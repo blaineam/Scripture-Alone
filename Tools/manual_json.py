@@ -91,10 +91,18 @@ def squash(s: str) -> str:
 
 # MARK: Inline
 
+def pdf_only(node: "Node | str") -> bool:
+    """`data-only="pdf"`: in the printed guide (the website's PDF) but not in the apps — links the
+    apps can't carry, for one. Its twin, `data-only="app"`, is hidden by the PDF's stylesheet."""
+    return isinstance(node, Node) and node.attrs.get("data-only") == "pdf"
+
+
 def inline(node: Node, marks: dict | None = None) -> list[dict]:
     marks = dict(marks or {})
     out: list[dict] = []
     for c in node.children:
+        if pdf_only(c):
+            continue
         if isinstance(c, str):
             t = squash(c)
             if t:
@@ -176,6 +184,8 @@ def blocks(node: Node) -> list[dict]:
         loose.clear()
 
     for c in node.children:
+        if pdf_only(c):
+            continue
         if isinstance(c, str) or c.tag in ("b", "strong", "span", "a", "kbd", "code", "small", "br") \
                 and "note-label" not in c.classes:
             loose.append(c)
@@ -189,6 +199,8 @@ def blocks(node: Node) -> list[dict]:
 
 
 def block(n: Node):
+    if pdf_only(n):
+        return None
     cls = n.classes
     if n.tag == "p":
         runs = inline(n)
