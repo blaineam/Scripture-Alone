@@ -16,6 +16,7 @@ what a reader would get printing the HTML.
 """
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -26,7 +27,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 MANUAL = ROOT / "docs" / "manual"
 OUT = ROOT / "ScriptureAlone" / "Resources" / "Manual"
-CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+CHROME = os.environ.get("CHROME", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 
 # Content file locale → the PDF's language code (what the apps look up).
 LOCALES = {

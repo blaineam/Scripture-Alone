@@ -25,6 +25,12 @@ D=~/Documents/scripts/monkr/static/devices
 /tmp/frame $D/apple-watch-series-10-46mm/silver.png watch.png 72 192 112 420 docs/manual/images/<locale>/w02-verse.png
 ```
 
+**CI builds them.** `.github/workflows/user-guide.yml` runs on any push to main that touches
+`docs/manual/` or the builder: it renders all nine PDFs on a macOS runner, commits them to
+`ScriptureAlone/Resources/Manual/` (`[ci skip]`) and uploads them to the `user-guide` GitHub release,
+which the website links to — `https://github.com/blaineam/Scripture-Alone/releases/download/user-guide/UserGuide-<code>.pdf`.
+So edit the sources, push, and let CI produce the PDFs; build locally only to preview.
+
 ## Keeping it right
 
 - **Change English first**, then carry the change into the eight other files. Every button or menu
