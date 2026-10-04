@@ -125,7 +125,8 @@ class MainActivity : ComponentActivity() {
      * is never taken over.
      *
      * Otherwise, launch extras — `book`, `chapter` (ints), `translation` and `theme` (names), and (debug builds
-     * only) the `notesInSearch` / `favoritesInSearch` switches (booleans) — the development hook for going
+     * only) the `notesInSearch` / `favoritesInSearch` / `hideChapterText` switches (booleans) and
+     * `openChapter` ("22:2") — the development hook for going
      * straight to a chapter from `adb shell am start`. Anything out of range is ignored rather than
      * trusted.
      */
@@ -153,6 +154,12 @@ class MainActivity : ComponentActivity() {
         if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
             if (extras.containsKey("notesInSearch")) reader.notesInSearch = extras.getBoolean("notesInSearch")
             if (extras.containsKey("favoritesInSearch")) reader.favoritesInSearch = extras.getBoolean("favoritesInSearch")
+            // `--ez hideChapterText true`: the reader draws no text under its bars, for screenshots of
+            // the chrome; `--es openChapter 22:2` (book number:chapter) — iOS's `-openChapter`.
+            if (extras.containsKey("hideChapterText")) reader.hideChapterText = extras.getBoolean("hideChapterText")
+            extras.getString("openChapter")?.split(":")?.mapNotNull { it.trim().toIntOrNull() }?.takeIf { it.size == 2 }?.let { (book, chapter) ->
+                if (book in 1..Canon.books.size && chapter in 1..Canon.book(book).chapterCount) reader.open(ChapterRef(book, chapter))
+            }
         }
         extras.getString("theme")?.let { name ->
             ReaderTheme.entries.firstOrNull { it.name.equals(name, ignoreCase = true) }?.let { reader.theme = it }

@@ -38,7 +38,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.AnnotatedString
@@ -385,6 +387,9 @@ fun ReaderScreen(
                         val colors = remember(highlights, chapter) {
                             Selection.highlightColors(highlights, chapter.ref, chapter.numbering, chapter.verseCount)
                         }
+                        // Debug `hideChapterText`: the page draws blank under the bars, so the chrome can be
+                        // screenshotted with no scripture in the picture (iOS's `-hideChapterText`).
+                        Box(Modifier.graphicsLayer { alpha = if (model.hideChapterText) 0f else 1f }) {
                         ChapterColumn(
                             rendered = remember(chapter, style, markers) {
                                 ChapterRenderer(style, ReaderTypography.fonts(style.size, style.family))
@@ -417,6 +422,7 @@ fun ReaderScreen(
                             coveredFraction = if (studyCovers) STUDY_SHEET_COVER else 0f,
                             extraTop = if (keepsake != null) bannerHeight + 8.dp else 0.dp,
                         )
+                        }
                     }
                 model.loadError == null -> CircularProgressIndicator(
                     // Only ever seen on a first launch, while a database is copied out of the APK.
@@ -1055,6 +1061,9 @@ private val NOW_PLAYING_ROOM = 72.dp
 /** The part of the page the phone's Study sheet covers at rest: it rises to 45% (`StudySheet`). */
 private const val STUDY_SHEET_COVER = 0.45f
 
+/** Below this the top bar is a phone's: the translation button is an icon, not "NASB 2020". */
+private val COMPACT_BAR = 600.dp
+
 /**
  * The top chrome, in the iOS arrangement: Notes and Study in one pill on the left with the passage
  * beside it, the translation and appearance in one pill on the right. A fade from the page colour
@@ -1072,13 +1081,15 @@ private fun TopBar(
     onAppearance: () -> Unit,
     studyOpen: Boolean,
 ) = CappedFontScale {
-    Box(
+    BoxWithConstraints(
         Modifier
             .fillMaxWidth()
             .background(Brush.verticalGradient(0f to palette.page, 0.75f to palette.page, 1f to palette.page.copy(alpha = 0f)))
             .windowInsetsPadding(WindowInsets.statusBars)
             .height(BAR_HEIGHT + 12.dp),
     ) {
+        // iOS's compact size class: on a phone "NASB 2020" crowded the passage title out of the bar.
+        val compact = maxWidth < COMPACT_BAR
         Row(
             Modifier.align(Alignment.Center).fillMaxWidth().padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -1093,8 +1104,10 @@ private fun TopBar(
                     onClick = onStudy,
                 )
             }
-            Box(Modifier.weight(1f)) {
+            BoxWithConstraints(Modifier.weight(1f)) {
             val goToLabel = stringResource(R.string.reader_go_to_label, Canon.display(model.location))
+            // The room the title has between the pills, less its padding and chevron.
+            val roomPx = with(LocalDensity.current) { (maxWidth - TITLE_CHROME).roundToPx() }
             Row(
                 Modifier
                     .padding(start = 4.dp)
@@ -1104,10 +1117,18 @@ private fun TopBar(
                     .clearAndSetSemantics { contentDescription = goToLabel },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                // Shrinks to fit before it truncates — the iOS title's `minimumScaleFactor(0.7)` — so
-                // "Psalms 119" survives a larger system font size.
-                // Keyed on the language books are named in (`BookNames`), so the title follows it.
-                val title = remember(model.location, model.bookNamesLanguage) { Canon.display(model.location) }
+                // The full name when it fits the room between the pills, else the book's abbreviation
+                // ("1 Thess 5", "Song 2") — iOS's `ChapterRef.shortDisplay`. Measured rather than tried
+                // in turn, so there is always a title to tap for Go To. Keyed on the language books are
+                // named in (`BookNames`), so the title follows it.
+                val measurer = rememberTextMeasurer()
+                val title = remember(model.location, model.bookNamesLanguage, roomPx, measurer) {
+                    val full = Canon.display(model.location)
+                    val fullWidth = measurer.measure(full, TextStyle(fontSize = 19.sp, fontWeight = FontWeight.SemiBold), maxLines = 1, softWrap = false).size.width
+                    passageTitle(full, Canon.shortDisplay(model.location), fullWidth, roomPx)
+                }
+                // Then shrinks to fit before it truncates — the iOS title's `minimumScaleFactor` — so
+                // "Ps 119" survives a larger system font size.
                 var titleScale by remember(title) { mutableStateOf(1f) }
                 Text(
                     title,
@@ -1124,12 +1145,19 @@ private fun TopBar(
             }
             }
             Pill(palette) {
-                TranslationButton(model, palette, onCompare, onManageTranslations)
+                TranslationButton(model, palette, compact, onCompare, onManageTranslations)
                 AppearanceButton(palette, onAppearance)
             }
         }
     }
 }
+
+/** The title's own padding (4 dp before, 8 dp each side) and its chevron (22 dp). */
+private val TITLE_CHROME = 4.dp + 16.dp + 22.dp
+
+/** The passage title: [full] when it is no wider than [room] (both in pixels), else [short]. */
+internal fun passageTitle(full: String, short: String, fullWidth: Int, room: Int): String =
+    if (fullWidth <= room) full else short
 
 @Composable
 private fun BottomBar(model: ReaderViewModel, palette: ReaderPalette, modifier: Modifier, center: @Composable () -> Unit = {}) = CappedFontScale {
@@ -1199,7 +1227,7 @@ private fun PillIcon(
 }
 
 @Composable
-private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, onCompare: () -> Unit, onManageTranslations: () -> Unit) {
+private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, compact: Boolean, onCompare: () -> Unit, onManageTranslations: () -> Unit) {
     var open by remember { mutableStateOf(false) }
     val translationLabel = stringResource(R.string.reader_translation_label, model.translationAbbreviation)
     Box {
@@ -1209,7 +1237,13 @@ private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, on
                 .padding(horizontal = 12.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Text(model.translationAbbreviation, color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            // iOS's books.vertical on a phone, so the button stays one size whatever the translation;
+            // the translation in use is checked in the menu and read by TalkBack ("Translation, NASB 2020").
+            if (compact) {
+                Icon(Icons.AutoMirrored.Outlined.LibraryBooks, null, tint = palette.accent, modifier = Modifier.size(26.dp))
+            } else {
+                Text(model.translationAbbreviation, color = palette.accent, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            }
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             for (id in model.translationChoices()) {

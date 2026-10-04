@@ -22,6 +22,15 @@ object Canon {
         return if (book.isSingleChapter) book.displayName else "${book.displayName} ${ref.chapter}"
     }
 
+    /**
+     * The same with the book's abbreviation in the language books are named in ("1 Thess 5", "Ps 136",
+     * just "Jude") — `ChapterRef.shortDisplay` on iOS, for the reader's title on a narrow phone.
+     */
+    fun shortDisplay(ref: ChapterRef): String {
+        val book = book(ref.book)
+        return if (book.isSingleChapter) book.abbreviation else "${book.abbreviation} ${ref.chapter}"
+    }
+
     /** The following chapter, crossing into the next book; null after Revelation 22. */
     fun next(ref: ChapterRef): ChapterRef? = when {
         ref.chapter < book(ref.book).chapterCount -> ChapterRef(ref.book, ref.chapter + 1)

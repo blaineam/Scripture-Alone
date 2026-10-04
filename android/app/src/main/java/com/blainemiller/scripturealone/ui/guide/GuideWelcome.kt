@@ -64,7 +64,7 @@ object GuideWelcome {
     }
 
     /** The intent extras the debug launch hooks use (MainActivity's development extras). */
-    private val developmentExtras = setOf("book", "chapter", "translation", "theme", "notesInSearch", "favoritesInSearch")
+    private val developmentExtras = setOf("book", "chapter", "translation", "theme", "notesInSearch", "favoritesInSearch", "hideChapterText", "openChapter")
 
     /**
      * Whether a launch by [intent] may offer the prompt: a plain launch — not a link, a file, a

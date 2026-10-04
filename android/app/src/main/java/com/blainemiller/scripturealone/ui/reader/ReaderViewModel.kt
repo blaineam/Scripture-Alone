@@ -129,6 +129,12 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         private set
 
     /**
+     * Debug builds' `hideChapterText` launch extra: the chapter is laid out but not drawn, so the bars
+     * can be screenshotted without any scripture on screen (the NASB may not be captured).
+     */
+    var hideChapterText by mutableStateOf(false)
+
+    /**
      * The bundled translation being fetched because the reader chose it, for the reader's banner. The
      * previous translation stays on screen until it arrives, then the reader switches — iOS's
      * `downloadingPack`.
