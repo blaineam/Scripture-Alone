@@ -48,6 +48,10 @@ public struct ChapterRef: Hashable, Comparable, Sendable, Codable {
 
     public var display: String { book.isSingleChapter ? book.name : "\(book.name) \(chapter)" }
 
+    /// The same with the book's abbreviation ("1 Cor 13", "Ps 136"), for where the full name
+    /// doesn't fit — the reader's title on a narrow phone.
+    public var shortDisplay: String { book.isSingleChapter ? book.abbreviation : "\(book.abbreviation) \(chapter)" }
+
     public var next: ChapterRef? {
         if chapter < book.chapterCount { return ChapterRef(book, chapter + 1) }
         guard let nextBook = BookID(rawValue: book.rawValue + 1) else { return nil }

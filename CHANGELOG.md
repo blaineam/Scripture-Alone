@@ -2,6 +2,10 @@
 
 ## After 1.0.0
 
+- On a phone the passage title is always in the toolbar, so Go To is always a tap away: the
+  translation button is a symbol (the translation is checked in its menu), and a book name too long
+  for the room left becomes its abbreviation ("1 Thess 5", "Song 2"). iPad and Mac still show the
+  translation's abbreviation.
 - A User Guide, in all nine languages: an illustrated guide to everything the app does — reading,
   Go To and Topics, adding and importing Bibles (with the Reformation Study Bible ePub and the CSB
   pew Bible PDF as known-good imports), step-by-step setup of your own Crossway (ESV) and API.Bible

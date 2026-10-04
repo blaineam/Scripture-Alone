@@ -32,6 +32,8 @@ struct ReaderView: View {
     @AppStorage(SettingsKey.autoScrollSpeed) private var autoScrollSpeed = 28.0
 
     @State private var showPicker = false
+    /// The reader's width, for choosing the title's full or abbreviated book name.
+    @State private var readerWidth: CGFloat = 0
     @State private var showAppearance = false
     @State private var showTranslations = false
     @State private var showCompare = false
@@ -74,6 +76,12 @@ struct ReaderView: View {
                         coveredBySheet: studySheetShown.wrappedValue, tappedVerse: tappedVerse)
                 .ignoresSafeArea(edges: .bottom)
                 .background(Color(style.palette.page))
+                .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { readerWidth = $0 }
+                #if DEBUG
+                // `-hideChapterText YES`: the page draws blank, so the toolbar can be screenshotted
+                // with no scripture in the picture (the NASB may not be captured or viewed by AI).
+                .opacity(UserDefaults.standard.bool(forKey: "hideChapterText") ? 0 : 1)
+                #endif
                 .popover(item: $popover, attachmentAnchor: .rect(.rect(popover?.rect ?? .zero))) { item in
                     Group {
                         if let keepsake = legacy.reading, case .notes(let ids) = item.kind {
@@ -180,6 +188,12 @@ struct ReaderView: View {
                          || shareCoordinator.designer != nil)
         #if DEBUG
         .task { await stageScreenshotScene() }
+        // `-openChapter 22:2` (book number:chapter) opens a chapter at launch, for checking the
+        // title with long book names without a link's "Open in" prompt.
+        .task {
+            let parts = (UserDefaults.standard.string(forKey: "openChapter") ?? "").split(separator: ":").compactMap { Int($0) }
+            if parts.count == 2, let book = BookID(rawValue: parts[0]) { model.show(ChapterRef(book, parts[1])) }
+        }
         #endif
     }
 
@@ -244,19 +258,47 @@ struct ReaderView: View {
     private var passageButton: some View {
         Button { openPassagePicker() } label: {
             HStack(spacing: 4) {
-                // A phone's toolbar leaves little room between the button groups, so the name
-                // shrinks to fit. ViewThatFits mis-measures inside a principal toolbar item —
-                // it dropped the title entirely at "John 10" — so scale the one Text instead.
-                Text(model.location.display)
+                // A phone's toolbar leaves little room between the button groups. ViewThatFits
+                // mis-measures inside a principal toolbar item — it dropped the title entirely at
+                // "John 10" — so the full name is measured against the room left, and the book's
+                // abbreviation ("1 Cor 13") stands in when it won't fit; the one Text still shrinks
+                // a little for the last few points.
+                Text(passageTitle)
                     .font(.headline)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                    .minimumScaleFactor(0.8)
                 Image(systemName: "chevron.down").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             }
         }
         .buttonStyle(.plain)
         .keyboardShortcut("l", modifiers: .command)
         .accessibilityLabel("Go to passage, currently \(model.location.display)")
+        .layoutPriority(1)
+    }
+
+    /// The title between the toolbar's button groups: the full book name when it fits, else its
+    /// abbreviation. On a phone each side holds a pair of buttons in a glass capsule, about 104
+    /// points wide; with the bar's margins and gaps that leaves the width less ~260 points.
+    private var passageTitle: String {
+        let full = model.location.display
+        guard compactToolbar, readerWidth > 0 else { return full }
+        let room = readerWidth - 260 - 18   // the chevron beside the title
+        #if os(iOS)
+        let font = UIFont.preferredFont(forTextStyle: .headline)
+        let width = (full as NSString).size(withAttributes: [.font: font]).width
+        return width <= room ? full : model.location.shortDisplay
+        #else
+        return full
+        #endif
+    }
+
+    /// A phone-width toolbar: the translation button is a symbol, and the title may abbreviate.
+    private var compactToolbar: Bool {
+        #if os(iOS)
+        horizontalSizeClass == .compact
+        #else
+        false
+        #endif
     }
 
     private var notesButton: some View {
@@ -330,9 +372,17 @@ struct ReaderView: View {
             Button("Compare Translations…", systemImage: "rectangle.split.2x1") { showCompare = true }
             Button("Manage Translations…", systemImage: "books.vertical") { showTranslations = true }
         } label: {
-            Text(model.translationAbbreviation).font(.subheadline.weight(.semibold))
+            // On a phone the abbreviation ("NASB 2020") crowded the passage title out of the bar,
+            // leaving nothing to tap for Go To; a symbol keeps the button one fixed size. The
+            // translation in use is checked in the menu and spoken by VoiceOver.
+            if compactToolbar {
+                Image(systemName: "books.vertical")
+            } else {
+                Text(model.translationAbbreviation).font(.subheadline.weight(.semibold))
+            }
         }
         .accessibilityLabel("Translation")
+        .accessibilityValue(model.translationAbbreviation)
     }
 
     private var appearanceButton: some View {
