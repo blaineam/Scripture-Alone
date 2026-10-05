@@ -168,4 +168,81 @@ final class ReaderModelTests {
         #expect(model.quotationRefusal(for: [wholeBook]) == nil)
         #expect(model.translationAbbreviation == "ASV")
     }
+
+    // MARK: Links (scripturealone://, urn:osis, share links)
+
+    func open(_ string: String, in model: ReaderModel) throws {
+        let url = try #require(URL(string: string))
+        let link = try #require(AppLink(url: url), "\(string) is not a link")
+        model.open(link)
+    }
+
+    @Test func aVerseLinkOpensTheChapterAndSelectsTheVerses() throws {
+        let model = try asvModel()
+        try open("scripturealone://open?ref=45008001-45008004", in: model)
+        #expect(model.location == ChapterRef(.romans, 8))
+        #expect(model.selection == Set((1...4).map { VerseRef(.romans, 8, $0).key }))
+        #expect(model.scrollTarget == VerseRef(.romans, 8, 1).key, "verse 1 is brought up too")
+    }
+
+    @Test func anOSISLinkSelectsItsVerse() throws {
+        let model = try asvModel()
+        try open("scripturealone://passage/urn:osis:John.3.16", in: model)
+        #expect(model.location == ChapterRef(.john, 3))
+        #expect(model.selection == [VerseRef(.john, 3, 16).key])
+    }
+
+    @Test func aWholeChapterLinkOpensWithoutSelecting() throws {
+        let model = try asvModel()
+        model.show(ChapterRef(.john, 3))
+        model.toggle(VerseRef(.john, 3, 16).key)
+        try open("scripturealone://open?ref=Ps.23", in: model)
+        #expect(model.location == ChapterRef(.psalms, 23))
+        #expect(model.selection.isEmpty)
+    }
+
+    @Test func aTypedReferenceLinkOpensItsRange() throws {
+        let model = try asvModel()
+        try open("scripturealone://passage/Rom%208:28-30", in: model)
+        #expect(model.location == ChapterRef(.romans, 8))
+        #expect(model.selection == Set((28...30).map { VerseRef(.romans, 8, $0).key }))
+    }
+
+    @Test func aShareLinkOpensWhatItQuotes() throws {
+        let model = try asvModel()
+        let ranges = [VerseRange(VerseRef(.john, 14, 5), VerseRef(.john, 14, 6))]
+        let payload = ShareLinkPayload(ranges: ranges, reference: "John 14:5–6", translation: "ASV",
+                                       passage: SharePassageText(verses: try model.source!.verses(in: ranges[0])))
+        model.open(.share(payload))
+        #expect(model.location == ChapterRef(.john, 14))
+        #expect(model.selection == [VerseRef(.john, 14, 5).key, VerseRef(.john, 14, 6).key])
+    }
+
+    @Test func linksThatAreNotPassagesLeaveTheReaderWhereItIs() throws {
+        let model = try asvModel()
+        model.show(ChapterRef(.john, 1))
+        try open("scripturealone://search?q=love", in: model)
+        try open("scripturealone://notes", in: model)
+        #expect(model.location == ChapterRef(.john, 1))
+        #expect(AppLink(url: URL(string: "scripturealone://somewhere")!) == nil)
+    }
+
+    @Test func continueReadingGoesBackToTheSavedPosition() throws {
+        let model = try asvModel()
+        model.show(ChapterRef(.isaiah, 40), verse: 31)
+        model.show(ChapterRef(.genesis, 1))
+        UserDefaults.standard.set(VerseRef(.isaiah, 40, 31).key, forKey: "position")
+        NSUbiquitousKeyValueStore.default.set(VerseRef(.isaiah, 40, 31).key, forKey: "position")
+        model.continueReading()
+        #expect(model.location == ChapterRef(.isaiah, 40))
+        #expect(model.scrollTarget == VerseRef(.isaiah, 40, 31).key)
+    }
+
+    @Test func verseKeysWalkAcrossAChapterBoundary() throws {
+        let model = try asvModel()
+        let source = try #require(model.source)
+        let keys = ReaderModel.verseKeys(in: VerseRange(VerseRef(.john, 3, 35), VerseRef(.john, 4, 2)), store: source)
+        #expect(keys == [VerseRef(.john, 3, 35).key, VerseRef(.john, 3, 36).key, VerseRef(.john, 4, 1).key, VerseRef(.john, 4, 2).key])
+    }
+
 }
