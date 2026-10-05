@@ -384,6 +384,11 @@ targets:
     supportedDestinations: [iOS, macOS]
     sources:
       - path: ScriptureAloneTests
+      # The widgets' timeline logic, which lives in the extension (WidgetTests).
+      - ScriptureAloneWidgets/VerseOfDayShared.swift
+      - ScriptureAloneWidgets/VerseStyling.swift
+      - ScriptureAlone/Shared/AppGroup.swift
+      - ScriptureAlone/Shared/DailyVerseLibrary.swift
       # The App Store Connect asset-pack manifests, which AssetPackTests checks the app against.
       - path: Tools/asset-packs
         type: folder
