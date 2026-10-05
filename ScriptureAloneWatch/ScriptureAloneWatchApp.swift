@@ -163,6 +163,11 @@ final class WatchBible {
         editions.first { $0.id == translation }?.abbreviation ?? translation
     }
 
+    /// The translation being read, by its full name: what a passage on screen is attributed to.
+    var translationName: String {
+        editions.first { $0.id == translation }?.name ?? translation
+    }
+
     private(set) var editions: [Edition] = []
     private(set) var translation: String = WatchBible.fallback
     private(set) var store: (any ChapterTextSource)?

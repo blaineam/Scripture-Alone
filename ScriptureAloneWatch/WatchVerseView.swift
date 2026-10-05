@@ -64,7 +64,8 @@ struct WatchVerseView: View {
                 NavigationLink(value: WatchRoute.chapter(range.start.chapterKey, focus: range.start.verse)) {
                     Label("Read \(range.start.chapterKey.display)", systemImage: "book")
                 }
-                Text("American Standard Version")
+                // The Bible the passage was read from — the watch has read more than the ASV since 1.1.1.
+                Text(verbatim: bible.translationName)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
