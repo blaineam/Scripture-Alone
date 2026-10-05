@@ -423,6 +423,45 @@ targets:
         SUPPORTS_MACCATALYST: NO
         ENABLE_USER_SCRIPT_SANDBOXING: NO
 
+  # UI tests (XCUITest) for iPhone and iPad — and so for the Mac, which runs the iPad app. The app
+  # is launched with `-UITestMode` (ScriptureAlone/App/UITestMode.swift, DEBUG only): an in-memory
+  # store with the demo library, a fresh install's settings, no iCloud, no network, silent Listen.
+  # Run with the ScriptureAloneUITests scheme.
+  ScriptureAloneUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: ScriptureAloneUITests
+    dependencies:
+      - target: ScriptureAlone
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAloneUITests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: ScriptureAlone
+        # XCTestCase's initializers are nonisolated; the tests mark themselves @MainActor.
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+
+  # UI tests for the Apple Watch app, with `-UITestMode` (the BSB edition, the demo library).
+  ScriptureAloneWatchUITests:
+    type: bundle.ui-testing
+    platform: watchOS
+    sources:
+      - path: ScriptureAloneWatchUITests
+    dependencies:
+      - target: ScriptureAloneWatch
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAloneWatchUITests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: ScriptureAloneWatch
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+        TARGETED_DEVICE_FAMILY: "4"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+
 schemes:
   ScriptureAlone:
     build:
@@ -443,10 +482,30 @@ schemes:
     build:
       targets:
         ScriptureAloneWatch: all
+        ScriptureAloneWatchUITests: [test]
     run:
       config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - ScriptureAloneWatchUITests
     archive:
       config: Release
+  # The iPhone/iPad UI tests, apart from the ScriptureAlone scheme's unit tests (which also run on
+  # macOS, where these do not).
+  ScriptureAloneUITests:
+    build:
+      targets:
+        ScriptureAlone: all
+        ScriptureAloneUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - ScriptureAloneUITests
   ScriptureAloneWidgets:
     build:
       targets:

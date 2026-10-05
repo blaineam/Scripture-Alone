@@ -176,6 +176,29 @@ python3 Tools/package_translation.py inspect --package ~/.scripture-alone-demo/A
 cd ScriptureAloneCore && swift test                # the demo packages are then read by the app's reader
 ```
 
+### Tests
+
+`cd ScriptureAloneCore && swift test` covers the shared core; the ScriptureAlone scheme's test action
+runs the app-layer unit tests (`ScriptureAloneTests`, iOS and macOS). UI tests (XCUITest) cover every
+screen and key flow:
+
+```bash
+# iPhone and iPad (the iPad run stands in for the Mac, which runs the iPad app)
+xcodebuild test -project ScriptureAlone.xcodeproj -scheme ScriptureAloneUITests \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0' CODE_SIGNING_ALLOWED=NO
+# Apple Watch
+xcodebuild test -project ScriptureAlone.xcodeproj -scheme ScriptureAloneWatch \
+  -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm),OS=27.0' CODE_SIGNING_ALLOWED=NO
+```
+
+They launch the app with `-UITestMode` (`ScriptureAlone/App/UITestMode.swift`, DEBUG only): an
+in-memory store seeded with the demo library (`-noSeed` for an empty one), a fresh install's
+settings, no iCloud, WatchConnectivity or network (the eBible.org catalogue is a fixture, the User
+Guide behaves as offline), a silent Listen, and always the BSB — never a licensed text. Hooks:
+`-uiTestSelect 43:3:16[-17]` selects verses as a tap would, `-uiTestSlide` reads the sample sermon
+slide. The watch installs its BSB edition (Debug builds only). Soren runs them all
+(`node ../_shared/soren/soren.mjs run "Scripture Alone" ui-iphone ui-ipad ui-watch`).
+
 App Store screenshots come from real simulator captures of DEBUG-only scenes over an invented
 demo library (`ScriptureAlone/App/ScreenshotScene.swift`, `ScriptureAlone/Shared/DemoLibrary.swift`),
 framed in [Monkr](https://github.com/blaineam/Monkr) with a caption per scene:

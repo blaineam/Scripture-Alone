@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DC5CBE3DA17A862C0B7605D7"
-               BuildableName = "ScriptureAloneWatch.app"
-               BlueprintName = "ScriptureAloneWatch"
+               BlueprintIdentifier = "B7C2E571CC42407A79EFD8CB"
+               BuildableName = "ScriptureAlone.app"
+               BlueprintName = "ScriptureAlone"
                ReferencedContainer = "container:ScriptureAlone.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -29,9 +29,9 @@
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "809264A5FB04FE19CA55B487"
-               BuildableName = "ScriptureAloneWatchUITests.xctest"
-               BlueprintName = "ScriptureAloneWatchUITests"
+               BlueprintIdentifier = "8320C669CCD63F8F18989604"
+               BuildableName = "ScriptureAloneUITests.xctest"
+               BlueprintName = "ScriptureAloneUITests"
                ReferencedContainer = "container:ScriptureAlone.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -47,9 +47,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DC5CBE3DA17A862C0B7605D7"
-            BuildableName = "ScriptureAloneWatch.app"
-            BlueprintName = "ScriptureAloneWatch"
+            BlueprintIdentifier = "B7C2E571CC42407A79EFD8CB"
+            BuildableName = "ScriptureAlone.app"
+            BlueprintName = "ScriptureAlone"
             ReferencedContainer = "container:ScriptureAlone.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -59,9 +59,9 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "809264A5FB04FE19CA55B487"
-               BuildableName = "ScriptureAloneWatchUITests.xctest"
-               BlueprintName = "ScriptureAloneWatchUITests"
+               BlueprintIdentifier = "8320C669CCD63F8F18989604"
+               BuildableName = "ScriptureAloneUITests.xctest"
+               BlueprintName = "ScriptureAloneUITests"
                ReferencedContainer = "container:ScriptureAlone.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -83,9 +83,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DC5CBE3DA17A862C0B7605D7"
-            BuildableName = "ScriptureAloneWatch.app"
-            BlueprintName = "ScriptureAloneWatch"
+            BlueprintIdentifier = "B7C2E571CC42407A79EFD8CB"
+            BuildableName = "ScriptureAlone.app"
+            BlueprintName = "ScriptureAlone"
             ReferencedContainer = "container:ScriptureAlone.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -102,9 +102,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DC5CBE3DA17A862C0B7605D7"
-            BuildableName = "ScriptureAloneWatch.app"
-            BlueprintName = "ScriptureAloneWatch"
+            BlueprintIdentifier = "B7C2E571CC42407A79EFD8CB"
+            BuildableName = "ScriptureAlone.app"
+            BlueprintName = "ScriptureAlone"
             ReferencedContainer = "container:ScriptureAlone.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

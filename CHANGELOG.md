@@ -2,6 +2,12 @@
 
 ## After 1.0.0
 
+- Development: UI tests (XCUITest) for every screen on iPhone, iPad (and so the Mac) and Apple Watch —
+  the reader, selection, Go To and Topics, translations, Appearance, Notes, Study, Original Language,
+  Share, Listen, sermon slides, Keepsake & Export, family sharing, the User Guide; and on the watch
+  home, favorites, notes, highlights, books and the translation picker. A DEBUG-only `-UITestMode`
+  makes each launch deterministic and offline. Soren suites `ui-iphone`, `ui-ipad` and `ui-watch`.
+  No change for readers.
 - On a phone the passage title is always in the toolbar, so Go To is always a tap away: the
   translation button is a symbol (the translation is checked in its menu), and a book name too long
   for the room left becomes its abbreviation ("1 Thess 5", "Song 2"). iPad, Mac and Android tablets
