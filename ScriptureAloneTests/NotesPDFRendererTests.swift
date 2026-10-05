@@ -46,13 +46,14 @@ struct NotesPDFRendererTests {
 
     @Test func longExportsFlowOntoMorePagesAndLoseNothing() throws {
         let paragraph = String(repeating: "Grace upon grace, and truth with it. ", count: 30)
-        let notes = (1...25).map { note("Note number \($0)", paragraph) }
+        // "of 25" ends each title, so note 1 is not found inside "Note number 10".
+        let notes = (1...25).map { note("Note number \($0) of 25", paragraph) }
         let data = NotesPDFRenderer.render(notes, options: .init(title: "Everything", subtitle: nil, translation: nil, notice: nil),
                                            verseText: { _ in nil })
         let (pages, text) = try text(of: data)
         #expect(pages > 3)
         for index in 1...25 {
-            #expect(squeezed(text).contains("Notenumber\(index)"), "note \(index) fell off the end")
+            #expect(squeezed(text).contains("Notenumber\(index)of25"), "note \(index) fell off the end")
         }
     }
 
