@@ -437,6 +437,9 @@ private struct BookTile: View {
             RoundedRectangle(cornerRadius: 2).fill(tint).frame(width: 3).padding(.vertical, 10)
         }
         .contentShape(.rect(cornerRadius: 12))
+        // One element named once: without this the abbreviation and the name are both read out
+        // ("Romans, Romans", "Gen, Genesis") and the label below never takes effect.
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(book.name)
     }
 
