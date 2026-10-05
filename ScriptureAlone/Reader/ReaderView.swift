@@ -194,6 +194,7 @@ struct ReaderView: View {
             let parts = (UserDefaults.standard.string(forKey: "openChapter") ?? "").split(separator: ":").compactMap { Int($0) }
             if parts.count == 2, let book = BookID(rawValue: parts[0]) { model.show(ChapterRef(book, parts[1])) }
         }
+        .task { await stageUITestSelection() }
         #endif
     }
 
@@ -273,6 +274,7 @@ struct ReaderView: View {
         .buttonStyle(.plain)
         .keyboardShortcut("l", modifiers: .command)
         .accessibilityLabel("Go to passage, currently \(model.location.display)")
+        .accessibilityIdentifier("reader.passageButton")
         .layoutPriority(1)
     }
 
@@ -307,6 +309,7 @@ struct ReaderView: View {
             if showNotes { study.isOn = false }
         } label: { Label("Notes", systemImage: "note.text") }
             .keyboardShortcut("n", modifiers: [.command, .shift])
+            .accessibilityIdentifier("reader.notesButton")
     }
 
     /// Study mode: the panel follows the last verse tapped; taps still select as usual.
@@ -324,6 +327,7 @@ struct ReaderView: View {
         .keyboardShortcut("s", modifiers: [.command, .option])
         .accessibilityValue(study.isOn ? "On" : "Off")
         .accessibilityHint("Shows cross references and commentary for the verse you tap.")
+        .accessibilityIdentifier("reader.studyButton")
     }
 
     /// On iPhone, Study is a resizable sheet over the text; elsewhere it shares the inspector column.
@@ -353,12 +357,14 @@ struct ReaderView: View {
         Button { model.previous() } label: { Label("Previous Chapter", systemImage: "chevron.left") }
             .disabled(model.location.previous == nil)
             .keyboardShortcut("[", modifiers: .command)
+            .accessibilityIdentifier("reader.previousChapter")
     }
 
     private var nextButton: some View {
         Button { model.next() } label: { Label("Next Chapter", systemImage: "chevron.right") }
             .disabled(model.location.next == nil)
             .keyboardShortcut("]", modifiers: .command)
+            .accessibilityIdentifier("reader.nextChapter")
     }
 
     private var translationMenu: some View {
@@ -383,10 +389,12 @@ struct ReaderView: View {
         }
         .accessibilityLabel("Translation")
         .accessibilityValue(model.translationAbbreviation)
+        .accessibilityIdentifier("reader.translationMenu")
     }
 
     private var appearanceButton: some View {
         Button { showAppearance.toggle() } label: { Label("Appearance", systemImage: "textformat.size") }
+            .accessibilityIdentifier("reader.appearanceButton")
             .popover(isPresented: $showAppearance) {
                 AppearanceView()
                     .frame(minWidth: 320, idealWidth: 360, minHeight: 420, idealHeight: 620)
@@ -414,6 +422,7 @@ struct ReaderView: View {
             autoScrolling.toggle()
         }
         .accessibilityHint("Scrolls the chapter hands-free. Hold for speed.")
+        .accessibilityIdentifier("reader.autoScroll")
     }
 
     private var listenButton: some View {
@@ -422,6 +431,7 @@ struct ReaderView: View {
             Label(listening ? "Pause Listening" : "Listen", systemImage: listening ? "headphones.circle.fill" : "headphones")
         }
         .accessibilityHint("Reads the chapter aloud from the top of the screen.")
+        .accessibilityIdentifier("reader.listen")
     }
 
     /// Hidden buttons for text-size shortcuts (⌘+ / ⌘−).
@@ -509,6 +519,21 @@ struct ReaderView: View {
             model.show(ChapterRef(.john, 1), verse: 1)
             try? await Task.sleep(for: .milliseconds(400))
             showAppearance = true
+        }
+    }
+    #endif
+
+    #if DEBUG
+    /// `-UITestMode -uiTestSelect 43:3:16-17`: selects verses once their chapter is on screen, through
+    /// the same path a tap on the text takes (`handle(.verse:)`), since a UI test can't aim at a verse.
+    private func stageUITestSelection() async {
+        guard let request = UITestMode.selection else { return }
+        if model.location != request.chapter { model.show(request.chapter) }
+        for _ in 0..<100 where model.layoutChapter != request.chapter {
+            try? await Task.sleep(for: .milliseconds(50))
+        }
+        for verse in request.verses {
+            handle(.verse(VerseRef(request.chapter.book, request.chapter.chapter, verse).key))
         }
     }
     #endif

@@ -78,12 +78,15 @@ struct AppearanceView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityAddTraits(option == family ? .isSelected : [])
+                    .accessibilityIdentifier("appearance.font.\(option.rawValue)")
                 }
             }
 
             Section("Show") {
                 Toggle("Words of Christ in Red", isOn: $redLetters)
                 Toggle("Verse Numbers", isOn: $verseNumbers)
+                    .accessibilityIdentifier("appearance.verseNumbers")
                 Toggle("Section Headings", isOn: $headings)
                 Toggle("Footnotes", isOn: $footnotes)
             }

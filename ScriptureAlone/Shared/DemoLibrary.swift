@@ -9,7 +9,7 @@ import ScriptureAloneCore
 enum DemoLibrary {
     static func seedIfRequested(_ context: ModelContext) {
         #if DEBUG
-        guard ProcessInfo.processInfo.arguments.contains("-seedDemoLibrary") else { return }
+        guard ProcessInfo.processInfo.arguments.contains("-seedDemoLibrary") || UITestMode.seedsDemoLibrary else { return }
         let existing = (try? context.fetchCount(FetchDescriptor<Favorite>())) ?? 0
         guard existing == 0 else { return }
         let now = Date.now

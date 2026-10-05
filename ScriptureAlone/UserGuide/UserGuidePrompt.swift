@@ -80,7 +80,7 @@ private struct UserGuidePromptModifier: ViewModifier {
     private static var shouldOffer: Bool {
         var automated = UserGuidePrompt.isTestRun
         #if DEBUG
-        automated = automated || ScreenshotScene.current != nil
+        automated = automated || ScreenshotScene.current != nil || UITestMode.isOn
         #endif
         return UserGuidePrompt.shouldOffer(
             alreadyShown: UserDefaults.standard.bool(forKey: UserGuidePrompt.shownKey),

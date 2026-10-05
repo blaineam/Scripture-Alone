@@ -122,6 +122,7 @@ struct PassagePicker: View {
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
             TextField("John 3:16, Rom 8, or search words", text: $query)
                 .textFieldStyle(.plain)
+                .accessibilityIdentifier("goto.search")
                 .focused($focused)
                 .autocorrectionDisabled()
                 #if os(iOS)
@@ -313,6 +314,7 @@ struct PassagePicker: View {
                         BookTile(book: book)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("goto.book.\(book.rawValue)")
                 }
             }
         }
@@ -340,6 +342,7 @@ struct PassagePicker: View {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 86), spacing: 8)], spacing: 8) {
                 ForEach(suggestedBooks) { book in
                     NavigationLink(value: book) { BookTile(book: book) }.buttonStyle(.plain)
+                        .accessibilityIdentifier("goto.book.\(book.rawValue)")
                 }
             }
         }

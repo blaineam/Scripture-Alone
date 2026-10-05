@@ -129,6 +129,7 @@ struct ShareDesigner: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             .accessibilityLabel("Shape")
+            .accessibilityIdentifier("share.shape")
 
             HStack {
                 Text("Typeface")

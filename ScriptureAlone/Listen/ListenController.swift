@@ -415,6 +415,15 @@ final class ListenController {
     // MARK: System voice
 
     private func beginSystem(at index: Int) {
+        #if DEBUG
+        // `-UITestMode`: the transport runs (the bar, play/pause, the marked verse) without a voice
+        // lookup or any audio, so a UI test never waits on, or plays, speech.
+        if UITestMode.isOn {
+            phase = .playing
+            updateNowPlaying()
+            return
+        }
+        #endif
         let language = reader?.textLanguage ?? "en"
         if let cached = resolvedVoice, cached.id == voiceID, cached.language == language {
             speakSystem(from: index, voice: cached.voice)

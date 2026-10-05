@@ -333,6 +333,7 @@ private struct PassageChip: View {
         .buttonStyle(.plain)
         .accessibilityLabel(range.display)
         .accessibilityHint("Double-tap to remove this passage")
+        .accessibilityIdentifier("slideReview.passage")
         .accessibilityAction(named: "Remove") { onRemove() }
     }
 }

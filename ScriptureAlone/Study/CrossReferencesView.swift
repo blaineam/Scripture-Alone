@@ -138,6 +138,7 @@ private struct CrossReferenceRow: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityHint("Opens \(row.reference.target.display) in the reader")
+        .accessibilityIdentifier("study.crossReference")
         .contextMenu {
             Button { study.jump(to: row.reference.target, reader: model) } label: {
                 Label("Go to \(row.reference.target.display)", systemImage: "arrow.right")

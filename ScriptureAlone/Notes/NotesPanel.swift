@@ -87,10 +87,12 @@ struct NotesPanel: View {
                         ForEach(Scope.allCases) { Text($0.title).tag($0) }
                     }
                     .pickerStyle(.segmented)
+                    .accessibilityIdentifier("notes.scope")
                     Picker("Where", selection: $place) {
                         ForEach(Place.allCases) { Text($0.title).tag($0) }
                     }
                     .pickerStyle(.segmented)
+                    .accessibilityIdentifier("notes.place")
                 }
                 .listRowSeparator(.hidden)
 
@@ -101,6 +103,7 @@ struct NotesPanel: View {
                 } else {
                     ForEach(filtered) { note in
                         NavigationLink(value: note.uuid) { NoteRow(note: note) }
+                            .accessibilityIdentifier("notes.row")
                     }
                     .onDelete { offsets in
                         for index in offsets { context.delete(filtered[index]) }
@@ -123,6 +126,7 @@ struct NotesPanel: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button { newNote() } label: { Label("New Note", systemImage: "square.and.pencil") }
+                        .accessibilityIdentifier("notes.new")
                 }
                 ToolbarItem(placement: .primaryAction) {
                     SlideCaptureMenu(capture: slideCapture)
@@ -144,6 +148,7 @@ struct NotesPanel: View {
                     } label: {
                         Label("Export", systemImage: "square.and.arrow.up")
                     }
+                    .accessibilityIdentifier("notes.export")
                 }
             }
             .sheet(item: $exportSelection) { selection in
@@ -163,7 +168,9 @@ struct NotesPanel: View {
             }
             .task {
                 // The sermon-notes screenshot: a sample slide through the photo-import path.
-                guard ScreenshotScene.current == .sermonNotes, let data = ScreenshotScene.sampleSlideData else { return }
+                let data = ScreenshotScene.current == .sermonNotes ? ScreenshotScene.sampleSlideData
+                    : UITestMode.importsSampleSlide ? UITestMode.sampleSlideData : nil
+                guard let data else { return }
                 try? await Task.sleep(for: .milliseconds(900))
                 await slideCapture.accept(data: data)
             }

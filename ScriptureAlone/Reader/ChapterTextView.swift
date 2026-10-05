@@ -114,6 +114,7 @@ struct ChapterTextView: UIViewRepresentable {
         container.widthTracksTextView = true
         layoutManager.addTextContainer(container)
         let view = ReaderTextView(frame: .zero, textContainer: container)
+        view.accessibilityIdentifier = "reader.text"
         view.isEditable = false
         view.isSelectable = false
         view.alwaysBounceVertical = true

@@ -12,6 +12,11 @@ struct ScriptureAloneApp: App {
     #endif
 
     init() {
+        #if DEBUG
+        // `-UITestMode`: a fresh install's settings, no iCloud, no watch link (see UITestMode).
+        UITestMode.prepare()
+        if UITestMode.isOn { return }
+        #endif
         // First, before any view or model reads a setting: puts back the reader's settings from
         // iCloud on a reinstall or a new device. Reads the on-device cache only; never waits.
         SettingsSync.shared.start()
@@ -90,7 +95,11 @@ private struct RootView: View {
                 model.onlineSearch = { entry, query in try await loader.search(entry, query) }
 
                 model.refreshTranslations(imported: library.entries.map { ($0.info, $0.url) })
+                #if DEBUG
+                if !UITestMode.isOn { await ImportedBibleSync.shared.start() }
+                #else
                 await ImportedBibleSync.shared.start()
+                #endif
                 // A Crossway key is enough to offer the ESV; API.Bible's picks are remembered
                 // when they are made, so they come back here without a network call and without
                 // the reader having to open the keys screen again.

@@ -105,6 +105,7 @@ struct StudyContextBrowser: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
+            .accessibilityIdentifier("study.context.tabs")
             .padding(.horizontal)
             .padding(.vertical, 8)
             Group {

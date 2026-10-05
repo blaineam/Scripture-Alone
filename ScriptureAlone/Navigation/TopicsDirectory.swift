@@ -231,6 +231,7 @@ struct LifeThemeView: View {
         }
         .buttonStyle(.plain)
         .accessibilityHint(Text("Opens \(reference) in the reader", comment: "Accessibility hint. %@ is a Bible reference."))
+        .accessibilityIdentifier("topics.passage")
         .contextMenu { passageMenu(range, reference: reference) }
     }
 
@@ -458,5 +459,6 @@ struct CrisisCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.pink.opacity(0.1), in: .rect(cornerRadius: 16))
         .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("topics.crisisCard")
     }
 }

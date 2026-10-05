@@ -116,6 +116,14 @@ struct CatalogView: View {
 
     private func load() async {
         state = .loading
+        #if DEBUG
+        // `-UITestMode`: a fixture in the catalogue's own CSV shape, through the real parser.
+        if UITestMode.isOn {
+            let fixture = (try? EBibleCatalog.parse(csv: UITestMode.catalogCSV)) ?? []
+            state = .loaded(mine: CatalogLanguageMatch.ordered(fixture.filter(CatalogCuration.isCurated)), other: [])
+            return
+        }
+        #endif
         do {
             // Two lists, because they carry different promises. English is an allowlist the app
             // stands behind; everything else is every complete Bible eBible publishes, offered
@@ -132,6 +140,9 @@ struct CatalogView: View {
     }
 
     private func download(_ translation: CatalogTranslation) async {
+        #if DEBUG
+        if UITestMode.isOn { return }   // no network in a UI test
+        #endif
         downloading = translation
         progress = nil
         defer { downloading = nil; progress = nil }

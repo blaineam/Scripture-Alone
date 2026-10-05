@@ -69,6 +69,7 @@ struct StudyPanel: View {
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
+                .accessibilityIdentifier("study.tabs")
                 .padding(.horizontal)
                 .padding(.bottom, 8)
                 Divider()

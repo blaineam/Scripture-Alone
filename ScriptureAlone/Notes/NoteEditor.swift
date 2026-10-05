@@ -20,6 +20,7 @@ struct NoteEditor: View {
             Section {
                 TextField("Title", text: $note.title, axis: .vertical)
                     .font(.title2.weight(.semibold))
+                    .accessibilityIdentifier("noteEditor.title")
                     .focused($focus, equals: .title)
             }
 
@@ -45,6 +46,7 @@ struct NoteEditor: View {
                 }
                 HStack {
                     TextField("Add a passage, e.g. Rom 8:1-17", text: $passageText)
+                        .accessibilityIdentifier("noteEditor.addPassage")
                         .focused($focus, equals: .passage)
                         .autocorrectionDisabled()
                         .onSubmit(addTypedPassages)
@@ -61,6 +63,7 @@ struct NoteEditor: View {
 
             Section("Note") {
                 TextEditor(text: $note.body)
+                    .accessibilityIdentifier("noteEditor.body")
                     .frame(minHeight: 220)
                     .focused($focus, equals: .body)
                     .scrollContentBackground(.hidden)
@@ -92,6 +95,7 @@ struct NoteEditor: View {
                 } label: {
                     Label("More", systemImage: "ellipsis.circle")
                 }
+                .accessibilityIdentifier("noteEditor.more")
             }
         }
         .slideCapture(slideCapture, appendTo: note) { _ in }

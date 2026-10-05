@@ -10,18 +10,48 @@ import ScriptureAloneCore
 @main
 struct ScriptureAloneWatchApp: App {
     private let container = DataStore.makeContainer()
-    @State private var bible = WatchBible()
+    @State private var bible: WatchBible
+
+    init() {
+        #if DEBUG
+        WatchUITestSupport.prepare()
+        #endif
+        _bible = State(initialValue: WatchBible())
+    }
 
     var body: some Scene {
         WindowGroup {
             WatchRootView()
                 .modifier(WatchAccent())
                 .environment(bible)
-                .task { WatchPhoneLink.shared.activate(bible: bible) }
+                .task {
+                    #if DEBUG
+                    if UITestMode.isOn { return }   // no WatchConnectivity in a UI test
+                    #endif
+                    WatchPhoneLink.shared.activate(bible: bible)
+                }
         }
         .modelContainer(container)
     }
 }
+
+#if DEBUG
+/// `-UITestMode` on the watch (see `UITestMode`): a fresh install's settings, and the BSB edition —
+/// copied into Debug builds only — installed as if the phone had sent it, and chosen. A UI test
+/// never depends on the licensed translation the watch ships.
+enum WatchUITestSupport {
+    static func prepare() {
+        UITestMode.prepare()
+        guard UITestMode.isOn, let source = Bundle.main.url(forResource: "BSB-Watch", withExtension: "sqlite") else { return }
+        let destination = WatchBible.receivedURL(for: "BSB")
+        if !FileManager.default.fileExists(atPath: destination.path) {
+            try? FileManager.default.copyItem(at: source, to: destination)
+        }
+        UserDefaults.standard.set("BSB", forKey: "watch.translation.choice")
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "watch.translation.choiceAt")
+    }
+}
+#endif
 
 struct WatchRootView: View {
     @State private var path: [WatchRoute] = []

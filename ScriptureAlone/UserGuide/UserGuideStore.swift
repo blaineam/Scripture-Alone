@@ -174,7 +174,7 @@ final class UserGuideStore {
                                   progress: @escaping @Sendable (Double) -> Void) async throws -> Data {
         #if DEBUG
         // `-userGuideOffline YES`: every fetch fails as it would with no connection.
-        if UserDefaults.standard.bool(forKey: "userGuideOffline") { throw URLError(.notConnectedToInternet) }
+        if UserDefaults.standard.bool(forKey: "userGuideOffline") || UITestMode.isOn { throw URLError(.notConnectedToInternet) }
         #endif
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData

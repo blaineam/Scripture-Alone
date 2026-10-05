@@ -132,6 +132,7 @@ struct ColumnChapterView: UIViewRepresentable {
                 let frame = CGRect(x: CGFloat(page) * bounds.width + ReaderColumns.margin + CGFloat(column) * (columnWidth + ReaderColumns.gutter),
                                    y: top, width: columnWidth, height: columnHeight)
                 let view = UITextView(frame: frame, textContainer: container)
+                view.accessibilityIdentifier = "reader.text"
                 view.isEditable = false
                 view.isSelectable = false
                 view.isScrollEnabled = false

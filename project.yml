@@ -122,6 +122,8 @@ targets:
           done
           # The licensed NASB 1995, when a developer has its package locally (never committed).
           [ -f "$R/Packages/NASB1995.sabible" ] && cp -f "$R/Packages/NASB1995.sabible" "$DEST/"
+          # The sample sermon slide, for the UI tests' `-uiTestSlide` (the simulator has no camera).
+          cp -f "$SRCROOT/docs/appstore-screenshots/sample-slide.jpg" "$DEST/"
           true
       - name: Strip xattrs (codesign workaround)
         # Must run on EVERY build: iCloud Documents re-tags files with
@@ -270,6 +272,8 @@ targets:
       - ScriptureAlone/Generated/ContentKeySeed.swift
       - ScriptureAlone/Persistence/Models.swift
       - ScriptureAlone/Shared/DemoLibrary.swift
+      # DEBUG-only `-UITestMode` (ScriptureAloneWatchUITests).
+      - ScriptureAlone/App/UITestMode.swift
       - ScriptureAlone/Shared/DailyVerseLibrary.swift
       - ScriptureAlone/Shared/DailyVerses.json
       # Phone ↔ watch vocabulary for translation sync (WatchLink / WatchPhoneLink).
@@ -322,6 +326,15 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ENABLE_PREVIEWS: YES
     postCompileScripts:
+      # In Debug only, the BSB's watch edition, which `-UITestMode` installs as if the phone had sent
+      # it (ScriptureAloneWatchUITests): a UI test never depends on the licensed translation the
+      # watch ships. Release never carries it — the editions come from the phone.
+      - name: Copy the BSB watch edition into Debug builds
+        basedOnDependencyAnalysis: false
+        script: |
+          [ "$CONFIGURATION" = "Debug" ] || exit 0
+          cp -f "$SRCROOT/ScriptureAloneWatch/Resources/BSB-Watch.sqlite" "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/"
+          true
       - name: Strip xattrs (codesign workaround)
         basedOnDependencyAnalysis: false
         script: |

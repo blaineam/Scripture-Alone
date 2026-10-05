@@ -72,6 +72,7 @@ struct FavoritesSection: View {
                 .buttonStyle(.plain)
                 .accessibilityElement(children: .combine)
                 .accessibilityHint("Opens the passage")
+                .accessibilityIdentifier("favorites.row")
             }
             .onDelete { offsets in
                 for index in offsets { context.delete(rows[index].favorite) }
@@ -182,6 +183,7 @@ struct HighlightsSection: View {
                 .buttonStyle(.plain)
                 .accessibilityElement(children: .combine)
                 .accessibilityHint("Opens the passage")
+                .accessibilityIdentifier("highlights.row")
             }
             .onDelete { offsets in
                 for index in offsets { rows[index].marks.forEach(context.delete) }

@@ -44,6 +44,7 @@ struct SelectionBar: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Highlight \(color.name)")
+                    .accessibilityIdentifier("selection.highlight.\(color.rawValue)")
                     .modifier(BarCell())
                 }
                 Button { removeHighlights() } label: { Image(systemName: "eraser") }
@@ -62,6 +63,8 @@ struct SelectionBar: View {
                 Button { copy(quotation) } label: { Image(systemName: copied ? "checkmark" : "doc.on.doc") }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Copy")
+                    .accessibilityValue(copied ? Text("Copied") : Text(verbatim: ""))
+                    .accessibilityIdentifier("selection.copy")
                     .disabled(!mayQuote || !model.rights.allowCopy)
                     .modifier(BarCell())
                 if let single = singleVerse, InterlinearLibrary.shared.supports(model.translationInfo) {
@@ -87,6 +90,8 @@ struct SelectionBar: View {
         .padding(.vertical, 12)
         .frame(maxWidth: 520)
         .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("selection.bar")
         .sheet(item: $interlinear) { request in
             InterlinearView(verse: request.verse, verseText: text(of: request.verse),
                             glossText: bereanText(of: request.verse))

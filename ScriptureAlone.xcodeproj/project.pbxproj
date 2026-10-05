@@ -29,6 +29,7 @@
 		20A64AED5FB99726FC5CD027 /* MapGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65F2FBAF7C3E334C863023FB /* MapGeometry.swift */; };
 		20DCF0DEE79C23AFBC824901 /* ShareStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BEECD7D79C4803DCB59860 /* ShareStyle.swift */; };
 		2246EA208B01AA000BE31C79 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B92CECC981DA199D2D8E1875 /* AppGroup.swift */; };
+		23729998E1E3A3BC921B93D1 /* UITestMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F585BA6DB01A14C46402C3A /* UITestMode.swift */; };
 		25C2BE3906986CBDB86CE152 /* StudyModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F17EC67413B118E11B84EC /* StudyModel.swift */; };
 		26B899BB800FDA7453A4BE77 /* WatchReaderViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCA7C3E8E3AADBA0719A1ECC /* WatchReaderViews.swift */; };
 		27BEB865D8AFE43FDA089FF5 /* WatchLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E17B2E2DC4C88D10A3C4A05 /* WatchLink.swift */; };
@@ -147,6 +148,7 @@
 		C81CB445DABBBDAA96B982D7 /* VerseSpeaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B4035AD8C6AA89E5A0CE15B /* VerseSpeaker.swift */; };
 		CA283E49B2AC5EDFF35810B4 /* ReaderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E79D61A66336156A65FD29F3 /* ReaderModel.swift */; };
 		CABB1668FBF8A367CE9E01E8 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 3274D3AB861FE25DAD44055B /* Localizable.xcstrings */; };
+		CB170611A5A345BDE6108CD4 /* UITestMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F585BA6DB01A14C46402C3A /* UITestMode.swift */; };
 		CB38707BFFCC4A93D2C5ECC1 /* ImportedBibleSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AA853BB9AE03ECF149903C6 /* ImportedBibleSyncTests.swift */; };
 		CBD5BF91CA46B325827760A3 /* WidgetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4294C13F087A597E5D481F5D /* WidgetTests.swift */; };
 		CCCF48093DC2772BE6794DAE /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 83FA6232CC192A9E359F659F /* AppIcon.icon */; };
@@ -308,6 +310,7 @@
 		2B23F521A56070F190FC3B4E /* NoteEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditor.swift; sourceTree = "<group>"; };
 		2B431F68DD34AA88493E73FC /* SealedTranslationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SealedTranslationsTests.swift; sourceTree = "<group>"; };
 		2EB1DC7B2FAE137B05102D93 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2F585BA6DB01A14C46402C3A /* UITestMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestMode.swift; sourceTree = "<group>"; };
 		3274D3AB861FE25DAD44055B /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		34F17EC67413B118E11B84EC /* StudyModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyModel.swift; sourceTree = "<group>"; };
 		3611812EFC7862964806177E /* asset-packs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "asset-packs"; path = "Tools/asset-packs"; sourceTree = SOURCE_ROOT; };
@@ -665,6 +668,7 @@
 				05B864CDB3AF771DDE8E03E6 /* ScreenshotScene.swift */,
 				DF51A40F2B56DE405EF0EDEC /* ScriptureAloneApp.swift */,
 				60106636FA8A1302F88CEE28 /* SettingsSync.swift */,
+				2F585BA6DB01A14C46402C3A /* UITestMode.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -1050,6 +1054,7 @@
 			buildConfigurationList = 7A4A7EC97369B4184EB5926A /* Build configuration list for PBXNativeTarget "ScriptureAloneWatch" */;
 			buildPhases = (
 				0562DB8B09B4849461A2D770 /* Sources */,
+				0730123571C9E0143468043A /* Copy the BSB watch edition into Debug builds */,
 				3CE165D00B5987278D10EF57 /* Strip xattrs (codesign workaround) */,
 				974D8F1DE888A2944A11A532 /* Resources */,
 				34C0488E001B595DACCDC8CF /* Frameworks */,
@@ -1198,6 +1203,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		0730123571C9E0143468043A /* Copy the BSB watch edition into Debug builds */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy the BSB watch edition into Debug builds";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "[ \"$CONFIGURATION\" = \"Debug\" ] || exit 0\ncp -f \"$SRCROOT/ScriptureAloneWatch/Resources/BSB-Watch.sqlite\" \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/\"\ntrue\n";
+		};
 		0F84C490BBDB1F8EC5E429DC /* Strip xattrs (codesign workaround) */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -1272,7 +1296,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "[ \"$CONFIGURATION\" = \"Debug\" ] || exit 0\nDEST=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nR=\"$SRCROOT/ScriptureAlone/Resources\"\nfor f in Packages/ASV.sabible Bibles/BSB.sqlite Bibles/KJV.sqlite Bibles/CUVS.sqlite Bibles/BUNGO.sqlite Bibles/LUT1912.sqlite Bibles/LSG.sqlite Bibles/RVR1909.sqlite Bibles/KRV.sqlite Bibles/BLIVRE.sqlite Bibles/RIV1927.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do\n  cp -f \"$R/$f\" \"$DEST/\"\ndone\n# The licensed NASB 1995, when a developer has its package locally (never committed).\n[ -f \"$R/Packages/NASB1995.sabible\" ] && cp -f \"$R/Packages/NASB1995.sabible\" \"$DEST/\"\ntrue\n";
+			shellScript = "[ \"$CONFIGURATION\" = \"Debug\" ] || exit 0\nDEST=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nR=\"$SRCROOT/ScriptureAlone/Resources\"\nfor f in Packages/ASV.sabible Bibles/BSB.sqlite Bibles/KJV.sqlite Bibles/CUVS.sqlite Bibles/BUNGO.sqlite Bibles/LUT1912.sqlite Bibles/LSG.sqlite Bibles/RVR1909.sqlite Bibles/KRV.sqlite Bibles/BLIVRE.sqlite Bibles/RIV1927.sqlite Study/Study.sqlite Study/Interlinear.sqlite; do\n  cp -f \"$R/$f\" \"$DEST/\"\ndone\n# The licensed NASB 1995, when a developer has its package locally (never committed).\n[ -f \"$R/Packages/NASB1995.sabible\" ] && cp -f \"$R/Packages/NASB1995.sabible\" \"$DEST/\"\n# The sample sermon slide, for the UI tests' `-uiTestSlide` (the simulator has no camera).\ncp -f \"$SRCROOT/docs/appstore-screenshots/sample-slide.jpg\" \"$DEST/\"\ntrue\n";
 		};
 		A7E8A4B1EA53B0B00CE405D9 /* Strip xattrs (codesign workaround) */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1325,6 +1349,7 @@
 				D7EF2277F47BF2E8C71E3B77 /* DemoLibrary.swift in Sources */,
 				A3F695662AA5D3E21A9C9836 /* Models.swift in Sources */,
 				7A4522049DC290A51F677A4C /* ScriptureAloneWatchApp.swift in Sources */,
+				CB170611A5A345BDE6108CD4 /* UITestMode.swift in Sources */,
 				C81CB445DABBBDAA96B982D7 /* VerseSpeaker.swift in Sources */,
 				2AC732D4592B52494983760B /* VerseStyling.swift in Sources */,
 				E306ED72040F902C31B435DF /* WatchHomeView.swift in Sources */,
@@ -1447,6 +1472,7 @@
 				546FCFD807AD47BCB4AB92D1 /* TopicsDirectory.swift in Sources */,
 				6B8B2ED41138FFA398296B75 /* TranslationDownloadBanner.swift in Sources */,
 				C11A56B3EC4153B0651D82C7 /* TranslationsView.swift in Sources */,
+				23729998E1E3A3BC921B93D1 /* UITestMode.swift in Sources */,
 				51D68CD92231B55439DC6D26 /* UserGuideBlocks.swift in Sources */,
 				1459ED8E2140C7559172B808 /* UserGuidePrompt.swift in Sources */,
 				89EA214835277A4335ACD06C /* UserGuideStore.swift in Sources */,

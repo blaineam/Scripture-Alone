@@ -98,7 +98,10 @@ enum DataStore {
     /// Syncs through the user's private iCloud database when the app is signed with the
     /// iCloud entitlement; falls back to a local store (unsigned builds, no account).
     static func makeContainer() -> ModelContainer {
-        let inMemory = ProcessInfo.processInfo.arguments.contains("-inMemoryStore")
+        var inMemory = ProcessInfo.processInfo.arguments.contains("-inMemoryStore")
+        #if DEBUG
+        inMemory = inMemory || UITestMode.isOn
+        #endif
         if !inMemory {
             do {
                 return try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, cloudKitDatabase: .automatic))
