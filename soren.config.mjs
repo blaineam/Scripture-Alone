@@ -22,7 +22,8 @@
 //   • android/ — :app (phone/tablet), :wear (Wear OS) and :shared (plain Kotlin JVM).
 //   • Tools/ — the Python build and packaging tools.
 //
-// Not suites on purpose: the screenshot rig, the Play/ASC scripts, and the 3 instrumented Android
+// Not suites on purpose: the screenshot rig (Tools/capture_screenshots.sh — captures aren't a
+// gate), the Play/ASC scripts, and the 3 instrumented Android
 // tests (they run only if an emulator is already up — never booted for this).
 export default {
   name: 'Scripture Alone',
@@ -49,7 +50,7 @@ export default {
       type: 'xcodebuild-test',
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAlone',
-      destination: 'platform=iOS Simulator,name=iPhone 17 Pro',
+      destination: 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0',
       platform: 'ios',
       xcodegen: true,
       description: 'App unit tests on the iOS simulator (+ widgets, assets extension compile)',
@@ -65,6 +66,52 @@ export default {
       platform: 'macos',
       xcodegen: true,
       description: 'App unit tests on macOS (+ Mac widgets compile)',
+    },
+
+    // ── UI tests (XCUITest): every screen and key flow on iPhone and iPad — the iPad run also stands
+    //    in for the Mac, which runs the iPad app. The ScriptureAloneUITests scheme launches the app
+    //    with -UITestMode (ScriptureAlone/App/UITestMode.swift, DEBUG only): an in-memory store with
+    //    the demo library, a fresh install's settings, no iCloud, no network, a silent Listen, and
+    //    always the BSB — never a licensed text. Unsigned is fine: nothing here needs an entitlement.
+    //    OS=27.0 because each of these device names exists on two runtimes.
+    'ui-iphone': {
+      type: 'xcodebuild-test',
+      project: 'ScriptureAlone.xcodeproj',
+      scheme: 'ScriptureAloneUITests',
+      destination: 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0',
+      platform: 'ios',
+      xcodegen: true,
+      derivedDataPath: '/tmp/soren-dd-scripture-alone-ui-iphone',
+      extraArgs: ['-collect-test-diagnostics', 'never'],
+      description: 'UI tests on iPhone (XCUITest, -UITestMode)',
+      tags: ['regression', 'ui'],
+    },
+    'ui-ipad': {
+      type: 'xcodebuild-test',
+      project: 'ScriptureAlone.xcodeproj',
+      scheme: 'ScriptureAloneUITests',
+      destination: 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=27.0',
+      platform: 'ios',
+      xcodegen: true,
+      derivedDataPath: '/tmp/soren-dd-scripture-alone-ui-ipad',
+      extraArgs: ['-collect-test-diagnostics', 'never'],
+      description: 'UI tests on iPad — and so the Mac (Designed for iPad)',
+      tags: ['regression', 'ui'],
+    },
+
+    // ── The watch app's UI tests: home, favorites, notes, highlights, books → chapter → verse, the
+    //    translation picker. -UITestMode installs the BSB's watch edition (Debug builds only).
+    'ui-watch': {
+      type: 'xcodebuild-test',
+      project: 'ScriptureAlone.xcodeproj',
+      scheme: 'ScriptureAloneWatch',
+      destination: 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm),OS=27.0',
+      platform: 'ios',
+      xcodegen: true,
+      derivedDataPath: '/tmp/soren-dd-scripture-alone-ui-watch',
+      extraArgs: ['-collect-test-diagnostics', 'never'],
+      description: 'watchOS UI tests (XCUITest, -UITestMode)',
+      tags: ['regression', 'ui'],
     },
 
     // ── Apple Watch app + complications: a compile gate. The watch's logic that can be tested
@@ -119,6 +166,6 @@ export default {
 
   release: {
     // Documentation of the release gate.
-    requireGreen: ['core', 'ios', 'macos', 'watch', 'android', 'android-shared', 'tools'],
+    requireGreen: ['core', 'ios', 'macos', 'watch', 'ui-iphone', 'ui-ipad', 'ui-watch', 'android', 'android-shared', 'tools'],
   },
 };
