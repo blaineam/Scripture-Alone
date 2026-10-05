@@ -379,7 +379,7 @@ final class AssetLibrary {
         states[pack] = .absent
     }
 
-    private static func message(for error: any Error, pack: AssetPack) -> String {
+    static func message(for error: any Error, pack: AssetPack) -> String {
         // The pack isn't on App Store Connect for this build — the one failure a reader can do
         // nothing about, so it says so rather than offering a retry that cannot succeed.
         if case ManagedBackgroundAssetsError.assetPackNotFound = error {

@@ -107,8 +107,8 @@ final class SettingsSync {
     /// that had never synced — a reinstall or a new device.
     static let restoredNotification = Notification.Name("SettingsSync.restored")
 
-    private let defaults = UserDefaults.standard
-    private let cloud = NSUbiquitousKeyValueStore.default
+    private let defaults: UserDefaults
+    private let cloud: any SettingsCloudStore
     private var started = false
     private var startedAt = ContinuousClock.now
     private var pendingLocal: Task<Void, Never>?
@@ -116,14 +116,26 @@ final class SettingsSync {
     private var observers: [NSObjectProtocol] = []
 
     /// This device's kind, for the settings kept per kind of device.
-    private let deviceKind: String = {
+    private let deviceKind: String
+
+    private static var currentDeviceKind: String {
         #if os(iOS)
         if ProcessInfo.processInfo.isiOSAppOnMac { return "mac" }
         return UIDevice.current.userInterfaceIdiom == .pad ? "pad" : "phone"
         #else
         return "mac"
         #endif
-    }()
+    }
+
+    /// The app uses `shared`, on `UserDefaults.standard` and the iCloud key-value store. Tests pass
+    /// their own defaults suite and an in-memory store.
+    init(defaults: UserDefaults = .standard,
+         cloud: any SettingsCloudStore = NSUbiquitousKeyValueStore.default,
+         deviceKind: String? = nil) {
+        self.defaults = defaults
+        self.cloud = cloud
+        self.deviceKind = deviceKind ?? Self.currentDeviceKind
+    }
 
     /// A random id for this install, which only breaks ties between two changes made in the same
     /// instant. Deliberately not a device identifier.
@@ -168,7 +180,7 @@ final class SettingsSync {
 
     // MARK: Changes
 
-    private enum Trigger { case launch, local, cloud, deferred }
+    enum Trigger { case launch, local, cloud, deferred }
 
     /// A setting changed here — or anything else in `UserDefaults` did; the reading position is
     /// saved as the reader scrolls. Coalesced, and cheap: one pass reads a few dozen keys.
@@ -190,7 +202,7 @@ final class SettingsSync {
         reconcile(from: .local)
     }
 
-    private func cloudChanged(reason: Int?, keys: [String]) {
+    func cloudChanged(reason: Int?, keys: [String]) {
         guard reason == nil || keys.isEmpty || keys.contains(Self.blobKey) else { return }
         switch reason {
         case NSUbiquitousKeyValueStoreAccountChange:
@@ -206,7 +218,7 @@ final class SettingsSync {
 
     // MARK: The pass
 
-    private func reconcile(from trigger: Trigger) {
+    func reconcile(from trigger: Trigger) {
         var remote: SyncedSettingsBlob?
         if let data = cloud.data(forKey: Self.blobKey) {
             guard let blob = try? SyncedSettingsBlob.decode(data) else {
@@ -283,3 +295,12 @@ final class SettingsSync {
     }
     #endif
 }
+
+/// The part of `NSUbiquitousKeyValueStore` settings sync uses.
+protocol SettingsCloudStore: AnyObject {
+    @discardableResult func synchronize() -> Bool
+    func data(forKey key: String) -> Data?
+    func set(_ value: Any?, forKey key: String)
+}
+
+extension NSUbiquitousKeyValueStore: SettingsCloudStore {}

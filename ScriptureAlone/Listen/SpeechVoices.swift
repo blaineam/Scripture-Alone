@@ -149,9 +149,7 @@ nonisolated enum SpeechVoices {
     }
 
     private static func enumerate(_ language: String) -> [VoiceOption] {
-        let region = Locale.current.region?.identifier
-        // Mainland Mandarin for the simplified-script 和合本, whatever region the device is in.
-        let preferred = language == "zh" ? "zh-CN" : region.map { "\(language)-\($0)" }
+        let preferred = homeVoiceLanguage(for: language, region: Locale.current.region?.identifier)
         return AVSpeechSynthesisVoice.speechVoices()
             .filter { $0.language.hasPrefix(language) && !$0.voiceTraits.contains(.isNoveltyVoice) }
             .map { voice in
@@ -160,13 +158,14 @@ nonisolated enum SpeechVoices {
                     : voice.quality == .enhanced ? .enhanced : .standard
                 return VoiceOption(id: voice.identifier, name: voice.name, language: voice.language, kind: kind)
             }
-            .sorted { a, b in
-                let aHome = a.language == preferred, bHome = b.language == preferred
-                if aHome != bHome { return aHome }
-                if a.kind != b.kind { return a.kind < b.kind }
-                if a.language != b.language { return a.language < b.language }
-                return a.name < b.name
-            }
+            .ordered(preferring: preferred)
+    }
+
+    /// The voice language listed first: the text's language in the device's region ("en-GB" on a
+    /// British device) — but always mainland Mandarin for the simplified-script 和合本, whatever
+    /// region the device is in.
+    static func homeVoiceLanguage(for language: String, region: String?) -> String? {
+        language == "zh" ? "zh-CN" : region.map { "\(language)-\($0)" }
     }
 
     /// 0.5×–2× mapped onto `AVSpeechUtterance.rate`. The rate scale isn't linear in words per
@@ -187,6 +186,20 @@ nonisolated enum SpeechVoices {
             AVSpeechSynthesizer.requestPersonalVoiceAuthorization { status in
                 continuation.resume(returning: status == .authorized)
             }
+        }
+    }
+}
+
+extension Array where Element == VoiceOption {
+    /// The picker's order: the device's own region first (`preferred`, e.g. "en-GB"), then by
+    /// quality — Personal Voice, Premium, Enhanced, standard — then by language and name.
+    nonisolated func ordered(preferring preferred: String?) -> [VoiceOption] {
+        sorted { a, b in
+            let aHome = a.language == preferred, bHome = b.language == preferred
+            if aHome != bHome { return aHome }
+            if a.kind != b.kind { return a.kind < b.kind }
+            if a.language != b.language { return a.language < b.language }
+            return a.name < b.name
         }
     }
 }

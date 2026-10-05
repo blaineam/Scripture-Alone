@@ -266,11 +266,11 @@ actor ImportedBibleSync: CKSyncEngineDelegate {
                           uniquingKeysWith: { first, _ in first })
     }
 
-    private static func name(of url: URL) -> String { url.deletingPathExtension().lastPathComponent }
+    static func name(of url: URL) -> String { url.deletingPathExtension().lastPathComponent }
 
     /// A record name from iCloud becomes a file name; it must be one `BibleFileImporter` could
     /// have written, never a path.
-    private static func isSafeName(_ name: String) -> Bool {
+    static func isSafeName(_ name: String) -> Bool {
         !name.isEmpty && name.count <= 128
             && name.allSatisfy { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" }
     }
@@ -286,14 +286,14 @@ actor ImportedBibleSync: CKSyncEngineDelegate {
         return hasher.finalize().map { String(format: "%02x", $0) }.joined()
     }
 
-    private static func systemFields(of record: CKRecord) -> Data {
+    static func systemFields(of record: CKRecord) -> Data {
         let coder = NSKeyedArchiver(requiringSecureCoding: true)
         record.encodeSystemFields(with: coder)
         coder.finishEncoding()
         return coder.encodedData
     }
 
-    private static func record(fromSystemFields data: Data) -> CKRecord? {
+    static func record(fromSystemFields data: Data) -> CKRecord? {
         guard let coder = try? NSKeyedUnarchiver(forReadingFrom: data) else { return nil }
         coder.requiresSecureCoding = true
         defer { coder.finishDecoding() }

@@ -374,13 +374,51 @@ targets:
           find "$CODESIGNING_FOLDER_PATH" -exec xattr -c {} + 2>/dev/null
           true
 
+  # Unit tests for the app layer (Swift Testing), hosted in the app on iOS and macOS. The pure
+  # logic lives in ScriptureAloneCore and is tested there (`swift test`); these cover what only
+  # the app has: the SwiftData models, settings and import sync, asset packs, sealed translations,
+  # the reader model and the App Intents. The scheme passes `-inMemoryStore`, so the host app never
+  # opens the reader's store, and an unsigned build never reaches CloudKit (`FamilyCloud.isEntitled`).
+  ScriptureAloneTests:
+    type: bundle.unit-test
+    supportedDestinations: [iOS, macOS]
+    sources:
+      - path: ScriptureAloneTests
+      # The App Store Connect asset-pack manifests, which AssetPackTests checks the app against.
+      - path: Tools/asset-packs
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - target: ScriptureAlone
+      - package: ScriptureAloneCore
+        product: ScriptureAloneCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.blainemiller.ScriptureAloneTests
+        GENERATE_INFOPLIST_FILE: YES
+        # The host's product name has a space ("Scripture Alone"), which XcodeGen's derived
+        # TEST_HOST (from the target name) does not know.
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Scripture Alone.app/Scripture Alone"
+        "TEST_HOST[sdk=macosx*]": "$(BUILT_PRODUCTS_DIR)/Scripture Alone.app/Contents/MacOS/Scripture Alone"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+
 schemes:
   ScriptureAlone:
     build:
       targets:
         ScriptureAlone: all
+        ScriptureAloneTests: [test]
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - ScriptureAloneTests
+      commandLineArguments:
+        "-inMemoryStore": true
     archive:
       config: Release
   ScriptureAloneWatch:
