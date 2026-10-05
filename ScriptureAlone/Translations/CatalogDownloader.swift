@@ -41,22 +41,28 @@ struct CatalogDownloader: Sendable {
         var written: Int64 = 0
         var lastReported = Date.distantPast
 
-        for try await byte in bytes {
-            buffer.append(byte)
-            if buffer.count >= 64 * 1024 {
-                try handle.write(contentsOf: buffer)
-                written += Int64(buffer.count)
-                buffer.removeAll(keepingCapacity: true)
-                // Reporting every chunk floods the main actor; a few times a second is plenty.
-                if Date().timeIntervalSince(lastReported) > 0.1 {
-                    lastReported = Date()
-                    progress(expected > 0 ? min(1, Double(written) / Double(expected)) : nil)
+        do {
+            for try await byte in bytes {
+                buffer.append(byte)
+                if buffer.count >= 64 * 1024 {
+                    try handle.write(contentsOf: buffer)
+                    written += Int64(buffer.count)
+                    buffer.removeAll(keepingCapacity: true)
+                    // Reporting every chunk floods the main actor; a few times a second is plenty.
+                    if Date().timeIntervalSince(lastReported) > 0.1 {
+                        lastReported = Date()
+                        progress(expected > 0 ? min(1, Double(written) / Double(expected)) : nil)
+                    }
                 }
             }
-        }
-        if !buffer.isEmpty {
-            try handle.write(contentsOf: buffer)
-            written += Int64(buffer.count)
+            if !buffer.isEmpty {
+                try handle.write(contentsOf: buffer)
+                written += Int64(buffer.count)
+            }
+        } catch {
+            // A connection lost half way: don't leave the truncated zip behind for every attempt.
+            try? FileManager.default.removeItem(at: destination)
+            throw error
         }
         guard written > 0 else {
             try? FileManager.default.removeItem(at: destination)
