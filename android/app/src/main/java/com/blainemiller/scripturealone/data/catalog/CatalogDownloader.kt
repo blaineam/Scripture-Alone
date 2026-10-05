@@ -27,9 +27,13 @@ object CatalogDownloader {
      * it doesn't). The caller deletes the file once imported; the importer copies what it needs.
      * Blocking — call off the main thread.
      */
-    fun download(translation: CatalogTranslation, directory: File, progress: (Double?) -> Unit = {}): File {
-        val connection = URL(translation.downloadURL).openConnection() as HttpURLConnection
-        val destination = File(directory.apply { mkdirs() }, "${translation.id}-${UUID.randomUUID()}.zip")
+    fun download(translation: CatalogTranslation, directory: File, progress: (Double?) -> Unit = {}): File =
+        download(URL(translation.downloadURL), translation.id, directory, progress)
+
+    /** [download] from [source] — the catalogue's URL in the app, a loopback server in the tests. */
+    internal fun download(source: URL, id: String, directory: File, progress: (Double?) -> Unit = {}): File {
+        val connection = source.openConnection() as HttpURLConnection
+        val destination = File(directory.apply { mkdirs() }, "$id-${UUID.randomUUID()}.zip")
         try {
             connection.connectTimeout = 60_000
             connection.readTimeout = 60_000
@@ -56,6 +60,9 @@ object CatalogDownloader {
                 }
             }
             if (written == 0L) throw Failure.Empty()
+            // A body shorter than the length the server stated is a connection lost half way. Not every
+            // HttpURLConnection reports that as an error on its own; a truncated zip must not be imported.
+            if (expected > 0 && written < expected) throw IOException("Download ended after $written of $expected bytes")
             progress(1.0)
             return destination
         } catch (e: Exception) {
