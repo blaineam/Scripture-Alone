@@ -80,10 +80,15 @@ export default {
     },
 
     // ── Android phone/tablet (:app) and Wear OS (:wear) JVM unit tests.
+    //    With the NASB packs in place (any local licensed build), :app and :wear refuse to
+    //    configure without SA_CONTENT_KEY_SEED — and Gradle configures every module, so
+    //    android-shared needs it too. Soren takes it from env, ~/.soren/credentials.json, or the
+    //    login keychain (service SA_CONTENT_KEY_SEED, docs/lockman/README.md) and masks it.
     android: {
       type: 'gradle',
       cwd: 'android',
       unit: 'testDebugUnitTest',
+      secrets: ['SA_CONTENT_KEY_SEED'],
       javaHome: '/opt/homebrew/opt/openjdk@17',
       description: 'Android :app + :wear unit tests (JVM)',
     },
@@ -94,6 +99,7 @@ export default {
       cmd: './gradlew',
       args: ['--no-daemon', ':shared:test'],
       cwd: 'android',
+      secrets: ['SA_CONTENT_KEY_SEED'],
       env: { JAVA_HOME: '/opt/homebrew/opt/openjdk@17' },
       description: 'Android :shared unit tests (canon, snapshot, Wear link, sealed packages)',
     },
