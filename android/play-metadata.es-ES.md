@@ -53,4 +53,5 @@ Subrayados, notas y favoritos se quedan en tu dispositivo. Sin servidor ni cuent
 Hecha para ayudar a estudiar la Palabra de Dios y acercarse más a Cristo.
 
 ## release_notes
-1.1.3 — En el teléfono, el título del pasaje (tócalo para ir a cualquier parte: Ir a) ahora siempre cabe en la barra de herramientas. El botón de traducción ahora es un icono, y la traducción que estás leyendo aparece marcada en su menú. Si el nombre de un libro es demasiado largo, se abrevia, por ejemplo «1Ts 5». En las tabletas, el botón conserva el nombre de la traducción si hay espacio. Las imágenes de la Guía de uso muestran la nueva barra.
+1.1.4 — Escuchar responde al instante: saltar adelante y atrás entre versículos es inmediato, incluso en teléfonos con una voz lenta. Las imágenes importadas, las fotos de diapositivas y las imágenes de la Guía de usuario ahora usan mucha menos memoria. En horizontal con navegación de tres botones, la barra de herramientas, las hojas y el panel de Estudio ya no quedan bajo la barra de navegación, y cada pantalla se ajusta a la barra de estado y al recorte de la cámara.
+

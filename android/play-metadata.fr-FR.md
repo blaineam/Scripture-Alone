@@ -53,4 +53,5 @@ Vos surlignages, notes et favoris restent sur votre appareil : ni serveur, ni co
 Conçue pour aider à étudier la Parole de Dieu et à se rapprocher du Christ.
 
 ## release_notes
-1.1.3 — Sur téléphone, le titre du passage (touchez-le pour aller n'importe où : Aller à) tient désormais toujours dans la barre d'outils. Le bouton de traduction devient une icône, et la traduction que vous lisez est cochée dans son menu. Un nom de livre trop long s'abrège, par exemple « 1Th 5 ». Sur tablette, le bouton garde le nom de la traduction s'il y a la place. Les images du guide d'utilisation montrent la nouvelle barre d'outils.
+1.1.4 — L'écoute réagit tout de suite : passer d'un verset à l'autre, en avant ou en arrière, est immédiat, même sur les téléphones à la voix lente. Les images importées, les photos de diapositives et les images du guide d'utilisation consomment bien moins de mémoire. En paysage avec la navigation à trois boutons, la barre d'outils, les feuilles et le volet Étude ne passent plus sous la barre de navigation, et chaque écran s'ajuste à la barre d'état et à l'encoche.
+

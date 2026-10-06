@@ -53,4 +53,5 @@ Evidenziazioni, note e preferiti restano sul tuo dispositivo. Nessun server, nes
 Nata per aiutare le persone a studiare la Parola di Dio e a crescere nella vicinanza a Cristo.
 
 ## release_notes
-1.1.3 — Sul telefono il titolo del passo (toccalo per andare ovunque: Vai a) ora entra sempre nella barra degli strumenti. Il pulsante della traduzione ora è un'icona e la traduzione che stai leggendo è spuntata nel suo menu. Se il nome di un libro è troppo lungo, viene abbreviato, ad esempio «1Ts 5». Sui tablet il pulsante mantiene il nome della traduzione quando c'è spazio. Le immagini della Guida all'uso mostrano la nuova barra.
+1.1.4 — L'ascolto risponde subito: passare avanti e indietro tra i versetti è immediato, anche sui telefoni con una voce lenta. Le immagini importate, le foto delle diapositive e le immagini della Guida utente ora usano molta meno memoria. In orizzontale con la navigazione a tre pulsanti, la barra degli strumenti, i pannelli e l'area Studio non finiscono più sotto la barra di navigazione, e ogni schermata si adatta alla barra di stato e al foro della fotocamera.
+

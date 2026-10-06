@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.1.3 — On phones, the passage title (tap it to go anywhere — Go To) now always fits in the toolbar. The translation button is now an icon, with the translation you're reading checked in its menu, and a book name too long for the space shortens to its abbreviation, like "1 Thess 5". On tablets, the translation's name stays on its button when there's room. The User Guide's pictures show the new toolbar.
+1.1.4 — Listen stays quick: skipping back and forth between verses responds right away, even on phones with a slow speech voice. Imported pictures, slide photos and User Guide images now use far less memory. In landscape with three-button navigation, the toolbar, sheets and Study pane no longer slip under the navigation bar, and every screen fits neatly around the status bar and camera cutout.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

@@ -53,4 +53,5 @@ Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 
 ## release_notes
-1.1.3 — Auf dem Handy passt der Titel der Stelle (tippe darauf, um überallhin zu springen – Gehe zu) jetzt immer in die Symbolleiste. Die Schaltfläche für die Übersetzung ist jetzt ein Symbol; in ihrem Menü ist die Übersetzung, die du liest, abgehakt. Ist ein Buchname zu lang für den Platz, wird er abgekürzt, etwa „1Thess 5“. Auf Tablets zeigt die Schaltfläche den Namen der Übersetzung, wenn Platz ist. Die Bilder im Benutzerhandbuch zeigen die neue Symbolleiste.
+1.1.4 — Vorlesen reagiert sofort: Vor- und Zurückspringen zwischen Versen geht ohne Verzögerung, auch auf Handys mit langsamer Sprachausgabe. Importierte Bilder, Folienfotos und die Bilder im Benutzerhandbuch brauchen jetzt viel weniger Speicher. Im Querformat mit Drei-Tasten-Navigation rutschen Symbolleiste, Blätter und der Studienbereich nicht mehr unter die Navigationsleiste, und jeder Bildschirm passt sauber um Statusleiste und Kameraaussparung.
+
