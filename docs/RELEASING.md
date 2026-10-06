@@ -134,7 +134,11 @@ reviewSubmission as the version. It's added as a `backgroundAssetVersion` item. 
   publishing anything: `gh workflow run android.yml -f probe_production=true` runs
   `scripts/play-publish.mjs probe-production`, which puts alpha's live build on production in an
   edit (as a draft, then as a completed release), validates, prints `granted` / `not granted`
-  with Play's message, and always deletes the edit — it has no commit path.
+  with Play's message, and always deletes the edit — it has no commit path. Its control is the
+  same release put on `internal`, which must validate. While production is closed, Play refuses
+  the production track assignment itself, draft or not: `400 FAILED_PRECONDITION "Precondition
+  check failed."` (2026-10-06, alpha 1.1.3 / 19) — that refusal, with the control passing, is the
+  "not granted" signal; `edits.validate` is never reached.
 - R8: the phone and watch release builds are minified and obfuscated. Each bundle carries its
   `mapping.txt` (BUNDLE-METADATA, which Play reads), and the publish step also uploads it as the
   versionCode's deobfuscation file and keeps it with the bundles as a run artifact — so Play

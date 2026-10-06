@@ -70,6 +70,9 @@ android {
     // release bundle can be installed on an emulator. Never used for an upload.
     if (providers.gradleProperty("debugSignedRelease").isPresent) {
         buildTypes.getByName("release").signingConfig = signingConfigs.getByName("debug")
+        // With -PappIdSuffix too, the test release installs beside the others (the release smoke:
+        // …scripturealone.smoke), never over a reader's own install. Never for an upload.
+        providers.gradleProperty("appIdSuffix").orNull?.let { buildTypes.getByName("release").applicationIdSuffix = ".$it" }
     }
 
     // The upload key for Play. It lives outside the repository — the four SA_UPLOAD_* properties

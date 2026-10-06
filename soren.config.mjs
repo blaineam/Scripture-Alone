@@ -23,8 +23,8 @@
 //   • Tools/ — the Python build and packaging tools.
 //
 // Not suites on purpose: the screenshot rig (Tools/capture_screenshots.sh — captures aren't a
-// gate), the Play/ASC scripts, and the 3 instrumented Android
-// tests (they run only if an emulator is already up — never booted for this).
+// gate), the Play/ASC scripts. The instrumented Android tests (connectedDebugAndroidTest, incl.
+// SystemBarsInsetsTest) run inside `android-release-smoke`'s emulator session.
 export default {
   name: 'Scripture Alone',
   suites: {
@@ -129,7 +129,8 @@ export default {
     // ── Android phone/tablet (:app) and Wear OS (:wear) JVM unit tests.
     //    With the NASB packs in place (any local licensed build), :app and :wear refuse to
     //    configure without SA_CONTENT_KEY_SEED — and Gradle configures every module, so
-    //    android-shared needs it too. Soren takes it from env, ~/.soren/credentials.json, or the
+    //    android-shared needs it too. Includes ListenSpeechTest — the Listen ANR (a blocking
+    //    TextToSpeech.stop must never hold up a skip) — and ImageSizingTest. Soren takes it from env, ~/.soren/credentials.json, or the
     //    login keychain (service SA_CONTENT_KEY_SEED, docs/lockman/README.md) and masks it.
     android: {
       type: 'gradle',
@@ -148,7 +149,41 @@ export default {
       cwd: 'android',
       secrets: ['SA_CONTENT_KEY_SEED'],
       env: { JAVA_HOME: '/opt/homebrew/opt/openjdk@17' },
-      description: 'Android :shared unit tests (canon, snapshot, Wear link, sealed packages)',
+      description: 'Android :shared unit tests (canon, snapshot, Wear link, sealed packages, SpeechThread)',
+    },
+
+    // ── Android release, as shipped: the R8-minified (and resource-shrunk) phone APK, debug-signed so it
+    //    installs on the emulator, with every Bible pack in its own assets (-PsideloadApk). The script
+    //    checks R8 renamed the app's classes (mapping.txt), installs it on its own `sa_guide_phone` AVD (API 35)
+    //    — reused when running, else booted headless on port 5556 and shut down after; any other
+    //    emulator (Haven's haven_phone) is never touched — and drives
+    //    it through uiautomator: launch, open a chapter, Listen, Previous/Next tapped as fast as adb
+    //    can (the 1.1.0-rc.5 ANR), the share card, and a large photo imported as a slide. Any crash,
+    //    ANR or R8-stripped class fails it. One Gradle at a time on this Mac: it builds first, alone.
+    'android-release-smoke': {
+      type: 'cmd',
+      cmd: 'node',
+      args: ['scripts/android-release-smoke.mjs'],
+      secrets: ['SA_CONTENT_KEY_SEED'],
+      env: {
+        JAVA_HOME: '/opt/homebrew/opt/openjdk@17',
+        ANDROID_HOME: '/opt/homebrew/share/android-commandlinetools',
+        SA_AVD: 'sa_guide_phone',
+        SA_EMULATOR_PORT: '5556',
+      },
+      description: 'Android R8 release APK: build + emulator smoke (Listen skips, share card, image import)',
+      tags: ['regression'],
+    },
+
+    // ── Wear OS: the R8-minified release build (debug-signed). Nothing else builds the watch's release.
+    'android-wear': {
+      type: 'cmd',
+      cmd: './gradlew',
+      args: ['--no-daemon', ':wear:assembleRelease', '-PdebugSignedRelease'],
+      cwd: 'android',
+      secrets: ['SA_CONTENT_KEY_SEED'],
+      env: { JAVA_HOME: '/opt/homebrew/opt/openjdk@17' },
+      description: 'Wear OS release build (R8)',
     },
 
     // ── The Python build and packaging tools, offline: Bible stores rebuilt and checked against the
@@ -166,6 +201,7 @@ export default {
 
   release: {
     // Documentation of the release gate.
-    requireGreen: ['core', 'ios', 'macos', 'watch', 'ui-iphone', 'ui-ipad', 'ui-watch', 'android', 'android-shared', 'tools'],
+    requireGreen: ['core', 'ios', 'macos', 'watch', 'ui-iphone', 'ui-ipad', 'ui-watch', 'android', 'android-shared',
+      'android-release-smoke', 'android-wear', 'tools'],
   },
 };
