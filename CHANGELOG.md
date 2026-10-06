@@ -2,6 +2,22 @@
 
 ## After 1.0.0
 
+- Listen on Android no longer freezes when you skip verses quickly. Some phones' speech engines hold
+  up every call for seconds, and Previous / Next waited on them on the screen's own thread until
+  Android offered to close the app. Now all speech runs on a thread of its own: a skip answers at
+  once, and several quick skips read from the verse you land on. The same on Wear OS. On Android.
+- Pictures take less memory on Android: imported study-Bible pictures, slide photos and the User
+  Guide's screenshots are decoded at the size they're shown rather than their full size (a large
+  photo's viewer copy goes from about 50 MB to under 4 MB), and an exported share card is let go as
+  soon as it's written. On Android.
+- Android draws edge to edge from the first frame on every version, behind the status and
+  navigation bars, with the newer AndroidX Activity that doesn't use the window APIs Android 15
+  deprecated. On Android.
+- Development: Soren suites `android-release-smoke` (the R8-minified release on the emulator:
+  launch, a chapter, Listen with fast skips, the share card, a photo import, then the instrumented
+  tests) and `android-wear` (the watch's release build). The Play workflow uploads R8's mapping
+  with each build and has a read-only `probe_production` check. No change for readers.
+
 - Development: UI tests (XCUITest) for every screen on iPhone, iPad (and so the Mac) and Apple Watch —
   the reader, selection, Go To and Topics, translations, Appearance, Notes, Study, Original Language,
   Share, Listen, sermon slides, Keepsake & Export, family sharing, the User Guide; and on the watch

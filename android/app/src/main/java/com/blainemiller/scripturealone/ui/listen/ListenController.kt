@@ -15,7 +15,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.os.SystemClock
-import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -65,7 +64,9 @@ import java.util.Locale
  * and the engine is its own app, so a voice that reads over the network is held to the translation's
  * hand-off right (see [VoiceCatalog]).
  *
- * All state is Compose state, read and written on the main thread.
+ * All state is Compose state, read and written on the main thread. The engine is never called from
+ * it: every `TextToSpeech` call runs on [ListenSpeech]'s own thread, because the engine's calls wait on
+ * a lock its connection thread can hold for seconds (an ANR on a Previous tap, 1.1.0-rc.5).
  */
 class ListenController private constructor(private val app: Context) {
 
@@ -155,8 +156,11 @@ class ListenController private constructor(private val app: Context) {
     // The engine.
     private val main = Handler(Looper.getMainLooper())
     private val work = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var tts: TextToSpeech? = null
+    /** Every engine call goes through here, on the speech thread — see [ListenSpeech]. */
+    private val speech = ListenSpeech { onInit -> TtsListenEngine(app, speechAttributes, progress, onInit) }
+    /** The main thread's view of the engine: up, or being started. */
     private var ttsReady = false
+    private var engineStarting = false
     private var pendingStart: (() -> Unit)? = null
     /** Utterances carry their pass's generation, so a late callback from a stopped queue is ignored. */
     private var generation = 0
@@ -286,7 +290,7 @@ class ListenController private constructor(private val app: Context) {
         loading = null
         pendingStart = null
         generation++
-        tts?.stop()
+        speech.silence()
         releaseWake()
         unregisterNoisy()
         holdMediaButtons(false)
@@ -420,20 +424,18 @@ class ListenController private constructor(private val app: Context) {
 
     /** Binds the device's speech engine, once; a failed start is retried on the next use. */
     private fun startEngine() {
-        if (tts != null) return
-        tts = TextToSpeech(app) { status -> main.post { engineStarted(status == TextToSpeech.SUCCESS) } }.apply {
-            setAudioAttributes(speechAttributes)
-            setOnUtteranceProgressListener(progress)
-        }
+        if (ttsReady || engineStarting) return
+        engineStarting = true
+        speech.start { voices -> main.post { engineStarted(voices) } }
     }
 
-    private fun engineStarted(ok: Boolean) {
-        ttsReady = ok
+    /** On main: the engine came up with [voices], or (null) couldn't. */
+    private fun engineStarted(voices: List<VoiceInfo>?) {
+        engineStarting = false
+        ttsReady = voices != null
         val action = pendingStart
         pendingStart = null
-        if (!ok) {
-            tts?.shutdown()
-            tts = null
+        if (voices == null) {
             if (action != null) {
                 phase = Phase.Paused
                 notice = AppText.get(R.string.listen_no_engine)
@@ -441,22 +443,17 @@ class ListenController private constructor(private val app: Context) {
             }
             return
         }
-        refreshVoices()
+        showVoices(voices)
         action?.invoke()
     }
 
     /** The engine's installed voices for the text's language, as the picker offers them. */
     fun refreshVoices() {
-        val engine = tts ?: return
-        val all = runCatching { engine.voices.orEmpty() }.getOrDefault(emptySet()).map { v ->
-            VoiceInfo(
-                id = v.name,
-                languageTag = v.locale.toLanguageTag(),
-                quality = v.quality,
-                requiresNetwork = v.isNetworkConnectionRequired,
-                installed = TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED !in v.features.orEmpty(),
-            )
-        }
+        if (!ttsReady) return
+        speech.voices { all -> main.post { showVoices(all) } }
+    }
+
+    private fun showVoices(all: List<VoiceInfo>) {
         allVoices = all
         voices = VoiceCatalog.options(all, voiceLanguage, homeRegion, allowNetwork)
         voicesVersion++
@@ -475,42 +472,32 @@ class ListenController private constructor(private val app: Context) {
     private val allowNetwork: Boolean
         get() = VoiceCatalog.allowsNetworkVoices(rights.permits(TranslationRights.Permission.EXTERNAL_HANDOFF))
 
-    private fun applyVoice(engine: TextToSpeech) {
-        refreshVoices()
-        // A saved voice in another language is passed over for this text, not forgotten: [voiceId] stays.
-        when (val resolved = VoiceCatalog.resolve(voiceId, allVoices, voiceLanguage, homeRegion, allowNetwork)) {
-            is VoiceCatalog.Resolution.Use -> useVoice(engine, resolved.voice)
-            is VoiceCatalog.Resolution.Refused -> {
-                notice = VoiceCatalog.NETWORK_VOICE_REFUSED
-                useVoice(engine, resolved.fallback)
-            }
-        }
-        // 0.5–2× maps straight onto the engine's rate multiplier, where 1 is its normal pace.
-        engine.setSpeechRate(speed.toFloat())
-    }
-
-    private fun useVoice(engine: TextToSpeech, voice: VoiceInfo?) {
-        val match = voice?.let { v -> runCatching { engine.voices.orEmpty() }.getOrDefault(emptySet()).firstOrNull { it.name == v.id } }
-        if (match != null) {
-            engine.voice = match
-        } else {
-            val device = Locale.getDefault()
-            engine.language = VoiceCatalog.fallbackLocale(textLanguage, device.language, device.country)
-        }
-    }
-
+    /** Asks the speech thread to read from [index]; returns at once. */
     private fun speakFrom(index: Int) {
-        val engine = tts ?: return
+        if (!ttsReady) return
         generation++
         val gen = generation
-        engine.stop()
         spokeThisPass = false
-        applyVoice(engine)
-        for (i in index until items.size) {
-            engine.speak(items[i].text, TextToSpeech.QUEUE_ADD, null, "$gen:$i")
-            // A breath between verses; a longer one after the chapter announcement.
-            if (i < items.lastIndex) {
-                engine.playSilentUtterance(if (items[i].isAnnouncement) 500L else 120L, TextToSpeech.QUEUE_ADD, "$gen:pause")
+        val device = Locale.getDefault()
+        val plan = ListenSpeech.Plan(
+            generation = gen,
+            items = items,
+            from = index,
+            rate = speed.toFloat(),
+            voiceId = voiceId,
+            voiceLanguage = voiceLanguage,
+            homeRegion = homeRegion,
+            allowNetwork = allowNetwork,
+            fallbackLocale = VoiceCatalog.fallbackLocale(textLanguage, device.language, device.country),
+        )
+        speech.play(plan) { all, refused ->
+            main.post {
+                showVoices(all)
+                // A saved voice in another language is passed over for this text, not forgotten: [voiceId] stays.
+                if (refused && gen == generation) {
+                    notice = VoiceCatalog.NETWORK_VOICE_REFUSED
+                    publish()
+                }
             }
         }
         phase = Phase.Playing
@@ -529,9 +516,7 @@ class ListenController private constructor(private val app: Context) {
 
         /** Callbacks arrive on a binder thread; the queue lives on the main one. */
         private fun post(id: String?, block: (Int) -> Unit) {
-            val (gen, index) = id?.split(':')?.takeIf { it.size == 2 } ?: return
-            val g = gen.toIntOrNull() ?: return
-            val i = index.toIntOrNull() ?: return
+            val (g, i) = ListenSpeech.parseUtterance(id) ?: return
             main.post { if (g == generation) block(i) }
         }
     }
