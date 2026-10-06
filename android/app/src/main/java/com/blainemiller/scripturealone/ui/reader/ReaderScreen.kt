@@ -6,8 +6,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.activity.compose.BackHandler
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.SystemBarStyle
+import com.blainemiller.scripturealone.ui.system.SystemBars
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.graphics.TransformOrigin
@@ -349,13 +348,9 @@ fun ReaderScreen(
     // still needs dark icons, and with a sheet up the status bar sits over the black backdrop.
     val activity = LocalContext.current as? ComponentActivity
     val lightStatusIcons = palette.isDark || goTo
+    // MainActivity made the window edge to edge in onCreate; this only turns the icons.
     LaunchedEffect(lightStatusIcons, palette.isDark) {
-        fun style(dark: Boolean) = if (dark) {
-            SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
-        } else {
-            SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
-        }
-        activity?.enableEdgeToEdge(statusBarStyle = style(lightStatusIcons), navigationBarStyle = style(palette.isDark))
+        activity?.let { SystemBars.icons(it, lightStatusIcons = lightStatusIcons, lightNavigationIcons = palette.isDark) }
     }
 
     MaterialTheme(colorScheme = menuColors(palette)) {

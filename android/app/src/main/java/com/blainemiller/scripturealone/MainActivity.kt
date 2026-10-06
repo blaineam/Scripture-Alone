@@ -26,6 +26,7 @@ import com.blainemiller.scripturealone.ui.study.StudyHost
 import com.blainemiller.scripturealone.ui.reader.ReaderTheme
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
 import com.blainemiller.scripturealone.ui.shortcuts.AppShortcuts
+import com.blainemiller.scripturealone.ui.system.SystemBars
 
 class MainActivity : ComponentActivity() {
 
@@ -35,6 +36,8 @@ class MainActivity : ComponentActivity() {
     private val packConfirmation = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {}
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Edge to edge on every Android version, before any content: the screens pad by the insets.
+        SystemBars.enable(this)
         super.onCreate(savedInstanceState)
         // Debug builds: the User Guide or its first-launch prompt alone, without the reader — for
         // checking them on an emulator without a Bible on screen.

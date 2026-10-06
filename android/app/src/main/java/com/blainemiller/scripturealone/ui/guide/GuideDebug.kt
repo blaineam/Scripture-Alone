@@ -4,8 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
-import androidx.activity.enableEdgeToEdge
+import com.blainemiller.scripturealone.ui.system.SystemBars
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -52,9 +51,7 @@ fun GuideDebugHost(start: GuideDebug.Mode, onDone: () -> Unit) {
     var mode by rememberSaveable { mutableStateOf(start) }
     val activity = LocalContext.current as? ComponentActivity
     LaunchedEffect(dark) {
-        val style = if (dark) SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
-            else SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
-        activity?.enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
+        activity?.let { SystemBars.icons(it, lightStatusIcons = dark, lightNavigationIcons = dark) }
     }
     Box(Modifier.fillMaxSize().background(palette.page), contentAlignment = Alignment.Center) {
         when (mode) {
