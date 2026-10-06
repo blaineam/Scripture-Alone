@@ -130,13 +130,22 @@ reviewSubmission as the version. It's added as a `backgroundAssetVersion` item. 
   32-bit libraries are reported, not failed. ML Kit's armeabi-v7a/x86 OCR library is 4 KB aligned
   today; 16 KB devices are 64-bit only.
 - A personal Play account needs 12+ testers × 14 days of closed testing before production opens.
-  Until then the production edit is refused and the run fails, saying so.
+  Until then the production edit is refused and the run fails, saying so. To ask without
+  publishing anything: `gh workflow run android.yml -f probe_production=true` runs
+  `scripts/play-publish.mjs probe-production`, which puts alpha's live build on production in an
+  edit (as a draft, then as a completed release), validates, prints `granted` / `not granted`
+  with Play's message, and always deletes the edit — it has no commit path.
+- R8: the phone and watch release builds are minified and obfuscated. Each bundle carries its
+  `mapping.txt` (BUNDLE-METADATA, which Play reads), and the publish step also uploads it as the
+  versionCode's deobfuscation file and keeps it with the bundles as a run artifact — so Play
+  vitals' ANR and crash traces read as source names.
 
 ### Manual dispatches
 
-- `android.yml` has four inputs: `play_track` (auto / internal / alpha / production), a
+- `android.yml` has five inputs: `play_track` (auto / internal / alpha / production), a
   `play_rollout` fraction for a staged production rollout, `build_only` (compile check, never
-  talks to Play) and `plan_only` (read-only Play check, no build). On a branch, `auto` means
+  talks to Play), `plan_only` (read-only Play check, no build) and `probe_production` (read-only:
+  has Play opened production yet? no build, never commits). On a branch, `auto` means
   internal. A plain dispatch with none of these set publishes to internal.
 - `apple-store.yml` has three inputs: `version`, `commit`, and `dry_run`. A dry run is read-only
   (GETs only, enforced in the script). It finds the run and the builds, then checks the notes and

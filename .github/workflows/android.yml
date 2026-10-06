@@ -57,6 +57,10 @@ on:
         description: "Read-only Play check: list tracks + next versionCodes, validate the track ids; no build, no upload"
         type: boolean
         default: false
+      probe_production:
+        description: "Read-only: has Play granted production access? Validates alpha's build on production in an edit that is always deleted; no build, no upload, never commits"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -83,8 +87,29 @@ jobs:
           fi
           node scripts/play-publish.mjs plan --check-tracks "internal,alpha,production,$WEAR_RC,$WEAR_PROD"
 
+  # Read-only: whether Play will take a production release yet (scripts/play-publish.mjs
+  # probe-production — an edit that is validated and deleted, never committed).
+  #   gh workflow run android.yml -f probe_production=true
+  play-probe-production:
+    if: github.event_name == 'workflow_dispatch' && inputs.probe_production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Probe production access (Play, read-only)
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::error title=Probe skipped::PLAY_SERVICE_ACCOUNT_JSON is not set (docs/RELEASING.md › One-time setup)."
+            exit 1
+          fi
+          node scripts/play-publish.mjs probe-production
+
   build:
-    if: github.event_name != 'workflow_dispatch' || !inputs.plan_only
+    if: github.event_name != 'workflow_dispatch' || (!inputs.plan_only && !inputs.probe_production)
     # Play allows ONE open edit per package that can commit — serialize every publish-capable run.
     concurrency:
       group: android-play-publish
@@ -277,6 +302,9 @@ jobs:
           mkdir -p ../out
           cp app/build/outputs/bundle/release/app-release.aab "../out/scripture-alone-$VN-phone-${PHONE_CODE:-local}.aab"
           cp wear/build/outputs/bundle/release/wear-release.aab "../out/scripture-alone-$VN-wear-${WEAR_CODE:-local}.aab"
+          # R8's mappings: uploaded to Play with the bundles (deobfuscated vitals) and kept as artifacts.
+          cp app/build/outputs/mapping/release/mapping.txt "../out/scripture-alone-$VN-phone-${PHONE_CODE:-local}-mapping.txt"
+          cp wear/build/outputs/mapping/release/mapping.txt "../out/scripture-alone-$VN-wear-${WEAR_CODE:-local}-mapping.txt"
           ls -la ../out
 
       # Play blocks updates whose 64-bit native libraries are not 16 KB page aligned. Check the
@@ -289,7 +317,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: scripture-alone-aab
-          path: out/*.aab
+          path: |
+            out/*.aab
+            out/*-mapping.txt
           if-no-files-found: error
           retention-days: 7
 
@@ -358,9 +388,11 @@ jobs:
         run: |
           set -euo pipefail
           args=(--version-name "$VN" --status "$STATUS" --notes-dir "$NOTES"
-                --phone-aab "out/scripture-alone-$VN-phone-$PHONE_CODE.aab" --phone-code "$PHONE_CODE" --phone-tracks "$PHONE_TRACKS")
+                --phone-aab "out/scripture-alone-$VN-phone-$PHONE_CODE.aab" --phone-code "$PHONE_CODE" --phone-tracks "$PHONE_TRACKS"
+                --phone-mapping "out/scripture-alone-$VN-phone-$PHONE_CODE-mapping.txt")
           if [ -n "$WEAR_TRACKS" ]; then
-            args+=(--wear-aab "out/scripture-alone-$VN-wear-$WEAR_CODE.aab" --wear-code "$WEAR_CODE" --wear-tracks "$WEAR_TRACKS")
+            args+=(--wear-aab "out/scripture-alone-$VN-wear-$WEAR_CODE.aab" --wear-code "$WEAR_CODE" --wear-tracks "$WEAR_TRACKS"
+                   --wear-mapping "out/scripture-alone-$VN-wear-$WEAR_CODE-mapping.txt")
           fi
           [ -n "$FRAC" ] && args+=(--user-fraction "$FRAC")
           node scripts/play-publish.mjs publish "${args[@]}"

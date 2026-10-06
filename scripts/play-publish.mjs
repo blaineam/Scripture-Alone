@@ -17,6 +17,18 @@
  *       All-or-nothing: if any track assignment is refused, nothing lands and a re-run is safe.
  *       --dry-run uploads nothing and commits nothing: it validates the plan against Play's track
  *       list and prints what it would do.
+ *       [--phone-mapping mapping.txt] [--wear-mapping mapping.txt]: R8's mapping for each bundle,
+ *       uploaded in the same edit as its deobfuscation file, so Play vitals' stack traces read as
+ *       source. (The bundle carries it too, in BUNDLE-METADATA, which Play also reads; this makes it
+ *       explicit.) A refused mapping upload warns and does not fail the release.
+ *
+ *   node scripts/play-publish.mjs probe-production [--probe-track alpha]
+ *       READ-ONLY — never commits. Whether Play will take a production release yet (a new personal
+ *       account needs production access after closed testing). Opens an edit, puts the versionCode(s)
+ *       live on the closed-testing track ("alpha") on "production" — first as a draft, then as a
+ *       completed release — runs edits.validate on each, and ALWAYS deletes the edit. Prints
+ *       `granted` or `not granted` with Play's own message. Exit 0 either way; non-zero only when
+ *       the probe itself couldn't run (credentials, no live alpha release).
  *
  * Release notes: --notes-dir holds `whatsnew-<language>` files (the workflow's Python step builds
  * them from android/play-metadata*.md `## release_notes` and enforces Play's 500-character cap).
@@ -61,10 +73,13 @@ function parseArgs(argv) {
 			case '--notes-dir': a.notesDir = v(); break;
 			case '--check-tracks': a.checkTracks = list(v()); break;
 			case '--dry-run': a.dryRun = true; break;
+			case '--phone-mapping': a.phoneMapping = v(); break;
+			case '--wear-mapping': a.wearMapping = v(); break;
+			case '--probe-track': a.probeTrack = v(); break;
 			default: die(`unknown arg ${argv[i]}`);
 		}
 	}
-	if (!['plan', 'publish'].includes(a.cmd)) die('usage: play-publish.mjs plan|publish [options] — see the header');
+	if (!['plan', 'publish', 'probe-production'].includes(a.cmd)) die('usage: play-publish.mjs plan|publish|probe-production [options] — see the header');
 	if (!['completed', 'inProgress', 'draft', 'halted'].includes(a.status)) die(`--status ${a.status} is not a Play release status`);
 	return a;
 }
@@ -139,6 +154,56 @@ async function uploadBundle(a, editId, file, expectCode) {
 	return bundle;
 }
 
+/** R8's mapping for `code`, as its deobfuscation file — a warning, never a failure, when refused. */
+async function uploadMapping(a, editId, file, code) {
+	if (!file) return;
+	if (!existsSync(file)) { console.log(`::warning title=No R8 mapping::${file} not found — Play keeps the copy inside the bundle`); return; }
+	try {
+		await api('POST', `${UPLOAD}/${encodeURIComponent(a.pkg)}/edits/${editId}/apks/${code}/deobfuscationFiles/proguard?uploadType=media`,
+			readFileSync(file), { headers: { 'content-type': 'application/octet-stream' }, raw: 'response' });
+		log(`R8 mapping for ${code} uploaded (${(statSync(file).size / 1048576).toFixed(1)} MB)`);
+	} catch (e) {
+		console.log(`::warning title=R8 mapping not uploaded::${code}: ${e.message.slice(0, 300)} — Play keeps the copy inside the bundle`);
+	}
+}
+
+/**
+ * probe-production: is production open to this app yet? Everything happens inside an edit that
+ * main() deletes in `finally`; there is no commit call on this path.
+ */
+async function probeProduction(a, editId, snap) {
+	const source = a.probeTrack || 'alpha';
+	const live = (snap.tracks.find((t) => t.track === source)?.releases || [])
+		.filter((r) => ['completed', 'inProgress'].includes(r.status) && r.versionCodes?.length);
+	if (!live.length) fail(`no live release on "${source}" to probe production with`);
+	const codes = [...new Set(live.flatMap((r) => r.versionCodes.map(String)))];
+	const name = live[0].name || `probe ${codes.join(',')}`;
+	log(`probing production with "${source}" ${name} [${codes.join(',')}] — the edit is deleted afterwards, never committed`);
+
+	const attempt = async (status) => {
+		try {
+			await api('PUT', `${base(a)}/edits/${editId}/tracks/production`, { track: 'production', releases: [{ name, versionCodes: codes, status }] });
+		} catch (e) { return { stage: 'assign', error: e.message }; }
+		try {
+			await api('POST', `${base(a)}/edits/${editId}:validate`);
+		} catch (e) { return { stage: 'validate', error: e.message }; }
+		return { stage: 'validate', error: null };
+	};
+	const draft = await attempt('draft');
+	log(`draft on production: ${draft.error ? `refused at ${draft.stage} — ${draft.error}` : 'validates'}`);
+	// A draft can validate where a real release can't (and a draft app can hold only drafts): the
+	// completed release is the question that matters.
+	const full = await attempt('completed');
+	log(`completed release on production: ${full.error ? `refused at ${full.stage} — ${full.error}` : 'validates'}`);
+
+	const granted = !full.error;
+	const reason = (full.error || '').replace(/^\S+ \S+ → /, '');
+	console.log(granted ? 'granted' : 'not granted');
+	if (!granted) console.log(`Play: ${reason}`);
+	summary(`- ${granted ? '✅' : '⏳'} Play production access: **${granted ? 'granted' : 'not granted'}**${granted ? '' : ` — ${reason}`}`);
+	output('production_access', granted ? 'granted' : 'not-granted');
+}
+
 async function main() {
 	const a = parseArgs(process.argv);
 	useServiceAccount(a.keyFile);
@@ -148,6 +213,11 @@ async function main() {
 		const snap = await snapshot(a, editId);
 		describeTracks(snap.tracks);
 		const { phoneNext, wearNext } = nextCodes(snap.codes);
+
+		if (a.cmd === 'probe-production') {
+			await probeProduction(a, editId, snap);
+			return;
+		}
 
 		if (a.cmd === 'plan') {
 			log(`versionCodes Play knows: ${snap.codes.join(', ') || '(none)'}`);
@@ -191,7 +261,11 @@ async function main() {
 		}
 
 		await uploadBundle(a, editId, a.phoneAab, a.phoneCode);
-		if (wear) await uploadBundle(a, editId, a.wearAab, a.wearCode);
+		await uploadMapping(a, editId, a.phoneMapping, a.phoneCode);
+		if (wear) {
+			await uploadBundle(a, editId, a.wearAab, a.wearCode);
+			await uploadMapping(a, editId, a.wearMapping, a.wearCode);
+		}
 		for (const [t, c] of plan) {
 			try {
 				await api('PUT', `${base(a)}/edits/${editId}/tracks/${encodeURIComponent(t)}`, { track: t, releases: [release(c)] });
