@@ -1,7 +1,9 @@
 package com.blainemiller.scripturealone.ui.study
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import com.blainemiller.scripturealone.data.image.ImageSizing
+import com.blainemiller.scripturealone.data.image.ScaledBitmaps
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -83,8 +85,10 @@ private fun StudyImage.placeLabel(): String =
 
 @Composable
 private fun PictureRow(picture: Picture, palette: ReaderPalette, onClick: () -> Unit) {
-    val thumbnail = loaded(picture.store.source.id to picture.image.id) { _ ->
-        picture.store.imageData(picture.image.id)?.let { decode(it, 160) }
+    // Decoded at the 64 dp box's own pixels, cropped to fill it — not the picture's.
+    val box = with(LocalDensity.current) { THUMBNAIL.roundToPx() }
+    val thumbnail = loaded(Triple(picture.store.source.id, picture.image.id, box)) { _ ->
+        picture.store.imageData(picture.image.id)?.let { data -> ScaledBitmaps.decode(data) { w, h -> ImageSizing.cover(w, h, box, box) } }
     }
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
@@ -93,7 +97,7 @@ private fun PictureRow(picture: Picture, palette: ReaderPalette, onClick: () -> 
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(64.dp).clip(RoundedCornerShape(9.dp)).background(palette.accent.copy(alpha = 0.12f)), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(THUMBNAIL).clip(RoundedCornerShape(9.dp)).background(palette.accent.copy(alpha = 0.12f)), contentAlignment = Alignment.Center) {
             if (thumbnail != null) {
                 Image(thumbnail.asImageBitmap(), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
             } else {
@@ -113,8 +117,12 @@ private fun PictureRow(picture: Picture, palette: ReaderPalette, onClick: () -> 
 
 @Composable
 private fun PictureViewer(picture: Picture, palette: ReaderPalette, onDismiss: () -> Unit) {
-    val full = loaded(picture.store.source.id to -picture.image.id) { _ ->
-        picture.store.imageData(picture.image.id)?.let { decode(it, 2048) }
+    // As wide as the screen it fills (FillWidth), never the picture's full size; a very tall one capped.
+    val column = LocalConfiguration.current.screenWidthDp.let { with(LocalDensity.current) { it.dp.roundToPx() } }.coerceAtLeast(1)
+    val full = loaded(Triple(picture.store.source.id, -picture.image.id, column)) { _ ->
+        picture.store.imageData(picture.image.id)?.let { data ->
+            ScaledBitmaps.decode(data) { w, h -> ImageSizing.fillWidth(w, h, column, VIEWER_MAX_EDGE) }
+        }
     }
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Column(
@@ -144,12 +152,8 @@ private fun PictureViewer(picture: Picture, palette: ReaderPalette, onDismiss: (
     }
 }
 
-/** Decodes a picture no larger than [maxSide] on its longest side; null for anything Android can't draw (SVG). */
-private fun decode(data: ByteArray, maxSide: Int): Bitmap? {
-    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-    BitmapFactory.decodeByteArray(data, 0, data.size, bounds)
-    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
-    var sample = 1
-    while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= maxSide) sample *= 2
-    return BitmapFactory.decodeByteArray(data, 0, data.size, BitmapFactory.Options().apply { inSampleSize = sample })
-}
+/** The row's thumbnail box. */
+private val THUMBNAIL = 64.dp
+
+/** The viewer's longest side, so a very tall picture stays a texture the GPU takes. */
+private const val VIEWER_MAX_EDGE = 4096

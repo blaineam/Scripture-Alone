@@ -138,10 +138,12 @@ class ShareCardRenderer(private val context: Context) {
         }
     }
 
-    /** The card as a bitmap at [scale] — 2× for export (2160 px on the long side). */
+    /**
+     * The card as a bitmap at [scale] — 2× for export (2160 px on the long side). Drawn straight at
+     * that output size, so there is one bitmap and no scaled copy; the caller recycles it once written.
+     */
     fun bitmap(content: ShareCardContent, style: ShareStyle, scale: Float = EXPORT_SCALE): Bitmap {
-        val w = (style.aspect.width * scale).roundToInt()
-        val h = (style.aspect.height * scale).roundToInt()
+        val (w, h) = outputSize(style.aspect, scale)
         val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.scale(scale, scale)
@@ -246,6 +248,10 @@ class ShareCardRenderer(private val context: Context) {
     companion object {
         /** Cards are laid out 1080 pt on the long side; exported at 2× — 2160 px. */
         const val EXPORT_SCALE = 2f
+
+        /** The exported card's pixels: the aspect's card points at [scale] — 2160×2160, 1216×2160, 2160×1216. */
+        fun outputSize(aspect: ShareAspect, scale: Float = EXPORT_SCALE): Pair<Int, Int> =
+            (aspect.width * scale).roundToInt() to (aspect.height * scale).roundToInt()
         const val WORDMARK = "Scripture Alone"
         private const val FOOTER_SPACING = 4f
         private val LINE_SPACING_RATIO = ShareCardMetrics(ShareAspect.SQUARE).lineSpacingRatio

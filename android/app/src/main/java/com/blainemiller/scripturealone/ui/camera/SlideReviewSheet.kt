@@ -58,6 +58,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -68,7 +69,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
@@ -169,6 +172,13 @@ internal fun SlideReviewSheet(
     /** Whether the reading on show is of the cropped screen; null before the first. */
     var readCropped by remember { mutableStateOf<Boolean?>(null) }
     val photo = screen?.takeIf { cropToScreen } ?: slide.image
+    // What the row shows: a copy at the row's size. [photo] stays at the reading size for the recognizer.
+    val density = LocalDensity.current
+    val previewWidth = with(density) { LocalConfiguration.current.screenWidthDp.dp.roundToPx() }.coerceAtLeast(1)
+    val previewHeight = with(density) { PREVIEW_MAX_HEIGHT.roundToPx() }
+    val preview by produceState<Bitmap?>(null, photo, previewWidth) {
+        value = withContext(Dispatchers.Default) { SlideImage.preview(photo, previewWidth, previewHeight) }
+    }
     /** null = a new note. */
     var destination by remember { mutableStateOf(appendTo?.id) }
     var saving by remember { mutableStateOf(false) }
@@ -308,10 +318,15 @@ internal fun SlideReviewSheet(
             Spacer(Modifier.height(8.dp))
             // The photo, and whether to keep it.
             PanelGroup(palette) {
-                Image(
-                    photo.asImageBitmap(), stringResource(R.string.camera_photo_of_slide), contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxWidth().heightIn(max = 200.dp).padding(horizontal = 18.dp, vertical = 12.dp).clip(RoundedCornerShape(10.dp)),
-                )
+                val shown = preview
+                if (shown != null) {
+                    Image(
+                        shown.asImageBitmap(), stringResource(R.string.camera_photo_of_slide), contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxWidth().heightIn(max = PREVIEW_MAX_HEIGHT).padding(horizontal = 18.dp, vertical = 12.dp).clip(RoundedCornerShape(10.dp)),
+                    )
+                } else {
+                    Spacer(Modifier.fillMaxWidth().height(PREVIEW_MAX_HEIGHT))
+                }
                 PanelSeparator(palette)
                 if (screen != null) {
                     ReviewSwitch(stringResource(R.string.camera_crop_to_screen), cropToScreen, palette, enabled = phase != Phase.Reading) { cropToScreen = it }
@@ -598,3 +613,6 @@ private fun ReviewField(
         },
     )
 }
+
+/** The photo row's height at most. */
+private val PREVIEW_MAX_HEIGHT = 200.dp

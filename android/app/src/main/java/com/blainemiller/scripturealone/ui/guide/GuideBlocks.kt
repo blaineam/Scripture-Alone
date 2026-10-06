@@ -1,6 +1,5 @@
 package com.blainemiller.scripturealone.ui.guide
 
-import android.graphics.BitmapFactory
 import android.util.LruCache
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,6 +35,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.ContentScale
@@ -62,6 +62,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.blainemiller.scripturealone.data.guide.UserGuide
+import com.blainemiller.scripturealone.data.image.ImageSizing
+import com.blainemiller.scripturealone.data.image.ScaledBitmaps
 import com.blainemiller.scripturealone.data.guide.UserGuide.Block
 import com.blainemiller.scripturealone.data.guide.UserGuideStore
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
@@ -331,18 +333,28 @@ internal fun GuideFigure(figure: UserGuide.Figure, modifier: Modifier = Modifier
 
 // MARK: Images
 
-/** Decoded package images, so scrolling back up doesn't decode them again. Keyed by path and date. */
+/**
+ * Decoded package images, so scrolling back up doesn't decode them again. Keyed by path, date and the
+ * width they're shown at, and held to a byte budget rather than a count: each is decoded at its shown
+ * size (a 240 dp phone, not the 1320×2868 screenshot it was made from), and the cache never holds more
+ * than [BUDGET_BYTES] of them.
+ */
 private object GuideImageCache {
-    val bitmaps = LruCache<String, ImageBitmap>(24)
+    const val BUDGET_BYTES = 16 * 1024 * 1024
+    val bitmaps = object : LruCache<String, ImageBitmap>(BUDGET_BYTES) {
+        override fun sizeOf(key: String, value: ImageBitmap): Int = value.asAndroidBitmap().allocationByteCount
+    }
 }
 
 @Composable
 internal fun GuideImage(file: File, width: Dp, placeholderAspect: Float, description: String?, modifier: Modifier = Modifier) {
-    val key = "${file.path}@${file.lastModified()}"
+    val widthPx = with(LocalDensity.current) { width.roundToPx() }.coerceAtLeast(1)
+    val key = "${file.path}@${file.lastModified()}@$widthPx"
     val bitmap by produceState(GuideImageCache.bitmaps.get(key), key) {
         if (value == null) {
             value = withContext(Dispatchers.IO) {
-                runCatching { BitmapFactory.decodeFile(file.path)?.asImageBitmap() }.getOrNull()
+                // Fit to the shown width; the height follows the picture's own aspect.
+                ScaledBitmaps.decode(file) { w, h -> ImageSizing.fitWithin(w, h, widthPx, Int.MAX_VALUE) }?.asImageBitmap()
             }?.also { GuideImageCache.bitmaps.put(key, it) }
         }
     }

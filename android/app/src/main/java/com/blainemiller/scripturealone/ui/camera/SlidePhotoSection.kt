@@ -25,11 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.blainemiller.scripturealone.R
-import com.blainemiller.scripturealone.data.camera.SlideImage
+import com.blainemiller.scripturealone.data.image.ImageSizing
+import com.blainemiller.scripturealone.data.image.ScaledBitmaps
 import com.blainemiller.scripturealone.data.userdata.Note
 import com.blainemiller.scripturealone.ui.notes.PanelGroup
 import com.blainemiller.scripturealone.ui.notes.PanelSectionTitle
@@ -45,10 +48,16 @@ fun SlidePhotoSection(model: ReaderViewModel, palette: ReaderPalette, note: Note
     val withPhotos by model.userData.slidePhotos.collectAsState()
     val revision = withPhotos[note.id] ?: return
     var image by remember(note.id) { mutableStateOf<Bitmap?>(null) }
+    // Decoded at the size it is shown — the panel's width, at most 260 dp tall — not the kept 1600 px.
+    val density = LocalDensity.current
+    val boxWidth = with(density) { LocalConfiguration.current.screenWidthDp.dp.roundToPx() }.coerceAtLeast(1)
+    val boxHeight = with(density) { PHOTO_MAX_HEIGHT.roundToPx() }
     // Reloaded when another slide's photo replaces this one.
-    LaunchedEffect(note.id, revision) {
+    LaunchedEffect(note.id, revision, boxWidth) {
         val data = model.userData.slidePhoto(note.id) ?: return@LaunchedEffect
-        image = withContext(Dispatchers.Default) { SlideImage.decode(data, maxPixelSize = 1600) }
+        image = withContext(Dispatchers.Default) {
+            ScaledBitmaps.decode(data) { w, h -> ImageSizing.fitWithin(w, h, boxWidth, boxHeight) }
+        }
     }
     PanelSectionTitle(stringResource(R.string.camera_slide_photo), palette)
     PanelGroup(palette) {
@@ -56,7 +65,7 @@ fun SlidePhotoSection(model: ReaderViewModel, palette: ReaderPalette, note: Note
         if (bitmap != null) {
             Image(
                 bitmap.asImageBitmap(), stringResource(R.string.camera_slide_photo_description), contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxWidth().heightIn(max = 260.dp).padding(horizontal = 18.dp, vertical = 12.dp).clip(RoundedCornerShape(10.dp)),
+                modifier = Modifier.fillMaxWidth().heightIn(max = PHOTO_MAX_HEIGHT).padding(horizontal = 18.dp, vertical = 12.dp).clip(RoundedCornerShape(10.dp)),
             )
         } else {
             Box(Modifier.fillMaxWidth().height(120.dp), contentAlignment = Alignment.Center) {
@@ -70,3 +79,5 @@ fun SlidePhotoSection(model: ReaderViewModel, palette: ReaderPalette, note: Note
         )
     }
 }
+
+private val PHOTO_MAX_HEIGHT = 260.dp

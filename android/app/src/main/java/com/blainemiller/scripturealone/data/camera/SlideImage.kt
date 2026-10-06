@@ -7,7 +7,10 @@ import android.graphics.ImageDecoder
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.net.Uri
+import com.blainemiller.scripturealone.data.image.ImageSizing
+import com.blainemiller.scripturealone.data.image.ScaledBitmaps
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.nio.ByteBuffer
 import kotlin.math.hypot
 import kotlin.math.max
@@ -28,26 +31,32 @@ object SlideImage {
     fun decode(resolver: ContentResolver, uri: Uri, maxPixelSize: Int = READ_SIZE): Bitmap? =
         runCatching { decode(ImageDecoder.createSource(resolver, uri), maxPixelSize) }.getOrNull()
 
+    /** Straight from the file, so the photo's compressed bytes aren't held in memory too. */
+    fun decode(file: File, maxPixelSize: Int = READ_SIZE): Bitmap? =
+        runCatching { decode(ImageDecoder.createSource(file), maxPixelSize) }.getOrNull()
+
     private fun decode(source: ImageDecoder.Source, maxPixelSize: Int): Bitmap =
         ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
             // Software pixels: ML Kit and Compress both read them.
             decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+            // Subsampled while decoding: the camera's full 12–50 MP never exists as a bitmap.
             val size = info.size
-            val longEdge = max(size.width, size.height)
-            if (longEdge > maxPixelSize) {
-                val scale = maxPixelSize.toDouble() / longEdge
-                decoder.setTargetSize(max(1, (size.width * scale).roundToInt()), max(1, (size.height * scale).roundToInt()))
+            if (max(size.width, size.height) > maxPixelSize) {
+                val target = ImageSizing.fitLongEdge(size.width, size.height, maxPixelSize)
+                decoder.setTargetSize(target.width, target.height)
             }
         }
 
     /**
      * A camera frame turned upright by its [rotationDegrees] and capped at [maxPixelSize] —
-     * `UIImage.uprightCGImage`.
+     * `UIImage.uprightCGImage`. The scaled copy in between is recycled; [frame] is the caller's.
      */
     fun upright(frame: Bitmap, rotationDegrees: Int, maxPixelSize: Int = READ_SIZE): Bitmap {
         val small = scaled(frame, maxPixelSize)
         if (rotationDegrees % 360 == 0) return small
-        return Bitmap.createBitmap(small, 0, 0, small.width, small.height, Matrix().apply { postRotate(rotationDegrees.toFloat()) }, true)
+        val turned = Bitmap.createBitmap(small, 0, 0, small.width, small.height, Matrix().apply { postRotate(rotationDegrees.toFloat()) }, true)
+        if (small !== frame) ScaledBitmaps.dropIntermediate(small, turned)
+        return turned
     }
 
     /**
@@ -63,13 +72,19 @@ object SlideImage {
     /** [photo]'s brightness on a grid [ScreenFinder.GRID] cells on its long edge. */
     fun lumaGrid(photo: Bitmap): LumaGrid {
         // Halving down to the grid averages away the slide's text strokes, where one bilinear step would skip them.
+        // Each halving's input is dropped as soon as the next exists (never [photo], the caller's).
         var small = photo
-        while (max(small.width, small.height) > ScreenFinder.GRID * 2) {
-            small = Bitmap.createScaledBitmap(small, max(1, small.width / 2), max(1, small.height / 2), true)
+        fun step(next: Bitmap) {
+            if (small !== photo) ScaledBitmaps.dropIntermediate(small, next)
+            small = next
         }
-        small = scaled(small, ScreenFinder.GRID)
+        while (max(small.width, small.height) > ScreenFinder.GRID * 2) {
+            step(Bitmap.createScaledBitmap(small, max(1, small.width / 2), max(1, small.height / 2), true))
+        }
+        step(scaled(small, ScreenFinder.GRID))
         val pixels = IntArray(small.width * small.height)
         small.getPixels(pixels, 0, small.width, 0, 0, small.width, small.height)
+        if (small !== photo) small.recycle()
         val luma = IntArray(pixels.size) { i ->
             val p = pixels[i]
             (299 * (p shr 16 and 0xFF) + 587 * (p shr 8 and 0xFF) + 114 * (p and 0xFF)) / 1000
@@ -98,15 +113,25 @@ object SlideImage {
     fun jpeg(image: Bitmap, maxPixelSize: Int = 1600, quality: Int = 70): ByteArray? {
         val small = scaled(image, maxPixelSize)
         val out = ByteArrayOutputStream()
-        return if (small.compress(Bitmap.CompressFormat.JPEG, quality, out)) out.toByteArray() else null
+        val ok = small.compress(Bitmap.CompressFormat.JPEG, quality, out)
+        if (small !== image) small.recycle()
+        return if (ok) out.toByteArray() else null
     }
 
+    /**
+     * A copy of [image] for showing in a [maxWidth]×[maxHeight] box (`ContentScale.Fit`): the slide is
+     * kept at [READ_SIZE] for reading, but drawing that in a 200 dp row would upload all of it.
+     */
+    fun preview(image: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
+        val size = ImageSizing.fitWithin(image.width, image.height, maxWidth, maxHeight)
+        if (size.width >= image.width && size.height >= image.height) return image
+        return Bitmap.createScaledBitmap(image, size.width, size.height, true)
+    }
+
+    /** [image] with no side past [maxPixelSize] — itself when it's that small already. */
     fun scaled(image: Bitmap, maxPixelSize: Int): Bitmap {
-        val longEdge = max(image.width, image.height)
-        if (longEdge <= maxPixelSize) return image
-        val scale = maxPixelSize.toDouble() / longEdge
-        return Bitmap.createScaledBitmap(
-            image, max(1, (image.width * scale).roundToInt()), max(1, (image.height * scale).roundToInt()), true,
-        )
+        if (max(image.width, image.height) <= maxPixelSize) return image
+        val size = ImageSizing.fitLongEdge(image.width, image.height, maxPixelSize)
+        return Bitmap.createScaledBitmap(image, size.width, size.height, true)
     }
 }

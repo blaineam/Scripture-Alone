@@ -94,6 +94,7 @@ import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.camera.LumaGrid
 import com.blainemiller.scripturealone.data.camera.ScreenFinder
 import com.blainemiller.scripturealone.data.camera.SlideImage
+import com.blainemiller.scripturealone.data.image.ScaledBitmaps
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -243,7 +244,13 @@ private fun LiveScanner(onCapture: (Bitmap) -> Unit, onCancel: () -> Unit) {
                 val rotation = image.imageInfo.rotationDegrees
                 scope.launch {
                     val upright = withContext(Dispatchers.Default) {
-                        runCatching { image.use { SlideImage.upright(it.toBitmap(), rotation) } }.getOrNull()
+                        runCatching {
+                            image.use {
+                                // The full camera frame is dropped as soon as the upright copy exists.
+                                val frame = it.toBitmap()
+                                SlideImage.upright(frame, rotation).also { upright -> ScaledBitmaps.dropIntermediate(frame, upright) }
+                            }
+                        }.getOrNull()
                     }
                     capturing = false
                     if (upright != null) onCapture(upright)
@@ -484,7 +491,7 @@ private fun SystemCamera(onCapture: (Bitmap) -> Unit, onCancel: () -> Unit) {
             return@rememberLauncherForActivityResult
         }
         scope.launch {
-            val image = withContext(Dispatchers.IO) { SlideImage.decode(file.readBytes()).also { file.delete() } }
+            val image = withContext(Dispatchers.IO) { SlideImage.decode(file).also { file.delete() } }
             if (image != null) onCapture(image) else onCancel()
         }
     }

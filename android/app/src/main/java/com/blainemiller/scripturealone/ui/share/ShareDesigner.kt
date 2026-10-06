@@ -129,8 +129,14 @@ fun ShareDesigner(model: ReaderViewModel, source: ShareSource, palette: ReaderPa
         busy = true
         scope.launch {
             try {
+                // Drawn at the output size (2160 px on the long side), written out, then let go at once:
+                // nothing holds the 18 MB card after its PNG exists.
                 val bitmap = withContext(Dispatchers.Default) { renderer.bitmap(content, style) }
-                use(bitmap, source.filename(content))
+                try {
+                    use(bitmap, source.filename(content))
+                } finally {
+                    bitmap.recycle()
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
