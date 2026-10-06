@@ -73,7 +73,7 @@ export async function api(method, url, body, { headers = {}, raw = false, retrie
 		if ((res.status === 0 || res.status === 429 || res.status >= 500) && attempt < retries && !raw) {
 			await new Promise((r) => setTimeout(r, 5000 * (attempt + 1))); continue;
 		}
-		const err = new Error(`${method} ${url.replace(/^https:\/\/[^/]+/, '')} → ${res.status}: ${msg}`); err.status = res.status; throw err;
+		const err = new Error(`${method} ${url.replace(/^https:\/\/[^/]+/, '')} → ${res.status}: ${msg}`); err.status = res.status; err.body = text; throw err;
 	}
 }
 

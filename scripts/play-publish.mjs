@@ -180,24 +180,37 @@ async function probeProduction(a, editId, snap) {
 	const name = live[0].name || `probe ${codes.join(',')}`;
 	log(`probing production with "${source}" ${name} [${codes.join(',')}] — the edit is deleted afterwards, never committed`);
 
-	const attempt = async (status) => {
+	// Play's whole error (status and details, not only the message), compacted to one line.
+	const detail = (e) => {
+		try { const j = JSON.parse(e.body || '').error; return [j.code, j.status, j.message, ...(j.details || []).map((d) => JSON.stringify(d))].filter(Boolean).join(' · '); } catch { return e.message; }
+	};
+	const attempt = async (track, status) => {
 		try {
-			await api('PUT', `${base(a)}/edits/${editId}/tracks/production`, { track: 'production', releases: [{ name, versionCodes: codes, status }] });
-		} catch (e) { return { stage: 'assign', error: e.message }; }
+			await api('PUT', `${base(a)}/edits/${editId}/tracks/${encodeURIComponent(track)}`, { track, releases: [{ name, versionCodes: codes, status }] });
+		} catch (e) { return { stage: 'assign', error: detail(e) }; }
 		try {
 			await api('POST', `${base(a)}/edits/${editId}:validate`);
-		} catch (e) { return { stage: 'validate', error: e.message }; }
+		} catch (e) { return { stage: 'validate', error: detail(e) }; }
 		return { stage: 'validate', error: null };
 	};
-	const draft = await attempt('draft');
-	log(`draft on production: ${draft.error ? `refused at ${draft.stage} — ${draft.error}` : 'validates'}`);
+	const say = (what, r) => log(`${what}: ${r.error ? `refused at ${r.stage} — ${r.error}` : 'validates'}`);
+
+	// The control: the same request on a track this app can certainly release to. If that is refused
+	// too, the edit or the request is wrong and production's answer says nothing about access.
+	const control = await attempt('internal', 'completed');
+	say('control — the same release on "internal"', control);
+	if (control.error) fail(`the control on "internal" was refused, so the probe can't tell: ${control.error}`);
+	await api('PUT', `${base(a)}/edits/${editId}/tracks/internal`, snap.tracks.find((t) => t.track === 'internal') || { track: 'internal', releases: [] }).catch(() => {});
+
+	const draft = await attempt('production', 'draft');
+	say('draft on production', draft);
 	// A draft can validate where a real release can't (and a draft app can hold only drafts): the
 	// completed release is the question that matters.
-	const full = await attempt('completed');
-	log(`completed release on production: ${full.error ? `refused at ${full.stage} — ${full.error}` : 'validates'}`);
+	const full = await attempt('production', 'completed');
+	say('completed release on production', full);
 
 	const granted = !full.error;
-	const reason = (full.error || '').replace(/^\S+ \S+ → /, '');
+	const reason = full.error || '';
 	console.log(granted ? 'granted' : 'not granted');
 	if (!granted) console.log(`Play: ${reason}`);
 	summary(`- ${granted ? '✅' : '⏳'} Play production access: **${granted ? 'granted' : 'not granted'}**${granted ? '' : ` — ${reason}`}`);
