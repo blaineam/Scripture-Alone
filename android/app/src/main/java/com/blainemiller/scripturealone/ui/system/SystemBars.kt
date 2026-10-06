@@ -5,6 +5,13 @@ import android.graphics.Color
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.runtime.Composable
 import androidx.core.view.WindowCompat
 
 /**
@@ -14,6 +21,25 @@ import androidx.core.view.WindowCompat
  * the bars' *icons* ([icons]), never the window again.
  */
 object SystemBars {
+
+    /**
+     * What chrome along the top must keep clear of: the status bar, and — in landscape — a navigation
+     * bar or display cutout at either side (3-button navigation sits on the side there).
+     */
+    val topSafe: WindowInsets
+        @Composable get() = WindowInsets.systemBars.union(WindowInsets.displayCutout).only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+
+    /** The same for chrome along the bottom: the navigation bar, and side bars or cutouts. */
+    val bottomSafe: WindowInsets
+        @Composable get() = WindowInsets.systemBars.union(WindowInsets.displayCutout).only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
+
+    /** A pane along the trailing edge (Study beside the reader): the top and that side. */
+    val trailingPaneSafe: WindowInsets
+        @Composable get() = WindowInsets.systemBars.union(WindowInsets.displayCutout).only(WindowInsetsSides.Top + WindowInsetsSides.End)
+
+    /** Sheets and panels: only the sides — a landscape side navigation bar, or a cutout. */
+    val sideSafe: WindowInsets
+        @Composable get() = WindowInsets.systemBars.union(WindowInsets.displayCutout).only(WindowInsetsSides.Horizontal)
 
     /** Transparent bars, with no scrim even under 3-button navigation: the page shows through. */
     private fun transparent(dark: Boolean): SystemBarStyle =

@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.study
 
+import com.blainemiller.scripturealone.ui.system.SystemBars
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.blainemiller.scripturealone.ui.reader.takesTaps
 import android.app.Activity
@@ -176,8 +177,10 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
                     exit = slideOutHorizontally(tween(220)) { it },
                 ) {
                     Box(
+                        // The pane is at the trailing edge: clear of the status bar and, in landscape, of a
+                        // side navigation bar or cutout there (its background still runs beneath them).
                         Modifier.width(380.dp).fillMaxHeight().background(SheetColors.surface(palette))
-                            .windowInsetsPadding(WindowInsets.statusBars),
+                            .windowInsetsPadding(SystemBars.trailingPaneSafe),
                     ) {
                         // The inspector's leading edge: a hairline, as iOS draws it.
                         Box(Modifier.fillMaxHeight().width(0.5.dp).background(SheetColors.separator(palette)))
@@ -211,7 +214,7 @@ fun FullSheet(visible: Boolean, onDismiss: () -> Unit, content: @Composable () -
         )
     }
     AnimatedVisibility(visible, enter = slideInVertically(tween(320)) { it }, exit = slideOutVertically(tween(240)) { it }) {
-        Box(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars).padding(top = 10.dp)) {
+        Box(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars).windowInsetsPadding(SystemBars.sideSafe).padding(top = 10.dp)) {
             content()
         }
     }
@@ -226,7 +229,8 @@ fun FullSheet(visible: Boolean, onDismiss: () -> Unit, content: @Composable () -
 private fun StudySheet(study: StudyModel, reader: ReaderViewModel, palette: com.blainemiller.scripturealone.ui.reader.ReaderPalette) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    // Clear of a side navigation bar or cutout in landscape.
+    BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(SystemBars.sideSafe)) {
         val full = constraints.maxHeight.toFloat()
         val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val largeTop = with(density) { (statusTop + 10.dp).toPx() }

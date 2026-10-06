@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.ui.appearance
 
+import androidx.compose.foundation.layout.windowInsetsPadding
+import com.blainemiller.scripturealone.ui.system.SystemBars
 import com.blainemiller.scripturealone.ui.reader.CappedFontScale
 import com.blainemiller.scripturealone.ui.reader.takesTaps
 import androidx.compose.ui.semantics.heading
@@ -117,7 +119,8 @@ fun AppearanceSheet(
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
     var licences by rememberSaveable { mutableStateOf(false) }
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    // Clear of a side navigation bar or cutout in landscape.
+    BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(SystemBars.sideSafe)) {
         val full = constraints.maxHeight.toFloat()
         val statusTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val largeTop = with(density) { (statusTop + 10.dp).toPx() }

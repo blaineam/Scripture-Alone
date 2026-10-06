@@ -439,13 +439,13 @@ fun ReaderScreen(
             if (keepsake == null) {
                 TranslationDownloadBanner(
                     model, palette,
-                    Modifier.align(Alignment.TopCenter).windowInsetsPadding(WindowInsets.statusBars).padding(top = BAR_HEIGHT + 4.dp),
+                    Modifier.align(Alignment.TopCenter).windowInsetsPadding(SystemBars.topSafe).padding(top = BAR_HEIGHT + 4.dp),
                 )
             }
             keepsake?.let { reading ->
                 LegacyBanner(
                     reading, palette, onClose = model::closeKeepsake,
-                    modifier = Modifier.align(Alignment.TopCenter).windowInsetsPadding(WindowInsets.statusBars)
+                    modifier = Modifier.align(Alignment.TopCenter).windowInsetsPadding(SystemBars.topSafe)
                         .padding(top = BAR_HEIGHT + 4.dp)
                         .onSizeChanged { bannerHeight = with(density) { it.height.toDp() } },
                 )
@@ -467,7 +467,7 @@ fun ReaderScreen(
             // The Now Playing bar above the selection bar, both above the toolbar — iOS's bottom inset.
             Column(
                 Modifier.align(Alignment.BottomCenter)
-                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .windowInsetsPadding(SystemBars.bottomSafe)
                     .padding(start = 16.dp, end = 16.dp, bottom = 10.dp + 52.dp + 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -513,6 +513,8 @@ fun ReaderScreen(
                 enter = slideInVertically(tween(320)) { it },
                 exit = slideOutVertically(tween(240)) { it },
             ) {
+              // Clear of a side navigation bar or cutout in landscape.
+              Box(Modifier.windowInsetsPadding(SystemBars.sideSafe)) {
                 when (shown) {
                     ReaderSheet.NOTES -> if (keepsake != null) LegacyNotesPanel(
                         model, keepsake, palette,
@@ -542,6 +544,7 @@ fun ReaderScreen(
                         })
                     }
                 }
+              }
             }
             AppearanceSheet(model, palette, visible = appearance, onDismiss = { appearance = false }, onKeepsake = {
                 appearance = false
@@ -1080,7 +1083,7 @@ private fun TopBar(
         Modifier
             .fillMaxWidth()
             .background(Brush.verticalGradient(0f to palette.page, 0.75f to palette.page, 1f to palette.page.copy(alpha = 0f)))
-            .windowInsetsPadding(WindowInsets.statusBars)
+            .windowInsetsPadding(SystemBars.topSafe)
             .height(BAR_HEIGHT + 12.dp),
     ) {
         // iOS's compact size class: on a phone "NASB 2020" crowded the passage title out of the bar.
@@ -1160,7 +1163,7 @@ private fun BottomBar(model: ReaderViewModel, palette: ReaderPalette, modifier: 
         modifier
             .fillMaxWidth()
             .background(Brush.verticalGradient(0f to palette.page.copy(alpha = 0f), 0.35f to palette.page.copy(alpha = 0.85f), 1f to palette.page))
-            .windowInsetsPadding(WindowInsets.navigationBars)
+            .windowInsetsPadding(SystemBars.bottomSafe)
             .padding(horizontal = 16.dp, vertical = 10.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
