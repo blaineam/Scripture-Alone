@@ -36,6 +36,9 @@ nonisolated enum UITestMode {
     /// The demo library (`DemoLibrary`), unless the test asked for an empty one.
     static var seedsDemoLibrary: Bool { isOn && !arguments.contains("-noSeed") }
 
+    /// `-uiTestSilenced`: Listen reads the phone as being in Silent mode (the Simulator has no switch).
+    static var silenced: Bool { isOn && arguments.contains("-uiTestSilenced") }
+
     /// The sample sermon slide goes through the photo-import path when Notes opens.
     static var importsSampleSlide: Bool { isOn && arguments.contains("-uiTestSlide") }
 

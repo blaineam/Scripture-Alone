@@ -95,6 +95,13 @@ class ListenController private constructor(private val app: Context) {
         private set
     var sleepTimer by mutableStateOf(SleepTimer.OFF)
         private set
+    /**
+     * Listening started with the phone on silent or vibrate and the reader hasn't tapped Unmute: the
+     * verses are followed on screen without a sound ([ListenMute]).
+     */
+    var isMuted by mutableStateOf(false)
+        private set
+    private val mute = ListenMute()
     /** The translation being read. */
     var translationId by mutableStateOf("")
         private set
@@ -206,15 +213,57 @@ class ListenController private constructor(private val app: Context) {
         current = 0
         notice = null
         isPresented = true
+        mute.begin(ListenMute.deviceSilenced(app))
+        isMuted = mute.muted
+        registerRinger()
         connectSession()
         begin(0)
+    }
+
+    // MARK: Silent or vibrate
+
+    /** Plays aloud a session that started muted; it holds until listening stops. */
+    fun unmute() {
+        if (!mute.muted) return
+        mute.unmute()
+        applyMute()
+    }
+
+    /** Puts what is being read in step with [mute]: the verse being read starts again at the new volume. */
+    private fun applyMute() {
+        isMuted = mute.muted
+        if (mute.muted) abandonFocus()
+        if (phase == Phase.Playing || phase is Phase.Preparing) begin(current)
+        publish()
+    }
+
+    /** The ringer moved while the player is up: a change applies; an Unmute tap holds otherwise. */
+    private val ringer = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action != AudioManager.RINGER_MODE_CHANGED_ACTION || !isPresented) return
+            if (mute.ringerRead(ListenMute.deviceSilenced(app))) applyMute()
+        }
+    }
+    private var ringerRegistered = false
+
+    private fun registerRinger() {
+        if (ringerRegistered) return
+        ContextCompat.registerReceiver(app, ringer, IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION), ContextCompat.RECEIVER_NOT_EXPORTED)
+        ringerRegistered = true
+    }
+
+    private fun unregisterRinger() {
+        if (!ringerRegistered) return
+        runCatching { app.unregisterReceiver(ringer) }
+        ringerRegistered = false
     }
 
     private fun begin(index: Int) {
         stopOutput()
         current = index.coerceIn(0, items.lastIndex)
         speakingVerse = ListenQueue.markedVerse(items, current)
-        if (!requestFocus()) {
+        // Muted, Listen takes no audio focus: the reader's own music or podcast plays on.
+        if (!mute.muted && !requestFocus()) {
             // A call is in progress: wait, paused, rather than talk over it.
             phase = Phase.Paused
             publish()
@@ -278,6 +327,9 @@ class ListenController private constructor(private val app: Context) {
         items = emptyList()
         notice = null
         chooseSleepTimer(SleepTimer.OFF)
+        mute.end()
+        isMuted = false
+        unregisterRinger()
         abandonFocus()
         silence?.release()
         silence = null
@@ -489,6 +541,7 @@ class ListenController private constructor(private val app: Context) {
             homeRegion = homeRegion,
             allowNetwork = allowNetwork,
             fallbackLocale = VoiceCatalog.fallbackLocale(textLanguage, device.language, device.country),
+            volume = if (mute.muted) 0f else 1f,
         )
         speech.play(plan) { all, refused ->
             main.post {

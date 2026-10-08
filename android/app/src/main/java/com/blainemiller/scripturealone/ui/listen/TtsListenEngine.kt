@@ -2,6 +2,7 @@ package com.blainemiller.scripturealone.ui.listen
 
 import android.content.Context
 import android.media.AudioAttributes
+import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import com.blainemiller.scripturealone.data.listen.VoiceInfo
@@ -49,8 +50,15 @@ class TtsListenEngine(
         tts.setSpeechRate(rate)
     }
 
+    private var volume = 1f
+
+    override fun setVolume(volume: Float) {
+        this.volume = volume.coerceIn(0f, 1f)
+    }
+
     override fun speak(text: String, utteranceId: String) {
-        tts.speak(text, TextToSpeech.QUEUE_ADD, null, utteranceId)
+        val params = if (volume < 1f) Bundle().apply { putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume) } else null
+        tts.speak(text, TextToSpeech.QUEUE_ADD, params, utteranceId)
     }
 
     override fun pause(millis: Long, utteranceId: String) {

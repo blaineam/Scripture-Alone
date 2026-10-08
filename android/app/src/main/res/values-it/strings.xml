@@ -46,6 +46,9 @@
     <string name="listen_paused">In pausa</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">Ignora</string>
+    <string name="listen_silent_mode">Modalità silenziosa: tocca per riattivare l’audio</string>
+    <string name="listen_unmute">Riattiva audio</string>
+    <string name="listen_unmute_hint">Il telefono è in modalità silenziosa o vibrazione, quindi Ascolta è partito senza audio.</string>
     <string name="listen_previous_verse">Versetto precedente</string>
     <string name="listen_next_verse">Versetto successivo</string>
     <string name="listen_preparing">Preparazione</string>

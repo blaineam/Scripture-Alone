@@ -76,6 +76,14 @@
   the Mac's arrow keys already did; in the scrolling reader they change the chapter as before. On
   iPhone, iPad and Mac.
 
+- Listen respects Silent mode. On an iPhone set to Silent (the ring/silent switch or the Action
+  button), Listen starts muted: the verse marker moves on as the chapter is read, without a sound,
+  your music keeps playing, and the bar says "Silent mode — tap to unmute". Unmute reads aloud for the
+  rest of that listening session, with the lock screen's controls; the next Listen asks the phone
+  again. iOS has no way to ask for the switch, so the app times a silent system sound, as Haven does.
+  On Android, Silent and Vibrate do the same (and moving the ringer while listening applies at once).
+  iPad and Mac have no switch and are unchanged. On iPhone and Android.
+
 - Highlights have rounded corners. A highlighted passage was a stack of hard rectangles, one per
   line; now it is one band with its outer corners rounded (about 5 points, scaled to the line), the
   corners where one line meets the next left square, and two lines of poetry a few points apart

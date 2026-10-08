@@ -18,6 +18,9 @@ struct NowPlayingBar: View {
 
     var body: some View {
         VStack(spacing: 6) {
+            if listen.isMuted {
+                mutedRow
+            }
             if let notice = listen.notice {
                 noticeRow(notice)
             }
@@ -55,12 +58,35 @@ struct NowPlayingBar: View {
 
     private var status: String {
         switch listen.phase {
-        case .preparing(let message): return message
+        case .preparing(let message) where !message.isEmpty: return message
         case .paused: return String(localized: "Paused", comment: "Read-aloud status")
-        case .playing, .idle:
+        case .playing, .idle, .preparing:
             let voice = listen.engine == .miSpeaks ? "Mi Speaks" : (voices.first { $0.id == listen.voiceID }?.name ?? String(localized: "System Voice", comment: "Read-aloud engine using the device's built-in voices"))
             return String(localized: "\(voice) · \(Self.speedLabel(listen.speed))", comment: "Read-aloud status. %1$@ is a voice name; %2$@ is the speed, e.g. “1×”.")
         }
+    }
+
+    /// Listening started with the iPhone in Silent mode: it reads on without a sound until Unmute.
+    private var mutedRow: some View {
+        Button { listen.unmute() } label: {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Image(systemName: "bell.slash.fill").foregroundStyle(.secondary)
+                Text("Silent mode — tap to unmute", comment: "Shown while reading aloud is muted because the iPhone is in Silent mode")
+                    .font(.caption)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Unmute", comment: "Button: play the read-aloud audio although the iPhone is in Silent mode")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tint)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(.tint.opacity(0.15), in: .capsule)
+            }
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("Unmute", comment: "Button: play the read-aloud audio although the iPhone is in Silent mode"))
+        .accessibilityHint(Text("Silent mode is on, so Listen started muted.", comment: "Accessibility hint for the Unmute button. “Listen” is the read-aloud feature's name."))
+        .accessibilityIdentifier("listen.unmute")
     }
 
     private func noticeRow(_ notice: String) -> some View {

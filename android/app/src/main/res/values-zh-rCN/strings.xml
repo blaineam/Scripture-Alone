@@ -46,6 +46,9 @@
     <string name="listen_paused">已暂停</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">忽略</string>
+    <string name="listen_silent_mode">静音模式 — 点按以取消静音</string>
+    <string name="listen_unmute">取消静音</string>
+    <string name="listen_unmute_hint">手机处于静音或振动模式，因此“收听”以静音方式开始。</string>
     <string name="listen_previous_verse">上一节</string>
     <string name="listen_next_verse">下一节</string>
     <string name="listen_preparing">准备中</string>

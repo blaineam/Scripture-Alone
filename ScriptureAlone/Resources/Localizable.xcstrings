@@ -34274,6 +34274,114 @@
         }
       }
     },
+    "Silent mode is on, so Listen started muted." : {
+      "comment" : "Accessibility hint for the Unmute button. “Listen” is the read-aloud feature's name.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Stummmodus ist an, daher hat „Anhören“ ohne Ton begonnen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El modo silencio está activado, así que Escuchar ha empezado sin sonido."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le mode silencieux est activé : Écouter a donc démarré sans le son."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La modalità silenziosa è attiva, quindi Ascolta è partito senza audio."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "消音モードがオンのため、「聴く」は消音で開始しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "무음 모드가 켜져 있어 듣기가 음소거된 상태로 시작되었습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Modo Silencioso está ativado, então Ouvir começou sem som."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "静音模式已开启，因此“收听”以静音方式开始。"
+          }
+        }
+      }
+    },
+    "Silent mode — tap to unmute" : {
+      "comment" : "Shown while reading aloud is muted because the iPhone is in Silent mode",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stummmodus – zum Einschalten des Tons tippen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo silencio: toca para activar el sonido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mode silencieux — touchez pour réactiver le son"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modalità silenziosa: tocca per riattivare l’audio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "消音モード — タップして消音を解除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "무음 모드 — 탭하여 음소거 해제"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo Silencioso — toque para ativar o som"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "静音模式 — 轻点以取消静音"
+          }
+        }
+      }
+    },
     "Simple text that opens anywhere." : {
       "comment" : "Describes an export format",
       "localizations" : {
@@ -41018,6 +41126,60 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "联合王国"
+          }
+        }
+      }
+    },
+    "Unmute" : {
+      "comment" : "Button: play the read-aloud audio although the iPhone is in Silent mode",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ton an"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar sonido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réactiver le son"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riattiva audio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "消音解除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "음소거 해제"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ativar som"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消静音"
           }
         }
       }

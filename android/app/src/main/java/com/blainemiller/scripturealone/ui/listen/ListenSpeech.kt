@@ -18,6 +18,8 @@ interface ListenEngine {
     fun useLanguage(locale: Locale)
     /** 1 is the engine's normal pace. */
     fun setRate(rate: Float)
+    /** 0 (muted: the phone is silenced) to 1, for what is queued from now on. */
+    fun setVolume(volume: Float) = Unit
     /** Queues [text] after whatever is queued. */
     fun speak(text: String, utteranceId: String)
     /** Queues a silence after whatever is queued. */
@@ -49,6 +51,8 @@ class ListenSpeech(create: (onInit: (Boolean) -> Unit) -> ListenEngine) {
         val allowNetwork: Boolean,
         /** The language to ask for when no voice of the engine's suits. */
         val fallbackLocale: Locale,
+        /** 0 while the session is muted by a silenced phone ([ListenMute]), else 1. */
+        val volume: Float = 1f,
     )
 
     private val thread = SpeechThread(
@@ -84,6 +88,7 @@ class ListenSpeech(create: (onInit: (Boolean) -> Unit) -> ListenEngine) {
             if (voice == null || !engine.useVoice(voice.id)) engine.useLanguage(plan.fallbackLocale)
             // 0.5–2× maps straight onto the engine's rate multiplier, where 1 is its normal pace.
             engine.setRate(plan.rate)
+            engine.setVolume(plan.volume)
             val items = plan.items
             for (i in plan.from until items.size) {
                 engine.speak(items[i].text, utteranceId(plan.generation, i))

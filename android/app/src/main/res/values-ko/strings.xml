@@ -46,6 +46,9 @@
     <string name="listen_paused">일시정지됨</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">닫기</string>
+    <string name="listen_silent_mode">무음 모드 — 탭하여 음소거 해제</string>
+    <string name="listen_unmute">음소거 해제</string>
+    <string name="listen_unmute_hint">휴대전화가 무음 또는 진동 모드여서 듣기가 음소거된 상태로 시작되었습니다.</string>
     <string name="listen_previous_verse">이전 절</string>
     <string name="listen_next_verse">다음 절</string>
     <string name="listen_preparing">준비 중</string>

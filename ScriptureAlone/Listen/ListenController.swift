@@ -4,6 +4,8 @@ import MediaPlayer
 import Observation
 import ScriptureAloneCore
 #if os(iOS)
+import AudioToolbox
+import QuartzCore
 import UIKit
 #endif
 
@@ -45,6 +47,11 @@ final class ListenController {
     /// True while the bar should show.
     private(set) var isPresented = false
     private(set) var sleepTimer: SleepTimer = .off
+    /// Whether this listening session is muted by the iPhone's Silent mode (`ListenMute`).
+    private(set) var mute = ListenMute()
+    /// Listening started with the iPhone in Silent mode, and the reader hasn't tapped Unmute: the
+    /// verses are followed on screen without a sound.
+    var isMuted: Bool { mute.muted }
 
     var speed: Double {
         didSet {
@@ -101,6 +108,9 @@ final class ListenController {
     @ObservationIgnored private var sleepTask: Task<Void, Never>?
     @ObservationIgnored private var remoteCommandsInstalled = false
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
+    /// Counts listening sessions, so a Silent-mode reading that answers after Stop (or after another
+    /// start) is dropped.
+    @ObservationIgnored private var session = 0
 
     private init() {
         let stored = defaults.double(forKey: SettingsKey.listenSpeed)
@@ -210,10 +220,82 @@ final class ListenController {
         current = 0
         notice = nil
         isPresented = true
+        session += 1
+        #if os(iOS)
+        if SilentSwitch.applies {
+            // Read the ring/silent switch before a word is spoken, so Silent mode never lets the first
+            // verse out aloud. The reading takes under half a second.
+            phase = .preparing("")
+            let started = session
+            readSilentSwitch { [weak self] silenced in
+                guard let self, self.session == started, self.isPresented else { return }
+                self.mute.begin(switchSilenced: silenced)
+                self.activateSession()
+                self.installRemoteCommands()
+                self.begin(at: 0)
+            }
+            return
+        }
+        #endif
+        mute.end()
         activateSession()
         installRemoteCommands()
         begin(at: 0)
     }
+
+    // MARK: Silent mode
+
+    /// Plays aloud a session that started muted by Silent mode. It holds until listening stops:
+    /// the next Listen reads the switch again, which is where the reader says what they want.
+    func unmute() {
+        guard mute.muted else { return }
+        mute.unmute()
+        applyMute()
+    }
+
+    /// Puts the audio session, and what is playing, in step with `mute`: muted plays through the
+    /// `.ambient` category (which Silent mode silences, mixes with other audio and takes no lock
+    /// screen) at no volume; audible plays through `.playback`, which keeps reading with the screen
+    /// locked and owns the lock screen's and Control Center's controls.
+    private func applyMute() {
+        guard phase != .idle || !items.isEmpty else { return }
+        activateSession()
+        if let player {
+            player.volume = mute.muted ? 0 : 1
+        } else if case .preparing = phase {
+            // The voice is still loading; it speaks at the new volume when it starts.
+        } else {
+            // Queued utterances keep the volume they were queued at: queue again from this verse.
+            restartFromCurrent()
+        }
+        updateNowPlaying()
+    }
+
+    #if os(iOS)
+    private func readSilentSwitch(_ done: @escaping @MainActor (Bool) -> Void) {
+        #if DEBUG
+        // UI tests: no probe sound; `-uiTestSilenced` stands in for a phone in Silent mode.
+        if UITestMode.isOn {
+            done(UITestMode.silenced)
+            return
+        }
+        #endif
+        SilentSwitch.detectSilenced { silenced in MainActor.assumeIsolated { done(silenced) } }
+    }
+
+    /// Back on screen with the player up: the switch may have moved while the app was away. Only a
+    /// change of position applies, so an Unmute tap holds while the switch stays on Silent.
+    private func rereadSilentSwitch() {
+        guard SilentSwitch.applies, isPresented else { return }
+        let current = session
+        readSilentSwitch { [weak self] silenced in
+            guard let self, self.session == current, self.isPresented else { return }
+            let was = self.mute.muted
+            self.mute.switchRead(silenced: silenced)
+            if self.mute.muted != was { self.applyMute() }
+        }
+    }
+    #endif
 
     private func begin(at index: Int) {
         stopOutput()
@@ -317,6 +399,8 @@ final class ListenController {
     /// app that is no longer playing anything.
     func stop() {
         isPresented = false
+        session += 1
+        mute.end()
         setRemoteCommandsEnabled(false)
         stopOutput()
         speakingVerse = nil
@@ -455,6 +539,7 @@ final class ListenController {
             let utterance = TokenUtterance(string: items[i].text, token: nextToken)
             utterance.voice = voice
             utterance.rate = rate
+            utterance.volume = mute.muted ? 0 : 1
             // A breath between verses; a longer one after the chapter announcement.
             utterance.postUtteranceDelay = items[i].key == 0 ? 0.5 : 0.12
             tokens[nextToken] = i
@@ -535,6 +620,7 @@ final class ListenController {
             verseStarts = starts
             clipURL = url
             self.player = player
+            player.volume = mute.muted ? 0 : 1
             activateSession()
             player.play()
             phase = .playing
@@ -567,7 +653,11 @@ final class ListenController {
     private func activateSession() {
         #if os(iOS)
         let session = AVAudioSession.sharedInstance()
-        try? session.setCategory(.playback, mode: .spokenAudio)
+        if mute.muted {
+            try? session.setCategory(.ambient)
+        } else {
+            try? session.setCategory(.playback, mode: .spokenAudio)
+        }
         try? session.setActive(true)
         #endif
     }
@@ -600,6 +690,9 @@ final class ListenController {
             // Headphones pulled out: pause rather than read aloud to the room.
             guard reason == .oldDeviceUnavailable else { return }
             MainActor.assumeIsolated { ListenController.shared.pause() }
+        })
+        observers.append(center.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated { ListenController.shared.rereadSilentSwitch() }
         })
     }
     #endif
@@ -723,3 +816,93 @@ private nonisolated final class PlayerDelegate: NSObject, AVAudioPlayerDelegate,
         onFinish?()
     }
 }
+
+/// Whether a listening session is muted by Silent mode. iPhone only: an iPad and a Mac have no
+/// ring/silent switch, so their sessions never start muted.
+///
+/// A session starts muted when the switch (or the Action button) has the phone in Silent mode, and
+/// Unmute plays it aloud until listening stops; the next session reads the switch afresh. Reading the
+/// switch again mid-session (back from another app) applies only a change of position — the
+/// edge-triggered rule Haven uses — so an Unmute tap is never undone by a switch that hasn't moved.
+struct ListenMute: Equatable {
+    private(set) var muted = false
+    private var lastSwitch: Bool?
+
+    /// A session starts with the switch read as `switchSilenced`.
+    mutating func begin(switchSilenced: Bool) {
+        muted = switchSilenced
+        lastSwitch = switchSilenced
+    }
+
+    /// The switch read again during the session.
+    mutating func switchRead(silenced: Bool) {
+        defer { lastSwitch = silenced }
+        guard lastSwitch != nil, lastSwitch != silenced else { return }
+        muted = silenced
+    }
+
+    /// The reader tapped Unmute.
+    mutating func unmute() { muted = false }
+
+    /// Listening stopped.
+    mutating func end() {
+        muted = false
+        lastSwitch = nil
+    }
+}
+
+#if os(iOS)
+/// Best-effort reading of the iPhone's ring/silent switch (or the Action button's Silent mode).
+/// iOS has no API for it, so this is the well-known trick Haven uses (`SilentSwitch` there): play a
+/// short, genuinely silent system sound and time it. System sounds obey Silent mode, so when the
+/// phone is silenced the completion fires almost at once; with the ringer on, it "plays" for the
+/// sound's whole length.
+///
+/// It's a heuristic and can't be exercised in the Simulator (no switch). Its answer only chooses
+/// how a session starts; the player's Unmute button is the override, and while muted the audio also
+/// runs in the `.ambient` category, which Silent mode itself silences.
+nonisolated enum SilentSwitch {
+    /// Phones only: an iPad has no switch, and an iPhone app running on a Mac has none either.
+    @MainActor static var applies: Bool {
+        UIDevice.current.userInterfaceIdiom == .phone && !ProcessInfo.processInfo.isiOSAppOnMac
+    }
+
+    /// Length of the silent probe sound. A suppressed sound returns in well under half of this.
+    private static let probeSeconds = 0.45
+
+    /// A silent 16-bit mono PCM WAV, written to the temporary folder once and reused.
+    private static func probeURL() -> URL? {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("listen-silent-probe.wav")
+        if FileManager.default.fileExists(atPath: url.path) { return url }
+        let sampleRate = 8000
+        let dataBytes = Int(Double(sampleRate) * probeSeconds) * 2
+        var data = Data()
+        func le32(_ value: UInt32) { withUnsafeBytes(of: value.littleEndian) { data.append(contentsOf: $0) } }
+        func le16(_ value: UInt16) { withUnsafeBytes(of: value.littleEndian) { data.append(contentsOf: $0) } }
+        data.append(contentsOf: Array("RIFF".utf8)); le32(UInt32(36 + dataBytes)); data.append(contentsOf: Array("WAVE".utf8))
+        data.append(contentsOf: Array("fmt ".utf8)); le32(16); le16(1); le16(1)
+        le32(UInt32(sampleRate)); le32(UInt32(sampleRate * 2)); le16(2); le16(16)
+        data.append(contentsOf: Array("data".utf8)); le32(UInt32(dataBytes))
+        data.append(Data(count: dataBytes))
+        return (try? data.write(to: url)) == nil ? nil : url
+    }
+
+    /// Calls back on the main queue with `true` if the phone appears to be in Silent mode. Always
+    /// calls back: `false` (aloud, as before) if the probe can't run.
+    static func detectSilenced(_ completion: @escaping @Sendable (Bool) -> Void) {
+        guard let url = probeURL() else { DispatchQueue.main.async { completion(false) }; return }
+        var sound: SystemSoundID = 0
+        guard AudioServicesCreateSystemSoundID(url as CFURL, &sound) == noErr else {
+            DispatchQueue.main.async { completion(false) }
+            return
+        }
+        let start = CACurrentMediaTime()
+        let id = sound
+        AudioServicesPlaySystemSoundWithCompletion(id) {
+            let elapsed = CACurrentMediaTime() - start
+            AudioServicesDisposeSystemSoundID(id)
+            DispatchQueue.main.async { completion(elapsed < probeSeconds * 0.5) }
+        }
+    }
+}
+#endif

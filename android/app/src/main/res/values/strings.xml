@@ -81,6 +81,10 @@
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <!-- Accessibility label for the button that dismisses a Listen notice. -->
     <string name="listen_dismiss_notice">Dismiss</string>
+    <!-- Listen bar: reading aloud started muted because the phone is on silent or vibrate. -->
+    <string name="listen_silent_mode">Silent mode — tap to unmute</string>
+    <string name="listen_unmute">Unmute</string>
+    <string name="listen_unmute_hint">The phone is on silent or vibrate, so Listen started muted.</string>
     <string name="listen_previous_verse">Previous Verse</string>
     <string name="listen_next_verse">Next Verse</string>
     <!-- Accessibility label for the spinner while the voice or chapter loads. -->

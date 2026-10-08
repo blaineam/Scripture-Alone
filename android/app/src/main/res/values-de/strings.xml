@@ -46,6 +46,9 @@
     <string name="listen_paused">Pausiert</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">Schließen</string>
+    <string name="listen_silent_mode">Lautlos – zum Einschalten des Tons tippen</string>
+    <string name="listen_unmute">Ton an</string>
+    <string name="listen_unmute_hint">Das Telefon ist lautlos oder auf Vibration gestellt, daher hat „Anhören“ ohne Ton begonnen.</string>
     <string name="listen_previous_verse">Vorheriger Vers</string>
     <string name="listen_next_verse">Nächster Vers</string>
     <string name="listen_preparing">Wird vorbereitet</string>

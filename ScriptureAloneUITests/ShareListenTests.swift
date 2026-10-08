@@ -108,6 +108,33 @@ final class ListenTests: ScriptureAloneUITestCase {
         XCTAssertEqual(listen.label, "Listen")
     }
 
+    /// An iPhone in Silent mode (`-uiTestSilenced`: the Simulator has no switch) starts Listen muted,
+    /// says so in the bar, and Unmute plays it aloud for the rest of the session.
+    func testSilentModeStartsMutedUntilUnmute() throws {
+        try XCTSkipIf(isPad, "iPhone only: an iPad has no ring/silent switch")
+        launch(["-uiTestSilenced"])
+        button("reader.listen").tap()
+        let unmute = app.buttons["listen.unmute"]
+        assertExists(unmute, "Silent mode didn't show the muted state")
+        XCTAssertEqual(unmute.label, "Unmute")
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "listen-silent-mode"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        unmute.tap()
+        waitForDisappearance(unmute)
+        // Pausing and playing again keeps the session aloud.
+        app.buttons["Pause"].tap()
+        app.buttons["Play"].tap()
+        XCTAssertFalse(unmute.exists, "Unmute didn't hold for the session")
+        app.buttons["Stop Listening"].tap()
+        waitForDisappearance(app.buttons["Pause"])
+        // A new session reads the switch again.
+        button("reader.listen").tap()
+        assertExists(app.buttons["listen.unmute"], "a new session forgot Silent mode")
+        app.buttons["Stop Listening"].tap()
+    }
+
     func testListeningToTheSelection() {
         launch(["-uiTestSelect", "43:3:16-17"])
         let bar = app.otherElements["selection.bar"]

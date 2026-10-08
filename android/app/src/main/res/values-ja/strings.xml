@@ -46,6 +46,9 @@
     <string name="listen_paused">一時停止中</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">閉じる</string>
+    <string name="listen_silent_mode">マナーモード — タップして消音を解除</string>
+    <string name="listen_unmute">消音解除</string>
+    <string name="listen_unmute_hint">端末がマナーモードまたはバイブレーションのため、「聴く」は消音で開始しました。</string>
     <string name="listen_previous_verse">前の節</string>
     <string name="listen_next_verse">次の節</string>
     <string name="listen_preparing">準備中</string>

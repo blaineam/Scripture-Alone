@@ -33,6 +33,7 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FastRewind
 import androidx.compose.material.icons.rounded.Headphones
+import androidx.compose.material.icons.rounded.NotificationsOff
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PauseCircle
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -55,6 +56,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -89,6 +91,7 @@ fun NowPlayingBar(listen: ListenController, palette: ReaderPalette, modifier: Mo
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        if (listen.isMuted) MutedRow(palette) { listen.unmute() }
         listen.notice?.let { NoticeRow(it, palette) { listen.notice = null } }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Column(
@@ -113,6 +116,38 @@ private fun status(listen: ListenController): String = when (val phase = listen.
     is ListenController.Phase.Preparing -> phase.message
     ListenController.Phase.Paused -> AppText.get(R.string.listen_paused)
     else -> AppText.get(R.string.listen_status_voice_speed, listen.voiceName, ListenSpeed.label(listen.speed))
+}
+
+/**
+ * Listening started with the phone on silent or vibrate: it reads on without a sound until Unmute —
+ * the iOS bar's Silent mode row. The whole row is the button.
+ */
+@Composable
+private fun MutedRow(palette: ReaderPalette, onUnmute: () -> Unit) {
+    val unmute = stringResource(R.string.listen_unmute)
+    val hint = stringResource(R.string.listen_unmute_hint)
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(role = Role.Button, onClickLabel = unmute, onClick = onUnmute)
+            .semantics(mergeDescendants = true) {
+                contentDescription = unmute
+                stateDescription = hint
+            },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(Icons.Rounded.NotificationsOff, null, tint = palette.secondary, modifier = Modifier.size(15.dp))
+        Text(stringResource(R.string.listen_silent_mode), color = palette.ink, fontSize = 12.sp, lineHeight = 16.sp, modifier = Modifier.weight(1f))
+        Text(
+            unmute, color = palette.accent, fontSize = 12.sp, fontWeight = FontWeight.SemiBold,
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(palette.accent.copy(alpha = 0.15f))
+                .padding(horizontal = 10.dp, vertical = 4.dp),
+        )
+    }
 }
 
 @Composable
