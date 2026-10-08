@@ -175,6 +175,10 @@
     <string name="reader_previous_chapter">Previous Chapter</string>
     <!-- Toolbar button (and keyboard shortcut). -->
     <string name="reader_next_chapter">Next Chapter</string>
+    <!-- Toolbar button while a chapter is read in columns: turns back a spread (two columns). -->
+    <string name="reader_previous_page">Previous Page</string>
+    <!-- Toolbar button while a chapter is read in columns: turns to the next spread. -->
+    <string name="reader_next_page">Next Page</string>
     <!-- Accessibility label of the link to the next chapter at the end of a chapter. %1$s is the book and chapter, e.g. John 4. -->
     <string name="reader_next_chapter_label">Next chapter, %1$s</string>
     <!-- Accessibility label of the translation menu button. %1$s is the translation abbreviation, e.g. KJV. -->
@@ -1357,6 +1361,8 @@
     <string name="appearance_section_headings">Section Headings</string>
     <!-- Switch. -->
     <string name="appearance_footnotes">Footnotes</string>
+    <!-- Appearance switch: read a chapter in paged columns side by side where the screen is wide enough (tablets, a phone held sideways). -->
+    <string name="appearance_columns">Columns on Wide Screens</string>
     <!-- Section title: settings about the phone’s own search (the system search on the home screen), not the app’s Bible search. -->
     <string name="appearance_search">Search</string>
     <!-- Switch: let the phone’s search find the reader’s notes. -->

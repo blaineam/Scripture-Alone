@@ -99,6 +99,8 @@
     <string name="reader_go_to_label">跳转经文，当前为 %1$s</string>
     <string name="reader_previous_chapter">上一章</string>
     <string name="reader_next_chapter">下一章</string>
+    <string name="reader_previous_page">上一页</string>
+    <string name="reader_next_page">下一页</string>
     <string name="reader_next_chapter_label">下一章，%1$s</string>
     <string name="reader_translation_label">译本，%1$s</string>
     <string name="reader_compare_translations">对照译本…</string>
@@ -728,6 +730,7 @@
     <string name="appearance_verse_numbers">经文编号</string>
     <string name="appearance_section_headings">段落标题</string>
     <string name="appearance_footnotes">脚注</string>
+    <string name="appearance_columns">宽屏时分栏显示</string>
     <string name="appearance_search">搜索</string>
     <string name="appearance_notes_in_search">笔记可被搜索</string>
     <string name="appearance_favorites_in_search">收藏可被搜索</string>

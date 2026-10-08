@@ -118,6 +118,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -354,7 +355,29 @@ fun ReaderScreen(
     }
 
     MaterialTheme(colorScheme = menuColors(palette)) {
-        Box(Modifier.fillMaxSize().background(Color.Black)) {
+        BoxWithConstraints(Modifier.fillMaxSize().background(Color.Black)) {
+        // Columns side by side when the window is wide enough for two at a comfortable measure, as a
+        // printed page is set (`ReaderColumns`); one scrolling column otherwise, while the page scrolls
+        // itself, and while the phone's Study sheet covers the lower part of it — `ChapterPane` on iOS.
+        // A side navigation bar or cutout narrows the page only where it is deeper than the margin.
+        val sides = SystemBars.sideSafe
+        val direction = LocalLayoutDirection.current
+        val pageLayout = with(density) {
+            val width = ReaderColumns.usableWidth(
+                constraints.maxWidth.toDp().value, sides.getLeft(this, direction).toDp().value, sides.getRight(this, direction).toDp().value,
+            )
+            val height = constraints.maxHeight.toDp().value
+            ReaderLayout.decide(
+                width = width, height = height, fontSize = style.size * fontScale,
+                enabled = model.columns, autoScrolling = autoScrolling, covered = studyCovers,
+            )
+        }
+        val spreads = remember { Spreads() }
+        // Changing between the two keeps the place: the other reader opens on the verse that was at the top.
+        // Noticed here, while composing, so the reader coming in has the verse before its first frame —
+        // from an effect it would already have reported its own top (verse 1) as the place.
+        model.readerChanged(pageLayout.paged)
+
         Box(
             Modifier.fillMaxSize()
                 .graphicsLayer {
@@ -385,6 +408,36 @@ fun ReaderScreen(
                         // Debug `hideChapterText`: the page draws blank under the bars, so the chrome can be
                         // screenshotted with no scripture in the picture (iOS's `-hideChapterText`).
                         Box(Modifier.graphicsLayer { alpha = if (model.hideChapterText) 0f else 1f }) {
+                        if (pageLayout.paged) {
+                            ColumnChapter(
+                                // A phone held sideways: a short page, so a one-line chapter header.
+                                rendered = remember(chapter, style, markers, pageLayout.compactHeight) {
+                                    ChapterRenderer(style, ReaderTypography.fonts(style.size, style.family))
+                                        .render(chapter.ref, chapter.layout, chapter.translation.copyright, markers, compactHeader = pageLayout.compactHeight)
+                                },
+                                columns = pageLayout.columns,
+                                compactHeight = pageLayout.compactHeight,
+                                spreads = spreads,
+                                marks = VerseMarks(colors, model.selection, speaking),
+                                markerSize = style.size,
+                                onVerseTap = {
+                                    if (keepsake == null) model.toggle(it)
+                                    tappedVerse = it
+                                },
+                                onVerseLongPress = { if (keepsake == null) model.extendSelection(it) },
+                                selectable = keepsake == null,
+                                notesFor = { ids -> notes.filter { it.id.toString() in ids } },
+                                onOpenNote = ::showNote,
+                                palette = palette,
+                                scrollTarget = model.scrollTarget,
+                                onScrolledToTarget = model::scrolledToTarget,
+                                onTopVerse = model::updateTopVerse,
+                                onSwipe = { forward -> if (forward) model.next() else model.previous() },
+                                onAction = { if (it == ReaderAction.NEXT_CHAPTER) model.next() },
+                                revealVerse = speaking,
+                                extraTop = if (keepsake != null) bannerHeight + 8.dp else 0.dp,
+                            )
+                        } else {
                         ChapterColumn(
                             rendered = remember(chapter, style, markers) {
                                 ChapterRenderer(style, ReaderTypography.fonts(style.size, style.family))
@@ -418,6 +471,7 @@ fun ReaderScreen(
                             extraTop = if (keepsake != null) bannerHeight + 8.dp else 0.dp,
                         )
                         }
+                        }
                     }
                 model.loadError == null -> CircularProgressIndicator(
                     // Only ever seen on a first launch, while a database is copied out of the APK.
@@ -434,7 +488,7 @@ fun ReaderScreen(
             TopBar(
                 model, palette, onGoTo = { sheet = ReaderSheet.GO_TO }, onNotes = { sheet = ReaderSheet.NOTES },
                 onStudy = onStudy, onCompare = onCompare, onManageTranslations = onManageTranslations,
-                onAppearance = { appearance = true }, studyOpen = studyOpen,
+                onAppearance = { appearance = true }, studyOpen = studyOpen, fade = !pageLayout.paged,
             )
             if (keepsake == null) {
                 TranslationDownloadBanner(
@@ -450,7 +504,7 @@ fun ReaderScreen(
                         .onSizeChanged { bannerHeight = with(density) { it.height.toDp() } },
                 )
             }
-            BottomBar(model, palette, Modifier.align(Alignment.BottomCenter)) {
+            BottomBar(model, palette, Modifier.align(Alignment.BottomCenter), spreads = spreads.takeIf { pageLayout.paged && it.active }) {
                 ListenAndScrollControls(
                     palette,
                     autoScrolling = autoScrolling,
@@ -788,8 +842,14 @@ private fun topVerse(rendered: RenderedChapter, index: Int, y: Float, layout: Te
     return paragraphs.lastOrNull { it.verses.isNotEmpty() }?.verses?.last()?.key
 }
 
+/**
+ * One rendered paragraph: its text, the marks drawn behind it, taps on verses, footnote letters and
+ * note markers, and its TalkBack verse nodes. The scrolling reader shows each paragraph once; the
+ * column reader ([ColumnChapter]) shows a paragraph that runs from one column into the next twice,
+ * each clipped to its own lines — [visibleLines] says which, so TalkBack reads only those verses there.
+ */
 @Composable
-private fun Paragraph(
+internal fun Paragraph(
     p: RenderedParagraph,
     palette: ReaderPalette,
     onAction: (ReaderAction) -> Unit,
@@ -801,6 +861,7 @@ private fun Paragraph(
     notesFor: (List<String>) -> List<Note>,
     onOpenNote: (UUID) -> Unit,
     selectable: Boolean = true,
+    visibleLines: IntRange? = null,
 ) {
     val density = LocalDensity.current
     fun Float.spDp(): Dp = with(density) { this@spDp.sp.toDp() }
@@ -871,20 +932,12 @@ private fun Paragraph(
                 layout = it
                 onLayout(it)
             },
-            style = TextStyle(
-                color = palette.ink,
-                textAlign = p.align,
-                lineHeight = p.lineHeight.sp,
-                textIndent = TextIndent(firstLine = p.firstLineIndent.sp, restLine = p.restLineIndent.sp),
-                // Every line the same height, the space shared above and below the glyphs, and nothing
-                // trimmed at a paragraph's edges — so the gaps between paragraphs are exactly the
-                // spacing the renderer asked for, as in TextKit.
-                lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
-            ),
+            style = paragraphTextStyle(p, palette),
         )
         if (p.verseSpans.isNotEmpty()) {
             VerseNodes(
                 p, layout, topInset = with(density) { p.spaceBefore.sp.toPx() }, marks = ownMarks, selectable = selectable,
+                visibleLines = visibleLines,
                 onTap = { tap(it) }, onLongPress = { longPress(it) },
                 onFootnote = { note -> layout?.let { popover = Popover.Footnote(note.text, it.getBoundingBox(note.offset)) } },
                 onNotes = { ids, at -> layout?.let { popover = Popover.Notes(ids, it.getBoundingBox(at)) } },
@@ -908,13 +961,31 @@ private fun Paragraph(
     }
 }
 
+/**
+ * How a paragraph's text is set — one place, so the column reader measures a paragraph exactly as
+ * [Paragraph] lays it out.
+ */
+internal fun paragraphTextStyle(p: RenderedParagraph, palette: ReaderPalette) = TextStyle(
+    color = palette.ink,
+    textAlign = p.align,
+    lineHeight = p.lineHeight.sp,
+    textIndent = TextIndent(firstLine = p.firstLineIndent.sp, restLine = p.restLineIndent.sp),
+    // Every line the same height, the space shared above and below the glyphs, and nothing
+    // trimmed at a paragraph's edges — so the gaps between paragraphs are exactly the
+    // spacing the renderer asked for, as in TextKit.
+    lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
+)
+
+/** The room a note marker takes in the line: 1.1 × 0.82 × the text size wide, 0.82 × tall. */
+internal fun noteMarkerPlaceholder(size: Float): Placeholder {
+    val side = size * 0.82f
+    return Placeholder((side * 1.1f).sp, side.sp, PlaceholderVerticalAlign.TextCenter)
+}
+
 /** The `text.bubble.fill` attachment, in the accent, 0.82 × the text size — Swift's `noteMarker`. */
 private fun noteMarkerContent(size: Float, palette: ReaderPalette): Map<String, InlineTextContent> {
-    val side = size * 0.82f
     return mapOf(
-        ChapterRenderer.NOTE_MARKER to InlineTextContent(
-            Placeholder((side * 1.1f).sp, side.sp, PlaceholderVerticalAlign.TextCenter),
-        ) {
+        ChapterRenderer.NOTE_MARKER to InlineTextContent(noteMarkerPlaceholder(size)) {
             Icon(ReaderIcons.TextBubbleFill, stringResource(R.string.reader_note_marker), tint = palette.accent, modifier = Modifier.fillMaxSize())
         },
     )
@@ -1051,7 +1122,8 @@ private val SHEET_DROP = 10.dp
 private val SHEET_CORNER = 12.dp
 private val ARROW = 8.dp
 
-private val BAR_HEIGHT = 64.dp
+/** The top bar's height below the status bar — the same as the column reader's [COLUMN_TOP_CHROME]. */
+private val BAR_HEIGHT = COLUMN_TOP_CHROME
 
 /** Room kept under the text for the Now Playing bar while it is up (the bar and its gap). */
 private val NOW_PLAYING_ROOM = 72.dp
@@ -1078,11 +1150,13 @@ private fun TopBar(
     onManageTranslations: () -> Unit,
     onAppearance: () -> Unit,
     studyOpen: Boolean,
+    /** The fade the scrolling text passes under; columns never reach the bar, so they go without. */
+    fade: Boolean = true,
 ) = CappedFontScale {
     BoxWithConstraints(
         Modifier
             .fillMaxWidth()
-            .background(Brush.verticalGradient(0f to palette.page, 0.75f to palette.page, 1f to palette.page.copy(alpha = 0f)))
+            .then(if (fade) Modifier.background(Brush.verticalGradient(0f to palette.page, 0.75f to palette.page, 1f to palette.page.copy(alpha = 0f))) else Modifier)
             .windowInsetsPadding(SystemBars.topSafe)
             .height(BAR_HEIGHT + 12.dp),
     ) {
@@ -1157,26 +1231,50 @@ private val TITLE_CHROME = 4.dp + 16.dp + 22.dp
 internal fun passageTitle(full: String, short: String, fullWidth: Int, room: Int): String =
     if (fullWidth <= room) full else short
 
+/**
+ * The bottom chrome: the chapter arrows either side of Auto-Scroll and Listen. While the chapter is read
+ * in columns ([spreads]) the arrows turn the spread, and change the chapter only past either end.
+ */
 @Composable
-private fun BottomBar(model: ReaderViewModel, palette: ReaderPalette, modifier: Modifier, center: @Composable () -> Unit = {}) = CappedFontScale {
+private fun BottomBar(
+    model: ReaderViewModel,
+    palette: ReaderPalette,
+    modifier: Modifier,
+    spreads: Spreads? = null,
+    center: @Composable () -> Unit = {},
+) = CappedFontScale {
     Box(
         modifier
             .fillMaxWidth()
-            .background(Brush.verticalGradient(0f to palette.page.copy(alpha = 0f), 0.35f to palette.page.copy(alpha = 0.85f), 1f to palette.page))
+            // Columns never pass beneath the bar, so it needs no fade over them.
+            .then(
+                if (spreads != null) Modifier else
+                    Modifier.background(Brush.verticalGradient(0f to palette.page.copy(alpha = 0f), 0.35f to palette.page.copy(alpha = 0.85f), 1f to palette.page)),
+            )
             .windowInsetsPadding(SystemBars.bottomSafe)
             .padding(horizontal = 16.dp, vertical = 10.dp),
     ) {
+        val previousPage = spreads?.hasPrevious == true
+        val nextPage = spreads?.hasNext == true
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Pill(palette) {
-                PillIcon(Icons.Rounded.ChevronLeft, stringResource(R.string.reader_previous_chapter), palette, enabled = Canon.previous(model.location) != null) {
-                    model.previous()
+                PillIcon(
+                    Icons.Rounded.ChevronLeft,
+                    stringResource(if (previousPage) R.string.reader_previous_page else R.string.reader_previous_chapter),
+                    palette, enabled = previousPage || Canon.previous(model.location) != null,
+                ) {
+                    if (spreads != null) spreads.turn(forward = false) else model.previous()
                 }
             }
             // Auto-Scroll and Listen, between the arrows, as in the iPhone's bottom toolbar.
             Pill(palette) { center() }
             Pill(palette) {
-                PillIcon(Icons.Rounded.ChevronRight, stringResource(R.string.reader_next_chapter), palette, enabled = Canon.next(model.location) != null) {
-                    model.next()
+                PillIcon(
+                    Icons.Rounded.ChevronRight,
+                    stringResource(if (nextPage) R.string.reader_next_page else R.string.reader_next_chapter),
+                    palette, enabled = nextPage || Canon.next(model.location) != null,
+                ) {
+                    if (spreads != null) spreads.turn(forward = true) else model.next()
                 }
             }
         }

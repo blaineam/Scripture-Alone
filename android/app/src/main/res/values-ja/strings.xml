@@ -99,6 +99,8 @@
     <string name="reader_go_to_label">箇所へ移動、現在 %1$s</string>
     <string name="reader_previous_chapter">前の章</string>
     <string name="reader_next_chapter">次の章</string>
+    <string name="reader_previous_page">前のページ</string>
+    <string name="reader_next_page">次のページ</string>
     <string name="reader_next_chapter_label">次の章、%1$s</string>
     <string name="reader_translation_label">翻訳、%1$s</string>
     <string name="reader_compare_translations">翻訳を比較…</string>
@@ -728,6 +730,7 @@
     <string name="appearance_verse_numbers">節番号</string>
     <string name="appearance_section_headings">小見出し</string>
     <string name="appearance_footnotes">脚注</string>
+    <string name="appearance_columns">横長の画面では段組み</string>
     <string name="appearance_search">検索</string>
     <string name="appearance_notes_in_search">検索にノートを表示</string>
     <string name="appearance_favorites_in_search">検索にお気に入りを表示</string>

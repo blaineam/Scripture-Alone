@@ -2,6 +2,18 @@
 
 ## After 1.0.0
 
+- Android reads in columns on a wide screen, as iPhone, iPad and Mac do. A phone held sideways, a
+  tablet, an unfolded foldable or a wide Chromebook window shows the chapter as a spread of two
+  columns, turned with a swipe or the bottom bar's arrows (Previous / Next Page), and past the last
+  spread on to the next chapter. The columns run from just under the top bar to just above the bottom
+  one; the selection bar, Listen and Now Playing float over the last lines while they're up. Lines are
+  never cut at a column's foot, and a section heading never ends a column alone. Highlights, notes,
+  footnotes, selecting verses and TalkBack work as before, and Listen turns the page to follow the
+  verse it is reading. A phone held sideways gets the one-line header ("EPHESIANS 2"). Turning the
+  phone keeps your place. Appearance → Columns on Wide Screens turns it off. Portrait phones read
+  as before. Ephesians 2 (BSB) on a phone held sideways: 9 lines on the first spread instead of 1
+  clear line; on a tablet held sideways, 30 instead of 13. On Android.
+
 - Highlights have rounded corners. A highlighted passage was a stack of hard rectangles, one per
   line; now it is one band with its outer corners rounded (about 5 points, scaled to the line), the
   corners where one line meets the next left square, and two lines of poetry a few points apart

@@ -99,6 +99,8 @@
     <string name="reader_go_to_label">Zu Abschnitt springen, aktuell %1$s</string>
     <string name="reader_previous_chapter">Vorheriges Kapitel</string>
     <string name="reader_next_chapter">Nächstes Kapitel</string>
+    <string name="reader_previous_page">Vorherige Seite</string>
+    <string name="reader_next_page">Nächste Seite</string>
     <string name="reader_next_chapter_label">Nächstes Kapitel, %1$s</string>
     <string name="reader_translation_label">Übersetzung, %1$s</string>
     <string name="reader_compare_translations">Übersetzungen vergleichen…</string>
@@ -728,6 +730,7 @@
     <string name="appearance_verse_numbers">Versnummern</string>
     <string name="appearance_section_headings">Abschnittsüberschriften</string>
     <string name="appearance_footnotes">Fußnoten</string>
+    <string name="appearance_columns">Spalten auf breiten Bildschirmen</string>
     <string name="appearance_search">Suche</string>
     <string name="appearance_notes_in_search">Notizen in der Suche</string>
     <string name="appearance_favorites_in_search">Favoriten in der Suche</string>

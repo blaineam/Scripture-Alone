@@ -157,6 +157,22 @@ class ChapterRendererTest {
     }
 
     @Test
+    fun theCompactHeaderPutsBookAndChapterOnOneLine() {
+        val layout = ChapterLayout(listOf(ChapterLayout.Block(Kind.PARAGRAPH, fragments = listOf(ChapterLayout.Fragment(1, true, "In the beginning")))))
+        val compact = renderer.render(ChapterRef(43, 3), layout, "", compactHeader = true).paragraphs
+        assertEquals("JOHN  3", compact[0].text.text)
+        assertEquals(ParagraphRole.HEADING, compact[0].role)
+        assertEquals("John 3", compact[0].accessibilityLabel)
+        assertEquals(style.size * 0.4f, compact[0].spaceAfter, 0.001f)
+        // The chapter's text follows straight after: one header paragraph, not two.
+        assertEquals(1, compact[1].verses.firstOrNull()?.key?.rem(1_000))
+        val usual = renderer.render(ChapterRef(43, 3), layout, "").paragraphs
+        assertEquals(listOf("JOHN", "3"), usual.take(2).map { it.text.text })
+        // A book of one chapter: the name alone.
+        assertEquals("JUDE", renderer.render(ChapterRef(65, 1), layout, "", compactHeader = true).paragraphs[0].text.text)
+    }
+
+    @Test
     fun footnoteLettersRunInReadingOrderAcrossTheChapter() {
         val layout = ChapterLayout(
             listOf(

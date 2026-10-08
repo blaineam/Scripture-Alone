@@ -170,8 +170,14 @@ class ChapterRenderer(
     /** verse → (block, fragment) of the last fragment carrying it, where its note marker goes. */
     private var lastFragment: Map<Int, Pair<Int, Int>> = emptyMap()
 
+    /**
+     * @param compactHeader the book and chapter number on one line with less space beneath — a phone
+     *   held sideways reading in columns, where the page is short and the usual two-line header would
+     *   fill half the first column (`ChapterRenderInput.compactHeader`).
+     */
     fun render(
         ref: ChapterRef, layout: ChapterLayout, copyright: String, notes: Map<Int, List<String>> = emptyMap(),
+        compactHeader: Boolean = false,
     ): RenderedChapter {
         footnoteCounter = 0
         chapter = ref
@@ -182,7 +188,7 @@ class ChapterRenderer(
             }
         }
         val out = mutableListOf<RenderedParagraph>()
-        header(ref, out)
+        if (compactHeader) oneLineHeader(ref, out) else header(ref, out)
         if (style.layout == ReadingLayout.VERSES) verseByVerse(layout, out) else paragraphs(layout, out)
         footer(ref, copyright, out)
         return RenderedChapter(ref, out)
@@ -217,6 +223,34 @@ class ChapterRenderer(
             spaceAfter = size * 1.1f,
             lineHeight = bigSize * NATURAL_LINE_HEIGHT,
             role = ParagraphRole.HIDDEN,
+        )
+    }
+
+    /** "EPHESIANS  2" as one centred line, the number in its usual size and colour. */
+    private fun oneLineHeader(ref: ChapterRef, out: MutableList<RenderedParagraph>) {
+        val book = Canon.book(ref.book)
+        val captionSize = maxOf(11f, size * 0.62f)
+        val bigSize = size * 2.6f
+        val text = buildAnnotatedString {
+            withStyle(
+                SpanStyle(
+                    fontFamily = fonts.chrome, fontWeight = FontWeight.SemiBold, fontSize = captionSize.sp,
+                    color = palette.secondary, letterSpacing = 2.2.sp,
+                ),
+            ) { append(book.displayName.uppercase()) }
+            if (!book.isSingleChapter) {
+                withStyle(SpanStyle(fontFamily = fonts.display, fontSize = bigSize.sp, color = palette.accent)) {
+                    append("  ${ref.chapter}")
+                }
+            }
+        }
+        out += RenderedParagraph(
+            text = text,
+            align = TextAlign.Center,
+            spaceAfter = size * 0.4f,
+            lineHeight = (if (book.isSingleChapter) captionSize else bigSize) * NATURAL_LINE_HEIGHT,
+            role = ParagraphRole.HEADING,
+            accessibilityLabel = Canon.display(ref),
         )
     }
 

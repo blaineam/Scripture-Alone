@@ -31,12 +31,14 @@ class ReaderPrefsTest {
             ReaderKeys.POSITION, ReaderKeys.TRANSLATION, ReaderKeys.RECENT, ReaderKeys.RECENT_SEARCHES,
             ReaderKeys.THEME, ReaderKeys.ACCENT, ReaderKeys.FONT_SIZE, ReaderKeys.LINE_SPACING, ReaderKeys.LAYOUT,
             ReaderKeys.RED_LETTERS, ReaderKeys.VERSE_NUMBERS, ReaderKeys.HEADINGS, ReaderKeys.FOOTNOTES, ReaderKeys.AUTO_SCROLL_SPEED,
+            ReaderKeys.COLUMNS,
         ).map { it.name }
         assertEquals(
             listOf(
                 "position", "translation", "recent", "recentSearches",
                 "reader.theme", "reader.accent", "reader.fontSize", "reader.lineSpacing", "reader.layout",
                 "reader.redLetters", "reader.verseNumbers", "reader.headings", "reader.footnotes", "reader.autoScrollSpeed",
+                "reader.columns",
             ),
             names,
         )
@@ -153,6 +155,7 @@ class ReaderPrefsTest {
         prefs.write { it[ReaderKeys.ACCENT] = "sea" }
         prefs.write { it[ReaderKeys.FONT_SIZE] = 23.0 }
         prefs.write { it[ReaderKeys.FOOTNOTES] = false }
+        prefs.write { it[ReaderKeys.COLUMNS] = false }
         prefs.write { it[ReaderKeys.RECENT] = ReaderSettings.encodeRecent(listOf(ChapterRef(19, 23))) }
         for (verse in 1..30) prefs.write { it[ReaderKeys.POSITION] = VerseRef(43, 3, verse).key }
         withTimeout(5_000) { first.data.first { it[ReaderKeys.POSITION] == 43_003_030 } }
@@ -165,6 +168,7 @@ class ReaderPrefsTest {
         assertEquals("sea", s.accent)
         assertEquals(23.0, s.fontSize!!, 0.0)
         assertEquals(false, s.footnotes)
+        assertEquals(false, s.columns)
         assertNull(s.redLetters)
         assertEquals(listOf(ChapterRef(19, 23)), s.recent)
     }

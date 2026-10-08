@@ -259,6 +259,9 @@ private fun AppearanceForm(model: ReaderViewModel, palette: ReaderPalette, onKee
             Box(Modifier.padding(vertical = 10.dp)) {
                 Segmented(ReadingLayout.entries, model.layout, { it.title }, palette) { model.layout = it }
             }
+            PanelSeparator(palette)
+            // iOS's "Columns on Wide Screens", under the layout picker.
+            SwitchRow(stringResource(R.string.appearance_columns), model.columns, palette) { model.columns = it }
         }
         if (fontScale != 1f) {
             val scale = java.text.NumberFormat.getNumberInstance(Locale.getDefault()).apply { maximumFractionDigits = 2 }.format(fontScale)

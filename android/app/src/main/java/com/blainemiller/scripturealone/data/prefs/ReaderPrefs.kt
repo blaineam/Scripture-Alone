@@ -54,6 +54,8 @@ object ReaderKeys {
     val VERSE_NUMBERS = booleanPreferencesKey("reader.verseNumbers")
     val HEADINGS = booleanPreferencesKey("reader.headings")
     val FOOTNOTES = booleanPreferencesKey("reader.footnotes")
+    /** Columns on Wide Screens (`SettingsKey.columns`). */
+    val COLUMNS = booleanPreferencesKey("reader.columns")
     /** Points per second: 16, 28, 44 or 64 (`SettingsKey.autoScrollSpeed`). */
     val AUTO_SCROLL_SPEED = doublePreferencesKey("reader.autoScrollSpeed")
 
@@ -102,6 +104,7 @@ data class ReaderSettings(
     val headings: Boolean?,
     val footnotes: Boolean?,
     val autoScrollSpeed: Double? = null,
+    val columns: Boolean? = null,
     val fontFamily: String? = null,
     val shareTemplate: String? = null,
     val shareAspect: String? = null,
@@ -129,6 +132,7 @@ data class ReaderSettings(
             headings = p[ReaderKeys.HEADINGS],
             footnotes = p[ReaderKeys.FOOTNOTES],
             autoScrollSpeed = p[ReaderKeys.AUTO_SCROLL_SPEED],
+            columns = p[ReaderKeys.COLUMNS],
             fontFamily = p[ReaderKeys.FONT_FAMILY],
             shareTemplate = p[ReaderKeys.SHARE_TEMPLATE],
             shareAspect = p[ReaderKeys.SHARE_ASPECT],

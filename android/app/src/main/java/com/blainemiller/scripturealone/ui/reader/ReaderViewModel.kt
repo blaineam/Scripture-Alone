@@ -182,6 +182,8 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     var verseNumbers by persisted(saved.verseNumbers ?: true) { p, v -> p[ReaderKeys.VERSE_NUMBERS] = v }
     var headings by persisted(saved.headings ?: true) { p, v -> p[ReaderKeys.HEADINGS] = v }
     var footnotes by persisted(saved.footnotes ?: true) { p, v -> p[ReaderKeys.FOOTNOTES] = v }
+    /** Columns on Wide Screens: the chapter in paged columns where two fit (`ColumnChapter`). On by default, as on iOS. */
+    var columns by persisted(saved.columns ?: true) { p, v -> p[ReaderKeys.COLUMNS] = v }
     /** Auto-scroll's speed in points per second; 28 ("Relaxed") by default, as on iOS. */
     var autoScrollSpeed by persisted(AutoScroll.sanitize(saved.autoScrollSpeed)) { p, v -> p[ReaderKeys.AUTO_SCROLL_SPEED] = v }
 
@@ -345,6 +347,23 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
 
     fun scrolledToTarget() {
         scrollTarget = null
+    }
+
+    /** Whether the chapter was last shown in paged columns; null before the reader first appears. */
+    private var shownPaged: Boolean? = null
+
+    /**
+     * The reader is showing the chapter in paged columns ([paged]) or one scrolling column. When that
+     * changes — the phone turned, the window resized, a sheet came up — the new reader opens on the verse
+     * that was at the top of the old. Kept here rather than in the screen's saved state, so a turned
+     * phone's recreated activity still knows which reader it had.
+     */
+    fun readerChanged(paged: Boolean) {
+        val before = shownPaged
+        shownPaged = paged
+        if (before == null || before == paged) return
+        val top = topVerse ?: return
+        if (VerseRef.fromKey(top).let { it.book == location.book && it.chapter == location.chapter && it.verse > 1 }) scrollTarget = top
     }
 
     /** Called as the reader scrolls: the verse now at the top, saved as the reading position. */

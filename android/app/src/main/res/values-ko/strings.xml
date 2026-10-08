@@ -99,6 +99,8 @@
     <string name="reader_go_to_label">본문으로 이동, 현재 %1$s</string>
     <string name="reader_previous_chapter">이전 장</string>
     <string name="reader_next_chapter">다음 장</string>
+    <string name="reader_previous_page">이전 페이지</string>
+    <string name="reader_next_page">다음 페이지</string>
     <string name="reader_next_chapter_label">다음 장, %1$s</string>
     <string name="reader_translation_label">번역본, %1$s</string>
     <string name="reader_compare_translations">번역본 비교…</string>
@@ -728,6 +730,7 @@
     <string name="appearance_verse_numbers">절 번호</string>
     <string name="appearance_section_headings">단락 제목</string>
     <string name="appearance_footnotes">각주</string>
+    <string name="appearance_columns">넓은 화면에서 단 나누기</string>
     <string name="appearance_search">검색</string>
     <string name="appearance_notes_in_search">검색에 노트 포함</string>
     <string name="appearance_favorites_in_search">검색에 즐겨찾기 포함</string>

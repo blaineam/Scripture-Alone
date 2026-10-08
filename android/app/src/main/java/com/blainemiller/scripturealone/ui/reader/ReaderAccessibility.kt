@@ -102,10 +102,16 @@ object ReaderAccessibility {
     }.takeIf { it.isNotEmpty() }?.joinToString(", ")
 
     /** Where the run is drawn, in the text's own coordinates: its lines, full width when it wraps. */
-    fun bounds(run: VerseRun, layout: TextLayoutResult): Rect? {
+    fun bounds(run: VerseRun, layout: TextLayoutResult, lines: IntRange? = null): Rect? {
         if (run.end <= run.start || run.end > layout.layoutInput.text.length) return null
-        val first = layout.getLineForOffset(run.start)
-        val last = layout.getLineForOffset(run.end - 1)
+        val runFirst = layout.getLineForOffset(run.start)
+        val runLast = layout.getLineForOffset(run.end - 1)
+        if (lines != null && (runLast < lines.first || runFirst > lines.last)) return null
+        val first = if (lines != null) maxOf(runFirst, lines.first) else runFirst
+        val last = if (lines != null) minOf(runLast, lines.last) else runLast
+        if (lines != null && (first != runFirst || last != runLast)) {
+            return Rect(0f, layout.getLineTop(first), layout.size.width.toFloat(), layout.getLineBottom(last))
+        }
         val top = layout.getLineTop(first)
         val bottom = layout.getLineBottom(last)
         return if (first == last) {
@@ -120,7 +126,9 @@ object ReaderAccessibility {
 
 /**
  * The paragraph's verses as TalkBack nodes over its text (see [ReaderAccessibility]). [topInset] is the
- * space above the text inside the paragraph (its spacing before), in pixels.
+ * space above the text inside the paragraph (its spacing before), in pixels. [visibleLines], when the
+ * column reader shows only some of the paragraph's lines here: a verse wholly outside them has no node,
+ * and one partly inside covers only its lines that show.
  */
 @Composable
 internal fun VerseNodes(
@@ -133,6 +141,7 @@ internal fun VerseNodes(
     onLongPress: (Int) -> Unit,
     onFootnote: (ReaderAccessibility.Footnote) -> Unit,
     onNotes: (List<String>, Int) -> Unit,
+    visibleLines: IntRange? = null,
 ) {
     val text = layout ?: return
     val density = LocalDensity.current
@@ -142,7 +151,7 @@ internal fun VerseNodes(
     val showNote = stringResource(R.string.reader_action_show_note)
     val showNotes = stringResource(R.string.reader_action_show_notes)
     for (run in ReaderAccessibility.runs(paragraph)) {
-        val box = ReaderAccessibility.bounds(run, text) ?: continue
+        val box = ReaderAccessibility.bounds(run, text, visibleLines) ?: continue
         val selected = run.key in marks.selection
         val label = ReaderAccessibility.label(run)
         val state = ReaderAccessibility.state(run.key, marks, run.noteIds.isNotEmpty())

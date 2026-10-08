@@ -99,6 +99,8 @@
     <string name="reader_go_to_label">Vai al passo, attualmente %1$s</string>
     <string name="reader_previous_chapter">Capitolo precedente</string>
     <string name="reader_next_chapter">Capitolo successivo</string>
+    <string name="reader_previous_page">Pagina precedente</string>
+    <string name="reader_next_page">Pagina successiva</string>
     <string name="reader_next_chapter_label">Capitolo successivo, %1$s</string>
     <string name="reader_translation_label">Traduzione, %1$s</string>
     <string name="reader_compare_translations">Confronta traduzioni…</string>
@@ -728,6 +730,7 @@
     <string name="appearance_verse_numbers">Numeri dei versetti</string>
     <string name="appearance_section_headings">Titoli di sezione</string>
     <string name="appearance_footnotes">Note</string>
+    <string name="appearance_columns">Colonne sugli schermi larghi</string>
     <string name="appearance_search">Ricerca</string>
     <string name="appearance_notes_in_search">Note nella ricerca</string>
     <string name="appearance_favorites_in_search">Preferiti nella ricerca</string>
