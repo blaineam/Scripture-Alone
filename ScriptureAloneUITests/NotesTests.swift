@@ -63,7 +63,7 @@ final class NotesTests: ScriptureAloneUITestCase {
         // A new note covers the chapter on screen.
         XCTAssertTrue(app.buttons["John 3"].exists || app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "John 3")).firstMatch.exists)
         title.tap()
-        title.typeText("Midweek study")
+        typeAndSettle("Midweek study", into: title)
         app.navigationBars.buttons["BackButton"].firstMatch.tap()
         assertExists(row(titled: "Midweek study"))
         XCTAssertEqual(notes.noteRows.count, 3)

@@ -98,6 +98,28 @@ class ScriptureAloneUITestCase: XCTestCase {
         XCTAssertTrue(element.exists && element.isHittable, "\(element) is off screen", file: file, line: line)
     }
 
+    /// Types into `field`, then, on iPad, waits for the keyboard to settle before anything is tapped.
+    ///
+    /// XCUITest's typing reaches the iPad simulator as hardware-keyboard events: the software keyboard
+    /// collapses to its 81-point bar as the text lands, then comes back about a second later (a 0.38 s
+    /// slide), and a form sheet such as Go To slides up with it. Snapshot frames are the final ones, so
+    /// a tap in that window lands where the element was a moment ago and is lost — it read as "tapping
+    /// the Anxiety card doesn't navigate". A reader typing on the keyboard never sees the dance. Text
+    /// ending in a return may close the field, so nothing is waited for then.
+    func typeAndSettle(_ text: String, into field: XCUIElement) {
+        field.typeText(text)
+        guard isPad, !text.hasSuffix("\n") else { return }
+        var collapsed = false
+        _ = waitUntil(timeout: 5) {
+            let keyboard = app.keyboards.firstMatch
+            if keyboard.exists, keyboard.frame.height > 200 { return true }
+            collapsed = true
+            return false
+        }
+        // The keyboard's slide back, and the sheet's with it.
+        if collapsed { RunLoop.current.run(until: Date().addingTimeInterval(0.8)) }
+    }
+
     /// Polls `condition` on the main run loop (no sleeping thread) until it holds or time runs out.
     func waitUntil(timeout: TimeInterval = 10, _ condition: () -> Bool) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)

@@ -13,7 +13,7 @@ final class GoToTests: ScriptureAloneUITestCase {
 
     private func type(_ text: String) {
         search.tap()
-        search.typeText(text)
+        typeAndSettle(text, into: search)
     }
 
     func testBookGridOpensAChapter() {
