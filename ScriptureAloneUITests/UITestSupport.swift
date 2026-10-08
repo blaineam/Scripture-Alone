@@ -12,6 +12,9 @@ class ScriptureAloneUITestCase: XCTestCase {
 
     override func setUp() async throws {
         continueAfterFailure = false
+        // Every test starts upright: a test that turned the device and then failed (a failure stops
+        // it without unwinding) would otherwise leave the simulator sideways for the rest of the run.
+        XCUIDevice.shared.orientation = .portrait
     }
 
     override func tearDown() async throws {

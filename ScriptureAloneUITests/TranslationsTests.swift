@@ -15,8 +15,9 @@ final class TranslationsTests: ScriptureAloneUITestCase {
         openMenuItem("Compare Translations…")
         let close = app.buttons["Close"]
         assertExists(close)
-        // The BSB on the left, beside the ASV until another is chosen.
-        let picker = app.buttons["BSB, ASV"]
+        // The BSB on the left, beside a second translation until another is chosen: the ASV, or the
+        // NASB 2020 in a local build that bundles it.
+        let picker = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "BSB, ")).firstMatch
         assertExists(picker)
         assertExists(app.staticTexts["Now there was a man of the Pharisees named Nicodemus, a leader of the Jews."])
         picker.tap()

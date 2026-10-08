@@ -57,7 +57,7 @@ final class ReaderTests: ScriptureAloneUITestCase {
     func testLandscapeColumnsFillTheHeight() throws {
         try XCTSkipIf(isPad, "iPhone only: an iPad keeps its columns in either orientation")
         XCUIDevice.shared.orientation = .landscapeLeft
-        defer { XCUIDevice.shared.orientation = .portrait }
+        addTeardownBlock { @MainActor in XCUIDevice.shared.orientation = .portrait }
         launch(chapter: "49:2")
         waitForPassage("Ephesians 2")
         // A phone shorter than a Pro Max or Plus sideways reads one scrolling column (`ReaderColumns.count`).
