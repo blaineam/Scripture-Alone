@@ -83,17 +83,28 @@ final class WatchLink: NSObject {
     private func updateContext() {
         guard let session, session.activationState == .activated,
               session.isPaired, session.isWatchAppInstalled else { return }
-        // No list at all until the library has reported: the watch then keeps what it holds.
+        let context = Self.applicationContext(imports: imports, accent: accent, translation: pending,
+                                              changedAt: defaults.double(forKey: Self.changedAtKey),
+                                              keptOffWatch: Self.isKeptOffWatch)
+        try? session.updateApplicationContext(context)
+    }
+
+    /// What the watch is told: the imports' ids (no list at all until the library has reported — the
+    /// watch then keeps what it holds), the accent, and the reader's translation with when it was
+    /// chosen, whether its terms keep it off watches, and — when the reader sees it called something
+    /// other than its id — that name for the watch's picker.
+    static func applicationContext(imports: [TranslationEntry]?, accent: Int?, translation: TranslationEntry?,
+                                   changedAt: TimeInterval, keptOffWatch: (String) -> Bool) -> [String: Any] {
         var context: [String: Any] = [:]
         if let imports { context[WatchLinkKeys.imports] = imports.map(\.id) }
         if let accent { context[WatchLinkKeys.accent] = accent }
-        if let pending {
-            context[WatchLinkKeys.translation] = pending.id
-            context[WatchLinkKeys.changedAt] = defaults.double(forKey: Self.changedAtKey)
-            if Self.isKeptOffWatch(pending.id) { context[WatchLinkKeys.translationNotForWatch] = true }
-            if pending.abbreviation != pending.id { context[WatchLinkKeys.translationLabel] = pending.abbreviation }
+        if let translation {
+            context[WatchLinkKeys.translation] = translation.id
+            context[WatchLinkKeys.changedAt] = changedAt
+            if keptOffWatch(translation.id) { context[WatchLinkKeys.translationNotForWatch] = true }
+            if translation.abbreviation != translation.id { context[WatchLinkKeys.translationLabel] = translation.abbreviation }
         }
-        try? session.updateApplicationContext(context)
+        return context
     }
 
     private func sendEditionIfNeeded(_ entry: TranslationEntry) {

@@ -157,6 +157,7 @@
 		C67DEDA793A56D2E57E364E9 /* FavoriteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F97E7F3971462B4C11C7CF /* FavoriteButton.swift */; };
 		C6B0DE4A8D5845CE9717A47D /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1874DB30855498F9A08136DB /* UITestSupport.swift */; };
 		C789D68A8CCE31AFA5446EE5 /* SharedBibleLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4753D71AE67C61E22C364DD8 /* SharedBibleLibrary.swift */; };
+		C7C15B37B6D3D66F052E7AA4 /* WatchLinkContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29EAC70E7875C773E86CA441 /* WatchLinkContextTests.swift */; };
 		C81CB445DABBBDAA96B982D7 /* VerseSpeaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B4035AD8C6AA89E5A0CE15B /* VerseSpeaker.swift */; };
 		CA283E49B2AC5EDFF35810B4 /* ReaderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E79D61A66336156A65FD29F3 /* ReaderModel.swift */; };
 		CABB1668FBF8A367CE9E01E8 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 3274D3AB861FE25DAD44055B /* Localizable.xcstrings */; };
@@ -337,6 +338,7 @@
 		2616BBE8FB3990ABC21357B7 /* AppCommandCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommandCenter.swift; sourceTree = "<group>"; };
 		28B87B651438BBE462790DCD /* StudySourcesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudySourcesView.swift; sourceTree = "<group>"; };
 		293DBAA61F3889B10D77CBFE /* SelectionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionBar.swift; sourceTree = "<group>"; };
+		29EAC70E7875C773E86CA441 /* WatchLinkContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchLinkContextTests.swift; sourceTree = "<group>"; };
 		2B03CE75511938642A77DD8B /* ShareExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareExport.swift; sourceTree = "<group>"; };
 		2B23F521A56070F190FC3B4E /* NoteEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditor.swift; sourceTree = "<group>"; };
 		2B431F68DD34AA88493E73FC /* SealedTranslationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SealedTranslationsTests.swift; sourceTree = "<group>"; };
@@ -1005,6 +1007,7 @@
 				CB1253B021DE496E10E13D7E /* SpeechVoicesTests.swift */,
 				8465A7AD93EAB7D286C2C479 /* StubURLProtocol.swift */,
 				488FB3D165AC3F12A74F7172 /* UserGuideStoreTests.swift */,
+				29EAC70E7875C773E86CA441 /* WatchLinkContextTests.swift */,
 				FAF14594E39F08EF8546FA78 /* WatchLinkKeysTests.swift */,
 				4294C13F087A597E5D481F5D /* WidgetTests.swift */,
 			);
@@ -1678,6 +1681,7 @@
 				6730F2EA331DBE5AFEDC35FA /* UserGuideStoreTests.swift in Sources */,
 				D9BB7482AE2F4C392CA3B500 /* VerseOfDayShared.swift in Sources */,
 				9E0D14192A0A6751F952B894 /* VerseStyling.swift in Sources */,
+				C7C15B37B6D3D66F052E7AA4 /* WatchLinkContextTests.swift in Sources */,
 				D3E32AB0E57DC141C5378337 /* WatchLinkKeysTests.swift in Sources */,
 				CBD5BF91CA46B325827760A3 /* WidgetTests.swift in Sources */,
 			);
