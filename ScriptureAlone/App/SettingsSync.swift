@@ -34,7 +34,7 @@ import AppKit
 /// | `study.commentarySource` | SYNC | study preference |
 /// | `listen.speed`, `listen.continue` | SYNC | read-aloud preferences |
 /// | `listen.voice`, `listen.studioVoice`, `listen.engine` | local | system voices differ per device; Studio needs Mi Speaks installed here |
-/// | `share.template`, `share.aspect`, `share.fontFamily`, `share.alignment`, `share.redLetters`, `share.verseNumbers`, `share.wordmark` | SYNC | share-card design |
+/// | `share.template`, `share.ink`, `share.shadow`, `share.aspect`, `share.fontFamily`, `share.alignment`, `share.redLetters`, `share.verseNumbers`, `share.wordmark` | SYNC | share-card design |
 /// | `spotlight.notes`, `spotlight.favorites` | SYNC | the reader's Spotlight toggles |
 /// | `spotlight.indexed.notes`, `spotlight.indexed.favorites` | local | fingerprints of this device's index |
 /// | `legacy.ownerName`, `legacy.dedication`, `legacy.translation` | SYNC | keepsake defaults |
@@ -82,6 +82,8 @@ final class SettingsSync {
         SyncedSetting("recentSearches", .strings),
         SyncedSetting("study.commentarySource", .string),
         SyncedSetting(ShareSettingsKey.template, .string),
+        SyncedSetting(ShareSettingsKey.ink, .string),
+        SyncedSetting(ShareSettingsKey.shadow, .string),
         SyncedSetting(ShareSettingsKey.aspect, .string),
         SyncedSetting(ShareSettingsKey.family, .string),
         SyncedSetting(ShareSettingsKey.alignment, .string),

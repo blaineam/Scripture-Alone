@@ -16,12 +16,74 @@ final class ShareTests: ScriptureAloneUITestCase {
         assertExists(shape)
         shape.buttons["Wide"].tap()
         XCTAssertTrue(shape.buttons["Wide"].isSelected)
-        let night = app.buttons["Night"]
+        let night = app.buttons["share.style.night"]
         XCTAssertFalse(night.isSelected)
         night.tap()
         XCTAssertTrue(night.isSelected)
         title.buttons["Done"].tap()
         waitForDisappearance(title)
+    }
+
+    /// The primary flow: pick a ready-made style, open Customize for the shadow, text color and
+    /// background, then export through the share sheet. Each look is attached for review.
+    func testPickingAStyleCustomizingAndExporting() {
+        launch(["-uiTestSelect", "43:3:16-17"])
+        let bar = app.otherElements["selection.bar"]
+        assertExists(bar)
+        bar.buttons["Share"].firstMatch.tap()
+        app.buttons["Share Image…"].tap()
+        let title = app.navigationBars["Share Image"]
+        assertExists(title)
+        let preview = app.otherElements["share.preview"]
+        assertExists(preview)
+
+        for id in ["watercolor", "glow", "bokeh", "lattice", "grain", "parchment"] {
+            let style = app.buttons["share.style.\(id)"]
+            assertExists(style)
+            style.tap()
+            XCTAssertTrue(style.isSelected, "\(id) isn't selected")
+            XCTAssertTrue(preview.label.hasPrefix("Preview: John 3:16"), preview.label)
+            attach("share-style-\(id)")
+        }
+
+        // One tap deeper: shadow, text color and background.
+        button("share.customize").tap()
+        let shadow = app.segmentedControls["share.shadow"]
+        assertExists(shadow)
+        shadow.buttons["Strong"].tap()
+        XCTAssertTrue(shadow.buttons["Strong"].isSelected)
+        button("share.ink.automatic").tap()
+        XCTAssertTrue(button("share.ink.automatic").isSelected)
+        let navy = app.buttons["Navy"]
+        if navy.waitForExistence(timeout: 3) {
+            navy.tap()
+            XCTAssertTrue(navy.isSelected)
+        }
+        let mist = button("share.background.mist")
+        assertExists(mist)
+        mist.tap()
+        XCTAssertTrue(mist.isSelected)
+        XCTAssertTrue(navy.isSelected, "a picked text color should survive a new background")
+        attach("share-customized")
+
+        // Export: the share sheet opens with the image.
+        let export = button("share.export")
+        XCTAssertTrue(export.waitForExistence(timeout: 15), "the image never finished rendering")
+        export.tap()
+        let sheet = app.otherElements["ActivityListView"].firstMatch
+        let shown = sheet.waitForExistence(timeout: 10) || app.navigationBars["UIActivityContentView"].waitForExistence(timeout: 2)
+        XCTAssertTrue(shown, "the share sheet didn't open")
+        attach("share-sheet")
+        // The system share sheet stays up: tearing the app down closes it (dismissing it by
+        // accessibility query has hung the test runner). Remembering the design is a unit test
+        // (`ShareStyleTests.theDesignIsRememberedBetweenLaunches`).
+    }
+
+    private func attach(_ name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 }
 

@@ -123,25 +123,35 @@ enum ShareCardFitter {
 }
 
 /// The card itself, laid out at `style.aspect.size` points. The designer shows it scaled down;
-/// the export renders it at 2×.
+/// the export renders it at 2×. `backdrop` is the ground drawn by `ShareBackdrop` (the flat colors
+/// stand in until it's ready); `colors` are the legible ones `ShareContrast.resolve` chose.
 struct ShareCard: View {
     static let numberScale: CGFloat = 0.55
     static let numberRise: CGFloat = 0.32
 
     let content: ShareCardContent
     let style: ShareStyle
+    let colors: ShareColors
+    var backdrop: CGImage?
 
     private var metrics: ShareCardMetrics { ShareCardMetrics(size: style.aspect.size) }
-    private var template: ShareTemplate { style.template }
+    private var background: ShareBackground { style.background }
 
     var body: some View {
         let metrics = metrics
         let footer = style.wordmark || content.notice != nil
         ZStack {
-            Rectangle().fill(template.backgroundStyle)
-            if template.hasFrame {
+            if let backdrop {
+                Image(decorative: backdrop, scale: 1)
+                    .resizable()
+                    .interpolation(.high)
+                    .frame(width: metrics.size.width, height: metrics.size.height)
+            } else {
+                Rectangle().fill(background.backgroundStyle)
+            }
+            if background.hasFrame {
                 Rectangle()
-                    .strokeBorder(color(template.accent).opacity(0.35), lineWidth: 1.5)
+                    .strokeBorder(color(colors.accent).opacity(0.35), lineWidth: 1.5)
                     .padding(metrics.short * 0.035)
             }
             VStack(alignment: style.alignment.horizontal, spacing: 0) {
@@ -150,6 +160,7 @@ struct ShareCard: View {
                     .lineSpacing(content.fontSize * metrics.lineSpacingRatio)
                     .multilineTextAlignment(style.alignment.textAlignment)
                     .minimumScaleFactor(0.6)
+                    .modifier(CardTextShadow(colors: colors, size: content.fontSize))
                     .frame(maxWidth: .infinity, alignment: style.alignment.frameAlignment)
                     .layoutPriority(1)
                 referenceBlock(metrics)
@@ -160,10 +171,8 @@ struct ShareCard: View {
             .padding(.vertical, metrics.verticalPadding)
         }
         .frame(width: metrics.size.width, height: metrics.size.height)
-        .environment(\.colorScheme, isDark ? .dark : .light)
+        .environment(\.colorScheme, ShareContrast.luminance(colors.ink) > 0.4 ? .dark : .light)
     }
-
-    private var isDark: Bool { [.ink, .night, .olive].contains(template) }
 
     private func color(_ hex: UInt32) -> Color { Color(PlatformColor(hex: hex)) }
 
@@ -172,17 +181,17 @@ struct ShareCard: View {
         let text = content.passage.text
         var result = AttributedString(text)
         result.font = Font(style.family.font(size: size) as CTFont)
-        result.foregroundColor = color(template.ink)
+        result.foregroundColor = color(colors.ink)
         if style.redLetters {
             for range in content.passage.red {
-                if let span = Range(range, in: result) { result[span].foregroundColor = color(template.red) }
+                if let span = Range(range, in: result) { result[span].foregroundColor = color(colors.red) }
             }
         }
         for range in content.passage.numbers {
             guard let span = Range(range, in: result) else { continue }
             result[span].font = Font(style.family.font(size: size * Self.numberScale) as CTFont)
             result[span].baselineOffset = size * Self.numberRise
-            result[span].foregroundColor = color(template.accent)
+            result[span].foregroundColor = color(colors.accent)
         }
         return result
     }
@@ -190,17 +199,18 @@ struct ShareCard: View {
     private func referenceBlock(_ metrics: ShareCardMetrics) -> some View {
         VStack(alignment: style.alignment.horizontal, spacing: 0) {
             Capsule()
-                .fill(color(template.accent).opacity(0.7))
+                .fill(color(colors.accent).opacity(0.7))
                 .frame(width: metrics.ruleWidth, height: max(2, metrics.referenceSize * 0.08))
                 .padding(.top, metrics.referenceSize * 1.2)
                 .padding(.bottom, metrics.referenceSize * 0.9)
             Text("\(content.reference.uppercased())  ·  \(content.translation)")
                 .font(Font(style.family.font(size: metrics.referenceSize).withTraits(bold: true) as CTFont))
                 .tracking(metrics.referenceSize * 0.12)
-                .foregroundStyle(color(template.accent))
+                .foregroundStyle(color(colors.accent))
                 .lineLimit(2)
                 .minimumScaleFactor(0.5)
                 .multilineTextAlignment(style.alignment.textAlignment)
+                .modifier(CardTextShadow(colors: colors, size: metrics.referenceSize))
         }
         .frame(maxWidth: .infinity, alignment: style.alignment.frameAlignment)
     }
@@ -212,15 +222,37 @@ struct ShareCard: View {
                     .font(.system(size: metrics.wordmarkSize * 0.7))
                     .lineLimit(2)
                     .minimumScaleFactor(0.6)
-                    .foregroundStyle(color(template.ink).opacity(0.55))
+                    .foregroundStyle(color(colors.ink).opacity(0.7))
             }
             if style.wordmark {
                 Text("Scripture Alone")
                     .font(Font(style.family.font(size: metrics.wordmarkSize).withTraits(italic: true) as CTFont))
-                    .foregroundStyle(color(template.accent).opacity(0.6))
+                    .foregroundStyle(color(colors.accent).opacity(0.75))
             }
         }
+        .modifier(CardTextShadow(colors: colors, size: metrics.wordmarkSize))
         .multilineTextAlignment(style.alignment.textAlignment)
         .frame(maxWidth: .infinity, minHeight: metrics.wordmarkBlock, alignment: style.alignment == .center ? .bottom : .bottomLeading)
+    }
+}
+
+/// The card's text shadow (`ShareShadow.layers`): dark under light text, a light halo around dark.
+private struct CardTextShadow: ViewModifier {
+    let colors: ShareColors
+    let size: CGFloat
+
+    func body(content: Content) -> some View {
+        let layers = colors.shadow.layers(size: size, glow: colors.glow)
+        let tint = Color(PlatformColor(hex: colors.shadowColor))
+        switch layers.count {
+        case 0:
+            content
+        case 1:
+            content.shadow(color: tint.opacity(layers[0].opacity), radius: layers[0].radius, y: layers[0].y)
+        default:
+            content
+                .shadow(color: tint.opacity(layers[0].opacity), radius: layers[0].radius, y: layers[0].y)
+                .shadow(color: tint.opacity(layers[1].opacity), radius: layers[1].radius, y: layers[1].y)
+        }
     }
 }

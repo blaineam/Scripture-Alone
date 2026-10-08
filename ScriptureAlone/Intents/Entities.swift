@@ -242,8 +242,9 @@ nonisolated struct FavoriteVerseQuery: EntityStringQuery {
 
 // MARK: Verse-image options
 
+/// The designer's ready-made styles (`ShareBackground`), by the same names.
 nonisolated enum VerseImageTemplate: String, AppEnum {
-    case parchment, ink, dawn, night, linen, stone, olive, minimal
+    case parchment, watercolor, glow, linen, night, bokeh, dawn, lattice, mist, grain, contour, dusk, canvas, sage, tide, ink, stone, sand, blush, olive, minimal
 
     static var typeDisplayRepresentation: TypeDisplayRepresentation {
         TypeDisplayRepresentation(name: LocalizedStringResource("Design", comment: "App Intents type name: a verse-image design"))
@@ -251,11 +252,24 @@ nonisolated enum VerseImageTemplate: String, AppEnum {
 
     static var caseDisplayRepresentations: [VerseImageTemplate: DisplayRepresentation] {
         [.parchment: DisplayRepresentation(title: LocalizedStringResource("Parchment", comment: "Name of a share-card design")),
-         .ink: DisplayRepresentation(title: LocalizedStringResource("Ink", comment: "Name of a share-card design")),
-         .dawn: DisplayRepresentation(title: LocalizedStringResource("Dawn", comment: "Name of a share-card design")),
-         .night: DisplayRepresentation(title: LocalizedStringResource("Night", comment: "Name of a share-card design")),
+         .watercolor: DisplayRepresentation(title: LocalizedStringResource("Watercolor", comment: "Name of a share-card design")),
+         .glow: DisplayRepresentation(title: LocalizedStringResource("Golden Hour", comment: "Name of a share-card design: warm light leaking in at the edges")),
          .linen: DisplayRepresentation(title: LocalizedStringResource("Linen", comment: "Name of a share-card design")),
+         .night: DisplayRepresentation(title: LocalizedStringResource("Night", comment: "Name of a share-card design")),
+         .bokeh: DisplayRepresentation(title: LocalizedStringResource("Bokeh", comment: "Name of a share-card design: soft out-of-focus circles of light")),
+         .dawn: DisplayRepresentation(title: LocalizedStringResource("Dawn", comment: "Name of a share-card design")),
+         .lattice: DisplayRepresentation(title: LocalizedStringResource("Lattice", comment: "Name of a share-card design: a fine geometric line pattern")),
+         .mist: DisplayRepresentation(title: LocalizedStringResource("Mist", comment: "Name of a share-card design: a soft pale blue-grey")),
+         .grain: DisplayRepresentation(title: LocalizedStringResource("Film", comment: "Name of a share-card design: dark, with film grain")),
+         .contour: DisplayRepresentation(title: LocalizedStringResource("Contour", comment: "Name of a share-card design: topographic map lines")),
+         .dusk: DisplayRepresentation(title: LocalizedStringResource("Dusk", comment: "Name of a share-card design")),
+         .canvas: DisplayRepresentation(title: LocalizedStringResource("Canvas", comment: "Name of a share-card design: woven painter's canvas")),
+         .sage: DisplayRepresentation(title: LocalizedStringResource("Sage", comment: "Name of a share-card design: a soft grey-green")),
+         .tide: DisplayRepresentation(title: LocalizedStringResource("Tide", comment: "Name of a share-card design: deep sea-green")),
+         .ink: DisplayRepresentation(title: LocalizedStringResource("Ink", comment: "Name of a share-card design")),
          .stone: DisplayRepresentation(title: LocalizedStringResource("Stone", comment: "Name of a share-card design")),
+         .sand: DisplayRepresentation(title: LocalizedStringResource("Sand", comment: "Name of a share-card design")),
+         .blush: DisplayRepresentation(title: LocalizedStringResource("Blush", comment: "Name of a share-card design: a soft warm pink")),
          .olive: DisplayRepresentation(title: LocalizedStringResource("Olive", comment: "Name of a share-card design")),
          .minimal: DisplayRepresentation(title: LocalizedStringResource("Minimal", comment: "Name of a share-card design"))]
     }

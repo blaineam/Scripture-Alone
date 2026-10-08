@@ -82,7 +82,7 @@ struct ShareMenu: View {
     let ranges: [VerseRange]
     let quotation: String
 
-    @AppStorage(ShareSettingsKey.template) private var template = ShareTemplate.parchment
+    @AppStorage(ShareSettingsKey.template) private var background = ShareBackground.parchment
     @AppStorage(ShareSettingsKey.aspect) private var aspect = ShareAspect.square
     @AppStorage(ShareSettingsKey.family) private var family = FontFamily.newYork
     @AppStorage(ShareSettingsKey.redLetters) private var redLetters = true
@@ -90,7 +90,7 @@ struct ShareMenu: View {
 
     var body: some View {
         let source = model.source.flatMap { ShareSource(source: $0, ranges: ranges) }
-        let link = source?.link(style: ShareStyle(template: template, aspect: aspect, family: family, redLetters: redLetters))
+        let link = source?.link(style: ShareStyle(background: background, aspect: aspect, family: family, redLetters: redLetters))
         Menu {
             // Each kind of sharing asks the translation's terms: some publishers license verse art
             // separately, and some allow no sharing from an app at all (`PublisherTerms`).

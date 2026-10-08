@@ -18,14 +18,25 @@ nonisolated struct ShareImage: Transferable, Sendable {
 
 enum ShareRenderer {
     /// Export scale: cards are laid out 1080 pt on the long side, so this makes 2160 px.
-    static let scale: CGFloat = 2
+    nonisolated static let scale: CGFloat = 2
 
+    /// Draws the ground at the export size first (`prepare` does it off the main thread), so the card
+    /// lays its text over a backdrop with one image pixel per output pixel.
     static func render(_ content: ShareCardContent, style: ShareStyle) -> (image: ShareImage, cgImage: CGImage)? {
-        let renderer = ImageRenderer(content: ShareCard(content: content, style: style))
+        let (backdrop, colors) = prepare(style.background, size: style.aspect.size, ink: style.ink, shadow: style.shadow)
+        let renderer = ImageRenderer(content: ShareCard(content: content, style: style, colors: colors, backdrop: backdrop))
         renderer.scale = scale
         renderer.isOpaque = true
         guard let cgImage = renderer.cgImage, let png = pngData(cgImage) else { return nil }
         return (ShareImage(png: png, filename: filename(for: content)), cgImage)
+    }
+
+    /// The ground at export size and the colors that read on it; slow the first time, then cached.
+    nonisolated static func prepare(_ background: ShareBackground, size: CGSize, ink: UInt32?,
+                                    shadow: ShareShadow) -> (backdrop: CGImage?, colors: ShareColors) {
+        let backdrop = ShareBackdrop.image(background, size: size, pixelsPerPoint: scale)
+        return (backdrop, ShareContrast.resolve(background: background, ink: ink, shadow: shadow,
+                                                stats: ShareBackdrop.stats(background)))
     }
 
     static func pngData(_ image: CGImage) -> Data? {

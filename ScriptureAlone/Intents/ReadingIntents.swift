@@ -191,17 +191,9 @@ struct CreateVerseImageIntent: AppIntent {
             throw ScriptureIntentError.passageNotFound(passage)
         }
         // The reader's remembered designer choices, with whatever this run asked for on top.
-        let defaults = UserDefaults.standard
-        var style = ShareStyle()
-        style.template = design.flatMap { ShareTemplate(rawValue: $0.rawValue) }
-            ?? defaults.string(forKey: ShareSettingsKey.template).flatMap(ShareTemplate.init(rawValue:)) ?? .parchment
-        style.aspect = shape.flatMap { ShareAspect(rawValue: $0.rawValue) }
-            ?? defaults.string(forKey: ShareSettingsKey.aspect).flatMap(ShareAspect.init(rawValue:)) ?? .square
-        style.family = defaults.string(forKey: ShareSettingsKey.family).flatMap(FontFamily.init(rawValue:)) ?? .newYork
-        style.alignment = defaults.string(forKey: ShareSettingsKey.alignment).flatMap(ShareAlignment.init(rawValue:)) ?? .center
-        style.redLetters = defaults.object(forKey: ShareSettingsKey.redLetters) as? Bool ?? true
-        style.verseNumbers = defaults.object(forKey: ShareSettingsKey.verseNumbers) as? Bool ?? true
-        style.wordmark = defaults.object(forKey: ShareSettingsKey.wordmark) as? Bool ?? true
+        var style = ShareStyle(defaults: .standard)
+        if let look = design.flatMap({ ShareBackground(rawValue: $0.rawValue) }) { style.apply(look) }
+        if let aspect = shape.flatMap({ ShareAspect(rawValue: $0.rawValue) }) { style.aspect = aspect }
 
         let fit = ShareCardFitter.fit(verses: share.verses, info: info, style: style, verseCount: source.verseCount)
         guard let rendered = ShareRenderer.render(fit.content, style: style) else { throw ScriptureIntentError.imageFailed }
