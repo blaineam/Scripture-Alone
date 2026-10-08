@@ -1522,7 +1522,7 @@
     <!-- Error. %1$s is a sentence saying how the file is protected. -->
     <string name="data_import_protected_by_drm">%1$s This app cannot open protected files.</string>
     <string name="data_import_no_scripture_found">No Bible text was found in that file.</string>
-    <string name="data_import_missing_copyright">That ePub carries no copyright line. Enter the publisher’s copyright notice to continue.</string>
+    <string name="data_import_missing_copyright">That file carries no copyright line. Enter the publisher’s copyright notice to continue.</string>
     <!-- Error. %1$s is a technical detail. -->
     <string name="data_import_database_write">Couldn’t save the imported text: %1$s</string>
     <string name="data_import_drm_encryption_manifest">That ePub is encrypted (it carries an encryption manifest).</string>

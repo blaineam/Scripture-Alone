@@ -300,6 +300,14 @@ import Testing
         }
     }
 
+    /// The refusal is shared by ePub, USFM zip and PDF imports, so it must not name one format.
+    @Test func theMissingCopyrightMessageNamesNoFormat() throws {
+        let message = try #require(BibleImportError.missingCopyright.errorDescription)
+        #expect(!message.contains("ePub"))
+        #expect(!message.contains("PDF"))
+        #expect(message.contains("That file carries no copyright line"))
+    }
+
     // MARK: - Coverage
 
     @Test func reportsPartialCoverage() throws {

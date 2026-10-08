@@ -841,7 +841,7 @@
     <string name="data_import_unsupported_format">このファイルは読み込めません: %1$s</string>
     <string name="data_import_protected_by_drm">%1$s 保護されたファイルは開けません。</string>
     <string name="data_import_no_scripture_found">このファイルに聖書本文が見つかりませんでした。</string>
-    <string name="data_import_missing_copyright">この ePub には著作権表示がありません。続けるには発行元の著作権表示を入力してください。</string>
+    <string name="data_import_missing_copyright">このファイルには著作権表示がありません。続けるには発行元の著作権表示を入力してください。</string>
     <string name="data_import_database_write">読み込んだ本文を保存できませんでした: %1$s</string>
     <string name="data_import_drm_encryption_manifest">この ePub は暗号化されています（暗号化マニフェストがあります）。</string>
     <string name="data_import_drm_adobe_adept">この ePub は Adobe DRM で保護されています。</string>

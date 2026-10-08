@@ -841,7 +841,7 @@
     <string name="data_import_unsupported_format">此应用无法读取该文件：%1$s</string>
     <string name="data_import_protected_by_drm">%1$s 此应用无法打开受保护的文件。</string>
     <string name="data_import_no_scripture_found">未在此文件中找到圣经文本。</string>
-    <string name="data_import_missing_copyright">该 ePub 未包含版权声明。请输入出版方的版权声明以继续。</string>
+    <string name="data_import_missing_copyright">该文件未包含版权声明。请输入出版方的版权声明以继续。</string>
     <string name="data_import_database_write">无法保存导入的文本：%1$s</string>
     <string name="data_import_drm_encryption_manifest">该 ePub 已加密（含有加密清单）。</string>
     <string name="data_import_drm_adobe_adept">该 ePub 受 Adobe DRM 保护。</string>

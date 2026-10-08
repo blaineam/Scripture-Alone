@@ -10703,58 +10703,6 @@
         }
       }
     },
-    "That ePub carries no copyright line. Enter the publisher’s copyright notice to continue." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses ePub enthält keine Copyright-Zeile. Gib den Copyright-Hinweis des Verlags ein, um fortzufahren."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ese ePub no incluye línea de copyright. Introduce el aviso de copyright de la editorial para continuar."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cet ePub ne comporte aucune mention de copyright. Saisissez la mention de copyright de l’éditeur pour continuer."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quell'ePub non contiene alcuna nota di copyright. Inserisci quella dell'editore per continuare."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "そのePubには著作権表示がありません。続けるには出版社の著作権表示を入力してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "해당 ePub에 저작권 표시가 없습니다. 계속하려면 출판사의 저작권 고지를 입력하세요."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esse ePub não tem linha de copyright. Digite o aviso de copyright da editora para continuar."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "该 ePub 没有版权信息。请输入出版商的版权声明以继续。"
-          }
-        }
-      }
-    },
     "That ePub contains an implausibly large file (%@)." : {
       "comment" : "Error. %@ is a file name inside the ePub.",
       "localizations" : {
@@ -11169,6 +11117,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "该导出文件中没有笔记、标注或已保存的经文。"
+          }
+        }
+      }
+    },
+    "That file carries no copyright line. Enter the publisher’s copyright notice to continue." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Datei enthält keine Copyright-Zeile. Gib den Copyright-Hinweis des Verlags ein, um fortzufahren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ese archivo no incluye línea de copyright. Introduce el aviso de copyright de la editorial para continuar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce fichier ne comporte aucune mention de copyright. Saisissez la mention de copyright de l’éditeur pour continuer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quel file non contiene alcuna nota di copyright. Inserisci quella dell'editore per continuare."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "そのファイルには著作権表示がありません。続けるには出版社の著作権表示を入力してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "해당 파일에 저작권 표시가 없습니다. 계속하려면 출판사의 저작권 고지를 입력하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esse arquivo não tem linha de copyright. Digite o aviso de copyright da editora para continuar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该文件没有版权信息。请输入出版商的版权声明以继续。"
           }
         }
       }

@@ -7,6 +7,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 
 /**
  * The USFM front-end — the shape eBible.org publishes. Ported one-for-one from `USFMImportTests.swift`.
@@ -325,6 +326,22 @@ class USFMImportTest {
         assertFalse(importer.preview(file).hasCopyright)
         assertThrowsImport<BibleImportError.MissingCopyright>(BibleImportError.MissingCopyright()) {
             importer.importBible(file, directory = ImportFixtures.scratchDirectory())
+        }
+    }
+
+    /** The refusal is shared by ePub, USFM zip and PDF imports, so no language's copy names one format. */
+    @Test fun theMissingCopyrightMessageNamesNoFormat() {
+        val message = BibleImportError.MissingCopyright().message.orEmpty()
+        assertTrue(message.startsWith("That file carries no copyright line"))
+        val folders = File("src/main/res").listFiles { f -> f.name.startsWith("values") }.orEmpty()
+        val copies = folders.mapNotNull { folder ->
+            val file = File(folder, "strings.xml").takeIf { it.exists() } ?: return@mapNotNull null
+            Regex("<string name=\"data_import_missing_copyright\">([^<]*)</string>").find(file.readText())
+                ?.let { folder.name to it.groupValues[1] }
+        }
+        assertEquals(9, copies.size)
+        for ((folder, copy) in copies) {
+            assertFalse("$folder: $copy", copy.contains("ePub") || copy.contains("PDF"))
         }
     }
 

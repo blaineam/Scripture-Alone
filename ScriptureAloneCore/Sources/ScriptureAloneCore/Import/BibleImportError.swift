@@ -23,7 +23,7 @@ public enum BibleImportError: Error, LocalizedError, Equatable, Sendable {
     case protectedByDRM(DRMEvidence)
     /// The ePub opened and parsed, but nothing in it looked like scripture.
     case noScriptureFound
-    /// An import must carry a copyright line forward; the ePub had none and the caller supplied none.
+    /// An import must carry a copyright line forward; the file had none and the caller supplied none.
     case missingCopyright
     /// The text came out too damaged to store (`ImportQuality`); the score says how far.
     case poorQuality(Int)
@@ -40,7 +40,7 @@ public enum BibleImportError: Error, LocalizedError, Equatable, Sendable {
         case .unsupportedFormat(let message): String(localized: "This app can’t read that file: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
         case .protectedByDRM(let evidence): String(localized: "\(evidence.explanation) This app cannot open protected files.", bundle: .module, comment: "Error. %@ is a sentence saying how the file is protected.")
         case .noScriptureFound: String(localized: "No Bible text was found in that file.", bundle: .module)
-        case .missingCopyright: String(localized: "That ePub carries no copyright line. Enter the publisher’s copyright notice to continue.", bundle: .module)
+        case .missingCopyright: String(localized: "That file carries no copyright line. Enter the publisher’s copyright notice to continue.", bundle: .module)
         case .poorQuality(let score): String(localized: "That file couldn’t be read cleanly enough to use (it scored \(score) of 100). Nothing was added.", bundle: .module, comment: "Import refused. %lld is a quality score out of 100.")
         case .databaseWrite(let message): String(localized: "Couldn’t save the imported text: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
         }

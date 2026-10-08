@@ -841,7 +841,7 @@
     <string name="data_import_unsupported_format">이 앱은 해당 파일을 읽을 수 없습니다: %1$s</string>
     <string name="data_import_protected_by_drm">%1$s 이 앱은 보호된 파일을 열 수 없습니다.</string>
     <string name="data_import_no_scripture_found">이 파일에서 성경 본문을 찾을 수 없습니다.</string>
-    <string name="data_import_missing_copyright">해당 ePub에 저작권 표시가 없습니다. 계속하려면 출판사의 저작권 고지를 입력하세요.</string>
+    <string name="data_import_missing_copyright">해당 파일에 저작권 표시가 없습니다. 계속하려면 출판사의 저작권 고지를 입력하세요.</string>
     <string name="data_import_database_write">가져온 본문을 저장할 수 없습니다: %1$s</string>
     <string name="data_import_drm_encryption_manifest">해당 ePub은 암호화되어 있습니다(암호화 매니페스트 포함).</string>
     <string name="data_import_drm_adobe_adept">해당 ePub은 Adobe DRM으로 보호되어 있습니다.</string>

@@ -19,6 +19,9 @@
   VoiceOver and TalkBack name every style, background and color; all nine languages. Shortcuts'
   Create Verse Image can use any of the styles. On iPhone, iPad, Mac and Android.
 
+- Importing a USFM zip or a PDF with no copyright line no longer says "That ePub carries no
+  copyright line": the message now says "That file", whatever the format. All nine languages. On
+  iPhone, iPad, Mac and Android.
 - Favorite a verse on Wear OS. A passage on the watch has a heart, as on Apple Watch: tap it to add
   the verse to your favorites or take it off. The phone keeps your library, so the tap goes to the
   phone (when it's out of reach, as soon as it's back) and the watch shows the heart filled at once.

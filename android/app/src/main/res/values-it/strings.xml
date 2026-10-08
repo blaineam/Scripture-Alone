@@ -841,7 +841,7 @@
     <string name="data_import_unsupported_format">L\'app non può leggere quel file: %1$s</string>
     <string name="data_import_protected_by_drm">%1$s L\'app non può aprire file protetti.</string>
     <string name="data_import_no_scripture_found">In questo file non è stato trovato alcun testo biblico.</string>
-    <string name="data_import_missing_copyright">Quell\'ePub non riporta il copyright. Inserisci l\'avviso di copyright dell\'editore per continuare.</string>
+    <string name="data_import_missing_copyright">Quel file non riporta il copyright. Inserisci l\'avviso di copyright dell\'editore per continuare.</string>
     <string name="data_import_database_write">Impossibile salvare il testo importato: %1$s</string>
     <string name="data_import_drm_encryption_manifest">Quell\'ePub è cifrato (contiene un manifest di cifratura).</string>
     <string name="data_import_drm_adobe_adept">Quell\'ePub è protetto da DRM Adobe.</string>

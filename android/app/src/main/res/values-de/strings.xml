@@ -841,7 +841,7 @@
     <string name="data_import_unsupported_format">Diese App kann diese Datei nicht lesen: %1$s</string>
     <string name="data_import_protected_by_drm">%1$s Diese App kann geschützte Dateien nicht öffnen.</string>
     <string name="data_import_no_scripture_found">In dieser Datei wurde kein Bibeltext gefunden.</string>
-    <string name="data_import_missing_copyright">Dieses ePub enthält keinen Copyright-Hinweis. Gib den Copyright-Hinweis des Verlags ein, um fortzufahren.</string>
+    <string name="data_import_missing_copyright">Diese Datei enthält keinen Copyright-Hinweis. Gib den Copyright-Hinweis des Verlags ein, um fortzufahren.</string>
     <string name="data_import_database_write">Importierter Text konnte nicht gespeichert werden: %1$s</string>
     <string name="data_import_drm_encryption_manifest">Dieses ePub ist verschlüsselt (es enthält ein Verschlüsselungs-Manifest).</string>
     <string name="data_import_drm_adobe_adept">Dieses ePub ist mit Adobe DRM geschützt.</string>
