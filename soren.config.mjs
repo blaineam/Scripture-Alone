@@ -32,12 +32,13 @@ export default {
     //    ContentKeyVaultTests (Secure Enclave parts withKnownIssue), ShippedPackageTests (known issue
     //    when ASV.sabible isn't built), DemoPackageTests (only with ~/.scripture-alone-demo),
     //    RealFileProbeTests (only with SA_IMPORT_PROBE).
+    //    scripts/swift-coverage.mjs runs `swift test --enable-code-coverage` and prints the
+    //    package's own line coverage (Sources/ only) as a `soren-coverage:` line.
     core: {
       type: 'cmd',
-      cmd: 'swift',
-      args: ['test', '--scratch-path', '/tmp/sa-soren-core'],
-      cwd: 'ScriptureAloneCore',
-      description: 'ScriptureAloneCore package tests (shared by iOS, iPadOS, macOS, watchOS)',
+      cmd: 'node',
+      args: ['scripts/swift-coverage.mjs'],
+      description: 'ScriptureAloneCore package tests (shared by iOS, iPadOS, macOS, watchOS) + line coverage',
       tags: ['regression'],
     },
 
@@ -50,7 +51,8 @@ export default {
       type: 'xcodebuild-test',
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAlone',
-      destination: 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0',
+      destination: 'platform=iOS Simulator,name=SA UI iPhone 17 Pro,OS=27.0',
+      shutdownSimulator: true,
       platform: 'ios',
       xcodegen: true,
       description: 'App unit tests on the iOS simulator (+ widgets, assets extension compile)',
@@ -73,12 +75,18 @@ export default {
     //    with -UITestMode (ScriptureAlone/App/UITestMode.swift, DEBUG only): an in-memory store with
     //    the demo library, a fresh install's settings, no iCloud, no network, a silent Listen, and
     //    always the BSB — never a licensed text. Unsigned is fine: nothing here needs an entitlement.
-    //    OS=27.0 because each of these device names exists on two runtimes.
+    //    DEDICATED simulators (iOS/watchOS 27.0), booted by the suite and shut down after it: on the
+    //    shared "iPhone 17 Pro" / "iPad Pro 13-inch (M5)" other projects' UI suites launch their apps
+    //    mid-run and steal the foreground. Create them once with
+    //      xcrun simctl create "SA UI iPhone 17 Pro" "iPhone 17 Pro" com.apple.CoreSimulator.SimRuntime.iOS-27-0
+    //      xcrun simctl create "SA UI iPad Pro 13-inch (M5)" "iPad Pro 13-inch (M5)" com.apple.CoreSimulator.SimRuntime.iOS-27-0
+    //      xcrun simctl create "SA UI Watch S11 46mm" "Apple Watch Series 11 (46mm)" com.apple.CoreSimulator.SimRuntime.watchOS-27-0
     'ui-iphone': {
       type: 'xcodebuild-test',
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAloneUITests',
-      destination: 'platform=iOS Simulator,name=iPhone 17 Pro,OS=27.0',
+      destination: 'platform=iOS Simulator,name=SA UI iPhone 17 Pro,OS=27.0',
+      shutdownSimulator: true,
       platform: 'ios',
       xcodegen: true,
       derivedDataPath: '/tmp/soren-dd-scripture-alone-ui-iphone',
@@ -90,7 +98,8 @@ export default {
       type: 'xcodebuild-test',
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAloneUITests',
-      destination: 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=27.0',
+      destination: 'platform=iOS Simulator,name=SA UI iPad Pro 13-inch (M5),OS=27.0',
+      shutdownSimulator: true,
       platform: 'ios',
       xcodegen: true,
       derivedDataPath: '/tmp/soren-dd-scripture-alone-ui-ipad',
@@ -105,7 +114,8 @@ export default {
       type: 'xcodebuild-test',
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAloneWatch',
-      destination: 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm),OS=27.0',
+      destination: 'platform=watchOS Simulator,name=SA UI Watch S11 46mm,OS=27.0',
+      shutdownSimulator: true,
       platform: 'ios',
       xcodegen: true,
       derivedDataPath: '/tmp/soren-dd-scripture-alone-ui-watch',
@@ -132,10 +142,12 @@ export default {
     //    android-shared needs it too. Includes ListenSpeechTest — the Listen ANR (a blocking
     //    TextToSpeech.stop must never hold up a skip) — and ImageSizingTest. Soren takes it from env, ~/.soren/credentials.json, or the
     //    login keychain (service SA_CONTENT_KEY_SEED, docs/lockman/README.md) and masks it.
+    //    Line coverage: JaCoCo (android/build.gradle.kts › coverageSummary) prints each module's figure.
     android: {
       type: 'gradle',
       cwd: 'android',
-      unit: 'testDebugUnitTest',
+      unit: ['--no-daemon', '--max-workers=4', 'testDebugUnitTest', ':shared:test',
+        ':app:coverageSummary', ':wear:coverageSummary', ':shared:coverageSummary'],
       secrets: ['SA_CONTENT_KEY_SEED'],
       javaHome: '/opt/homebrew/opt/openjdk@17',
       description: 'Android :app + :wear unit tests (JVM)',
@@ -145,7 +157,7 @@ export default {
     'android-shared': {
       type: 'cmd',
       cmd: './gradlew',
-      args: ['--no-daemon', ':shared:test'],
+      args: ['--no-daemon', ':shared:test', ':shared:coverageSummary'],
       cwd: 'android',
       secrets: ['SA_CONTENT_KEY_SEED'],
       env: { JAVA_HOME: '/opt/homebrew/opt/openjdk@17' },

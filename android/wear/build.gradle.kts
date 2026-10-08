@@ -70,6 +70,8 @@ android {
     }
 
     buildTypes.getByName("debug") {
+        // JaCoCo line coverage of the JVM unit tests (android/build.gradle.kts › coverageReport).
+        enableUnitTestCoverage = true
         // `-PappIdSuffix=…` suffixes the phone's debug build; the watch's follows it, so a debug pair
         // still shares one ID and can talk. Release builds never carry a suffix.
         providers.gradleProperty("appIdSuffix").orNull?.let { applicationIdSuffix = ".$it" }
@@ -125,6 +127,9 @@ android {
     }
 
     testOptions {
+        // Robolectric (the Compose screens, activities, services and preferences on the JVM) reads the
+        // merged resources and manifest.
+        unitTests.isIncludeAndroidResources = true
         unitTests.all { test ->
             // The edition reader is proven against the very `*-Watch.sqlite` files the watch ships.
             test.systemProperty(
@@ -209,5 +214,12 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation("junit:junit:4.13.2")
+    // Screens, activities and services on the JVM (src/test/resources/robolectric.properties pins the SDK).
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("androidx.test:core-ktx:1.6.1")
+    testImplementation("androidx.test.ext:junit:1.2.1")
+    testImplementation(composeBom)
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
     testImplementation("org.xerial:sqlite-jdbc:3.46.1.3")
 }

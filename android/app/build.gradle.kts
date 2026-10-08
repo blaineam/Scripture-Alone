@@ -60,6 +60,8 @@ android {
     }
 
     buildTypes.getByName("debug") {
+        // JaCoCo line coverage of the JVM unit tests (android/build.gradle.kts › coverageReport).
+        enableUnitTestCoverage = true
         // `-PappIdSuffix=study` installs a debug build beside the others (…scripturealone.study), so
         // parallel work on one emulator doesn't overwrite each other's app or its saved state.
         providers.gradleProperty("appIdSuffix").orNull?.let { applicationIdSuffix = ".$it" }
@@ -113,6 +115,11 @@ android {
     // The bundled databases are copied in from the iOS app's resources at build time — see
     // `syncBundledData` below — so there is exactly one copy of each in the repository.
     sourceSets["main"].assets.srcDir(layout.buildDirectory.dir("generated/bundledData"))
+    // Tests that hold on a device and on the JVM alike (Compose, bitmaps, layout) live in sharedTest:
+    // the instrumented run (android-release-smoke) runs them on the emulator, and the unit tests run
+    // them under Robolectric, so their coverage counts in every `android` suite run.
+    sourceSets["test"].java.srcDir("src/sharedTest/java")
+    sourceSets["androidTest"].java.srcDir("src/sharedTest/java")
 
     // The Bibles and study databases are Play Asset Delivery packs (`packs/`), which reach a device
     // only through Google Play or bundletool. A debug APK — `installDebug`, Android Studio's Run —
@@ -158,6 +165,9 @@ android {
     }
 
     testOptions {
+        // Robolectric (the Compose screens, activities, services and preferences on the JVM) reads the
+        // merged resources and manifest.
+        unitTests.isIncludeAndroidResources = true
         unitTests.all { test ->
             // The .sabible tests read the real package and its plaintext source straight from the
             // iOS resources, so the proof runs against the bytes that ship, not a copy.
@@ -174,6 +184,30 @@ android {
             }
         }
     }
+}
+
+/**
+ * The bundled SQLite's JNI library for the machine running the unit tests. The app ships
+ * androidx.sqlite's Android build (sqlite-bundled), whose libsqliteJni is for Android only; its JVM
+ * build carries the same JNI library for macOS, Linux and Windows. Robolectric tests that open the
+ * reader's real databases (the app launched whole, `app/AppFlowsTest`) load it from here.
+ */
+val sqliteJniJvm: Configuration by configurations.creating { isTransitive = false }
+dependencies { sqliteJniJvm("androidx.sqlite:sqlite-bundled-jvm:2.5.0") }
+val unpackSqliteJni by tasks.registering(Copy::class) {
+    from(sqliteJniJvm.elements.map { files -> files.map { zipTree(it) } }) {
+        // The host's own: natives/osx_arm64/libsqliteJni.dylib on this Mac, linux_x64 on a CI runner.
+        val os = System.getProperty("os.name").lowercase().let { if ("mac" in it) "osx" else if ("win" in it) "windows" else "linux" }
+        val arch = if (System.getProperty("os.arch") in setOf("aarch64", "arm64")) "arm64" else "x64"
+        include("natives/${os}_$arch/*")
+        eachFile { path = name }
+        includeEmptyDirs = false
+    }
+    into(layout.buildDirectory.dir("sqliteJni"))
+}
+tasks.withType<Test>().configureEach {
+    dependsOn(unpackSqliteJni)
+    systemProperty("java.library.path", layout.buildDirectory.dir("sqliteJni").get().asFile.absolutePath)
 }
 
 /**
@@ -326,6 +360,12 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation("junit:junit:4.13.2")
+    // Screens, activities and services on the JVM (src/test/resources/robolectric.properties pins the SDK).
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("androidx.test:core-ktx:1.6.1")
+    testImplementation("androidx.test.ext:junit:1.2.1")
+    testImplementation(composeBom)
+    testImplementation("androidx.compose.ui:ui-test-junit4")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     // Reads ASV.sqlite — the plaintext the sealed ASV was built from — as the tests' ground truth.
     testImplementation("org.xerial:sqlite-jdbc:3.46.1.3")

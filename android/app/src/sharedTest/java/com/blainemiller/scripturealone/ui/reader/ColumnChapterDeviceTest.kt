@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.reader
 
+import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.width
@@ -24,6 +25,7 @@ import com.blainemiller.scripturealone.data.layout.ChapterLayout.Kind
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeFalse
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -60,6 +62,10 @@ class ColumnChapterDeviceTest {
 
     @Test
     fun aParagraphIsMeasuredExactlyAsItIsDrawn() {
+        // Device only: Robolectric's native text layout breaks the drawn paragraph's first line three
+        // characters earlier than the same TextMeasurer call (32 vs 35), which no device does — the
+        // pagination contract this checks is the device's (android-release-smoke runs it).
+        assumeFalse("a device's text layout, not Robolectric's", Build.FINGERPRINT == "robolectric")
         val rendered = chapter(8)
         val paragraph = rendered.paragraphs.first { p -> p.verseSpans.any { it.key == 49_001_002 } }
         var drawn: TextLayoutResult? = null
