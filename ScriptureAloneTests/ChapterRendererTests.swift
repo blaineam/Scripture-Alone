@@ -171,6 +171,36 @@ struct ChapterRendererTests {
         #expect(ReaderColumns.verticalInsets(safeTop: 0, safeBottom: 20, compactHeight: false) == (top: 20, bottom: 130))
     }
 
+    /// A highlight wrapping over three lines — starting mid-line, ending mid-line — is one shape:
+    /// only its outer corners are rounded, and where one line meets the next the corners stay square.
+    @Test func aWrappedHighlightRoundsOnlyItsOuterCorners() {
+        let bands = HighlightShape.bands([
+            CGRect(x: 50, y: 0, width: 250, height: 28),
+            CGRect(x: 0, y: 28, width: 300, height: 28),
+            CGRect(x: 0, y: 56, width: 120, height: 28),
+        ])
+        typealias C = HighlightShape.Corners
+        #expect(bands.map(\.corners) == [
+            C(topLeft: true, topRight: true, bottomRight: false, bottomLeft: false),
+            C(topLeft: true, topRight: false, bottomRight: true, bottomLeft: false),
+            C(topLeft: false, topRight: false, bottomRight: true, bottomLeft: true),
+        ])
+        #expect(bands.allSatisfy { $0.radius >= 4 && $0.radius <= 6 })
+        // A verse number's raised run and the words after it on one line are one band, all rounded.
+        let line = HighlightShape.bands([CGRect(x: 0, y: 0, width: 12, height: 26), CGRect(x: 12, y: 1, width: 200, height: 27)])
+        #expect(line.count == 1)
+        #expect(line.first?.corners == .all)
+        #expect(line.first?.rect == CGRect(x: 0, y: 0, width: 212, height: 28))
+        // Two lines of poetry, 3 points apart, join; a line a paragraph's width away does not.
+        let poetry = HighlightShape.bands([CGRect(x: 40, y: 0, width: 300, height: 28),
+                                           CGRect(x: 60, y: 31, width: 200, height: 28),
+                                           CGRect(x: 60, y: 120, width: 200, height: 28)])
+        #expect(poetry[0].rect.maxY == 31)
+        #expect(poetry[0].corners == .all)
+        #expect(poetry[1].corners == C(topLeft: false, topRight: false, bottomRight: true, bottomLeft: true))
+        #expect(poetry[2].corners == .all)
+    }
+
     @Test func noticeLinksBecomeHTTPS() {
         let found = NoticeLinks.find(in: "See www.Lockman.org and http://example.com/x — not mailto:a@b.c")
         #expect(found.map(\.url.absoluteString) == ["https://www.Lockman.org", "https://example.com/x"])

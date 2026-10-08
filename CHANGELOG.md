@@ -2,6 +2,13 @@
 
 ## After 1.0.0
 
+- Highlights have rounded corners. A highlighted passage was a stack of hard rectangles, one per
+  line; now it is one band with its outer corners rounded (about 5 points, scaled to the line), the
+  corners where one line meets the next left square, and two lines of poetry a few points apart
+  joined into the same shape. The verse being read aloud is tinted the same way. Colours and the
+  text's layout are unchanged. On iPhone, iPad, Mac and Android (each paragraph's highlight on
+  Android); the watches already drew theirs as rounded blocks.
+
 - A phone held sideways fills the page. Its two columns used to keep 110 points free above the
   bottom bar for the selection and Now Playing bars, which on a screen about 360 points tall left a
   band of empty page and each column five lines; and the chapter's header took half the first

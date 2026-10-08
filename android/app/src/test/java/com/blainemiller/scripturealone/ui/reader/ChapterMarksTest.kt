@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.ui.reader
 
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.font.FontFamily
 import com.blainemiller.scripturealone.data.canon.BookID
 import com.blainemiller.scripturealone.data.layout.ChapterLayout
@@ -90,5 +91,26 @@ class ChapterMarksTest {
             "ESV allows up to 50% of Jude in one quotation. Select fewer verses to copy or share.",
             quotationLimitNotice(QuotationRefusal.TooMuchOfBook(BookID.JUDE, 50), "ESV"),
         )
+    }
+
+    /** A highlight wrapping over lines is one shape: only its outer corners are rounded (`HighlightShape`). */
+    @Test
+    fun aWrappedHighlightRoundsOnlyItsOuterCorners() {
+        val c = HighlightShape::Corners
+        val bands = HighlightShape.bands(listOf(Rect(50f, 0f, 300f, 28f), Rect(0f, 28f, 300f, 56f), Rect(0f, 56f, 120f, 84f)))
+        assertEquals(
+            listOf(c(true, true, false, false), c(true, false, true, false), c(false, false, true, true)),
+            bands.map { it.corners },
+        )
+        assertTrue(bands.all { it.radius in 4f..6f })
+        // A raised verse number and the words after it on one line are one band.
+        val line = HighlightShape.bands(listOf(Rect(0f, 0f, 12f, 26f), Rect(12f, 1f, 212f, 28f)))
+        assertEquals(listOf(HighlightShape.Band(Rect(0f, 0f, 212f, 28f), HighlightShape.Corners.ALL, 5.6f)), line)
+        // Lines 3 apart join; one a paragraph away doesn't.
+        val poetry = HighlightShape.bands(listOf(Rect(40f, 0f, 340f, 28f), Rect(60f, 31f, 260f, 59f), Rect(60f, 120f, 260f, 148f)))
+        assertEquals(31f, poetry[0].rect.bottom)
+        assertEquals(listOf(HighlightShape.Corners.ALL, c(false, false, true, true), HighlightShape.Corners.ALL), poetry.map { it.corners })
+        // Scaled to the screen: 4–6 dp.
+        assertEquals(12f, HighlightShape.radius(lineHeight = 100f, density = 2f))
     }
 }

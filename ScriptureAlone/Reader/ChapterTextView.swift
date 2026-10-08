@@ -40,6 +40,144 @@ extension ChapterTextConfiguration {
     }
 }
 
+/// The shape of a highlight: TextKit's background rects (one per line, or per run within a line)
+/// as one band with rounded corners. Rects on the same line that touch become one; a corner that
+/// the line above or below continues past stays square, so a highlight wrapping over several lines
+/// reads as one shape with only its outer corners rounded, even across the few points between two
+/// lines of poetry.
+nonisolated enum HighlightShape {
+    struct Corners: Equatable {
+        var topLeft: Bool, topRight: Bool, bottomRight: Bool, bottomLeft: Bool
+        static let all = Corners(topLeft: true, topRight: true, bottomRight: true, bottomLeft: true)
+    }
+
+    /// About a fifth of the line's height, between 4 and 6 points.
+    static func radius(lineHeight: CGFloat) -> CGFloat { min(6, max(4, lineHeight * 0.2)) }
+
+    /// Each band's rect and which of its corners are rounded.
+    static func bands(_ rects: [CGRect]) -> [(rect: CGRect, corners: Corners, radius: CGFloat)] {
+        let lines = merged(rects.filter { $0.width > 0.5 && $0.height > 0.5 })
+        return lines.map { rect in
+            let radius = min(radius(lineHeight: rect.height), rect.width / 2, rect.height / 2)
+            let above = lines.filter { abs($0.maxY - rect.minY) < 1 }
+            let below = lines.filter { abs($0.minY - rect.maxY) < 1 }
+            // A corner is inside the shape when a neighbouring line covers the radius beside it.
+            func covered(_ x: CGFloat, by neighbours: [CGRect], leading: Bool) -> Bool {
+                neighbours.contains { leading ? ($0.minX <= x + 0.5 && $0.maxX >= x + radius)
+                                              : ($0.minX <= x - radius && $0.maxX >= x - 0.5) }
+            }
+            let corners = Corners(topLeft: !covered(rect.minX, by: above, leading: true),
+                                  topRight: !covered(rect.maxX, by: above, leading: false),
+                                  bottomRight: !covered(rect.maxX, by: below, leading: false),
+                                  bottomLeft: !covered(rect.minX, by: below, leading: true))
+            return (rect, corners, radius)
+        }
+    }
+
+    /// The bands as one path, filled once so the lines meet without a seam.
+    static func path(_ rects: [CGRect]) -> CGPath {
+        let path = CGMutablePath()
+        for band in bands(rects) {
+            let r = band.rect, c = band.corners, radius = band.radius
+            let tl = c.topLeft ? radius : 0, tr = c.topRight ? radius : 0
+            let br = c.bottomRight ? radius : 0, bl = c.bottomLeft ? radius : 0
+            path.move(to: CGPoint(x: r.minX + tl, y: r.minY))
+            path.addLine(to: CGPoint(x: r.maxX - tr, y: r.minY))
+            if tr > 0 { path.addArc(tangent1End: CGPoint(x: r.maxX, y: r.minY), tangent2End: CGPoint(x: r.maxX, y: r.minY + tr), radius: tr) }
+            path.addLine(to: CGPoint(x: r.maxX, y: r.maxY - br))
+            if br > 0 { path.addArc(tangent1End: CGPoint(x: r.maxX, y: r.maxY), tangent2End: CGPoint(x: r.maxX - br, y: r.maxY), radius: br) }
+            path.addLine(to: CGPoint(x: r.minX + bl, y: r.maxY))
+            if bl > 0 { path.addArc(tangent1End: CGPoint(x: r.minX, y: r.maxY), tangent2End: CGPoint(x: r.minX, y: r.maxY - bl), radius: bl) }
+            path.addLine(to: CGPoint(x: r.minX, y: r.minY + tl))
+            if tl > 0 { path.addArc(tangent1End: CGPoint(x: r.minX, y: r.minY), tangent2End: CGPoint(x: r.minX + tl, y: r.minY), radius: tl) }
+            path.closeSubpath()
+        }
+        return path
+    }
+
+    /// Rects on one line (overlapping vertically by more than half) that touch, as one rect.
+    private static func merged(_ rects: [CGRect]) -> [CGRect] {
+        var result: [CGRect] = []
+        for rect in rects.sorted(by: { ($0.midY, $0.minX) < ($1.midY, $1.minX) }) {
+            if let index = result.lastIndex(where: { other in
+                let overlap = min(other.maxY, rect.maxY) - max(other.minY, rect.minY)
+                return overlap > min(other.height, rect.height) / 2
+                    && rect.minX <= other.maxX + 1 && rect.maxX >= other.minX - 1
+            }) {
+                result[index] = result[index].union(rect)
+            } else {
+                result.append(rect)
+            }
+        }
+        // Poetry sets each line as a paragraph, a few points apart: a highlight over two such lines
+        // still reads as one shape, so a line reaches down to the next when the gap is that small.
+        for index in result.indices.dropLast() {
+            let next = result[index + 1], line = result[index]
+            let gap = next.minY - line.maxY
+            let overlaps = min(line.maxX, next.maxX) > max(line.minX, next.minX)
+            if gap > 0, gap <= min(8, min(line.height, next.height) * 0.4), overlaps {
+                result[index].size.height += gap
+            }
+        }
+        return result
+    }
+}
+
+/// TextKit 1 layout that draws `.backgroundColor` runs — highlights, and the verse being read
+/// aloud — as rounded bands (`HighlightShape`) instead of square boxes. TextKit still works out
+/// where each run's rects go; they are gathered while it draws the backgrounds, joined with the
+/// rects of the runs either side in the same colour, and filled once each band is known.
+nonisolated final class ChapterLayoutManager: NSLayoutManager {
+    private var pending: [(range: NSRange, color: PlatformColor, rects: [CGRect])] = []
+    private var gathering = false
+
+    override func drawBackground(forGlyphRange glyphsToShow: NSRange, at origin: CGPoint) {
+        gathering = true
+        pending = []
+        super.drawBackground(forGlyphRange: glyphsToShow, at: origin)
+        gathering = false
+        var groups: [(color: PlatformColor, end: Int, rects: [CGRect])] = []
+        for run in pending.sorted(by: { $0.range.location < $1.range.location }) {
+            // Runs in one colour join when only the line break between two lines of poetry, or
+            // nothing, separates them.
+            if let last = groups.last, last.color.isEqual(run.color), run.range.location <= last.end || onlyBreaks(last.end..<run.range.location) {
+                groups[groups.count - 1].rects += run.rects
+                groups[groups.count - 1].end = max(last.end, NSMaxRange(run.range))
+            } else {
+                groups.append((run.color, NSMaxRange(run.range), run.rects))
+            }
+        }
+        pending = []
+        #if os(iOS)
+        guard let context = UIGraphicsGetCurrentContext() else { return }
+        #else
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
+        #endif
+        for group in groups {
+            context.saveGState()
+            context.setFillColor(group.color.cgColor)
+            context.addPath(HighlightShape.path(group.rects))
+            context.fillPath()
+            context.restoreGState()
+        }
+    }
+
+    private func onlyBreaks(_ characters: Range<Int>) -> Bool {
+        guard let storage = textStorage, characters.count <= 2, characters.upperBound <= storage.length else { return false }
+        let between = (storage.string as NSString).substring(with: NSRange(location: characters.lowerBound, length: characters.count))
+        return between.unicodeScalars.allSatisfy { CharacterSet.whitespacesAndNewlines.contains($0) }
+    }
+
+    override func fillBackgroundRectArray(_ rectArray: UnsafePointer<CGRect>, count rectCount: Int,
+                                          forCharacterRange charRange: NSRange, color: PlatformColor) {
+        guard gathering else {
+            super.fillBackgroundRectArray(rectArray, count: rectCount, forCharacterRange: charRange, color: color)
+            return
+        }
+        pending.append((charRange, color, Array(UnsafeBufferPointer(start: rectArray, count: rectCount))))
+    }
+}
+
 /// Shared TextKit 1 geometry, used by both platforms.
 @MainActor
 enum ChapterGeometry {
@@ -108,7 +246,7 @@ struct ChapterTextView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> ReaderTextView {
         let storage = NSTextStorage()
-        let layoutManager = NSLayoutManager()
+        let layoutManager = ChapterLayoutManager()
         storage.addLayoutManager(layoutManager)
         let container = NSTextContainer(size: CGSize(width: 0, height: CGFloat.greatestFiniteMagnitude))
         container.widthTracksTextView = true
@@ -328,7 +466,7 @@ struct ChapterTextView: NSViewRepresentable {
 
     func makeNSView(context: Context) -> NSScrollView {
         let storage = NSTextStorage()
-        let layoutManager = NSLayoutManager()
+        let layoutManager = ChapterLayoutManager()
         storage.addLayoutManager(layoutManager)
         let container = NSTextContainer(size: NSSize(width: 0, height: CGFloat.greatestFiniteMagnitude))
         container.widthTracksTextView = true

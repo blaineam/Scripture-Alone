@@ -2,7 +2,11 @@ package com.blainemiller.scripturealone.ui.reader
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.TextLayoutResult
@@ -42,7 +46,8 @@ internal fun highlightRuns(spans: List<VerseSpan>, highlights: Map<Int, String>)
 
 /**
  * Draws highlights and the selection behind a paragraph's text. Highlights are fills of the full line
- * height (TextKit's `backgroundColor`); a selected verse gets the thick dotted accent underline iOS
+ * height (TextKit's `backgroundColor`), as one band with rounded outer corners (`HighlightShape`);
+ * a selected verse gets the thick dotted accent underline iOS
  * gives it (`.thick | .patternDot`).
  *
  * The verse being read aloud is marked as `ChapterRenderer.swift` marks it: an accent tint (13%, or 20%
@@ -61,12 +66,12 @@ fun Modifier.verseMarks(
         val length = text.layoutInput.text.length
         for ((start, end, color) in highlightRuns(spans, marks.highlights)) {
             if (end > length) continue
-            drawPath(text.getPathForRange(start, end), highlightFill(color, palette.isDark))
+            drawPath(roundedBand(text, start, end), highlightFill(color, palette.isDark))
         }
         val speaking = marks.speaking?.let { key -> spans.firstOrNull { it.key == key } }
         if (speaking != null && speaking.end <= length && speaking.end > speaking.start) {
             if (HighlightColor.fromRaw(marks.highlights[speaking.key]) == null) {
-                drawPath(text.getPathForRange(speaking.start, speaking.end), palette.accent.copy(alpha = if (palette.isDark) 0.2f else 0.13f))
+                drawPath(roundedBand(text, speaking.start, speaking.end), palette.accent.copy(alpha = if (palette.isDark) 0.2f else 0.13f))
             }
             if (speaking.key !in marks.selection) {
                 val rule = 1.dp.toPx()
@@ -101,8 +106,89 @@ fun Modifier.verseMarks(
     }
 }
 
-/** Each line [span] covers, as its left and right x and its baseline. */
-private inline fun forEachLine(text: TextLayoutResult, span: VerseSpan, draw: (Float, Float, Float) -> Unit) {
+/**
+ * The shape of a highlight, as `HighlightShape` in `ChapterTextView.swift` draws it: one rect per line
+ * (rects on one line that touch become one), a line reaching down to the next across a gap of a few
+ * points, and only the outer corners rounded — a corner the line above or below continues past stays
+ * square, so a highlight wrapping over several lines reads as one shape.
+ */
+internal object HighlightShape {
+    data class Corners(val topLeft: Boolean, val topRight: Boolean, val bottomRight: Boolean, val bottomLeft: Boolean) {
+        companion object { val ALL = Corners(true, true, true, true) }
+    }
+
+    data class Band(val rect: Rect, val corners: Corners, val radius: Float)
+
+    /** About a fifth of the line's height, between 4 and 6 points ([density] pixels per point). */
+    fun radius(lineHeight: Float, density: Float): Float = minOf(6f * density, maxOf(4f * density, lineHeight * 0.2f))
+
+    fun bands(rects: List<Rect>, density: Float = 1f): List<Band> {
+        val lines = merged(rects.filter { it.width > 0.5f && it.height > 0.5f })
+        return lines.map { rect ->
+            val radius = minOf(radius(rect.height, density), rect.width / 2, rect.height / 2)
+            val above = lines.filter { kotlin.math.abs(it.bottom - rect.top) < 1f }
+            val below = lines.filter { kotlin.math.abs(it.top - rect.bottom) < 1f }
+            fun covered(x: Float, neighbours: List<Rect>, leading: Boolean) = neighbours.any {
+                if (leading) it.left <= x + 0.5f && it.right >= x + radius else it.left <= x - radius && it.right >= x - 0.5f
+            }
+            Band(
+                rect,
+                Corners(
+                    topLeft = !covered(rect.left, above, true),
+                    topRight = !covered(rect.right, above, false),
+                    bottomRight = !covered(rect.right, below, false),
+                    bottomLeft = !covered(rect.left, below, true),
+                ),
+                radius,
+            )
+        }
+    }
+
+    private fun merged(rects: List<Rect>): List<Rect> {
+        val result = mutableListOf<Rect>()
+        for (rect in rects.sortedWith(compareBy({ it.center.y }, { it.left }))) {
+            val index = result.indexOfLast { other ->
+                val overlap = minOf(other.bottom, rect.bottom) - maxOf(other.top, rect.top)
+                overlap > minOf(other.height, rect.height) / 2 && rect.left <= other.right + 1 && rect.right >= other.left - 1
+            }
+            if (index >= 0) result[index] = Rect(
+                minOf(result[index].left, rect.left), minOf(result[index].top, rect.top),
+                maxOf(result[index].right, rect.right), maxOf(result[index].bottom, rect.bottom),
+            ) else result += rect
+        }
+        for (i in 0 until result.size - 1) {
+            val line = result[i]
+            val next = result[i + 1]
+            val gap = next.top - line.bottom
+            val overlaps = minOf(line.right, next.right) > maxOf(line.left, next.left)
+            if (gap > 0 && gap <= minOf(8f, minOf(line.height, next.height) * 0.4f) && overlaps) {
+                result[i] = line.copy(bottom = next.top)
+            }
+        }
+        return result
+    }
+}
+
+/** The run [start]..[end] of [text] as a rounded band (`HighlightShape`), one rect per line it covers. */
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.roundedBand(text: TextLayoutResult, start: Int, end: Int): Path {
+    val rects = mutableListOf<Rect>()
+    forEachLineIndex(text, VerseSpan(0, start, end)) { x1, x2, line ->
+        // A run that carries on to the next line fills to the paragraph's edge, as TextKit's does
+        // (and as `getPathForRange` did).
+        val right = if (line < text.getLineForOffset(end - 1)) maxOf(x2, text.size.width.toFloat()) else x2
+        rects += Rect(x1, text.getLineTop(line), right, text.getLineBottom(line))
+    }
+    val path = Path()
+    for (band in HighlightShape.bands(rects, density)) {
+        fun r(on: Boolean) = if (on) CornerRadius(band.radius) else CornerRadius.Zero
+        val c = band.corners
+        path.addRoundRect(RoundRect(band.rect, r(c.topLeft), r(c.topRight), r(c.bottomRight), r(c.bottomLeft)))
+    }
+    return path
+}
+
+/** Each line [span] covers, as its left and right x and its line. */
+private inline fun forEachLineIndex(text: TextLayoutResult, span: VerseSpan, draw: (Float, Float, Int) -> Unit) {
     val firstLine = text.getLineForOffset(span.start)
     val lastLine = text.getLineForOffset(span.end - 1)
     for (line in firstLine..lastLine) {
@@ -115,9 +201,13 @@ private inline fun forEachLine(text: TextLayoutResult, span: VerseSpan, draw: (F
         } else {
             text.getHorizontalPosition(to, usePrimaryDirection = true)
         }
-        draw(minOf(x1, x2), maxOf(x1, x2), text.getLineBaseline(line))
+        draw(minOf(x1, x2), maxOf(x1, x2), line)
     }
 }
+
+/** Each line [span] covers, as its left and right x and its baseline. */
+private inline fun forEachLine(text: TextLayoutResult, span: VerseSpan, draw: (Float, Float, Float) -> Unit) =
+    forEachLineIndex(text, span) { x1, x2, line -> draw(x1, x2, text.getLineBaseline(line)) }
 
 /**
  * The verse under a tap at [position], in text coordinates — `ChapterGeometry.characterIndex`, which

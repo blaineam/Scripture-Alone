@@ -89,7 +89,7 @@ struct ColumnChapterView: UIViewRepresentable {
     final class PagedColumnsView: UIScrollView {
         weak var coordinator: Coordinator?
         private let storage = NSTextStorage()
-        let layoutManager = NSLayoutManager()
+        let layoutManager: NSLayoutManager = ChapterLayoutManager()
         private(set) var textViews: [UITextView] = []
         private(set) var columns = 2
         private var laidOut: CGSize = .zero
@@ -302,7 +302,7 @@ struct ColumnChapterView: NSViewRepresentable {
     final class PagedColumnsView: NSView {
         weak var coordinator: Coordinator?
         private let storage = NSTextStorage()
-        let layoutManager = NSLayoutManager()
+        let layoutManager: NSLayoutManager = ChapterLayoutManager()
         private let pages = NSView()
         private(set) var textViews: [NSTextView] = []
         private(set) var columns = 2
