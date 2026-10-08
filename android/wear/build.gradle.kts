@@ -1,5 +1,7 @@
 import java.io.File
 import java.security.MessageDigest
+import java.nio.ByteBuffer
+import groovy.json.JsonSlurper
 
 plugins {
     id("com.android.application")
@@ -16,8 +18,8 @@ val packagesDir: File = rootProject.layout.projectDirectory.dir("../ScriptureAlo
  */
 fun allowsWearables(file: File): Boolean = file.inputStream().use { input ->
     val preamble = input.readNBytes(14)
-    val length = java.nio.ByteBuffer.wrap(preamble, 10, 4).int
-    val header = groovy.json.JsonSlurper().parseText(String(input.readNBytes(length), Charsets.UTF_8)) as Map<*, *>
+    val length = ByteBuffer.wrap(preamble, 10, 4).int
+    val header = JsonSlurper().parseText(String(input.readNBytes(length), Charsets.UTF_8)) as Map<*, *>
     val term = (header["policy"] as? Map<*, *>)?.get("wearables")
     term == null || term == "allowed"
 }

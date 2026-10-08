@@ -33,7 +33,7 @@
   and Android phone never send the translation to the watch, nor any of its text (the Wear OS
   snapshot of favorites, highlights and notes then carries references only); the Apple Watch and
   Wear OS refuse to open such a package, refuse one sent to them and delete one they find; the
-  watch's translation list leaves it out and says why when the phone is reading it ("NASB 1995 on
+  watch's translation list leaves it out and says why when the phone is reading it ("NASB1995 on
   your iPhone isn't available on the watch: its licence doesn't allow it", in all nine languages);
   and Verse of the Day, complications and tiles fall back to the daily list's own translation. A
   package without the term behaves exactly as before, so nothing changes for the NASB, whose
