@@ -2,6 +2,9 @@ package com.blainemiller.scripturealone.app
 
 import android.content.Intent
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.SemanticsNodeInteractionCollection
 import androidx.compose.ui.test.junit4.ComposeTestRule
@@ -13,6 +16,7 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.datastore.preferences.core.edit
+import androidx.lifecycle.ViewModelProvider
 import com.blainemiller.scripturealone.MainActivity
 import com.blainemiller.scripturealone.data.prefs.readerDataStore
 import kotlinx.coroutines.runBlocking
@@ -41,6 +45,12 @@ abstract class AppTest {
         FakeAndroidKeyStore.install()
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         runBlocking { context.readerDataStore.edit { it.clear() } }
+        // AndroidViewModelFactory keeps the first Application it was given in a static and builds every
+        // AndroidViewModel with it: on the JVM, a later test's ReaderViewModel would read the first
+        // test's files (its notes). One Application per process on a device; one per test here.
+        ViewModelProvider.AndroidViewModelFactory::class.java.declaredFields
+            .filter { java.lang.reflect.Modifier.isStatic(it.modifiers) && it.type == ViewModelProvider.AndroidViewModelFactory::class.java }
+            .forEach { it.isAccessible = true; it.set(null, null) }
     }
 
     @After fun close() {
@@ -59,6 +69,16 @@ abstract class AppTest {
             intent ?: Intent(context, MainActivity::class.java).putExtra("book", 43).putExtra("chapter", 1).putExtra("translation", "ASV"),
         )
         settle()
+        // The chapter opens on its own thread: wait for John 1 (the default launch) to be on the page.
+        if (intent == null) {
+            val end = System.currentTimeMillis() + 30_000
+            while (!rule.onAllNodesWithContentDescription("Verse 1.", substring = true).fetchSemanticsNodes().isNotEmpty() &&
+                System.currentTimeMillis() < end
+            ) {
+                Thread.sleep(50)
+                settle(400)
+            }
+        }
         if (skipWelcome && rule.onAllNodesWithText("Skip").fetchSemanticsNodes().isNotEmpty()) {
             rule.onAllNodesWithText("Skip").onFirst().performClick()
             settle()
@@ -103,18 +123,41 @@ abstract class AppTest {
     }
 
     /** Waits, in real time, for background work (rendering on Dispatchers.Default) to show [what]. */
-    protected fun waitFor(what: String, timeout: Long = 15_000, condition: () -> Boolean) {
+    protected fun waitFor(what: String, timeout: Long = 30_000, condition: () -> Boolean) {
         val end = System.currentTimeMillis() + timeout
         while (System.currentTimeMillis() < end) {
-            settle(100)
+            settle(400)
             if (condition()) return
             Thread.sleep(50)
         }
-        throw AssertionError("$what never happened")
+        throw AssertionError("$what never happened. On screen:\n${screen()}")
     }
 
-    protected fun assertShown(what: String, nodes: SemanticsNodeInteractionCollection) =
-        assertTrue("$what is not on screen", nodes.exists())
+    /**
+     * [what] is on screen — or comes within a few seconds: chapters, the library and search load on
+     * their own threads, and a loaded machine (a full suite beside a simulator) is slower to answer.
+     */
+    protected fun assertShown(what: String, nodes: SemanticsNodeInteractionCollection) {
+        val end = System.currentTimeMillis() + 20_000
+        while (!nodes.exists() && System.currentTimeMillis() < end) {
+            Thread.sleep(50)
+            settle(400)
+        }
+        assertTrue("$what is not on screen. On screen:\n${screen()}", nodes.exists())
+    }
+
+    /** What TalkBack would find on screen: every node's text and description, for a failure's message. */
+    protected fun screen(): String = rule.onAllNodes(isRoot()).fetchSemanticsNodes().joinToString("\n---\n") { root ->
+        buildList {
+            fun walk(node: androidx.compose.ui.semantics.SemanticsNode) {
+                val config = node.config
+                config.getOrNull(SemanticsProperties.Text)?.joinToString()?.let(::add)
+                config.getOrNull(SemanticsProperties.ContentDescription)?.joinToString()?.let { add("[$it]") }
+                node.children.forEach(::walk)
+            }
+            walk(root)
+        }.joinToString(" | ")
+    }
 
     protected fun back() {
         scenario!!.onActivity { it.onBackPressedDispatcher.onBackPressed() }

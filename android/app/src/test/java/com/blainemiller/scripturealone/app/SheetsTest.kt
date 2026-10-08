@@ -99,7 +99,8 @@ class SheetsTest : AppTest() {
     @Test fun notesListsItsScopes() {
         launch()
         tapDesc("Notes", substring = false)
-        assertShown("an empty library", text("No Notes Yet"))
+        // The library loads on its own thread.
+        waitFor("an empty library") { text("No Notes Yet").exists() }
         tapText("This Book")
         tapText("This Chapter")
         tapText("Highlights")
