@@ -13,7 +13,7 @@ struct ShareDesigner: View {
     #endif
 
     @State private var style = ShareStyle(defaults: .standard)
-    @AppStorage("share.customizing") private var customizing = false
+    @AppStorage(ShareSettingsKey.customizing) private var customizing = false
 
     @State private var rendered: (image: ShareImage, cgImage: CGImage, key: RenderKey)?
     @State private var backdrop: (key: BackdropKey, image: CGImage, colors: ShareColors)?

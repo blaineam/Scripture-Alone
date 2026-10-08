@@ -537,6 +537,8 @@ enum ShareSettingsKey {
     static let redLetters = "share.redLetters"
     static let verseNumbers = "share.verseNumbers"
     static let wordmark = "share.wordmark"
+    /// Whether Customize is open — this device only (a phone and a Mac may well differ).
+    static let customizing = "share.customizing"
 }
 
 extension ShareStyle {
