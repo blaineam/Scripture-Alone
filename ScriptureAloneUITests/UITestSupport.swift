@@ -96,6 +96,15 @@ class ScriptureAloneUITestCase: XCTestCase {
         let list = lists.element(boundBy: max(0, lists.count - 1))
         for _ in 0..<14 where !(element.exists && element.isHittable) { list.swipeUp() }
         XCTAssertTrue(element.exists && element.isHittable, "\(element) is off screen", file: file, line: line)
+        // A swipe leaves the list decelerating; a tap that lands while it still moves only stops the
+        // scroll (the Verse Numbers switch "didn't toggle", 2026-10-08). Wait until the element's frame
+        // reads the same twice, a quarter second apart.
+        var last = CGRect.null
+        _ = waitUntil(timeout: 3) {
+            let now = element.frame
+            defer { last = now }
+            return now == last
+        }
     }
 
     /// Types into `field`, then, on iPad, waits for the keyboard to settle before anything is tapped.
