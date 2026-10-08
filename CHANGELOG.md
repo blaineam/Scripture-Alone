@@ -2,6 +2,15 @@
 
 ## After 1.0.0
 
+- A phone held sideways fills the page. Its two columns used to keep 110 points free above the
+  bottom bar for the selection and Now Playing bars, which on a screen about 360 points tall left a
+  band of empty page and each column five lines; and the chapter's header took half the first
+  column. Now the text runs from just under the top bar to just above the bottom one, the header
+  is one line ("EPHESIANS 2"), and the floating bars sit over the last lines while they are up.
+  Ephesians 2 on an iPhone Pro Max: 13 lines to the first spread instead of 4. Lines are still never
+  cut at a column's foot. iPad and Mac, and portrait, are unchanged. Android reads a chapter as one
+  scrolling column in either orientation, so it has nothing to change. On iPhone.
+
 - Listen on Android no longer freezes when you skip verses quickly. Some phones' speech engines hold
   up every call for seconds, and Previous / Next waited on them on the screen's own thread until
   Android offered to close the app. Now all speech runs on a thread of its own: a skip answers at

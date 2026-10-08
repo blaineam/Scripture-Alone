@@ -22,11 +22,12 @@ struct ChapterRendererTests {
 
     func render(_ style: ReaderStyle, highlights: [Int: String] = [:], notes: [Int: [String]] = [:],
                 selection: Set<Int> = [], next: String? = "John 4",
-                copyright: String = "Public domain. Details at www.example.org") throws -> NSAttributedString {
+                copyright: String = "Public domain. Details at www.example.org",
+                compactHeader: Bool = false) throws -> NSAttributedString {
         let package = try #require(SealedTranslations.shared.package("ASV"))
         let input = ChapterRenderInput(chapter: john3, translation: "ASV", style: ReaderStyleKey(style),
                                        highlights: highlights, notes: notes, selection: selection,
-                                       nextTitle: next, copyright: copyright)
+                                       nextTitle: next, copyright: copyright, compactHeader: compactHeader)
         return ChapterRenderer.render(layout: try package.layout(for: john3), input: input, style: style).text
     }
 
@@ -118,6 +119,56 @@ struct ChapterRendererTests {
         for number in [1, 16, 36] {
             #expect(lines.contains { $0.hasPrefix("\(number)\u{202F}") }, "verse \(number) does not begin a line")
         }
+    }
+
+    @Test func theCompactHeaderPutsBookAndChapterOnOneLine() throws {
+        let compact = try render(style(), compactHeader: true).string.components(separatedBy: "\n")
+        #expect(compact.first == "JOHN  3")
+        let usual = try render(style()).string.components(separatedBy: "\n")
+        #expect(Array(usual.prefix(2)) == ["JOHN", "3"])
+    }
+
+    /// The lines each column of a spread holds, laid out as `ColumnChapterView` lays it out, and
+    /// whether any line runs past its column's foot.
+    func spread(_ text: NSAttributedString, width: CGFloat, height: CGFloat) -> (lines: [Int], overflow: Bool) {
+        let storage = NSTextStorage(attributedString: text)
+        let layoutManager = NSLayoutManager()
+        storage.addLayoutManager(layoutManager)
+        var lines: [Int] = []
+        var overflow = false
+        for _ in 0..<2 {
+            let container = NSTextContainer(size: CGSize(width: width, height: height))
+            container.lineFragmentPadding = 0
+            layoutManager.addTextContainer(container)
+            var count = 0
+            layoutManager.enumerateLineFragments(forGlyphRange: layoutManager.glyphRange(for: container)) { rect, _, _, _, _ in
+                count += 1
+                if rect.maxY > height + 0.5 { overflow = true }
+            }
+            lines.append(count)
+        }
+        return (lines, overflow)
+    }
+
+    /// An iPhone Pro Max held sideways: the column view is 832 × 362 points under a top bar, with
+    /// the bottom bar's 78 points of safe area inside it. The reserve for the floating bars left each
+    /// column five lines with a band of empty page beneath; now the text fills the page from bar to
+    /// bar, and still no line is cut at a column's foot.
+    @Test func aPhoneHeldSidewaysFillsTheColumnsFromBarToBar() throws {
+        let width: CGFloat = 832, height: CGFloat = 362, safeBottom: CGFloat = 78
+        #expect(ReaderColumns.count(width: width, height: height, fontSize: 18) == 2)
+        let columnWidth = (width - ReaderColumns.margin * 2 - ReaderColumns.gutter) / 2
+        let tall = ReaderColumns.columnHeight(height: height, safeTop: 0, safeBottom: safeBottom, compactHeight: true)
+        let short = ReaderColumns.columnHeight(height: height, safeTop: 0, safeBottom: safeBottom, compactHeight: false)
+        #expect(tall >= 260, "the column stops well short of the bottom bar: \(tall)")
+        #expect(tall + 8 + safeBottom + 6 <= height + 0.5, "the column runs under the bottom bar")
+        let before = spread(try render(style()), width: columnWidth, height: short)
+        let after = spread(try render(style(), compactHeader: true), width: columnWidth, height: tall)
+        #expect(!before.overflow && !after.overflow, "a line runs past a column's foot")
+        #expect(after.lines.reduce(0, +) >= before.lines.reduce(0, +) + 7,
+                "a sideways spread holds \(after.lines) lines, against \(before.lines) before")
+        // A tablet or Mac window (regular height) keeps the room for the floating bars.
+        #expect(ReaderColumns.verticalInsets(safeTop: 0, safeBottom: 20, compactHeight: false) == (top: 20, bottom: 130))
     }
 
     @Test func noticeLinksBecomeHTTPS() {

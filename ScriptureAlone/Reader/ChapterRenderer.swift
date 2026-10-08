@@ -61,6 +61,15 @@ struct ChapterRenderInput: Hashable {
     var speakingVerse: Int? = nil
     /// Marks belong to a Keepsake Bible keepsake: drawn with a quiet pen-line underneath.
     var keepsake = false
+    /// The book and chapter number on one line with less space beneath: a phone held sideways,
+    /// where the page is short and the usual header would fill half the first column.
+    var compactHeader = false
+
+    func withCompactHeader(_ compact: Bool) -> ChapterRenderInput {
+        var input = self
+        input.compactHeader = compact
+        return input
+    }
 }
 
 /// ReaderStyle isn't Hashable (colors); this captures what matters for caching.
@@ -137,6 +146,24 @@ enum ChapterRenderer {
             caption.alignment = .center
             caption.paragraphSpacing = 2
             let bookFont = PlatformFont.systemFont(ofSize: max(11, style.size * 0.62), weight: .semibold)
+            if input.compactHeader {
+                // "EPHESIANS 2" as one centred line, the number in its usual size and colour.
+                let line = NSMutableParagraphStyle()
+                line.alignment = .center
+                line.paragraphSpacing = style.size * 0.4
+                let header = NSMutableAttributedString(string: book.name.uppercased(), attributes: [
+                    .font: bookFont, .foregroundColor: style.palette.secondary, .kern: 2.2, .paragraphStyle: line,
+                ])
+                if !book.isSingleChapter {
+                    header.append(NSAttributedString(string: "  \(input.chapter.chapter)", attributes: [
+                        .font: style.family.font(size: style.size * 2.6), .foregroundColor: style.palette.accent,
+                        .paragraphStyle: line,
+                    ]))
+                }
+                header.append(NSAttributedString(string: "\n", attributes: [.font: bookFont, .paragraphStyle: line]))
+                output.append(header)
+                return
+            }
             output.append(NSAttributedString(string: book.name.uppercased() + "\n", attributes: [
                 .font: bookFont, .foregroundColor: style.palette.secondary, .kern: 2.2, .paragraphStyle: caption,
             ]))

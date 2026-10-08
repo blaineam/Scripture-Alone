@@ -671,6 +671,9 @@ private struct ChapterPane: View {
     @Query(sort: \Note.updatedAt, order: .reverse) private var notes: [Note]
     @State private var cache = RenderCache()
     @AppStorage(SettingsKey.columns) private var columnsEnabled = true
+    #if os(iOS)
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    #endif
 
     /// - Parameter markKeys: the KJV keys this chapter's verses hold (`VerseNumbering.kjvKeyRange`)
     ///   — where its highlights are stored, which is not always this chapter's own numbers.
@@ -698,21 +701,7 @@ private struct ChapterPane: View {
         // than merely unlikely: whatever races upstream, this pane never renders one chapter's
         // text beneath another's reference.
         if let layout = model.layout, model.layoutChapter == chapter, let source = model.source {
-            let rendered = cache.render(layout: layout, input: renderInput(source: source), style: style)
-            let configuration = ChapterTextConfiguration(
-                content: rendered,
-                background: style.palette.page,
-                scrollTarget: model.scrollTarget,
-                autoScrollSpeed: autoScrollSpeed,
-                onTap: onTap,
-                onSwipe: { forward in forward ? model.next() : model.previous() },
-                onTopVerseChange: { model.updateTopVerse($0) },
-                onScrolledToTarget: { model.scrollTarget = nil },
-                onReachedEnd: onReachedEnd,
-                onUserScroll: onUserScroll,
-                revealVerse: ListenController.shared.speakingVerse(in: model)
-                    ?? (coveredBySheet ? tappedVerse : nil)
-            )
+            let input = renderInput(source: source)
             // Side-by-side columns when the window is wide enough for two at a comfortable
             // measure, as a printed page is set; one scrolling column otherwise, and while the
             // page scrolls itself.
@@ -722,8 +711,12 @@ private struct ChapterPane: View {
                 // places it opens come up to about half: the text keeps to the half above them.
                 let covered = coveredBySheet
                 if columnsEnabled, columns >= 2, autoScrollSpeed == 0, !covered {
-                    ColumnChapterView(configuration: configuration, columns: columns)
+                    // A phone held sideways: a short page, so a one-line chapter header.
+                    let paged = input.withCompactHeader(shortPage)
+                    ColumnChapterView(configuration: configuration(cache.render(layout: layout, input: paged, style: style)),
+                                      columns: columns)
                 } else {
+                    let configuration = configuration(cache.render(layout: layout, input: input, style: style))
                     ChapterTextView(configuration: covered ? configuration.covered(geometry.size.height * 0.42) : configuration)
                 }
             }
@@ -740,6 +733,32 @@ private struct ChapterPane: View {
         } else {
             ProgressView()
         }
+    }
+
+    /// A phone held sideways (`ReaderColumns.verticalInsets`).
+    private var shortPage: Bool {
+        #if os(iOS)
+        verticalSizeClass == .compact
+        #else
+        false
+        #endif
+    }
+
+    private func configuration(_ rendered: RenderedChapter) -> ChapterTextConfiguration {
+        ChapterTextConfiguration(
+            content: rendered,
+            background: style.palette.page,
+            scrollTarget: model.scrollTarget,
+            autoScrollSpeed: autoScrollSpeed,
+            onTap: onTap,
+            onSwipe: { forward in forward ? model.next() : model.previous() },
+            onTopVerseChange: { model.updateTopVerse($0) },
+            onScrolledToTarget: { model.scrollTarget = nil },
+            onReachedEnd: onReachedEnd,
+            onUserScroll: onUserScroll,
+            revealVerse: ListenController.shared.speakingVerse(in: model)
+                ?? (coveredBySheet ? tappedVerse : nil)
+        )
     }
 
     private func renderInput(source: any ChapterTextSource) -> ChapterRenderInput {

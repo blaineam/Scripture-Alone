@@ -51,4 +51,33 @@ final class ReaderTests: ScriptureAloneUITestCase {
         waitForPassage("John 3")
     }
 
+    /// A phone held sideways reads a chapter in two columns. They run from just below the top bar to
+    /// just above the bottom one — a short screen can't spare a band of empty page — and stay clear of
+    /// both bars' buttons. (TextKit never splits a line between two columns, so no line is clipped.)
+    func testLandscapeColumnsFillTheHeight() throws {
+        try XCTSkipIf(isPad, "iPhone only: an iPad keeps its columns in either orientation")
+        XCUIDevice.shared.orientation = .landscapeLeft
+        defer { XCUIDevice.shared.orientation = .portrait }
+        launch(chapter: "49:2")
+        waitForPassage("Ephesians 2")
+        // A phone shorter than a Pro Max or Plus sideways reads one scrolling column (`ReaderColumns.count`).
+        try XCTSkipIf(app.windows.firstMatch.frame.height < 420, "this phone reads one column sideways")
+        let columns = app.textViews.matching(identifier: "reader.text")
+        XCTAssertTrue(waitUntil { columns.count >= 2 }, "landscape didn't set the chapter in columns")
+        let window = app.windows.firstMatch.frame
+        let shown = (0..<columns.count).map { columns.element(boundBy: $0).frame }
+            .filter { $0.minX >= window.minX && $0.maxX <= window.maxX }
+        XCTAssertEqual(shown.count, 2, "two columns should be on screen: \(shown)")
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "landscape-ephesians-2"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        guard let column = shown.first else { return }
+        let top = [passageButton, button("reader.notesButton"), button("reader.appearanceButton")].map(\.frame.maxY).max() ?? 0
+        let bottom = min(button("reader.previousChapter").frame.minY, button("reader.listen").frame.minY)
+        XCTAssertGreaterThanOrEqual(column.minY, top, "the text starts under the top bar's buttons")
+        XCTAssertLessThanOrEqual(column.minY - top, 28, "a band of empty page between the top bar and the text")
+        XCTAssertLessThanOrEqual(column.maxY, bottom, "the text runs under the bottom bar's buttons")
+        XCTAssertLessThanOrEqual(bottom - column.maxY, 28, "a band of empty page above the bottom bar")
+    }
 }

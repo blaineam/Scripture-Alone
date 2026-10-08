@@ -15,6 +15,25 @@ enum ReaderColumns {
         // Two at most, like an open Bible's page: three read as a newspaper, not a Bible.
         return min(2, max(1, fitted))
     }
+
+    /// Where a column's text starts and how much of the page's foot it leaves, inside a column view
+    /// whose safe area (the bars over it) is `safeTop`/`safeBottom`.
+    ///
+    /// Normally the foot keeps 110 points clear above the bottom bar for the selection and Now Playing
+    /// bars, which float there without the columns reflowing under them. A phone held sideways
+    /// (`compactHeight`) can't spare that: the whole page is about 360 points tall, and the reserve
+    /// left a column only five lines with a band of empty page beneath. There the text runs from just
+    /// under the top bar to just above the bottom one, and those transient bars float over its last
+    /// lines instead.
+    static func verticalInsets(safeTop: CGFloat, safeBottom: CGFloat, compactHeight: Bool) -> (top: CGFloat, bottom: CGFloat) {
+        compactHeight ? (safeTop + 8, safeBottom + 6) : (safeTop + 20, safeBottom + 110)
+    }
+
+    /// The height of each column's text container in a view `height` tall.
+    static func columnHeight(height: CGFloat, safeTop: CGFloat, safeBottom: CGFloat, compactHeight: Bool) -> CGFloat {
+        let insets = verticalInsets(safeTop: safeTop, safeBottom: safeBottom, compactHeight: compactHeight)
+        return max(120, height - insets.top - insets.bottom)
+    }
 }
 
 /// The chapter laid out in columns side by side, turned a spread at a time — a printed Bible's
@@ -117,11 +136,12 @@ struct ColumnChapterView: UIViewRepresentable {
             while !layoutManager.textContainers.isEmpty { layoutManager.removeTextContainer(at: 0) }
 
             let insets = safeAreaInsets
-            let top = insets.top + 20
-            // Room for the floating selection and navigation bars at the foot of the reader.
-            let bottom = insets.bottom + 110
+            // A phone held sideways: the page is short, and the text fills it from bar to bar.
+            let compactHeight = traitCollection.verticalSizeClass == .compact
+            let top = ReaderColumns.verticalInsets(safeTop: insets.top, safeBottom: insets.bottom, compactHeight: compactHeight).top
             let columnWidth = (bounds.width - ReaderColumns.margin * 2 - ReaderColumns.gutter * CGFloat(columns - 1)) / CGFloat(columns)
-            let columnHeight = max(120, bounds.height - top - bottom)
+            let columnHeight = ReaderColumns.columnHeight(height: bounds.height, safeTop: insets.top, safeBottom: insets.bottom,
+                                                          compactHeight: compactHeight)
             let glyphs = layoutManager.numberOfGlyphs
             var index = 0
             repeat {
