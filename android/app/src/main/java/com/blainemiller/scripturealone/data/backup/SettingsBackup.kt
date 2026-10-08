@@ -59,7 +59,7 @@ object SettingsBackup {
      * after the library and keepsakes, so they never crowd those out. Device-to-device transfer, whose
      * quota is far larger, takes every import.
      */
-    const val IMPORT_CAP: Long = 16L shl 20
+    const val IMPORT_CAP: Long = 16_000_000L
 
     /**
      * Keys in the reader's store that describe this phone rather than the reader, dropped after a

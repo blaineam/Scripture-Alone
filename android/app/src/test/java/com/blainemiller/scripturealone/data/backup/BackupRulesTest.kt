@@ -181,8 +181,8 @@ class BackupRulesTest {
         )
         // A device transfer carries every import, even the study Bible.
         assertEquals(4, SettingsBackup.importGroups(imports, sizes::getValue, Long.MAX_VALUE / 2).size)
-        assertTrue(SettingsBackup.importBacksUp(16 * mb))
-        assertFalse(SettingsBackup.importBacksUp(16 * mb + 1))
+        assertTrue(SettingsBackup.importBacksUp(SettingsBackup.IMPORT_CAP))
+        assertFalse(SettingsBackup.importBacksUp(SettingsBackup.IMPORT_CAP + 1))
     }
 
     @Test

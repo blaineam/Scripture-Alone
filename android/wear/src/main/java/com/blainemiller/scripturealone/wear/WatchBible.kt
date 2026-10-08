@@ -444,7 +444,9 @@ class WatchBible private constructor(private val app: Context) {
             open(id, received)
         } else {
             val own = if (id in BUNDLED) id else BUNDLED.first()
-            open(own, copyOut(if (own in SEALED) "$own$SEALED_SUFFIX" else WatchEditionBuilder.fileName(own)))
+            // The APK's own Bible is sealed (the NASB 2020) — except a developer's build, whose ASV is the
+            // compact edition: the ASV is sealed only when the phone sends it.
+            open(own, copyOut(if (own in SEALED && own != "ASV") "$own$SEALED_SUFFIX" else WatchEditionBuilder.fileName(own)))
         }
     }
 
