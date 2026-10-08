@@ -670,7 +670,7 @@
     <string name="camera_slide_photo">Foto do slide</string>
     <string name="camera_slide_photo_description">Foto do slide do sermão</string>
     <string name="camera_remove_photo">Remover foto</string>
-    <string name="camera_scanner_instructions">Aponte para o slide. Toque em um texto destacado ou no obturador.</string>
+    <string name="camera_scanner_instructions">Aponte para o slide. Toque para focar e depois no obturador.</string>
     <string name="camera_zoom_level">Zoom %1$s</string>
     <string name="camera_zoom_in_on_screen">Aproxime o zoom da tela</string>
     <string name="camera_take_photo_description">Tirar foto do slide</string>
@@ -923,4 +923,16 @@
     <string name="crisis_other_countries">Linhas de apoio em outros países</string>
     <string name="crisis_passages_of_hope">Passagens de esperança</string>
     <string name="crisis_emergency">Em perigo agora? Ligue para o número de emergência.</string>
+    <string name="shortcut_listen_short">Ouvir</string>
+    <string name="shortcut_listen_long">Ouvir %1$s</string>
+    <string name="shortcut_verse_image_short">Imagem</string>
+    <string name="shortcut_verse_image_long">Criar imagem de versículo</string>
+    <string name="assistant_listen_1">ouvir a bíblia</string>
+    <string name="assistant_listen_2">ler o capítulo em voz alta</string>
+    <string name="assistant_verse_image_1">imagem de versículo</string>
+    <string name="assistant_verse_image_2">criar uma imagem de versículo</string>
+    <string name="translations_section_added_footer">Importações de até %1$s ficam no backup do celular e voltam em um celular novo. Importe as maiores de novo lá.</string>
+    <string name="process_text_label">Abrir no Scripture Alone</string>
+    <string name="tile_votd_label">Versículo do dia</string>
+    <string name="tile_votd_description">Versículo do dia, %1$s</string>
 </resources>

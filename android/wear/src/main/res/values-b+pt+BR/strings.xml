@@ -28,7 +28,7 @@
     <string name="wear_book_group_general">Cartas gerais</string>
     <string name="wear_book_group_prophecy">Profecia</string>
     <string name="wear_favorites_empty_title">Nenhum favorito</string>
-    <string name="wear_favorites_empty_message">Marque um versículo como favorito no celular e ele aparece aqui.</string>
+    <string name="wear_favorites_empty_message">Toque no coração de um versículo, aqui ou no celular, e ele aparece aqui.</string>
     <string name="wear_notes_empty_title">Nenhuma nota</string>
     <string name="wear_notes_empty_message">As notas que você escreve no celular aparecem aqui.</string>
     <string name="wear_highlights">Destaques</string>
@@ -38,4 +38,8 @@
     <string name="wear_note_edit_on_phone">Edite as notas no celular.</string>
     <string name="wear_translation_phone_unavailable">Não é possível ler %1$s do seu celular aqui. Traduções on-line não podem ser armazenadas no relógio.</string>
     <string name="wear_translation_follows_phone">Acompanha o celular. Uma tradução importada lá também aparece aqui.</string>
+    <string name="wear_add_favorite">Adicionar aos favoritos</string>
+    <string name="wear_remove_favorite">Remover dos favoritos</string>
+    <string name="wear_translation_remove_header">Remover do relógio</string>
+    <string name="wear_translation_remove">Remover %1$s</string>
 </resources>

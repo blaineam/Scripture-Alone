@@ -318,8 +318,35 @@ fun ReaderScreen(
                 sheetGeneration++
                 sheet = ReaderSheet.NOTES
             }
+            is ReaderRequest.Kind.Listen -> {
+                // The Listen shortcut / App Action: once the chapter is on screen, read it aloud.
+                sheet = null
+                openNote = null
+                val chapter = kotlinx.coroutines.withTimeoutOrNull(15_000) {
+                    androidx.compose.runtime.snapshotFlow {
+                        model.chapter?.takeIf { it.ref == model.location && it.translation.id == model.translationId }
+                    }.first { it != null }
+                }
+                if (chapter != null && listen != null && listenStart != null) {
+                    val top = model.topVerse?.let(VerseRef::fromKey)
+                        ?.takeIf { it.book == chapter.ref.book && it.chapter == chapter.ref.chapter }?.verse ?: 1
+                    listenStart { listen.playChapter(chapter, kind.fromVerse ?: top) }
+                }
+            }
         }
         model.consumeRequest(request)
+    }
+
+    // The Listen app shortcut names the chapter being read ("Listen to John 3"), once the reader settles on it.
+    val shortcutContext = LocalContext.current
+    LaunchedEffect(model.location) {
+        val ref = model.location
+        val book = com.blainemiller.scripturealone.data.canon.BookID.of(ref.book) ?: return@LaunchedEffect
+        kotlinx.coroutines.delay(1_500)
+        val name = if (book.isSingleChapter) book.displayName else "${book.displayName} ${ref.chapter}"
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+            com.blainemiller.scripturealone.ui.shortcuts.AppShortcuts.updateListen(shortcutContext, name)
+        }
     }
 
     // The User Guide prompt, once per install: on a plain launch, after the first chapter has settled,

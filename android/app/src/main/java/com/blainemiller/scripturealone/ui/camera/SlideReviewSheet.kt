@@ -97,6 +97,7 @@ import com.blainemiller.scripturealone.data.camera.SlideRecognizer
 import com.blainemiller.scripturealone.data.reference.Passage
 import com.blainemiller.scripturealone.data.reference.ReferenceParser
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.data.slides.SlideLine
 import com.blainemiller.scripturealone.data.slides.SlideParser
 import com.blainemiller.scripturealone.data.slides.SlideReading
 import com.blainemiller.scripturealone.data.userdata.Note
@@ -211,8 +212,19 @@ internal fun SlideReviewSheet(
     }
 
     LaunchedEffect(slide.id, cropToScreen) {
+        // The screen is the one that holds the slide's text (`SlideScreen.straightened(_:around:)`), so
+        // the whole photo is read first; that reading is used as is when there's nothing to crop to.
+        var whole: Pair<List<SlideLine>, SlideReading>? = null
         if (slide.findsScreen && !lookedForScreen) {
-            screen = withContext(Dispatchers.Default) { SlideImage.screen(slide.image) }
+            phase = Phase.Reading
+            whole = try {
+                SlideRecognizer.read(context, slide.image)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                null
+            }
+            screen = whole?.let { read -> withContext(Dispatchers.Default) { SlideImage.screen(slide.image, read.first) } }
             lookedForScreen = true
         }
         val cropped = cropToScreen && screen != null
@@ -229,7 +241,7 @@ internal fun SlideReviewSheet(
                     null
                 }
             } else {
-                SlideRecognizer.read(context, slide.image)
+                whole ?: SlideRecognizer.read(context, slide.image)
             }
             // Whatever was taken for the screen held no text, or couldn't be read: it wasn't the
             // screen. Read the whole photo.

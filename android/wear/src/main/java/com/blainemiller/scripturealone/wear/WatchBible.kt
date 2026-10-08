@@ -8,6 +8,7 @@ import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUp
 import com.blainemiller.scripturealone.companion.TranslationChoice
 import com.blainemiller.scripturealone.companion.VerseSnapshot
 import com.blainemiller.scripturealone.companion.WatchEditionBuilder
+import com.blainemiller.scripturealone.companion.WearFavorites
 import com.blainemiller.scripturealone.companion.WearImports
 import com.blainemiller.scripturealone.companion.WearLink
 import com.blainemiller.scripturealone.data.VerseNumbering
@@ -77,7 +78,38 @@ class WatchBible private constructor(private val app: Context) {
         val chosen: Boolean = false,
         /** The reader's accent colour from the phone, 0xRRGGBB; null until the phone has said. */
         val accent: Int? = null,
+        /**
+         * Hearts tapped here that the phone's snapshot doesn't reflect yet: range → wanted state
+         * ([WearFavorites]). Shown as asked until the phone's next snapshot agrees.
+         */
+        val pendingFavorites: Map<String, Boolean> = emptyMap(),
     ) {
+        /** The favorites' ranges as the phone last sent them. */
+        val snapshotFavorites: Set<String>
+            get() = snapshot?.items(setOf(VerseSnapshot.Kind.FAVORITE)).orEmpty().map { it.range }.toSet()
+
+        /** Whether the heart on [range] is filled: a pending tap, else the phone's library. */
+        fun isFavorite(range: VerseRange): Boolean = WearFavorites.shown(range, snapshotFavorites, pendingFavorites)
+
+        /**
+         * The favorites list as the watch shows it: the phone's, less those just un-hearted here, plus
+         * those just hearted here (newest first, as the phone orders them).
+         */
+        val favorites: List<VerseSnapshot.Item>
+            get() {
+                val phone = snapshot?.items(setOf(VerseSnapshot.Kind.FAVORITE)).orEmpty()
+                    .filter { pendingFavorites[it.range] != false }
+                val added = pendingFavorites.filter { (range, wanted) -> wanted && phone.none { it.range == range } }.keys
+                    .mapNotNull(VerseRange::parse)
+                    .map { range ->
+                        VerseSnapshot.Item(
+                            kind = VerseSnapshot.Kind.FAVORITE, range = range.storageString, startKey = range.start.key,
+                            endKey = range.end.key, reference = range.display, text = "", date = Instant.EPOCH,
+                        )
+                    }
+                return added + phone
+            }
+
         val edition: Edition? get() = editions.firstOrNull { it.id == translation }
 
         /** The current translation's abbreviation, for the home row and messages. */
@@ -93,7 +125,7 @@ class WatchBible private constructor(private val app: Context) {
     init {
         val editions = readEditions()
         val (translation, chosen) = resolve(editions)
-        _state = MutableStateFlow(State(translation, prefs.getString(Keys.PHONE, null), readSnapshot(), editions, chosen, accent()))
+        _state = MutableStateFlow(State(translation, prefs.getString(Keys.PHONE, null), readSnapshot(), editions, chosen, accent(), pendingFavorites()))
         state = _state.asStateFlow()
         nameBooks()
     }
@@ -111,8 +143,35 @@ class WatchBible private constructor(private val app: Context) {
 
     /** The phone reported the translation the reader switched to, and when. */
     fun phoneChose(id: String, at: Double) {
-        prefs.edit().putString(Keys.PHONE, id).putString(Keys.PHONE_AT, at.toString()).apply()
+        val newer = (prefs.getString(Keys.PHONE_AT, null)?.toDoubleOrNull() ?: 0.0) < at || prefs.getString(Keys.PHONE, null) != id
+        val edit = prefs.edit().putString(Keys.PHONE, id).putString(Keys.PHONE_AT, at.toString())
+        // Choosing again on the phone a translation removed here asks for it back.
+        if (newer) edit.remove(Keys.removed(id))
+        edit.apply()
         publish()
+    }
+
+    /**
+     * The reader tapped the heart on [range] here — `WatchVerseView.toggleFavorite`. Shown at once; the
+     * request goes to the phone ([PhoneLink.sendFavorite]), whose library is the one that keeps it.
+     * Returns the request to send.
+     */
+    fun toggleFavorite(range: VerseRange, now: Long = System.currentTimeMillis()): WearFavorites.Request {
+        val wanted = !_state.value.isFavorite(range)
+        val pending = pendingFavorites() + (range.storageString to wanted)
+        savePending(pending)
+        publish()
+        return WearFavorites.Request(range, wanted, now)
+    }
+
+    private fun pendingFavorites(): Map<String, Boolean> =
+        prefs.getStringSet(Keys.PENDING_FAVORITES, null).orEmpty().mapNotNull { entry ->
+            val range = entry.substringBefore('=')
+            VerseRange.parse(range)?.let { range to (entry.substringAfter('=') == "1") }
+        }.toMap()
+
+    private fun savePending(pending: Map<String, Boolean>) {
+        prefs.edit().putStringSet(Keys.PENDING_FAVORITES, pending.map { (range, wanted) -> "$range=${if (wanted) 1 else 0}" }.toSet()).apply()
     }
 
     /** The phone reported the reader's accent colour (0xRRGGBB, its dark-page value). */
@@ -126,7 +185,10 @@ class WatchBible private constructor(private val app: Context) {
 
     /** The phone sent its library. A snapshot that doesn't decode is ignored, never half-applied. */
     fun receiveSnapshot(json: String) {
-        if (VerseSnapshot.decode(json) == null) return
+        val snapshot = VerseSnapshot.decode(json) ?: return
+        // The phone has taken the hearts its snapshot now agrees with.
+        val favorites = snapshot.items(setOf(VerseSnapshot.Kind.FAVORITE)).map { it.range }.toSet()
+        pendingFavorites().let { pending -> WearFavorites.settle(pending, favorites).takeIf { it != pending }?.let(::savePending) }
         val partial = File(snapshotFile.parentFile, "${snapshotFile.name}.partial")
         try {
             partial.writeText(json)
@@ -143,6 +205,35 @@ class WatchBible private constructor(private val app: Context) {
     /** Whether the edition of [id] the phone sent as the asset with [digest] is already here. */
     fun holdsEdition(id: String, digest: String?): Boolean =
         digest != null && prefs.getString(Keys.digest(id), null) == digest && receivedFile(id).exists()
+
+    /**
+     * Whether the reader removed this very edition here ([removeReceived]): the phone's data item keeps
+     * offering it at every launch, and it must not come back by itself. A changed edition (a new
+     * digest), or choosing the translation again on the phone, brings it back.
+     */
+    fun declined(id: String, digest: String?): Boolean = digest != null && prefs.getString(Keys.removed(id), null) == digest
+
+    /**
+     * Removes an edition the phone sent — `WatchBible.removeReceived` (swipe to Remove in the Apple
+     * Watch's picker). The bundled one stays. Returns whether anything was removed.
+     */
+    fun removeReceived(id: String): Boolean {
+        if (id in BUNDLED || !WearLink.isSafeId(id)) return false
+        synchronized(this) {
+            val file = receivedFile(id)
+            if (!file.exists()) return false
+            opened.remove(id)
+            file.delete()
+            val digest = prefs.getString(Keys.digest(id), null)
+            val edit = prefs.edit()
+                .remove(Keys.name(id)).remove(Keys.language(id)).remove(Keys.abbreviation(id))
+                .remove(Keys.digest(id)).remove(Keys.version(id)).remove(Keys.import(id))
+            if (digest != null) edit.putString(Keys.removed(id), digest)
+            edit.apply()
+        }
+        publish()
+        return true
+    }
 
     /**
      * The phone sent the watch edition of [id]. Written aside, checked — it opens, it is the Bible it
@@ -239,7 +330,7 @@ class WatchBible private constructor(private val app: Context) {
         val before = _state.value
         val editions = readEditions()
         val (translation, chosen) = resolve(editions)
-        _state.value = State(translation, prefs.getString(Keys.PHONE, null), readSnapshot(), editions, chosen, accent())
+        _state.value = State(translation, prefs.getString(Keys.PHONE, null), readSnapshot(), editions, chosen, accent(), pendingFavorites())
         nameBooks()
         if (before.translation != translation || before.editions != editions) refreshSurfaces(app)
     }
@@ -428,6 +519,10 @@ class WatchBible private constructor(private val app: Context) {
         fun abbreviation(id: String) = "watch.edition.$id.abbreviation"
         fun version(id: String) = "watch.edition.$id.version"
         fun import(id: String) = "watch.edition.$id.import"
+        /** The digest of an edition the reader removed here, so the same copy isn't taken again. */
+        fun removed(id: String) = "watch.edition.$id.removed"
+        /** Hearts tapped here the phone hasn't confirmed: "range=1" / "range=0". */
+        const val PENDING_FAVORITES = "watch.favorites.pending"
         /** The phone's last list of imports. */
         const val OFFERED = "watch.imports.offered"
     }

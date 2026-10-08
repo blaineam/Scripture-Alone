@@ -265,6 +265,7 @@ private fun MainPage(
     onRemove: (ImportedTranslation) -> Unit,
 ) {
     val surface = SheetColors.surface(palette)
+    val sizeContext = LocalContext.current
     val library by TranslationLibrary.state.collectAsState()
     val bundled = loaded(Unit) { context ->
         // A pack not downloaded yet can't be opened for its name: it is listed under its pack's title,
@@ -310,7 +311,12 @@ private fun MainPage(
                 }
             }
             if (library.imported.isNotEmpty()) {
-                GroupedSection(palette, header = stringResource(R.string.translations_section_added)) {
+                // Auto Backup carries the small ones to a new phone (data/backup/SettingsBackup.kt).
+                val cap = android.text.format.Formatter.formatShortFileSize(sizeContext, com.blainemiller.scripturealone.data.backup.SettingsBackup.IMPORT_CAP)
+                GroupedSection(
+                    palette, header = stringResource(R.string.translations_section_added),
+                    footer = stringResource(R.string.translations_section_added_footer, cap),
+                ) {
                     library.imported.forEachIndexed { i, entry ->
                         if (i > 0) CellDivider(palette)
                         Row(verticalAlignment = Alignment.CenterVertically) {

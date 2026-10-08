@@ -9,9 +9,11 @@ import android.graphics.Paint
 import android.net.Uri
 import com.blainemiller.scripturealone.data.image.ImageSizing
 import com.blainemiller.scripturealone.data.image.ScaledBitmaps
+import com.blainemiller.scripturealone.data.slides.SlideLine
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.ByteBuffer
+import kotlin.math.ceil
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -61,13 +63,21 @@ object SlideImage {
 
     /**
      * The screen the slide is on, straightened out to fill the picture — `SlideScreen.straightened` on
-     * iOS. Null when no screen is found, or when it already fills the photo and there's nothing to cut.
+     * iOS: the screen that holds [text] (the lines read from the whole photo), else a crop around the
+     * text ([ScreenFinder.aroundText]). Null when there's no text, or nothing worth cutting.
      */
-    fun screen(photo: Bitmap): Bitmap? {
-        val quad = ScreenFinder.find(lumaGrid(photo)) ?: return null
-        if (quad.area > 0.9) return null
-        return straighten(photo, quad)
-    }
+    fun screen(photo: Bitmap, text: List<SlideLine>): Bitmap? =
+        when (val crop = ScreenFinder.aroundText(ScreenFinder.candidates(lumaGrid(photo)), text)) {
+            is ScreenCrop.Screen -> straighten(photo, crop.quad)
+            is ScreenCrop.Text -> {
+                val left = (crop.left * photo.width).toInt().coerceIn(0, photo.width - 1)
+                val top = (crop.top * photo.height).toInt().coerceIn(0, photo.height - 1)
+                val right = ceil(crop.right * photo.width).toInt().coerceIn(left + 1, photo.width)
+                val bottom = ceil(crop.bottom * photo.height).toInt().coerceIn(top + 1, photo.height)
+                Bitmap.createBitmap(photo, left, top, right - left, bottom - top)
+            }
+            null -> null
+        }
 
     /** [photo]'s brightness on a grid [ScreenFinder.GRID] cells on its long edge. */
     fun lumaGrid(photo: Bitmap): LumaGrid {

@@ -48,6 +48,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -139,6 +140,7 @@ fun SelectionBar(
                 Icon(Icons.Rounded.Close, null, tint = palette.secondary, modifier = Modifier.size(19.dp))
             }
         }
+        val view = LocalView.current
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             for (color in HighlightColor.entries) {
                 BarCell(stringResource(highlightAction(color)), onClick = { model.highlightSelection(color) }) {
@@ -150,7 +152,10 @@ fun SelectionBar(
             }
             BarIcon(ReaderIcons.Eraser, stringResource(R.string.reader_remove_highlight), palette) { model.removeSelectedHighlights() }
             Box(Modifier.padding(horizontal = 2.dp).width(1.dp).height(24.dp).background(SheetColors.separator(palette)))
-            BarCell(stringResource(if (isFavorite) R.string.reader_remove_favorite else R.string.reader_add_favorite), onClick = { model.toggleFavoriteSelection() }) {
+            BarCell(stringResource(if (isFavorite) R.string.reader_remove_favorite else R.string.reader_add_favorite), onClick = {
+                FavoriteHaptics.perform(view, nowFavorite = !isFavorite)
+                model.toggleFavoriteSelection()
+            }) {
                 Icon(
                     if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, null,
                     tint = if (isFavorite) Color(0xFFFF3B30) else palette.ink, modifier = Modifier.size(24.dp),

@@ -56,6 +56,9 @@ class BundledUserDatabase(file: File) : UserDatabase {
         }
     }
 
+    /** Closes the connection — for a short-lived one (the watch's requests); the reader's lives with it. */
+    fun close() = synchronized(connection) { connection.close() }
+
     override fun <T> transaction(block: () -> T): T = synchronized(connection) {
         execute("BEGIN IMMEDIATE")
         try {

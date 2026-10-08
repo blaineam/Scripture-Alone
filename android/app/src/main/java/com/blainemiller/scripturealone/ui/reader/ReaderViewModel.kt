@@ -685,6 +685,9 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
         designer = null
     }
 
+    /** Ctrl+S in the designer (MainActivity): Save to Photos, as its button does. */
+    val designerSaves = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     /**
      * Goes to a passage a link named and selects it — `ShareSupport.reveal`. A link carries KJV keys;
      * the reader lands on, and selects, the verses as the translation being read numbers them. The
@@ -745,7 +748,7 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
      */
     fun openLink(url: String, browsable: Boolean = true): Boolean {
         val command = AppCommand.parse(url) ?: return false
-        val allowed = if (browsable && command.changesData) command.readOnly ?: return true else command
+        val allowed = if (browsable && command.needsTrust) command.readOnly ?: return true else command
         perform(allowed)
         return true
     }
@@ -823,6 +826,37 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
                 if (isFavorite != command.add) userData.toggleFavorite(ranges)
                 post(ReaderRequest.Kind.Reader)
                 reveal(ranges)
+            }
+            is AppCommand.Listen -> viewModelScope.launch {
+                // `ListenToChapterIntent`: the chapter on screen from the top, or the passage named,
+                // from its first verse. The screen starts the player once the chapter is up.
+                loading?.join()
+                sharedPassage = null
+                val first = command.passage?.let { kjvRanges(it) }.orEmpty().firstOrNull()
+                if (first == null) {
+                    post(ReaderRequest.Kind.Listen(null))
+                    return@launch
+                }
+                clearSelection()
+                go(first.start)
+                loading?.join()
+                val native = numbering.native(first.start.key)?.let(VerseRef::fromKey) ?: first.start
+                post(ReaderRequest.Kind.Listen(native.verse))
+            }
+            is AppCommand.VerseImage -> viewModelScope.launch {
+                // `CreateVerseImageIntent`: the designer on the passage, or on today's verse.
+                loading?.join()
+                sharedPassage = null
+                val ranges = command.passage?.let { kjvRanges(it) }.orEmpty().ifEmpty {
+                    listOfNotNull(
+                        com.blainemiller.scripturealone.ui.widget.DailyVerseLibrary.catalog(getApplication())
+                            ?.verse(java.time.Instant.now())?.range,
+                    )
+                }
+                if (ranges.isEmpty()) return@launch
+                post(ReaderRequest.Kind.Reader)
+                reveal(ranges)
+                openDesigner(ranges)
             }
         }
     }
@@ -906,6 +940,11 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
 
     val userData = UserData(viewModelScope) {
         UserDataStore(BundledUserDatabase(File(application.filesDir, "userdata.sqlite")))
+    }
+
+    init {
+        // A heart tapped on the watch was written by the phone's listener, on its own connection.
+        viewModelScope.launch { com.blainemiller.scripturealone.data.userdata.UserDataChanges.external.collect { userData.reload() } }
     }
 
     /**
@@ -1059,5 +1098,7 @@ data class ReaderRequest(val serial: Int, val kind: Kind) {
         data class Note(val id: java.util.UUID) : Kind()
         data object Notes : Kind()
         data object Favorites : Kind()
+        /** Read aloud the chapter on screen, from this verse (the translation's own number), or from the top when null. */
+        data class Listen(val fromVerse: Int?) : Kind()
     }
 }

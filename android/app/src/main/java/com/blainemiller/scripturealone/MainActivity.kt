@@ -15,6 +15,7 @@ import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
+import com.blainemiller.scripturealone.data.share.SharedText
 import com.blainemiller.scripturealone.ui.guide.GuideDebug
 import com.blainemiller.scripturealone.ui.guide.GuideDebugHost
 import com.blainemiller.scripturealone.ui.guide.GuideWelcome
@@ -29,6 +30,11 @@ import com.blainemiller.scripturealone.ui.shortcuts.AppShortcuts
 import com.blainemiller.scripturealone.ui.system.SystemBars
 
 class MainActivity : ComponentActivity() {
+
+    companion object {
+        /** Text handed over by [com.blainemiller.scripturealone.ui.share.TextEntryActivity]. */
+        const val ACTION_OPEN_TEXT = "com.blainemiller.scripturealone.action.OPEN_TEXT"
+    }
 
     private val reader: ReaderViewModel by viewModels()
 
@@ -81,6 +87,13 @@ class MainActivity : ComponentActivity() {
      * only to something that handles Back (a sheet, the selection), never out of the app.
      */
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // Ctrl+S in the verse-image designer: Save to Photos.
+        if (event.action == KeyEvent.ACTION_DOWN && reader.designer != null && event.keyCode == KeyEvent.KEYCODE_S &&
+            event.isCtrlPressed && !event.isAltPressed && !event.isShiftPressed
+        ) {
+            if (event.repeatCount == 0) reader.designerSaves.tryEmit(Unit)
+            return true
+        }
         if (event.action == KeyEvent.ACTION_DOWN) {
             ReaderShortcuts.match(event.keyCode, event.metaState)?.let { command ->
                 if (event.repeatCount == 0 || ReaderShortcuts.repeats(command)) reader.send(command)
@@ -134,6 +147,12 @@ class MainActivity : ComponentActivity() {
      * trusted.
      */
     private fun openFromIntent(intent: Intent?) {
+        // Text from another app (ui/share/TextEntryActivity): a reference, or words to search. Only ever
+        // something to look at, so it needs no trust.
+        if (intent?.action == ACTION_OPEN_TEXT) {
+            SharedText.command(intent.getStringExtra(Intent.EXTRA_TEXT))?.let(reader::perform)
+            return
+        }
         // A Keepsake Bible handed to the app (Files, Gmail, Downloads) — `onOpenURL` for a
         // `.scripturelegacy` file: shown, and its passphrase asked for, before it is added.
         val data = intent?.data

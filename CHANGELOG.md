@@ -2,6 +2,31 @@
 
 ## After 1.0.0
 
+- Favorite a verse on Wear OS. A passage on the watch has a heart, as on Apple Watch: tap it to add
+  the verse to your favorites or take it off. The phone keeps your library, so the tap goes to the
+  phone (when it's out of reach, as soon as it's back) and the watch shows the heart filled at once.
+  The watch's Favorites list now says you can favorite there too. On Wear OS.
+- Remove a translation from Wear OS. The watch's Translation screen lists the Bibles your phone sent
+  under Remove from Watch; the watch's own Bible stays. One you remove doesn't come back by itself:
+  choose it again on the phone to send it again. On Wear OS.
+- Two more app shortcuts on Android (long-press the icon): Listen, named for the chapter you're
+  reading ("Listen to John 3") and kept current as you read, and Create Verse Image, which opens the
+  designer on today's verse. Both work from Google Assistant too. On Android.
+- Scan Slide finds the slide's screen by its text on Android, as on iPhone: the bright shape that
+  holds the words you photographed — not a bigger lit doorway or window — is straightened, and with
+  no screen around the text the photo is cropped to the text. On Android.
+- The slide camera on Android focuses where you tap, and only the shutter takes the picture. Phones
+  with an ultra-wide camera get a 0.5× zoom step. On Android.
+- Favoriting a verse on Android gives a light tap you can feel, as on iPhone (following the phone's
+  touch-feedback setting). On Android.
+- Ctrl+S saves the verse image to Photos from a keyboard on Android. On Android.
+- Imported Bibles of up to 16 MB now travel with your Android backup to a new phone, after your
+  settings, notes and keepsakes, while they fit Google's 25 MB backup allowance; larger ones need
+  importing again. The Translations screen says so under Added by You. On Android.
+- Select a reference anywhere on Android ("Rom 8:28") and choose Open in Scripture Alone, or share
+  text to Scripture Alone: the passage opens; text that isn't a reference is searched for. A Verse of
+  the Day tile for Quick Settings shows today's reference and opens it. On Android.
+
 - Android reads in columns on a wide screen, as iPhone, iPad and Mac do. A phone held sideways, a
   tablet, an unfolded foldable or a wide Chromebook window shows the chapter as a spread of two
   columns, turned with a swipe or the bottom bar's arrows (Previous / Next Page), and past the last

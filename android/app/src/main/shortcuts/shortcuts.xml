@@ -143,4 +143,24 @@
                 android:value="@array/assistant_favorites" />
         </capability-binding>
     </shortcut>
+    <!-- Create Verse Image (`CreateVerseImageIntent`): the designer on today's verse. Listen is the
+         dynamic shortcut ui/shortcuts/AppShortcuts.kt pushes, named for the chapter being read. -->
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_verse_image"
+        android:shortcutDisabledMessage="@string/shortcut_disabled"
+        android:shortcutId="verse_image"
+        android:shortcutLongLabel="@string/shortcut_verse_image_long"
+        android:shortcutShortLabel="@string/shortcut_verse_image_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="scripturealone://verse-image"
+            android:targetClass="com.blainemiller.scripturealone.MainActivity"
+            android:targetPackage="${applicationId}" />
+        <capability-binding android:key="actions.intent.OPEN_APP_FEATURE">
+            <parameter-binding
+                android:key="feature"
+                android:value="@array/assistant_verse_image" />
+        </capability-binding>
+    </shortcut>
 </shortcuts>

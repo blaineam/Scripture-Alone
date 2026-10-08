@@ -2,6 +2,7 @@ package com.blainemiller.scripturealone.wear
 
 import android.content.Context
 import android.util.Log
+import com.blainemiller.scripturealone.companion.WearFavorites
 import com.blainemiller.scripturealone.companion.WearLink
 import com.google.android.gms.tasks.Tasks
 import android.net.Uri
@@ -76,6 +77,8 @@ object PhoneLink {
                 val isImport = map.getString(WearLink.KEY_KIND) == WearLink.KIND_IMPORT
                 // catchUp re-reads every item at each launch: a few megabytes only when they changed.
                 if (bible.holdsEdition(id, asset.digest)) return
+                // Removed here by the reader: the phone's item doesn't bring the same copy back.
+                if (bible.declined(id, asset.digest)) return
                 val received = try {
                     Tasks.await(Wearable.getDataClient(context).getFdForAsset(asset), 120, TimeUnit.SECONDS)
                         .inputStream.use { bible.receiveEdition(id, it, asset.digest, map.getString(WearLink.KEY_VERSION), isImport) }
@@ -85,6 +88,23 @@ object PhoneLink {
                 }
                 if (received && report) reportHeld(context)
             }
+        }
+    }
+
+    /**
+     * Sends the phone the reader's heart on a verse ([WearFavorites]) — as a data item, so a tap made
+     * out of the phone's reach arrives when it is back. Blocking; call off the main thread.
+     */
+    fun sendFavorite(context: Context, request: WearFavorites.Request) {
+        val put = PutDataMapRequest.create(WearFavorites.path(request.range)).apply {
+            dataMap.putBoolean(WearLink.KEY_FAVORITE, request.favorite)
+            dataMap.putLong(WearLink.KEY_AT, request.at)
+        }.asPutDataRequest().setUrgent()
+        try {
+            Tasks.await(Wearable.getDataClient(context).putDataItem(put), 30, TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            // Kept in the Data Layer's queue on the watch either way; it syncs when the phone is back.
+            Log.i("PhoneLink", "Favorite not sent yet: ${e.message}")
         }
     }
 

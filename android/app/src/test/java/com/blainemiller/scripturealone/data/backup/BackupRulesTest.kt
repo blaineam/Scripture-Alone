@@ -46,7 +46,8 @@ class BackupRulesTest {
         SettingsBackup.SHARED_PREFS.map { Rule("sharedpref", "$it.xml") }.toSet() +
             Rule("file", SettingsBackup.READER_SETTINGS) +
             SettingsBackup.USER_DATA_FILES.map { Rule("file", it) } +
-            Rule("file", "${SettingsBackup.KEEPSAKES}/")
+            Rule("file", "${SettingsBackup.KEEPSAKES}/") +
+            Rule("file", "${SettingsBackup.IMPORTS}/")
 
     @Test
     fun allThreeListsAreSettingsBackupsList() {
@@ -69,7 +70,7 @@ class BackupRulesTest {
     @Test
     fun nothingDeviceLocalOrSecretIsIncluded() {
         val forbidden = listOf(
-            "no_backup", "cache", "Translations", "OnlineTranslations", "packs", "vault", "bundled",
+            "no_backup", "cache", "OnlineTranslations", "packs", "vault", "bundled",
             "online-keys", "widgets", "systemSearch", "rating", "appWidget", "-shm", "-journal",
         )
         for (rules in listOf(includes(cloud), includes(transfer), includes(legacy))) {
@@ -155,5 +156,40 @@ class BackupRulesTest {
         assertEquals(settings + library.flatten(), SettingsBackup.plan(settings, library, huge::getValue, Long.MAX_VALUE / 2))
         // A transport that reports no quota is held to the documented 25 MB.
         assertEquals(listOf("reader", "prefs", "keep1", "keep2"), SettingsBackup.plan(settings, library, huge::getValue, 0))
+    }
+
+    @Test
+    fun smallImportsGoAfterTheLibrarySmallestFirst() {
+        val mb = 1L shl 20
+        val sizes = mapOf(
+            "reader" to 2_000L, "db" to 3 * mb, "wal" to 0L, "keep" to 2 * mb,
+            "NT" to 5 * mb, "Bible" to 15 * mb, "Study" to 60 * mb, "Portion" to mb,
+        )
+        val imports = listOf("Bible", "NT", "Study", "Portion")
+        val quota = 25 * mb
+        val groups = SettingsBackup.importGroups(imports, sizes::getValue, quota)
+        // Over the cap is never offered to the cloud; the rest smallest first.
+        assertEquals(listOf(listOf("Portion"), listOf("NT"), listOf("Bible")), groups)
+        val library = listOf(listOf("db", "wal"), listOf("keep")) + groups
+        // 5 MB of library, then 1 + 5 MB of imports; the 15 MB Bible no longer fits under 24 MB.
+        assertEquals(listOf("reader", "db", "wal", "keep", "Portion", "NT"), SettingsBackup.plan(listOf("reader"), library, sizes::getValue, quota))
+        // With a small library, one whole Bible fits.
+        val small = sizes + ("db" to mb / 2) + ("keep" to 0L) + ("NT" to 7 * mb)
+        assertEquals(
+            listOf("reader", "db", "wal", "keep", "Portion", "Bible"),
+            SettingsBackup.plan(listOf("reader"), listOf(listOf("db", "wal"), listOf("keep")) + listOf(listOf("Portion"), listOf("Bible")), small::getValue, quota),
+        )
+        // A device transfer carries every import, even the study Bible.
+        assertEquals(4, SettingsBackup.importGroups(imports, sizes::getValue, Long.MAX_VALUE / 2).size)
+        assertTrue(SettingsBackup.importBacksUp(16 * mb))
+        assertFalse(SettingsBackup.importBacksUp(16 * mb + 1))
+    }
+
+    @Test
+    fun theAgentPreparesTheImportsDirectoryForARestore() {
+        val agent = File("src/main/java/com/blainemiller/scripturealone/data/backup/SettingsBackupAgent.kt").readText()
+        assertTrue("File(filesDir, SettingsBackup.IMPORTS).mkdirs()" in agent)
+        val library = File("src/main/java/com/blainemiller/scripturealone/data/translations/TranslationLibrary.kt").readText()
+        assertTrue("File(context.applicationContext.filesDir, \"${SettingsBackup.IMPORTS}\")" in library)
     }
 }

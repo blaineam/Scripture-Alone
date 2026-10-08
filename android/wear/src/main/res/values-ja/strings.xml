@@ -28,7 +28,7 @@
     <string name="wear_book_group_general">公同書簡</string>
     <string name="wear_book_group_prophecy">預言書</string>
     <string name="wear_favorites_empty_title">お気に入りなし</string>
-    <string name="wear_favorites_empty_message">スマートフォンで聖句をお気に入りに追加すると、ここに表示されます。</string>
+    <string name="wear_favorites_empty_message">ここかスマートフォンで聖句のハートをタップすると、ここに表示されます。</string>
     <string name="wear_notes_empty_title">メモなし</string>
     <string name="wear_notes_empty_message">スマートフォンで書いたメモがここに表示されます。</string>
     <string name="wear_highlights">ハイライト</string>
@@ -38,4 +38,8 @@
     <string name="wear_note_edit_on_phone">メモの編集はスマートフォンで行えます。</string>
     <string name="wear_translation_phone_unavailable">スマートフォンの%1$sはここでは読めません。オンラインの翻訳は時計に保存できません。</string>
     <string name="wear_translation_follows_phone">スマートフォンに従います。そちらで読み込んだ翻訳はここにも表示されます。</string>
+    <string name="wear_add_favorite">お気に入りに追加</string>
+    <string name="wear_remove_favorite">お気に入りから削除</string>
+    <string name="wear_translation_remove_header">ウォッチから削除</string>
+    <string name="wear_translation_remove">%1$sを削除</string>
 </resources>

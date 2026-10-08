@@ -26,6 +26,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,6 +82,7 @@ import com.blainemiller.scripturealone.data.canon.BookGroup
 import com.blainemiller.scripturealone.data.canon.BookID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -222,7 +224,7 @@ private fun HomeScreen(bible: WatchBible, state: WatchBible.State, go: (String) 
         value = withContext(Dispatchers.IO) { bible.verseOfDay() }
     }
     val today = verseOfDay
-    val favorites = state.snapshot?.items(setOf(Kind.FAVORITE)).orEmpty().size
+    val favorites = state.favorites.size
     val notes = state.snapshot?.items(setOf(Kind.NOTE)).orEmpty().size
     val highlights = state.snapshot?.items(setOf(Kind.HIGHLIGHT)).orEmpty().size
     Screen {
@@ -261,6 +263,7 @@ private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: Verse
     val verses = loadedPassage?.first
     val shown = loadedPassage?.second ?: range
     var speaking by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     val speaker = remember { VerseSpeaker(context) { speaking = it } }
     DisposableEffect(Unit) { onDispose { speaker.shutdown() } }
     val notes = state.snapshot.notesOn(range)
@@ -286,6 +289,27 @@ private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: Verse
                     label = { Text(stringResource(if (speaking) R.string.wear_stop else R.string.wear_speak)) },
                 )
             }
+        }
+        item {
+            // The heart — `WatchVerseView`'s favorite toggle. The phone keeps the library; the tap goes
+            // there and shows here at once.
+            val favorite = state.isFavorite(range)
+            val label = stringResource(if (favorite) R.string.wear_remove_favorite else R.string.wear_add_favorite)
+            Chip(
+                onClick = {
+                    val request = bible.toggleFavorite(range)
+                    scope.launch(Dispatchers.IO) { PhoneLink.sendFavorite(context, request) }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ChipDefaults.secondaryChipColors(),
+                icon = {
+                    Icon(
+                        painterResource(if (favorite) R.drawable.ic_heart else R.drawable.ic_heart_outline), null,
+                        tint = if (favorite) HeartRed else Color.White, modifier = Modifier.size(ChipDefaults.IconSize),
+                    )
+                },
+                label = { Text(label) },
+            )
         }
         if (notes.isNotEmpty()) {
             item { ListHeader { Text(stringResource(R.string.wear_notes)) } }
@@ -438,7 +462,8 @@ private val BookGroup.titleRes: Int
 
 @Composable
 private fun FavoritesScreen(bible: WatchBible, state: WatchBible.State, go: (String) -> Unit) {
-    val favorites = state.snapshot?.items(setOf(Kind.FAVORITE)).orEmpty()
+    // The phone's favorites, with hearts tapped here that it hasn't confirmed yet.
+    val favorites = state.favorites
     // The text in the watch's own translation, as the Apple Watch reads it from its edition.
     val texts by produceState(emptyMap<String, String>(), favorites, state.translation) {
         value = withContext(Dispatchers.IO) {
@@ -543,6 +568,7 @@ private fun Empty(icon: Int, title: String, message: String?) {
 
 @Composable
 private fun TranslationsScreen(bible: WatchBible, state: WatchBible.State) {
+    val scope = rememberCoroutineScope()
     Screen {
         item { Title(stringResource(R.string.wear_translation)) }
         items(state.editions) { edition ->
@@ -555,6 +581,20 @@ private fun TranslationsScreen(bible: WatchBible, state: WatchBible.State) {
                 toggleControl = { RadioButton(selected = selected) },
                 modifier = Modifier.fillMaxWidth(),
             )
+        }
+        // Remove what the phone sent — the Apple Watch's swipe-to-Remove. The watch's own Bible stays.
+        val received = state.editions.filter { !it.bundled }
+        if (received.isNotEmpty()) {
+            item { ListHeader { Text(stringResource(R.string.wear_translation_remove_header), color = Secondary) } }
+            items(received) { edition ->
+                val description = stringResource(R.string.wear_translation_remove, edition.abbreviation)
+                Chip(
+                    onClick = { scope.launch(Dispatchers.IO) { bible.removeReceived(edition.id) } },
+                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = description },
+                    colors = ChipDefaults.secondaryChipColors(),
+                    label = { Text(description, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+                )
+            }
         }
         item {
             val phone = state.phoneTranslation

@@ -16,6 +16,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -24,6 +25,8 @@ import androidx.camera.mlkit.vision.MlKitAnalyzer
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -72,7 +75,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
@@ -99,11 +101,13 @@ import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.NumberFormat
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.max
@@ -113,8 +117,10 @@ private enum class CameraAccess { GRANTED, ASKING, DENIED }
 
 /**
  * The camera, full screen — `SlideCameraView.swift`. A live scanner: ML Kit reads the preview as it
- * runs and the text it finds lights up, as VisionKit's scanner highlights it; tapping any of it, or
- * the shutter, takes the picture. Falls back to the system camera where CameraX finds no back camera.
+ * runs and the text it finds lights up, as VisionKit's scanner highlights it. A tap focuses there (and
+ * meters for it — a bright slide in a dark room); only the shutter takes the picture, so a tap meant to
+ * focus never shoots. Zoom steps include the ultra-wide 0.5× where the camera has one. Falls back to the
+ * system camera where CameraX finds no back camera.
  *
  * Camera access is asked for here, the first time; refused, the screen says how to turn it on — or to
  * choose a photo instead — as iOS's "Camera Access Is Off" does.
@@ -145,21 +151,14 @@ internal fun SlideScanner(palette: ReaderPalette, onCapture: (Bitmap) -> Unit, o
 private fun hasCameraPermission(context: Context) =
     ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
 
-/** A recognized line in the preview's own coordinates, for highlighting and tapping. */
-private class Highlight(val corners: List<Offset>) {
-    fun contains(point: Offset, slop: Float): Boolean {
-        val xs = corners.map { it.x }
-        val ys = corners.map { it.y }
-        return point.x in (xs.min() - slop)..(xs.max() + slop) && point.y in (ys.min() - slop)..(ys.max() + slop)
-    }
-}
+/** A recognized line in the preview's own coordinates, for highlighting. */
+private class Highlight(val corners: List<Offset>)
 
 @Composable
 private fun LiveScanner(onCapture: (Bitmap) -> Unit, onCancel: () -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
-    val density = LocalDensity.current
     var highlights by remember { mutableStateOf<List<Highlight>>(emptyList()) }
     var capturing by remember { mutableStateOf(false) }
     var useSystemCamera by remember { mutableStateOf(false) }
@@ -181,6 +180,10 @@ private fun LiveScanner(onCapture: (Bitmap) -> Unit, onCancel: () -> Unit) {
     var zoom by remember { mutableFloatStateOf(1f) }
     var minZoom by remember { mutableFloatStateOf(1f) }
     var maxZoom by remember { mutableFloatStateOf(1f) }
+    var previewView by remember { mutableStateOf<PreviewView?>(null) }
+    /** Where the last tap focused, in the preview's coordinates, while its ring shows. */
+    var focusPoint by remember { mutableStateOf<Offset?>(null) }
+    val focusRing = remember { Animatable(0f) }
 
     fun setZoom(ratio: Float) {
         val clamped = ratio.coerceIn(minZoom, max(minZoom, maxZoom))
@@ -236,6 +239,22 @@ private fun LiveScanner(onCapture: (Bitmap) -> Unit, onCancel: () -> Unit) {
         return
     }
 
+    /** Focuses and meters at [point] — CameraX's FocusMeteringAction, back to continuous after a few seconds. */
+    fun focus(point: Offset) {
+        val factory = previewView?.meteringPointFactory ?: return
+        val action = FocusMeteringAction.Builder(
+            factory.createPoint(point.x, point.y),
+            FocusMeteringAction.FLAG_AF or FocusMeteringAction.FLAG_AE,
+        ).setAutoCancelDuration(5, TimeUnit.SECONDS).build()
+        runCatching { controller.cameraControl?.startFocusAndMetering(action) }
+        focusPoint = point
+        scope.launch {
+            focusRing.snapTo(1f)
+            delay(700)
+            focusRing.animateTo(0f, tween(300))
+        }
+    }
+
     fun capture() {
         if (capturing) return
         capturing = true
@@ -266,14 +285,13 @@ private fun LiveScanner(onCapture: (Bitmap) -> Unit, onCancel: () -> Unit) {
 
     Box(Modifier.fillMaxSize().onSizeChanged { viewSize = it }) {
         AndroidView(
-            factory = { PreviewView(it).apply { this.controller = controller; scaleType = PreviewView.ScaleType.FILL_CENTER } },
+            factory = { PreviewView(it).apply { this.controller = controller; scaleType = PreviewView.ScaleType.FILL_CENTER }.also { view -> previewView = view } },
             modifier = Modifier.fillMaxSize(),
         )
-        val slop = with(density) { 12.dp.toPx() }
         Canvas(
             Modifier.fillMaxSize()
                 .pointerInput(Unit) {
-                    detectTapGestures { point -> if (highlights.any { it.contains(point, slop) }) capture() }
+                    detectTapGestures { point -> focus(point) }
                 }
                 .pointerInput(Unit) {
                     detectTransformGestures { _, _, scale, _ -> if (scale != 1f) setZoom(zoom * scale) }
@@ -295,6 +313,11 @@ private fun LiveScanner(onCapture: (Bitmap) -> Unit, onCancel: () -> Unit) {
                 }
                 drawPath(path, Color.White.copy(alpha = 0.22f))
                 drawPath(path, Color(0xFFFFD60A).copy(alpha = 0.9f), style = Stroke(width = 2.dp.toPx(), join = StrokeJoin.Round))
+            }
+            // The focus ring where the reader tapped, as the camera app draws it.
+            val ring = focusRing.value
+            if (ring > 0f) focusPoint?.let { point ->
+                drawCircle(Color.White.copy(alpha = ring), radius = 34.dp.toPx(), center = point, style = Stroke(width = 2.dp.toPx()))
             }
         }
 
@@ -324,7 +347,7 @@ private fun LiveScanner(onCapture: (Bitmap) -> Unit, onCancel: () -> Unit) {
             Modifier.align(Alignment.BottomCenter).fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            ZoomSteps(zoom, maxZoom, ::setZoom)
+            ZoomSteps(zoom, minZoom, maxZoom, ::setZoom)
             Spacer(Modifier.height(18.dp))
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 24.dp),
@@ -355,10 +378,13 @@ private fun LiveScanner(onCapture: (Bitmap) -> Unit, onCancel: () -> Unit) {
     }
 }
 
-/** The camera app's zoom steps — 1×, 2×, 3×, 5×, as far as the camera goes — the one in use showing the exact zoom. */
+/**
+ * The camera app's zoom steps — 0.5× (the ultra-wide, where the camera goes below 1×), 1×, 2×, 3×, 5×,
+ * as far as the camera goes — the one in use showing the exact zoom.
+ */
 @Composable
-private fun ZoomSteps(zoom: Float, maxZoom: Float, onZoom: (Float) -> Unit) {
-    val steps = listOf(1f, 2f, 3f, 5f).filter { it <= maxZoom + 0.01f }
+private fun ZoomSteps(zoom: Float, minZoom: Float, maxZoom: Float, onZoom: (Float) -> Unit) {
+    val steps = zoomSteps(minZoom, maxZoom)
     if (steps.size < 2) return
     val current = steps.lastOrNull { zoom >= it - 0.05f } ?: steps.first()
     Row(
@@ -385,6 +411,15 @@ private fun ZoomSteps(zoom: Float, maxZoom: Float, onZoom: (Float) -> Unit) {
             }
         }
     }
+}
+
+/**
+ * The zoom steps a camera offers: 1×, 2×, 3×, 5× up to [maxZoom], led by the ultra-wide when [minZoom]
+ * is below 1× — 0.5×, or the widest the camera goes when that is narrower (0.6×).
+ */
+internal fun zoomSteps(minZoom: Float, maxZoom: Float): List<Float> {
+    val wide = if (minZoom < 0.95f) listOf(max(0.5f, (minZoom * 10).roundToInt() / 10f).coerceAtLeast(minZoom)) else emptyList()
+    return wide + listOf(1f, 2f, 3f, 5f).filter { it <= maxZoom + 0.01f }
 }
 
 /** "2×", "2.4×" — whole zooms without a decimal. */

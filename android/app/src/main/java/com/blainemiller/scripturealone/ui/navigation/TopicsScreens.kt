@@ -407,6 +407,7 @@ private fun PassageRow(
     val clipboard = LocalClipboardManager.current
     val scope = rememberCoroutineScope()
     var menu by remember { mutableStateOf(false) }
+    val view = androidx.compose.ui.platform.LocalView.current
     val favorites by model.userData.favorites.collectAsState()
     val favorite = favorites.any { it.range == range }
     val reference = model.displayRange(range).display
@@ -444,7 +445,11 @@ private fun PassageRow(
             DropdownMenuItem(
                 text = { Text(stringResource(if (favorite) R.string.reader_remove_favorite else R.string.reader_add_favorite), color = palette.ink) },
                 leadingIcon = { Icon(if (favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, null, tint = palette.ink) },
-                onClick = { menu = false; model.userData.toggleFavorite(listOf(range)) },
+                onClick = {
+                    menu = false
+                    com.blainemiller.scripturealone.ui.reader.FavoriteHaptics.perform(view, nowFavorite = !favorite)
+                    model.userData.toggleFavorite(listOf(range))
+                },
             )
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.common_copy), color = palette.ink) },

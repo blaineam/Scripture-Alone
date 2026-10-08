@@ -22,4 +22,8 @@
         <item>@string/assistant_favorites_1</item>
         <item>@string/assistant_favorites_2</item>
     </string-array>
+    <string-array name="assistant_verse_image">
+        <item>@string/assistant_verse_image_1</item>
+        <item>@string/assistant_verse_image_2</item>
+    </string-array>
 </resources>

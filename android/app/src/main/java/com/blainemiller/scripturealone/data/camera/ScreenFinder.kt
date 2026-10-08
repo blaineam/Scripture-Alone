@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.data.camera
 
+import com.blainemiller.scripturealone.data.slides.SlideLine
 import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.max
@@ -21,6 +22,26 @@ data class ScreenQuad(val topLeft: ScreenPoint, val topRight: ScreenPoint, val b
 
     /** The share of the picture the screen covers. */
     val area: Double get() = quadArea(corners.map { it.x }, corners.map { it.y })
+
+    /** Whether the (convex) screen holds [x], [y] — `SlideScreen.contains`. */
+    fun contains(x: Double, y: Double): Boolean {
+        var sign = 0.0
+        val points = corners
+        for (i in points.indices) {
+            val a = points[i]
+            val b = points[(i + 1) % points.size]
+            val cross = (b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x)
+            if (cross == 0.0) continue
+            if (sign == 0.0) sign = cross else if ((sign > 0) != (cross > 0)) return false
+        }
+        return true
+    }
+}
+
+/** What to read a slide photo at: the screen straightened, or a plain crop around its text (0…1, top-left origin). */
+sealed class ScreenCrop {
+    data class Screen(val quad: ScreenQuad) : ScreenCrop()
+    data class Text(val left: Double, val top: Double, val right: Double, val bottom: Double) : ScreenCrop()
 }
 
 /**
@@ -47,13 +68,57 @@ object ScreenFinder {
     /** How much of its outline a screen must fill — the rest is room caught in a lopsided shape. */
     private const val MIN_FILL = 0.85
 
-    fun find(grid: LumaGrid): ScreenQuad? {
+    /** The most screen-like shape: the biggest bright one, as the live preview outlines it. */
+    fun find(grid: LumaGrid): ScreenQuad? = shapes(grid).firstOrNull()?.let { quad(it, grid.width, grid.height) }
+
+    /**
+     * Every bright, four-sided shape that could be the screen, biggest first, up to [limit] — for
+     * [aroundText] to choose the one holding the slide's words, as iOS asks Vision for up to 24
+     * rectangles. A lit doorway or window may be bigger than the screen; the text tells them apart.
+     */
+    fun candidates(grid: LumaGrid, limit: Int = 6): List<ScreenQuad> =
+        shapes(grid).asSequence().mapNotNull { quad(it, grid.width, grid.height) }.take(limit).toList()
+
+    /** The bright shapes, holes filled, biggest first. */
+    private fun shapes(grid: LumaGrid): Sequence<BooleanArray> {
         val w = grid.width
         val h = grid.height
-        if (w < 8 || h < 8) return null
-        val threshold = threshold(grid.luma) ?: return null
+        if (w < 8 || h < 8) return emptySequence()
+        val threshold = threshold(grid.luma) ?: return emptySequence()
         val bright = open(BooleanArray(w * h) { grid.luma[it] > threshold }, w, h)
-        val shape = fillHoles(largestComponent(bright, w, h) ?: return null, w, h)
+        return components(bright, w, h).map { fillHoles(it, w, h) }
+    }
+
+    /**
+     * The screen the slide's [text] is on — `SlideScreen.straightened(_:around:)`. The lines are those
+     * read from the whole photo; the screen is the [candidates] shape holding the most of them (at least
+     * half), the tightest of those. With none around the text, the text itself with a margin of a few
+     * lines' height. Null when there's no text, or the crop would be most of the photo anyway.
+     */
+    fun aroundText(candidates: List<ScreenQuad>, text: List<SlideLine>): ScreenCrop? {
+        val lines = text.filter { it.confidence >= 0.5 && it.text.length >= 2 }
+        if (lines.isEmpty()) return null
+        val centers = lines.map { (it.box.x + it.box.width / 2) to it.box.midY }
+        val enough = max(1, (centers.size + 1) / 2)
+        val screen = candidates
+            .map { quad -> quad to centers.count { (x, y) -> quad.contains(x, y) } }
+            .filter { it.second >= enough }
+            .sortedWith(compareByDescending<Pair<ScreenQuad, Int>> { it.second }.thenBy { it.first.area })
+            .firstOrNull()?.first
+        if (screen != null && screen.area < 0.9) return ScreenCrop.Screen(screen)
+
+        val lineHeight = lines.maxOf { it.box.height }
+        val margin = max(lineHeight * 2, 0.03)
+        val left = max(0.0, lines.minOf { it.box.x } - margin)
+        val top = max(0.0, lines.minOf { it.box.y } - margin)
+        val right = min(1.0, lines.maxOf { it.box.maxX } + margin)
+        val bottom = min(1.0, lines.maxOf { it.box.maxY } + margin)
+        if ((right - left) * (bottom - top) >= 0.8) return null
+        return ScreenCrop.Text(left, top, right, bottom)
+    }
+
+    /** [shape]'s four corners, if it is screen-sized and screen-shaped. */
+    private fun quad(shape: BooleanArray, w: Int, h: Int): ScreenQuad? {
         val cells = shape.count { it }
         if (cells < MIN_SHARE * w * h || cells > MAX_SHARE * w * h) return null
 
@@ -143,12 +208,11 @@ object ScreenFinder {
         return pass(pass(mask, erode = true), erode = false)
     }
 
-    /** The biggest four-connected run of bright cells, or null when there are none. */
-    private fun largestComponent(mask: BooleanArray, w: Int, h: Int): BooleanArray? {
+    /** The four-connected runs of bright cells of at least [minCells], biggest first (lazily materialized). */
+    private fun components(mask: BooleanArray, w: Int, h: Int, minCells: Int = 1): Sequence<BooleanArray> {
         val label = IntArray(w * h)
         val queue = IntArray(w * h)
-        var bestLabel = 0
-        var bestSize = 0
+        val sizes = mutableListOf<Pair<Int, Int>>()
         var next = 0
         for (start in mask.indices) {
             if (!mask[start] || label[start] != 0) continue
@@ -172,13 +236,9 @@ object ScreenFinder {
                 if (y > 0) visit(i - w)
                 if (y < h - 1) visit(i + w)
             }
-            if (tail > bestSize) {
-                bestSize = tail
-                bestLabel = next
-            }
+            if (tail >= max(1, minCells)) sizes += next to tail
         }
-        if (bestSize == 0) return null
-        return BooleanArray(w * h) { label[it] == bestLabel }
+        return sizes.sortedByDescending { it.second }.asSequence().map { (id, _) -> BooleanArray(w * h) { label[it] == id } }
     }
 
     /** The shape with the slide's own dark text and pictures filled in: everything the room can't reach. */

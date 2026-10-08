@@ -12,11 +12,14 @@ package com.blainemiller.scripturealone.data.share
  * | `scripturealone://continue` | Back to where the reader left off |
  * | `scripturealone://new-note[?ref=…][&title=…]` | A new note on the passage, or on the chapter on screen |
  * | `scripturealone://favorite?ref=…` / `unfavorite?ref=…` | Add or remove a favorite, and show it |
+ * | `scripturealone://listen[?ref=…]` | Read aloud: the chapter being read, or the passage named — `ListenToChapterIntent` |
+ * | `scripturealone://verse-image[?ref=…]` | The verse-image designer on the passage, or on today's verse — `CreateVerseImageIntent` |
  * | `scripturealone://feature?name=<id>` | An App Actions feature (OPEN_APP_FEATURE): a shortcut id below |
  * | `…open?ref=…&translation=KJV` | Any passage link, read in the named translation |
  *
- * New notes and favorites change the reader's data, so [changesData] tells the activity to refuse them
- * from a web page (an intent with CATEGORY_BROWSABLE): there they only open the passage.
+ * New notes and favorites change the reader's data, and Listen starts speaking, so [needsTrust] tells
+ * the activity to refuse them from a web page (an intent with CATEGORY_BROWSABLE): there they only
+ * open the passage.
  */
 sealed class AppCommand {
     /** A link, read in [translation] (an abbreviation, as `BundledTranslations.ids`) when one is named. */
@@ -26,15 +29,23 @@ sealed class AppCommand {
     /** A note on [passage]'s verses, or on the chapter on screen when null. */
     data class NewNote(val passage: AppLink?, val title: String? = null) : AppCommand()
     data class Favorite(val passage: AppLink, val add: Boolean) : AppCommand()
+    /** Read aloud from [passage]'s first verse, or the chapter on screen from the top when null. */
+    data class Listen(val passage: AppLink?) : AppCommand()
+    /** The verse-image designer on [passage], or on today's Verse of the Day when null. */
+    data class VerseImage(val passage: AppLink?) : AppCommand()
 
     /** Whether carrying this out writes to the reader's notes or favorites. */
     val changesData: Boolean get() = this is NewNote || this is Favorite
+
+    /** Whether a web page may not ask for this: it changes the reader's data, or starts speaking. */
+    val needsTrust: Boolean get() = changesData || this is Listen
 
     /** What to do instead when [changesData] is refused: just show the passage. */
     val readOnly: AppCommand?
         get() = when (this) {
             is NewNote -> passage?.let { Link(it) }
             is Favorite -> Link(passage)
+            is Listen -> passage?.let { Link(it) }
             else -> this
         }
 
@@ -46,6 +57,9 @@ sealed class AppCommand {
         const val FEATURE_NEW_NOTE = "new_note"
         const val FEATURE_FAVORITES = "favorites"
         const val FEATURE_NOTES = "notes"
+        /** The Listen shortcut (dynamic, named for the chapter — `ui/shortcuts/AppShortcuts.kt`). */
+        const val FEATURE_LISTEN = "listen"
+        const val FEATURE_VERSE_IMAGE = "verse_image"
 
         fun parse(url: String): AppCommand? {
             val parts = LinkParts.of(url) ?: return null
@@ -59,6 +73,8 @@ sealed class AppCommand {
                     "new-note", "newnote" -> return NewNote(passage(), parts.query("title")?.trim()?.takeIf { it.isNotEmpty() })
                     "favorite" -> return passage()?.let { Favorite(it, add = true) }
                     "unfavorite" -> return passage()?.let { Favorite(it, add = false) }
+                    "listen" -> return Listen(passage())
+                    "verse-image", "verseimage", "image" -> return VerseImage(passage())
                     "feature" -> return feature(parts.query("name") ?: parts.path.trim('/'))
                 }
             }
@@ -72,6 +88,8 @@ sealed class AppCommand {
             FEATURE_NEW_NOTE, "note" -> NewNote(null)
             FEATURE_FAVORITES, "favourites" -> Link(AppLink.Favorites)
             FEATURE_NOTES -> Link(AppLink.Notes)
+            FEATURE_LISTEN, "listen_to_chapter", "read_aloud" -> Listen(null)
+            FEATURE_VERSE_IMAGE, "create_verse_image", "image" -> VerseImage(null)
             // Search with nothing to search for yet: the Go To sheet, whose field searches.
             FEATURE_SEARCH -> Link(AppLink.Search(""))
             else -> null

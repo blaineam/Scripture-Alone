@@ -1254,7 +1254,7 @@
     <string name="camera_slide_photo_description">Photo of the sermon slide</string>
     <!-- Button: remove the kept photo from the note. -->
     <string name="camera_remove_photo">Remove Photo</string>
-    <string name="camera_scanner_instructions">Point at the slide. Tap any highlighted text or the shutter.</string>
+    <string name="camera_scanner_instructions">Point at the slide. Tap to focus, then press the shutter.</string>
     <!-- Accessibility label of a camera zoom button; %1$s is the zoom, e.g. “2×”. -->
     <string name="camera_zoom_level">Zoom %1$s</string>
     <!-- Hint over the camera when the slide’s screen is small in the frame. -->
@@ -1706,4 +1706,26 @@
     <string name="crisis_passages_of_hope">Passages of Hope</string>
     <!-- Crisis card footnote for someone in immediate danger. -->
     <string name="crisis_emergency">In danger right now? Call your local emergency number.</string>
+    <!-- App shortcut, short label: reads the chapter being read aloud. -->
+    <string name="shortcut_listen_short">Listen</string>
+    <!-- App shortcut, long label. %1$s is the chapter being read, e.g. “John 3”. -->
+    <string name="shortcut_listen_long">Listen to %1$s</string>
+    <!-- App shortcut, short label: the verse-image designer on today’s verse. -->
+    <string name="shortcut_verse_image_short">Verse Image</string>
+    <!-- App shortcut, long label. -->
+    <string name="shortcut_verse_image_long">Create Verse Image</string>
+    <!-- What someone might say to Google Assistant to read the chapter aloud. Lowercase, spoken words. -->
+    <string name="assistant_listen_1">listen to the bible</string>
+    <string name="assistant_listen_2">read the chapter aloud</string>
+    <!-- What someone might say to Google Assistant to make a verse image. Lowercase, spoken words. -->
+    <string name="assistant_verse_image_1">verse image</string>
+    <string name="assistant_verse_image_2">create a verse image</string>
+    <!-- Footer under the translations the reader imported. %1$s is a file size, e.g. “16 MB”. -->
+    <string name="translations_section_added_footer">Imports up to %1$s are kept in your phone’s backup and come back on a new phone. Import larger ones again there.</string>
+    <!-- Text-selection menu item and share target: opens the selected text’s Bible reference (or searches for it) in the app. -->
+    <string name="process_text_label">Open in Scripture Alone</string>
+    <!-- Quick Settings tile title. -->
+    <string name="tile_votd_label">Verse of the Day</string>
+    <!-- Quick Settings tile, TalkBack. %1$s is today’s reference, e.g. “Ps 23:1”. -->
+    <string name="tile_votd_description">Verse of the Day, %1$s</string>
 </resources>

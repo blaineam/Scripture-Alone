@@ -670,7 +670,7 @@
     <string name="camera_slide_photo">幻灯片照片</string>
     <string name="camera_slide_photo_description">讲道幻灯片的照片</string>
     <string name="camera_remove_photo">移除照片</string>
-    <string name="camera_scanner_instructions">对准幻灯片。点按高亮文字或快门。</string>
+    <string name="camera_scanner_instructions">对准幻灯片。点按对焦，然后按快门。</string>
     <string name="camera_zoom_level">缩放 %1$s</string>
     <string name="camera_zoom_in_on_screen">放大到屏幕</string>
     <string name="camera_take_photo_description">拍摄幻灯片照片</string>
@@ -923,4 +923,16 @@
     <string name="crisis_other_countries">其他国家的求助热线</string>
     <string name="crisis_passages_of_hope">盼望的经文</string>
     <string name="crisis_emergency">如果现在有危险，请拨打当地的紧急电话。</string>
+    <string name="shortcut_listen_short">收听</string>
+    <string name="shortcut_listen_long">收听%1$s</string>
+    <string name="shortcut_verse_image_short">经文图片</string>
+    <string name="shortcut_verse_image_long">制作经文图片</string>
+    <string name="assistant_listen_1">收听圣经</string>
+    <string name="assistant_listen_2">朗读这一章</string>
+    <string name="assistant_verse_image_1">经文图片</string>
+    <string name="assistant_verse_image_2">制作经文图片</string>
+    <string name="translations_section_added_footer">不超过 %1$s 的导入译本会保存在手机备份中，换新手机后会恢复。更大的译本需在新手机上重新导入。</string>
+    <string name="process_text_label">在 Scripture Alone 中打开</string>
+    <string name="tile_votd_label">每日经文</string>
+    <string name="tile_votd_description">每日经文，%1$s</string>
 </resources>

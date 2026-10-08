@@ -97,6 +97,44 @@
             </intent-filter>
         </activity>
 
+        <!-- Selected text's "Open in Scripture Alone" and the share sheet's text target (data/share/
+             SharedText.kt): a reference opens, anything else is searched. A trampoline, so the reader
+             opens in its own task rather than the sending app's. -->
+        <activity
+            android:name=".ui.share.TextEntryActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:label="@string/process_text_label"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_TEXT" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
+        <!-- Quick Settings: the Verse of the Day tile (ui/tile/VerseOfDayTile.kt). -->
+        <service
+            android:name=".ui.tile.VerseOfDayTile"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_votd"
+            android:label="@string/tile_votd_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.quicksettings.ACTIVE_TILE"
+                android:value="false" />
+        </service>
+
         <!-- The web page's passage and share links — https://wemiller.com/apps/scripture-alone/?ref=John.3.16,
              …/#ref=…, …/#s=… — which differ from the product page only in their query or fragment. Only
              Android 15 can match those (uri-relative-filter-group); an older one would match the bare
@@ -138,6 +176,17 @@
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+
+        <!-- The watch's requests (ui/widget/WatchRequestsService.kt): a heart tapped on a verse there,
+             written into the library here. Started by Play services for a matching data item. -->
+        <service
+            android:name=".ui.widget.WatchRequestsService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/scripturealone/favorite/" />
             </intent-filter>
         </service>
 

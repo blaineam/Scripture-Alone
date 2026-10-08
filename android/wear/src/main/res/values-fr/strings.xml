@@ -28,7 +28,7 @@
     <string name="wear_book_group_general">Lettres générales</string>
     <string name="wear_book_group_prophecy">Prophétie</string>
     <string name="wear_favorites_empty_title">Aucun favori</string>
-    <string name="wear_favorites_empty_message">Ajoutez un verset aux favoris sur votre téléphone pour le voir ici.</string>
+    <string name="wear_favorites_empty_message">Touchez le cœur d’un verset, ici ou sur votre téléphone, et il apparaîtra ici.</string>
     <string name="wear_notes_empty_title">Aucune note</string>
     <string name="wear_notes_empty_message">Les notes écrites sur votre téléphone apparaissent ici.</string>
     <string name="wear_highlights">Surlignages</string>
@@ -38,4 +38,8 @@
     <string name="wear_note_edit_on_phone">Modifiez vos notes sur votre téléphone.</string>
     <string name="wear_translation_phone_unavailable">%1$s ne peut pas être lue ici depuis votre téléphone. Les traductions en ligne ne peuvent pas être stockées sur la montre.</string>
     <string name="wear_translation_follows_phone">Suit votre téléphone. Une traduction importée là-bas apparaît ici aussi.</string>
+    <string name="wear_add_favorite">Ajouter aux favoris</string>
+    <string name="wear_remove_favorite">Retirer des favoris</string>
+    <string name="wear_translation_remove_header">Retirer de la montre</string>
+    <string name="wear_translation_remove">Retirer %1$s</string>
 </resources>

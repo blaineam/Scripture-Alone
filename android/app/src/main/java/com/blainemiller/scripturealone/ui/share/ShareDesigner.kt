@@ -50,6 +50,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -147,6 +148,15 @@ fun ShareDesigner(model: ReaderViewModel, source: ShareSource, palette: ReaderPa
             }
         }
     }
+
+    // Ctrl+S (MainActivity): Save to Photos, as the button below does.
+    val saveToPhotos by rememberUpdatedState {
+        export { bitmap, name ->
+            ShareExport.saveToPhotos(context, bitmap, name)
+            flash(context.getString(R.string.share_saved_to_photos))
+        }
+    }
+    LaunchedEffect(model) { model.designerSaves.collect { saveToPhotos() } }
 
     val surface = PanelColors.background(palette)
     val nav = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()

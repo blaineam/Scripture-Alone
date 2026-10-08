@@ -28,7 +28,7 @@
     <string name="wear_book_group_general">일반 서신</string>
     <string name="wear_book_group_prophecy">예언서</string>
     <string name="wear_favorites_empty_title">즐겨찾기 없음</string>
-    <string name="wear_favorites_empty_message">휴대폰에서 구절을 즐겨찾기하면 여기에 표시됩니다.</string>
+    <string name="wear_favorites_empty_message">여기나 휴대폰에서 구절의 하트를 탭하면 여기에 표시됩니다.</string>
     <string name="wear_notes_empty_title">노트 없음</string>
     <string name="wear_notes_empty_message">휴대폰에서 작성한 노트가 여기에 표시됩니다.</string>
     <string name="wear_highlights">하이라이트</string>
@@ -38,4 +38,8 @@
     <string name="wear_note_edit_on_phone">휴대폰에서 노트를 편집하세요.</string>
     <string name="wear_translation_phone_unavailable">휴대폰의 %1$s은(는) 여기서 읽을 수 없습니다. 온라인 번역본은 워치에 저장할 수 없습니다.</string>
     <string name="wear_translation_follows_phone">휴대폰을 따릅니다. 거기서 가져온 번역본이 여기에도 표시됩니다.</string>
+    <string name="wear_add_favorite">즐겨찾기에 추가</string>
+    <string name="wear_remove_favorite">즐겨찾기에서 제거</string>
+    <string name="wear_translation_remove_header">워치에서 제거</string>
+    <string name="wear_translation_remove">%1$s 제거</string>
 </resources>

@@ -131,8 +131,32 @@ class UserData(
             tally
         }
 
+    /**
+     * Re-reads everything from the store — after something outside this object wrote it (a heart tapped
+     * on the watch, [UserDataChanges]), so the reader shows what is on disk.
+     */
+    fun reload() = write {
+        _highlights.value = it.highlights()
+        _notes.value = it.notes()
+        _favorites.value = it.favorites()
+    }
+
     fun deleteFavorite(id: UUID) {
         _favorites.value = _favorites.value.filter { it.id != id }
         write { it.deleteFavorite(id) }
+    }
+}
+
+/**
+ * Writes to the reader's store made outside the reader's own [UserData] — the watch's hearts
+ * (`ui/widget/WatchRequestsService`). The reader listens and reloads; the widgets and the watch see the
+ * change through the database file itself.
+ */
+object UserDataChanges {
+    private val _external = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val external: kotlinx.coroutines.flow.SharedFlow<Unit> = _external
+
+    fun notifyExternalWrite() {
+        _external.tryEmit(Unit)
     }
 }

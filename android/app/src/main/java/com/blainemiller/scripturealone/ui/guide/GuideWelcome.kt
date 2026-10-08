@@ -73,6 +73,8 @@ object GuideWelcome {
      */
     fun mayOffer(context: Context, intent: Intent?): Boolean {
         if (intent?.data != null) return false
+        // Text shared or selected in another app: the reader is there for that passage.
+        if (intent?.action == com.blainemiller.scripturealone.MainActivity.ACTION_OPEN_TEXT) return false
         val extras = intent?.extras
         if (extras != null && extras.keySet().any { it in developmentExtras }) return false
         if (ActivityManager.isUserAMonkey() || ActivityManager.isRunningInUserTestHarness()) return false

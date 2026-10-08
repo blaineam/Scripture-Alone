@@ -670,7 +670,7 @@
     <string name="camera_slide_photo">スライドの写真</string>
     <string name="camera_slide_photo_description">説教スライドの写真</string>
     <string name="camera_remove_photo">写真を削除</string>
-    <string name="camera_scanner_instructions">スライドに向けてください。ハイライトされた文字かシャッターをタップ。</string>
+    <string name="camera_scanner_instructions">スライドに向けてください。タップでピントを合わせ、シャッターを押します。</string>
     <string name="camera_zoom_level">ズーム %1$s</string>
     <string name="camera_zoom_in_on_screen">スクリーンにズームしてください</string>
     <string name="camera_take_photo_description">スライドを撮影</string>
@@ -923,4 +923,16 @@
     <string name="crisis_other_countries">ほかの国の相談窓口</string>
     <string name="crisis_passages_of_hope">希望のみことば</string>
     <string name="crisis_emergency">今すぐ危険な状態なら、緊急通報番号に電話してください。</string>
+    <string name="shortcut_listen_short">聴く</string>
+    <string name="shortcut_listen_long">%1$sを聴く</string>
+    <string name="shortcut_verse_image_short">聖句画像</string>
+    <string name="shortcut_verse_image_long">聖句画像を作成</string>
+    <string name="assistant_listen_1">聖書を聴く</string>
+    <string name="assistant_listen_2">章を読み上げる</string>
+    <string name="assistant_verse_image_1">聖句画像</string>
+    <string name="assistant_verse_image_2">聖句画像を作る</string>
+    <string name="translations_section_added_footer">%1$sまでの読み込んだ聖書はスマートフォンのバックアップに保存され、新しいスマートフォンにも戻ります。それより大きいものは、そちらでもう一度読み込んでください。</string>
+    <string name="process_text_label">Scripture Aloneで開く</string>
+    <string name="tile_votd_label">今日の聖句</string>
+    <string name="tile_votd_description">今日の聖句、%1$s</string>
 </resources>

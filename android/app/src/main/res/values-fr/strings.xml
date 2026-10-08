@@ -670,7 +670,7 @@
     <string name="camera_slide_photo">Photo de la diapositive</string>
     <string name="camera_slide_photo_description">Photo de la diapositive du sermon</string>
     <string name="camera_remove_photo">Supprimer la photo</string>
-    <string name="camera_scanner_instructions">Visez la diapositive. Touchez un texte surligné ou le déclencheur.</string>
+    <string name="camera_scanner_instructions">Visez la diapositive. Touchez pour faire la mise au point, puis appuyez sur le déclencheur.</string>
     <string name="camera_zoom_level">Zoom %1$s</string>
     <string name="camera_zoom_in_on_screen">Zoomez sur l’écran</string>
     <string name="camera_take_photo_description">Photographier la diapositive</string>
@@ -923,4 +923,16 @@
     <string name="crisis_other_countries">Lignes d’écoute dans d’autres pays</string>
     <string name="crisis_passages_of_hope">Passages d’espérance</string>
     <string name="crisis_emergency">En danger immédiat ? Appelez les urgences.</string>
+    <string name="shortcut_listen_short">Écouter</string>
+    <string name="shortcut_listen_long">Écouter %1$s</string>
+    <string name="shortcut_verse_image_short">Image</string>
+    <string name="shortcut_verse_image_long">Créer une image de verset</string>
+    <string name="assistant_listen_1">écouter la bible</string>
+    <string name="assistant_listen_2">lire le chapitre à voix haute</string>
+    <string name="assistant_verse_image_1">image de verset</string>
+    <string name="assistant_verse_image_2">créer une image de verset</string>
+    <string name="translations_section_added_footer">Les importations jusqu’à %1$s sont conservées dans la sauvegarde de votre téléphone et reviennent sur un nouveau téléphone. Importez à nouveau les plus volumineuses.</string>
+    <string name="process_text_label">Ouvrir dans Scripture Alone</string>
+    <string name="tile_votd_label">Verset du jour</string>
+    <string name="tile_votd_description">Verset du jour, %1$s</string>
 </resources>

@@ -11,14 +11,16 @@ import com.blainemiller.scripturealone.data.listen.ListenKeys
  * list the same files; [SettingsBackupAgent] backs them up and tidies the restore.
  *
  * Only what is listed here goes. Everything else in the app's data stays on the device: downloaded
- * and imported Bibles, caches, index fingerprints, widget and watch state, the rating prompt's
+ * Bibles, large imports, caches, index fingerprints, widget and watch state, the rating prompt's
  * counters. Nothing credential-bearing is ever in these files — the API keys live sealed in
  * no-backup storage and travel through Block Store (`data/online/OnlineKeySync.kt`) instead.
  *
  * Auto Backup has a quota (25 MB to the cloud), and a backup over it is not trimmed but skipped
  * whole — so the reader's library (notes, highlights and favorites, whose kept slide photos can
- * grow it, and the keepsakes received) is added only while it fits beside the settings. The settings
- * are a few kilobytes and always go.
+ * grow it, and the keepsakes received) is added only while it fits beside the settings, and then the
+ * Bibles the reader imported ([IMPORTS]) — smallest first, each no bigger than [IMPORT_CAP] — while
+ * they fit too: iCloud carries an import to the reader's other devices on iOS (`ImportedBibleSync`);
+ * here a small one at least survives a new phone. The settings are a few kilobytes and always go.
  */
 object SettingsBackup {
 
@@ -46,6 +48,18 @@ object SettingsBackup {
 
     /** Keepsakes received (`.scripturelegacy` files), under `filesDir`. */
     const val KEEPSAKES = "Keepsakes"
+
+    /** Imported Bibles (`TranslationLibrary.importedDirectory`), one `.sqlite` store each, under `filesDir`. */
+    const val IMPORTS = "Translations"
+
+    /**
+     * The biggest import the cloud backup takes. A whole Bible imported from USFM or an ePub is about
+     * 14–20 MB with its search index: one up to 16 MB still fits the 25 MB quota beside a typical
+     * library, a bigger one (a study Bible with its notes and pictures) never sensibly does. Imports go
+     * after the library and keepsakes, so they never crowd those out. Device-to-device transfer, whose
+     * quota is far larger, takes every import.
+     */
+    const val IMPORT_CAP: Long = 16L shl 20
 
     /**
      * Keys in the reader's store that describe this phone rather than the reader, dropped after a
@@ -77,6 +91,18 @@ object SettingsBackup {
         }
         return chosen
     }
+
+    /**
+     * The imports to offer [plan], each its own group: smallest first, so as many as possible fit; on the
+     * cloud quota only those up to [IMPORT_CAP]; on a device transfer's larger quota, all of them.
+     */
+    fun <T> importGroups(imports: List<T>, size: (T) -> Long, quota: Long): List<List<T>> {
+        val cloud = quota <= 0 || quota <= 2 * DEFAULT_QUOTA
+        return imports.filter { !cloud || size(it) <= IMPORT_CAP }.sortedBy(size).map { listOf(it) }
+    }
+
+    /** Whether an import of [bytes] can be carried by the cloud backup — the Translations screen's note. */
+    fun importBacksUp(bytes: Long): Boolean = bytes <= IMPORT_CAP
 
     /** Clears [DEVICE_LOCAL_READER_KEYS] from a restored reader store. */
     fun forgetDeviceLocal(prefs: MutablePreferences) {

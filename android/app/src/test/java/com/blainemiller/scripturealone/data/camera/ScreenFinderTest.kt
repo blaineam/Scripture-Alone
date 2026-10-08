@@ -3,6 +3,7 @@ package com.blainemiller.scripturealone.data.camera
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** [ScreenFinder] against rooms drawn cell by cell: a lit screen with dark slide text, at an angle, and things that aren't screens. */
@@ -113,5 +114,73 @@ class ScreenFinderTest {
     private fun found(quad: ScreenQuad?): ScreenQuad {
         assertNotNull("no screen found", quad)
         return quad!!
+    }
+
+    // MARK: The screen that holds the text — `SlideScreen.straightened(_:around:)`
+
+    private fun line(text: String, x: Double, y: Double, width: Double = 0.2, height: Double = 0.04, confidence: Double = 0.9) =
+        com.blainemiller.scripturealone.data.slides.SlideLine(text, x, y, width, height, confidence)
+
+    private fun quad(l: Double, t: Double, r: Double, b: Double) =
+        ScreenQuad(ScreenPoint(l, t), ScreenPoint(r, t), ScreenPoint(r, b), ScreenPoint(l, b))
+
+    @Test fun theScreenWithTheTextWinsOverABiggerBrightDoorway() {
+        val doorway = quad(0.05, 0.05, 0.45, 0.95)
+        val screen = quad(0.55, 0.2, 0.9, 0.6)
+        val text = listOf(line("Sermon title", 0.6, 0.25), line("John 3:16", 0.6, 0.35), line("Grace", 0.6, 0.45))
+        assertEquals(ScreenCrop.Screen(screen), ScreenFinder.aroundText(listOf(doorway, screen), text))
+    }
+
+    @Test fun ofTwoShapesHoldingTheTextTheTightestWins() {
+        val wall = quad(0.1, 0.1, 0.85, 0.85)
+        val screen = quad(0.3, 0.3, 0.7, 0.7)
+        val text = listOf(line("Romans 8", 0.35, 0.4), line("We know that", 0.35, 0.5))
+        assertEquals(ScreenCrop.Screen(screen), ScreenFinder.aroundText(listOf(wall, screen), text))
+    }
+
+    @Test fun aShapeWithLessThanHalfTheTextIsNotTheScreen() {
+        val lamp = quad(0.05, 0.05, 0.25, 0.25)
+        val text = listOf(line("one", 0.1, 0.1, 0.05), line("two", 0.5, 0.5), line("three", 0.5, 0.6), line("four", 0.5, 0.7))
+        // No shape holds half: the text itself, with room to spare.
+        val crop = ScreenFinder.aroundText(listOf(lamp), text) as ScreenCrop.Text
+        assertEquals(0.02, crop.left, 1e-9)
+        assertEquals(0.02, crop.top, 1e-9)
+        assertEquals(0.78, crop.right, 1e-9)
+        assertEquals(0.82, crop.bottom, 1e-9)
+    }
+
+    @Test fun textAcrossMostOfThePhotoIsNotCropped() {
+        val text = listOf(line("top left", 0.0, 0.0), line("bottom right", 0.8, 0.95))
+        assertNull(ScreenFinder.aroundText(emptyList(), text))
+    }
+
+    @Test fun noReadableTextNoCrop() {
+        val screen = quad(0.3, 0.3, 0.7, 0.7)
+        assertNull(ScreenFinder.aroundText(listOf(screen), emptyList()))
+        // Low-confidence specks and single letters don't count as the slide's text.
+        assertNull(ScreenFinder.aroundText(listOf(screen), listOf(line("x", 0.4, 0.4), line("blur", 0.4, 0.5, confidence = 0.2))))
+    }
+
+    @Test fun aScreenFillingThePhotoGivesNothingToStraighten() {
+        val full = quad(0.0, 0.0, 1.0, 0.95)
+        val text = listOf(line("Hello there", 0.4, 0.45))
+        // The screen is the whole picture: the crop falls back to the text.
+        assertEquals(ScreenCrop.Text::class, ScreenFinder.aroundText(listOf(full), text)!!::class)
+    }
+
+    @Test fun candidatesFindTwoBrightShapesBiggestFirst() {
+        val luma = IntArray(w * h) { i ->
+            val x = i % w
+            val y = i / w
+            when {
+                x in 5 until 55 && y in 5 until 115 -> 225 // a tall doorway
+                x in 80 until 150 && y in 30 until 80 -> 215 // the screen
+                else -> 35
+            }
+        }
+        val found = ScreenFinder.candidates(LumaGrid(luma, w, h))
+        assertEquals(2, found.size)
+        assertTrue(found[0].area > found[1].area)
+        assertEquals(ScreenFinder.find(LumaGrid(luma, w, h)), found[0])
     }
 }

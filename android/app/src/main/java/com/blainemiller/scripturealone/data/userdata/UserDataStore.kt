@@ -1,5 +1,7 @@
 package com.blainemiller.scripturealone.data.userdata
 
+import com.blainemiller.scripturealone.companion.WearFavorites
+
 import com.blainemiller.scripturealone.data.VerseRange
 import com.blainemiller.scripturealone.data.notesimport.ImportedNotes
 import java.time.Instant
@@ -244,6 +246,21 @@ class UserDataStore(private val db: UserDatabase) {
             tally.favorites++
         }
         tally
+    }
+
+    /**
+     * A heart tapped on the watch ([WearFavorites]): the favorite for exactly that passage added or
+     * removed, unless the library already says so or changed since on the phone. One transaction.
+     */
+    fun applyWatchFavorite(request: WearFavorites.Request): WearFavorites.Action = db.transaction {
+        val existing = favorites().firstOrNull { it.range.storageString == request.range.storageString }
+        val action = WearFavorites.decide(request, existing?.createdAt?.toEpochMilli())
+        when (action) {
+            WearFavorites.Action.ADD -> add(Favorite(range = request.range, createdAt = Instant.ofEpochMilli(request.at)))
+            WearFavorites.Action.REMOVE -> existing?.let { deleteFavorite(it.id) }
+            WearFavorites.Action.NONE -> Unit
+        }
+        action
     }
 
     /**

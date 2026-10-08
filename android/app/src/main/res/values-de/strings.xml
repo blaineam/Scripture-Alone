@@ -670,7 +670,7 @@
     <string name="camera_slide_photo">Folienfoto</string>
     <string name="camera_slide_photo_description">Foto der Predigtfolie</string>
     <string name="camera_remove_photo">Foto entfernen</string>
-    <string name="camera_scanner_instructions">Auf die Folie richten. Tippe auf hervorgehobenen Text oder den Auslöser.</string>
+    <string name="camera_scanner_instructions">Auf die Folie richten. Zum Scharfstellen tippen, dann den Auslöser drücken.</string>
     <string name="camera_zoom_level">Zoom %1$s</string>
     <string name="camera_zoom_in_on_screen">Zoome näher an den Bildschirm heran</string>
     <string name="camera_take_photo_description">Foto der Folie aufnehmen</string>
@@ -923,4 +923,16 @@
     <string name="crisis_other_countries">Hilfetelefone in anderen Ländern</string>
     <string name="crisis_passages_of_hope">Worte der Hoffnung</string>
     <string name="crisis_emergency">Akute Gefahr? Ruf den Notruf an.</string>
+    <string name="shortcut_listen_short">Anhören</string>
+    <string name="shortcut_listen_long">%1$s anhören</string>
+    <string name="shortcut_verse_image_short">Versbild</string>
+    <string name="shortcut_verse_image_long">Versbild erstellen</string>
+    <string name="assistant_listen_1">bibel anhören</string>
+    <string name="assistant_listen_2">kapitel vorlesen</string>
+    <string name="assistant_verse_image_1">versbild</string>
+    <string name="assistant_verse_image_2">versbild erstellen</string>
+    <string name="translations_section_added_footer">Importe bis %1$s werden in der Sicherung deines Handys aufbewahrt und kommen auf ein neues Handy mit. Größere dort erneut importieren.</string>
+    <string name="process_text_label">In Scripture Alone öffnen</string>
+    <string name="tile_votd_label">Vers des Tages</string>
+    <string name="tile_votd_description">Vers des Tages, %1$s</string>
 </resources>

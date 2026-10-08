@@ -61,7 +61,7 @@
 
     <!-- Favorites and notes -->
     <string name="wear_favorites_empty_title">No Favorites</string>
-    <string name="wear_favorites_empty_message">Favorite a verse on your phone and it appears here.</string>
+    <string name="wear_favorites_empty_message">Tap the heart on a verse, here or on your phone, and it appears here.</string>
     <string name="wear_notes_empty_title">No Notes</string>
     <string name="wear_notes_empty_message">Notes you write on your phone appear here.</string>
     <!-- Home row and screen title: the verses highlighted on the phone. -->
@@ -77,4 +77,12 @@
     <string name="wear_translation_phone_unavailable">%1$s on your phone can’t be read here. Online translations can’t be stored on the watch.</string>
     <!-- Footer of the translation picker: the watch's translation follows the phone's, and the phone's imports appear on the watch. -->
     <string name="wear_translation_follows_phone">Follows your phone. A translation you import there appears here too.</string>
+    <!-- Verse screen button: makes the passage a favorite (kept in the phone's library). -->
+    <string name="wear_add_favorite">Add to Favorites</string>
+    <!-- Verse screen button: the passage is a favorite; tapping removes it. -->
+    <string name="wear_remove_favorite">Remove from Favorites</string>
+    <!-- Translation screen: header over the buttons that delete translations the phone sent to the watch. -->
+    <string name="wear_translation_remove_header">Remove from Watch</string>
+    <!-- Button deleting a translation from the watch. %1$s is its abbreviation, e.g. “KJV”. -->
+    <string name="wear_translation_remove">Remove %1$s</string>
 </resources>

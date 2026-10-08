@@ -670,7 +670,7 @@
     <string name="camera_slide_photo">Foto della slide</string>
     <string name="camera_slide_photo_description">Foto della slide del sermone</string>
     <string name="camera_remove_photo">Rimuovi foto</string>
-    <string name="camera_scanner_instructions">Inquadra la slide. Tocca il testo evidenziato o lo scatto.</string>
+    <string name="camera_scanner_instructions">Inquadra la slide. Tocca per mettere a fuoco, poi premi lo scatto.</string>
     <string name="camera_zoom_level">Zoom %1$s</string>
     <string name="camera_zoom_in_on_screen">Ingrandisci lo schermo</string>
     <string name="camera_take_photo_description">Scatta foto della slide</string>
@@ -923,4 +923,16 @@
     <string name="crisis_other_countries">Linee d’ascolto in altri paesi</string>
     <string name="crisis_passages_of_hope">Passi di speranza</string>
     <string name="crisis_emergency">In pericolo adesso? Chiama il numero di emergenza.</string>
+    <string name="shortcut_listen_short">Ascolta</string>
+    <string name="shortcut_listen_long">Ascolta %1$s</string>
+    <string name="shortcut_verse_image_short">Immagine</string>
+    <string name="shortcut_verse_image_long">Crea immagine del versetto</string>
+    <string name="assistant_listen_1">ascolta la bibbia</string>
+    <string name="assistant_listen_2">leggi il capitolo ad alta voce</string>
+    <string name="assistant_verse_image_1">immagine del versetto</string>
+    <string name="assistant_verse_image_2">crea un’immagine del versetto</string>
+    <string name="translations_section_added_footer">Le importazioni fino a %1$s restano nel backup del telefono e tornano su un nuovo telefono. Importa di nuovo quelle più grandi.</string>
+    <string name="process_text_label">Apri in Scripture Alone</string>
+    <string name="tile_votd_label">Versetto del giorno</string>
+    <string name="tile_votd_description">Versetto del giorno, %1$s</string>
 </resources>

@@ -72,6 +72,17 @@ object WearLink {
     const val KEY_EDITIONS = "editions"
     const val KEY_VERSIONS = "versions"
 
+    /**
+     * Watch → phone: the heart on a verse — `WatchVerseView.toggleFavorite`. One data item per passage
+     * at `PATH_FAVORITE_PREFIX + range.storageString`, carrying the state the reader wants
+     * ([KEY_FAVORITE]) and when they tapped ([KEY_AT], milliseconds). A data item rather than a
+     * message, so a tap made while the phone is out of reach is delivered when it comes back; the
+     * phone writes it into its library ([WearFavorites]) and deletes the item.
+     */
+    const val PATH_FAVORITE_PREFIX = "/scripturealone/favorite/"
+    const val KEY_FAVORITE = "favorite"
+    const val KEY_AT = "at"
+
     fun editionPath(id: String): String = PATH_EDITION_PREFIX + id
 
     /** The translation an edition path carries, or null for any other path or an unsafe id. */

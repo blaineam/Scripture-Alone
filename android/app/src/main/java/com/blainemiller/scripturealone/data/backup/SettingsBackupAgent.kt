@@ -26,6 +26,7 @@ class SettingsBackupAgent : BackupAgent() {
         // The restore accepts a file under an included directory only when that directory exists
         // (`BackupUtils.isFileSpecifiedInPathList`) — and on a fresh install nothing has made it yet.
         File(filesDir, SettingsBackup.KEEPSAKES).mkdirs()
+        File(filesDir, SettingsBackup.IMPORTS).mkdirs()
     }
 
     override fun onFullBackup(data: FullBackupDataOutput) {
@@ -33,7 +34,11 @@ class SettingsBackupAgent : BackupAgent() {
         val settings = SettingsBackup.SHARED_PREFS.map { File(prefsDir, "$it.xml") } +
             File(filesDir, SettingsBackup.READER_SETTINGS)
         val keepsakes = File(filesDir, SettingsBackup.KEEPSAKES).listFiles { f -> f.isFile }.orEmpty().sortedBy { it.name }
-        val library = listOf(SettingsBackup.USER_DATA_FILES.map { File(filesDir, it) }) + keepsakes.map { listOf(it) }
+        // Only finished stores: an import being written is a dotted or non-.sqlite file until it is moved into place.
+        val imports = File(filesDir, SettingsBackup.IMPORTS)
+            .listFiles { f -> f.isFile && f.name.endsWith(".sqlite") && !f.name.startsWith(".") }.orEmpty().sortedBy { it.name }
+        val library = listOf(SettingsBackup.USER_DATA_FILES.map { File(filesDir, it) }) + keepsakes.map { listOf(it) } +
+            SettingsBackup.importGroups(imports, { it.length() }, data.quota)
         // Called twice per backup — once to measure, once to send — and the same both times.
         SettingsBackup.plan(settings, library, { if (it.isFile) it.length() else 0L }, data.quota)
             .filter { it.isFile }

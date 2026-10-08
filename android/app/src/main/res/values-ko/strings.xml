@@ -670,7 +670,7 @@
     <string name="camera_slide_photo">슬라이드 사진</string>
     <string name="camera_slide_photo_description">설교 슬라이드 사진</string>
     <string name="camera_remove_photo">사진 삭제</string>
-    <string name="camera_scanner_instructions">슬라이드를 비추세요. 강조된 텍스트나 셔터를 누르세요.</string>
+    <string name="camera_scanner_instructions">슬라이드를 비추세요. 탭해서 초점을 맞추고 셔터를 누르세요.</string>
     <string name="camera_zoom_level">줌 %1$s</string>
     <string name="camera_zoom_in_on_screen">화면을 확대하세요</string>
     <string name="camera_take_photo_description">슬라이드 사진 찍기</string>
@@ -923,4 +923,16 @@
     <string name="crisis_other_countries">다른 나라의 상담전화</string>
     <string name="crisis_passages_of_hope">소망의 말씀</string>
     <string name="crisis_emergency">지금 위험한 상황이라면 긴급 전화번호로 연락하세요.</string>
+    <string name="shortcut_listen_short">듣기</string>
+    <string name="shortcut_listen_long">%1$s 듣기</string>
+    <string name="shortcut_verse_image_short">말씀 이미지</string>
+    <string name="shortcut_verse_image_long">말씀 이미지 만들기</string>
+    <string name="assistant_listen_1">성경 듣기</string>
+    <string name="assistant_listen_2">장 읽어 주기</string>
+    <string name="assistant_verse_image_1">말씀 이미지</string>
+    <string name="assistant_verse_image_2">말씀 이미지 만들기</string>
+    <string name="translations_section_added_footer">%1$s 이하로 가져온 번역본은 휴대폰 백업에 보관되어 새 휴대폰에서도 돌아옵니다. 더 큰 번역본은 새 휴대폰에서 다시 가져오세요.</string>
+    <string name="process_text_label">Scripture Alone에서 열기</string>
+    <string name="tile_votd_label">오늘의 말씀</string>
+    <string name="tile_votd_description">오늘의 말씀, %1$s</string>
 </resources>
