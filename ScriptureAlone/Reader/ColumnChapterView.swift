@@ -35,8 +35,21 @@ enum ReaderColumns {
     }
 
     /// Measures `font` on a line of text in `language`, at the reader's `lineSpacing`.
+    /// The reader asks on every layout pass (each frame of a rotation); a font measures the same
+    /// every time, so it is measured once.
+    private static var measured: [String: Metrics] = [:]
+
     static func metrics(font: PlatformFont, lineSpacing: CGFloat, language: String) -> Metrics {
         let ideographic = ["zh", "ja", "ko"].contains(String(language.prefix(2)).lowercased())
+        let key = "\(font.fontName)|\(font.pointSize)|\(lineSpacing)|\(ideographic)"
+        if let known = measured[key] { return known }
+        let metrics = measure(font: font, lineSpacing: lineSpacing, ideographic: ideographic)
+        if measured.count > 64 { measured.removeAll() }
+        measured[key] = metrics
+        return metrics
+    }
+
+    private static func measure(font: PlatformFont, lineSpacing: CGFloat, ideographic: Bool) -> Metrics {
         let sample = ideographic
             ? "太初有道，道與神同在，道就是神。神愛世人，甚至將他的獨生子賜給他們。"
             : "And he said unto them, Go ye into all the world, and preach the gospel to every creature."
