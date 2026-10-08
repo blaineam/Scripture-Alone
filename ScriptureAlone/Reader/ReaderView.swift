@@ -108,15 +108,10 @@ struct ReaderView: View {
                 // top and bottom bars.
                 .overlay(alignment: .bottom) {
                     VStack(spacing: 8) {
-                        // Minimized, the player is a small pill at the trailing edge: reading goes
-                        // on (the verse stays marked, the columns keep turning) with the page clear.
-                        if ListenController.shared.isListening(in: model), ListenController.shared.isMinimized {
-                            ListenPill()
-                                .takesTaps(cornerRadius: 22)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                                .padding(.horizontal)
-                                .transition(.move(edge: .bottom).combined(with: .opacity))
-                        } else if ListenController.shared.isListening(in: model) {
+                        // Minimized, the bar folds into the toolbar's Listen button and nothing
+                        // floats over the text; reading goes on (the verse stays marked, the columns
+                        // keep turning).
+                        if ListenController.shared.isListening(in: model), !ListenController.shared.isMinimized {
                             NowPlayingBar()
                                 .takesTaps(cornerRadius: 24)
                                 .padding(.horizontal)
@@ -460,13 +455,49 @@ struct ReaderView: View {
         .accessibilityIdentifier("reader.autoScroll")
     }
 
+    /// Listen: starts reading, then is play/pause while the bar is up. With the bar minimized it is
+    /// the player: filled while reading, an outlined ring while paused, a small bell when Silent mode
+    /// muted the session — and a tap opens the bar again.
     private var listenButton: some View {
-        let listening = ListenController.shared.isListening(in: model) && ListenController.shared.isPlaying
-        return Button { ListenController.shared.toolbarAction(in: model) } label: {
-            Label(listening ? "Pause Listening" : "Listen", systemImage: listening ? "headphones.circle.fill" : "headphones")
+        let listen = ListenController.shared
+        let session = listen.isListening(in: model)
+        let minimized = session && listen.isMinimized
+        let playing = session && listen.isPlaying
+        return Button {
+            if minimized { listen.expand() } else { listen.toolbarAction(in: model) }
+        } label: {
+            if minimized {
+                // A drawn view, not a Label: a toolbar keeps only a Label's symbol, which would drop
+                // the muted badge.
+                ZStack(alignment: .topTrailing) {
+                    Image(systemName: playing ? "headphones.circle.fill" : "headphones.circle")
+                        .imageScale(.large)
+                    if listen.isMuted {
+                        Image(systemName: "bell.slash.circle.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(.white, .red)
+                            .offset(x: 6, y: -5)
+                    }
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text(minimizedListenLabel(playing: playing, muted: listen.isMuted, reference: listen.nowPlayingTitle)))
+            } else {
+                Label(playing ? "Pause Listening" : "Listen", systemImage: playing ? "headphones.circle.fill" : "headphones")
+            }
         }
-        .accessibilityHint("Reads the chapter aloud from the top of the screen.")
+        .keyboardShortcut(minimized ? KeyboardShortcut("l", modifiers: [.command, .option]) : nil)
+        .accessibilityHint(minimized ? Text(verbatim: "") : Text("Reads the chapter aloud from the top of the screen."))
         .accessibilityIdentifier("reader.listen")
+    }
+
+    private func minimizedListenLabel(playing: Bool, muted: Bool, reference: String) -> String {
+        if playing, muted {
+            return String(localized: "Listening, muted by Silent mode — \(reference), expand player", comment: "Label of the Listen button while the read-aloud player is minimized and reading without sound because the iPhone is in Silent mode. %@ is the verse being read, e.g. “Ephesians 2:3”.")
+        }
+        return playing
+            ? String(localized: "Listening — \(reference), expand player", comment: "Label of the Listen button while the read-aloud player is minimized and reading. %@ is the verse being read, e.g. “Ephesians 2:3”.")
+            : String(localized: "Paused — \(reference), expand player", comment: "Label of the Listen button while the read-aloud player is minimized and paused. %@ is the verse being read, e.g. “Ephesians 2:3”.")
     }
 
     /// Hidden buttons for text-size shortcuts (⌘+ / ⌘−).

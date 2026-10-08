@@ -39,6 +39,10 @@ nonisolated enum UITestMode {
     /// `-uiTestSilenced`: Listen reads the phone as being in Silent mode (the Simulator has no switch).
     static var silenced: Bool { isOn && arguments.contains("-uiTestSilenced") }
 
+    /// `-uiTestListenAdvances`: Listen's silent speaker moves on a verse every 1.5 s while playing, as
+    /// speech would, so a test can see the marker, the toolbar and the columns follow the reading.
+    static var listenAdvances: Bool { isOn && arguments.contains("-uiTestListenAdvances") }
+
     /// The sample sermon slide goes through the photo-import path when Notes opens.
     static var importsSampleSlide: Bool { isOn && arguments.contains("-uiTestSlide") }
 

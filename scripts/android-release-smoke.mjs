@@ -15,8 +15,9 @@
  *     headless on port SA_EMULATOR_PORT (default 5556) and shuts it down at the end. Every adb and
  *     Gradle call targets that serial; an emulator running any other AVD is never touched.
  *  4. Installs it fresh and drives it with uiautomator: launch → open a chapter (Go To) → Listen →
- *     Previous/Next tapped as fast as adb can send them (the 1.1.0-rc.5 ANR) → Minimize player (the pill,
- *     still reading; its play/pause), Expand, a swipe down to minimize, Stop → the share card (three styles, Customize › Strong shadow) →
+ *     Previous/Next tapped as fast as adb can send them (the 1.1.0-rc.5 ANR) → Minimize player (no bar
+ *     over the text; the Listen button shows the session and reading moves on), the button expands,
+ *     paused-minimized, a swipe down to minimize, Stop → the share card (three styles, Customize › Strong shadow) →
  *     a 48-megapixel photo imported as a slide. After every step: the process must be alive, with
  *     no crash and no ANR in the logs.
  *  5. Runs the instrumented tests (connectedDebugAndroidTest — incl. SystemBarsInsetsTest) on the
@@ -304,32 +305,48 @@ async function smoke() {
 	log(`UI answered ${Date.now() - t0} ms after the burst`);
 	alive('Listen with fast skips');
 
-	// Minimize: the bar becomes a pill naming the verse being read, and reading goes on.
+	// Minimize: the bar folds into the bottom bar's Listen button — nothing over the text — and reading
+	// goes on: the button names the verse being read, and that verse moves on.
 	screenshot('listen-expanded');
 	await tap('Minimize player');
-	const pill = await find(/^Expand player, .+:\d+/, { timeout: 5_000 });
-	if (!pill) { screenshot('minimize'); fail('Minimize player did not show the pill'); }
-	if (await find('Stop Listening', { timeout: 1_000 })) { screenshot('minimize'); fail('the full bar stayed up after Minimize player'); }
-	if (!(await find('Pause', { timeout: 3_000 }))) { screenshot('minimize'); fail('minimizing stopped the reading'); }
-	log(`pill: ${pill.desc}`);
+	const playingRe = /^Listening — .+:\d+, expand player$/;
+	const indicator = await find(playingRe, { timeout: 5_000 });
+	if (!indicator) { screenshot('minimize'); fail('Minimize player did not fold the bar into the Listen button'); }
+	if (await find('Stop Listening', { timeout: 1_000 }) || await find('Minimize player', { timeout: 500 })) { screenshot('minimize'); fail('the bar stayed over the text after Minimize player'); }
+	log(`minimized: ${indicator.desc}`);
+	let moved = null;
+	for (const deadline = Date.now() + 25_000; Date.now() < deadline && !moved;) {
+		const now = await find(playingRe, { timeout: 2_000 });
+		if (now && now.desc !== indicator.desc) moved = now;
+		else await sleep(1_000);
+	}
+	if (!moved) { screenshot('minimized'); fail(`reading stopped advancing while minimized (still "${indicator.desc}")`); }
+	log(`still reading: ${moved.desc}`);
 	screenshot('listen-minimized');
-	await tap('Pause');
-	if (!(await find('Play', { timeout: 5_000 }))) { screenshot('pill'); fail("the pill's Pause did not pause"); }
-	await tap('Play');
-	if (!(await find('Pause', { timeout: 10_000 }))) { screenshot('pill'); fail("the pill's Play did not play"); }
 	alive('Listen minimized');
-	await tap(/^Expand player, /);
-	if (!(await find('Stop Listening', { timeout: 5_000 }))) { screenshot('expand'); fail('the pill did not open the bar'); }
+	// Tapping the Listen button expands the bar; it neither pauses nor starts again.
+	await tap(playingRe);
+	if (!(await find('Stop Listening', { timeout: 5_000 }))) { screenshot('expand'); fail('the Listen button did not open the bar'); }
+	if (!(await find('Pause', { timeout: 3_000 }))) { screenshot('expand'); fail('expanding interrupted the reading'); }
+	// Paused and minimized: the button says so, and still expands.
+	await tap('Pause');
+	if (!(await find('Play', { timeout: 5_000 }))) { screenshot('pause'); fail('Pause did not pause'); }
+	await tap('Minimize player');
+	if (!(await find(/^Paused — .+, expand player$/, { timeout: 5_000 }))) { screenshot('paused'); fail('the minimized Listen button does not show the pause'); }
+	screenshot('listen-minimized-paused');
+	await tap(/^Paused — /);
+	await tap('Play');
+	if (!(await find('Pause', { timeout: 10_000 }))) { screenshot('play'); fail('Play did not play'); }
 	// A swipe down on the bar minimizes it too.
 	const chevron = await find('Minimize player', { timeout: 3_000 });
 	if (!chevron) fail('the bar has no Minimize player');
 	const [cx, cy] = center(chevron);
 	shell(`input swipe ${cx + 120} ${cy} ${cx + 120} ${cy + 260} 250`);
-	if (!(await find(/^Expand player, /, { timeout: 5_000 }))) { screenshot('swipe'); fail('swiping the bar down did not minimize it'); }
-	await tap(/^Expand player, /);
+	if (!(await find(playingRe, { timeout: 5_000 }))) { screenshot('swipe'); fail('swiping the bar down did not minimize it'); }
+	await tap(playingRe);
 	alive('Listen expanded again');
 	await tap('Stop Listening');
-	if (await find(/^Expand player, /, { timeout: 1_500 })) { screenshot('stop'); fail('the pill outlived Stop'); }
+	if (!(await find('Listen', { timeout: 3_000 }))) { screenshot('stop'); fail('the Listen button still shows a session after Stop'); }
 
 	// The share card: select a verse, Share › Share Image…, then export it to the share sheet.
 	const verse = nodes(dump()).find((n) => /^Verse \d+\./.test(n.desc) && n.bounds[1] > 400);

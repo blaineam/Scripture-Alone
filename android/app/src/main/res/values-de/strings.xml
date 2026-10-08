@@ -44,8 +44,9 @@
     <string name="listen_scroll_brisk">Zügig</string>
     <string name="listen_stop">Vorlesen beenden</string>
     <string name="listen_minimize">Player minimieren</string>
-    <string name="listen_expand">Player öffnen</string>
-    <string name="listen_minimize_hint">Das Vorlesen geht weiter.</string>
+    <string name="listen_minimized_playing">Vorlesen — %1$s, Player öffnen</string>
+    <string name="listen_minimized_paused">Angehalten — %1$s, Player öffnen</string>
+    <string name="listen_minimized_muted">Vorlesen, durch Lautlos-Modus stumm — %1$s, Player öffnen</string>
     <string name="listen_paused">Pausiert</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">Schließen</string>

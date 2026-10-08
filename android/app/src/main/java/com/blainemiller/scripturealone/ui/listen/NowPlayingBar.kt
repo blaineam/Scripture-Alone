@@ -9,6 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +33,6 @@ import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FastRewind
 import androidx.compose.material.icons.rounded.Headphones
@@ -86,8 +86,8 @@ import com.blainemiller.scripturealone.ui.reader.glass
  * being read and the voice and speed beneath it; previous verse, play/pause, next verse; the speed
  * menu; the options menu (voice, Continue to Next Chapter, sleep timer — its icon a moon while a timer
  * runs); and Stop. A notice, when there is one, sits in a row above with its own dismiss button.
- * The chevron centred on its top edge (or a swipe down on the bar) minimizes it to [ListenPill] while reading
- * goes on; the ✕ at the far end is Stop.
+ * The chevron centred on its top edge (or a swipe down on the bar) minimizes it into the bottom bar's
+ * Listen button while reading goes on; the ✕ at the far end is Stop.
  */
 @Composable
 fun NowPlayingBar(listen: ListenController, palette: ReaderPalette, modifier: Modifier = Modifier) {
@@ -144,64 +144,6 @@ fun NowPlayingBar(listen: ListenController, palette: ReaderPalette, modifier: Mo
 
 /** How far a downward swipe on the bar must travel to minimize it. */
 private const val SWIPE_DOWN_DP = 36
-
-/**
- * The minimized player — `ListenPill` in `ScriptureAlone/Listen/NowPlayingBar.swift`: a small glass
- * pill with play/pause and the verse being read, at the end edge of the page while reading goes on.
- * Tapping the reference opens the full bar again. When the phone's silent or vibrate setting muted the
- * session, a bell button unmutes it from here.
- */
-@Composable
-fun ListenPill(listen: ListenController, palette: ReaderPalette, modifier: Modifier = Modifier) {
-    val expand = stringResource(R.string.listen_expand)
-    val reference = listen.nowPlayingTitle
-    Row(
-        modifier
-            .testTag("listen.pill")
-            .glass(palette, CircleShape, lifted = true, opacity = 0.985f)
-            .takesTaps()
-            .padding(horizontal = 4.dp, vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (listen.phase is ListenController.Phase.Preparing) {
-            val preparing = stringResource(R.string.listen_preparing)
-            Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(
-                    color = palette.secondary, strokeWidth = 2.dp,
-                    modifier = Modifier.size(18.dp).semantics { contentDescription = preparing },
-                )
-            }
-        } else {
-            val playing = listen.isPlaying
-            BarButton(
-                if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                stringResource(if (playing) R.string.listen_pause else R.string.listen_play),
-                palette.ink, width = 40.dp, height = 40.dp, iconSize = 26.dp,
-            ) { listen.togglePlayPause() }
-        }
-        Row(
-            Modifier
-                .heightIn(min = 40.dp)
-                .clip(CircleShape)
-                .clickable(role = Role.Button, onClickLabel = expand) { listen.expand() }
-                .semantics(mergeDescendants = true) {
-                    // "Expand player, John 3:16" — the action, then the verse being read.
-                    contentDescription = "$expand, $reference"
-                }
-                .padding(start = 2.dp, end = if (listen.isMuted) 4.dp else 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            Text(reference, color = palette.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Icon(Icons.Rounded.KeyboardArrowUp, null, tint = palette.secondary, modifier = Modifier.size(18.dp))
-        }
-        if (listen.isMuted) {
-            BarButton(Icons.Rounded.NotificationsOff, stringResource(R.string.listen_unmute), palette.accent, width = 36.dp, height = 40.dp, iconSize = 20.dp) {
-                listen.unmute()
-            }
-        }
-    }
-}
 
 private fun status(listen: ListenController): String = when (val phase = listen.phase) {
     is ListenController.Phase.Preparing -> phase.message
@@ -391,6 +333,8 @@ internal fun Choice(title: String, selected: Boolean, palette: ReaderPalette, on
  * Listen and Auto-Scroll, between the chapter arrows in the bottom bar — the iPhone toolbar's middle.
  * Auto-Scroll: tap to start or pause; hold for the speed menu (iOS's `Menu` with a primary action).
  * Listen: starts reading from the verse at the top of the screen, and is play/pause once the bar is up.
+ * With the bar minimized it is the player — filled while reading, an outlined ring while paused, a small
+ * bell when the phone's silent setting muted the session — and a tap opens the bar again.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -401,12 +345,20 @@ fun ListenAndScrollControls(
     onToggleAutoScroll: () -> Unit,
     onPickSpeed: (Double) -> Unit,
     listening: Boolean,
+    minimized: Boolean = false,
+    muted: Boolean = false,
+    reference: String = "",
     onListen: () -> Unit,
 ) {
     var menu by remember { mutableStateOf(false) }
     val chooseSpeed = stringResource(R.string.listen_choose_scroll_speed)
     val scrollDescription = stringResource(if (autoScrolling) R.string.listen_pause_scrolling else R.string.listen_auto_scroll)
-    val listenDescription = stringResource(if (listening) R.string.listen_pause_listening else R.string.listen_listen)
+    val listenDescription = when {
+        !minimized -> stringResource(if (listening) R.string.listen_pause_listening else R.string.listen_listen)
+        listening && muted -> stringResource(R.string.listen_minimized_muted, reference)
+        listening -> stringResource(R.string.listen_minimized_playing, reference)
+        else -> stringResource(R.string.listen_minimized_paused, reference)
+    }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box {
             Box(
@@ -440,8 +392,22 @@ fun ListenAndScrollControls(
                 Box(Modifier.size(28.dp).clip(CircleShape).background(palette.accent), contentAlignment = Alignment.Center) {
                     Icon(Icons.Rounded.Headphones, null, tint = palette.page, modifier = Modifier.size(17.dp))
                 }
+            } else if (minimized) {
+                // headphones.circle: a paused session, its bar minimized.
+                Box(Modifier.size(28.dp).clip(CircleShape).border(2.dp, palette.accent, CircleShape), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Rounded.Headphones, null, tint = palette.accent, modifier = Modifier.size(16.dp))
+                }
             } else {
                 Icon(Icons.Rounded.Headphones, null, tint = palette.accent, modifier = Modifier.size(27.dp))
+            }
+            if (minimized && muted) {
+                // The silent setting muted the session: a small bell badge; the bar's Unmute is a tap away.
+                Box(
+                    Modifier.align(Alignment.TopEnd).offset(x = (-4).dp, y = 4.dp).size(15.dp).clip(CircleShape).background(Color(0xFFE53935)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Rounded.NotificationsOff, null, tint = Color.White, modifier = Modifier.size(10.dp))
+                }
             }
         }
     }

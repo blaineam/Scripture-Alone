@@ -44,8 +44,9 @@
     <string name="listen_scroll_brisk">Rápida</string>
     <string name="listen_stop">Parar de ouvir</string>
     <string name="listen_minimize">Minimizar player</string>
-    <string name="listen_expand">Expandir player</string>
-    <string name="listen_minimize_hint">A leitura continua.</string>
+    <string name="listen_minimized_playing">Ouvindo — %1$s, expandir player</string>
+    <string name="listen_minimized_paused">Pausado — %1$s, expandir player</string>
+    <string name="listen_minimized_muted">Ouvindo, silenciado pelo modo silencioso — %1$s, expandir player</string>
     <string name="listen_paused">Pausado</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">Dispensar</string>

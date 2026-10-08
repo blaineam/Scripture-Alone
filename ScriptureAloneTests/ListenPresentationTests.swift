@@ -1,8 +1,8 @@
 import Testing
 @testable import Scripture_Alone
 
-/// How the Listen player shows: hidden, the full bar, or the minimized pill — and Silent mode's mute,
-/// which the pill also shows. (Mirrors Android's ListenPresentationTest and ListenMuteTest.)
+/// How the Listen player shows: hidden, the full bar, or minimized into the toolbar's
+/// Listen button — and Silent mode's mute, which that button also shows. (Mirrors Android's ListenPresentationTest and ListenMuteTest.)
 struct ListenPresentationTests {
     @Test func startsHiddenAndASessionOpensTheFullBar() {
         var player = ListenPresentation()
@@ -36,7 +36,7 @@ struct ListenPresentationTests {
         var player = ListenPresentation()
         player.sessionStarted()
         player.minimize()
-        // Listen again (a selection, the toolbar after Stop, an intent) while the pill is up.
+        // Listen again (a selection, the toolbar after Stop, an intent) while minimized.
         player.sessionStarted()
         #expect(player.mode == .expanded)
         player.minimize()
@@ -45,7 +45,7 @@ struct ListenPresentationTests {
         #expect(player.mode == .expanded, "minimizing is never remembered past a session")
     }
 
-    @Test func stopHidesTheBarAndThePill() {
+    @Test func stopEndsTheBarAndTheMinimizedPlayer() {
         var player = ListenPresentation()
         player.sessionStarted()
         player.sessionEnded()
@@ -56,18 +56,18 @@ struct ListenPresentationTests {
         #expect(player.mode == .hidden)
     }
 
-    @Test func theEndOfReadingClosesThePillButLeavesTheBar() {
+    @Test func theEndOfReadingClosesAMinimizedPlayerButLeavesTheBar() {
         var player = ListenPresentation()
         player.sessionStarted()
         let barCloses = player.passEndedCloses(withNotice: false)
         #expect(!barCloses, "the full bar stays up, paused, to read again")
         #expect(player.mode == .expanded)
         player.minimize()
-        let pillCloses = player.passEndedCloses(withNotice: false)
-        #expect(pillCloses, "the pill goes away when reading ends")
+        let minimizedCloses = player.passEndedCloses(withNotice: false)
+        #expect(minimizedCloses, "a minimized session ends when reading ends")
     }
 
-    @Test func aNoticeOpensThePill() {
+    @Test func aNoticeExpandsAMinimizedPlayer() {
         var player = ListenPresentation()
         player.sessionStarted()
         player.minimize()

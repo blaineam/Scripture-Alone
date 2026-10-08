@@ -12939,60 +12939,6 @@
         }
       }
     },
-    "Expand player" : {
-      "comment" : "Accessibility label and button: open the full read-aloud bar from its minimized pill",
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Player öffnen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Expandir reproductor"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agrandir le lecteur"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Espandi il lettore"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "プレーヤーを開く"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "플레이어 펼치기"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Expandir player"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "展开播放器"
-          }
-        }
-      }
-    },
     "Export" : {
       "comment" : "Fallback file name for an export with no title",
       "localizations" : {
@@ -20630,6 +20576,114 @@
         }
       }
     },
+    "Listening — %@, expand player" : {
+      "comment" : "Label of the Listen button while the read-aloud player is minimized and reading. %@ is the verse being read, e.g. “Ephesians 2:3”.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorlesen — %@, Player öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escuchando — %@, expandir reproductor"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Écoute en cours — %@, agrandir le lecteur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In ascolto — %@, espandi il lettore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生中 — %@、プレーヤーを開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "듣는 중 — %@, 플레이어 펼치기"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvindo — %@, expandir player"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在聆听 — %@，展开播放器"
+          }
+        }
+      }
+    },
+    "Listening, muted by Silent mode — %@, expand player" : {
+      "comment" : "Label of the Listen button while the read-aloud player is minimized and reading without sound because the iPhone is in Silent mode. %@ is the verse being read, e.g. “Ephesians 2:3”.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorlesen, durch Stummmodus stumm — %@, Player öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escuchando, silenciado por el modo silencio — %@, expandir reproductor"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Écoute en cours, muette (mode silencieux) — %@, agrandir le lecteur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In ascolto, silenziato dalla modalità silenziosa — %@, espandi il lettore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生中（消音モードで消音中） — %@、プレーヤーを開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "듣는 중, 무음 모드로 음소거됨 — %@, 플레이어 펼치기"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvindo, silenciado pelo modo silencioso — %@, expandir player"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在聆听，因静音模式而静音 — %@，展开播放器"
+          }
+        }
+      }
+    },
     "Loading voice…" : {
       "localizations" : {
         "de" : {
@@ -21586,7 +21640,7 @@
       }
     },
     "Minimize player" : {
-      "comment" : "Accessibility action and button: hide the read-aloud bar behind a small pill while reading continues",
+      "comment" : "Accessibility action and button: hide the read-aloud bar into the Listen button while reading continues",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -27372,6 +27426,60 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已暂停"
+          }
+        }
+      }
+    },
+    "Paused — %@, expand player" : {
+      "comment" : "Label of the Listen button while the read-aloud player is minimized and paused. %@ is the verse being read, e.g. “Ephesians 2:3”.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Angehalten — %@, Player öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En pausa — %@, expandir reproductor"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En pause — %@, agrandir le lecteur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In pausa — %@, espandi il lettore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一時停止中 — %@、プレーヤーを開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일시 정지됨 — %@, 플레이어 펼치기"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausado — %@, expandir player"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已暂停 — %@，展开播放器"
           }
         }
       }

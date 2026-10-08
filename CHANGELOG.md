@@ -3,14 +3,15 @@
 ## After 1.0.0
 
 - Minimize the Listen player without stopping it. The chevron on the player's top edge (or a swipe
-  down on it) tucks it into a small pill in the corner of the page, showing the verse being read
-  with play and pause; reading goes on, the verse stays marked and the columns keep turning. Tap
-  the pill to bring the full player back; ✕ still stops listening. When Silent mode (silent or
-  vibrate on Android) muted the session, the pill has a bell to unmute. The pill goes away when
-  reading ends or listening is stopped (on Android, also from the notification), and each new
-  Listen opens the full player. ⌥⌘L (Ctrl+Alt+L on Android and Chromebooks) minimizes and expands it; VoiceOver and
-  TalkBack name Minimize player, Expand player and the verse. All nine languages. On iPhone, iPad,
-  Mac and Android.
+  down on it, or ⌥⌘L — Ctrl+Alt+L on Android and Chromebooks) folds the player into the Listen
+  (headphones) button in the toolbar: nothing is left over the text, and reading goes on — the verse
+  stays marked, the columns keep turning, the lock screen keeps its controls. The button shows the
+  session: filled while reading, an outlined ring while paused, and a small bell badge when Silent
+  mode (silent or vibrate on Android) muted it. Tap it to bring the full player back, with Unmute
+  when muted; ✕ in the player still stops. When reading ends or listening is stopped (on Android,
+  also from the notification) the button goes back to Listen, and each new Listen opens the full
+  player. VoiceOver and TalkBack read the button as "Listening — Ephesians 2:3, expand player" (or
+  Paused). All nine languages. On iPhone, iPad, Mac and Android.
 
 - A better verse image. The designer opens on a row of ready-made **Styles** — each a background
   with the text color, shadow and typeface made for it, so one tap gives a finished card:

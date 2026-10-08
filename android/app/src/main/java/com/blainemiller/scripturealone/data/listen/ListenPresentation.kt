@@ -1,8 +1,8 @@
 package com.blainemiller.scripturealone.data.listen
 
 /**
- * How the Listen player shows: not at all, as the full Now Playing bar, or minimized to a small pill
- * while reading goes on (the verse stays marked and the columns keep turning) — `ListenPresentation`
+ * How the Listen player shows: not at all, as the full Now Playing bar, or minimized into the bottom bar's
+ * Listen button while reading goes on (the verse stays marked and the columns keep turning) — `ListenPresentation`
  * in `ScriptureAlone/Listen/ListenController.swift`.
  *
  * Every new listening session opens the full bar: it carries Stop, the silent-mode Unmute, the voice
@@ -18,7 +18,7 @@ class ListenPresentation {
     val isPresented: Boolean get() = mode != Mode.HIDDEN
     val isMinimized: Boolean get() = mode == Mode.MINIMIZED
 
-    /** Listen started (the toolbar, a selection, a shortcut): the full bar, even if a pill was up. */
+    /** Listen started (the toolbar, a selection, a shortcut): the full bar, even if the player was minimized. */
     fun sessionStarted() {
         mode = Mode.EXPANDED
     }
@@ -28,7 +28,7 @@ class ListenPresentation {
         if (mode == Mode.EXPANDED) mode = Mode.MINIMIZED
     }
 
-    /** The reader tapped the pill. */
+    /** The reader tapped the minimized player's Listen button. */
     fun expand() {
         if (mode == Mode.MINIMIZED) mode = Mode.EXPANDED
     }
@@ -38,7 +38,7 @@ class ListenPresentation {
         mode = Mode.HIDDEN
     }
 
-    /** Something to tell the reader: the pill opens into the bar, where the notice shows. */
+    /** Something to tell the reader: a minimized player opens into the bar, where the notice shows. */
     fun noticeShown() {
         if (mode == Mode.MINIMIZED) mode = Mode.EXPANDED
     }

@@ -40,7 +40,7 @@ enum class ReaderCommand(@StringRes private val titleRes: Int) {
  * | ⇧⌘M | Ctrl+Shift+M | Maps & Timeline (Study's Context tab) |
  * | ⌘D | Ctrl+D | Favorite the selection |
  * | ⌘+ / ⌘− | Ctrl+= (or +) / Ctrl+− | Text size, a point at a time |
- * | ⌥⌘L | Ctrl+Alt+L | Minimize the Listen player to its pill, or expand it again |
+ * | ⌥⌘L | Ctrl+Alt+L | Minimize the Listen player into the Listen button, or expand it again |
  * | Esc | Esc | Clear the selection — Android turns an unhandled Esc into Back, which the reader handles |
  *
  * Share Designer's ⌘S (Save Image…) is Mac-only on iOS and isn't carried over. Pure apart from

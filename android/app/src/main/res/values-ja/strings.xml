@@ -44,8 +44,9 @@
     <string name="listen_scroll_brisk">速め</string>
     <string name="listen_stop">読み上げを停止</string>
     <string name="listen_minimize">プレーヤーをしまう</string>
-    <string name="listen_expand">プレーヤーを開く</string>
-    <string name="listen_minimize_hint">読み上げは続きます。</string>
+    <string name="listen_minimized_playing">再生中 — %1$s、プレーヤーを開く</string>
+    <string name="listen_minimized_paused">一時停止中 — %1$s、プレーヤーを開く</string>
+    <string name="listen_minimized_muted">再生中（マナーモードで消音中） — %1$s、プレーヤーを開く</string>
     <string name="listen_paused">一時停止中</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">閉じる</string>

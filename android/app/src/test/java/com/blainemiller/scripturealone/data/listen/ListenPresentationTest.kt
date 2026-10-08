@@ -6,7 +6,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** The Listen player's bar and pill — mirrors iOS's ListenPresentationTests. */
+/** The Listen player's full bar or minimized into the Listen button — mirrors iOS's ListenPresentationTests. */
 class ListenPresentationTest {
 
     @Test
@@ -54,7 +54,7 @@ class ListenPresentationTest {
     }
 
     @Test
-    fun stopHidesTheBarAndThePill() {
+    fun stopEndsTheBarAndTheMinimizedPlayer() {
         val player = ListenPresentation()
         player.sessionStarted()
         player.minimize()
@@ -63,17 +63,17 @@ class ListenPresentationTest {
     }
 
     @Test
-    fun theEndOfReadingClosesThePillButLeavesTheBar() {
+    fun theEndOfReadingClosesAMinimizedPlayerButLeavesTheBar() {
         val player = ListenPresentation()
         player.sessionStarted()
         assertFalse("the full bar stays up, paused, to read again", player.passEndedCloses(withNotice = false))
         assertEquals(Mode.EXPANDED, player.mode)
         player.minimize()
-        assertTrue("the pill goes away when reading ends", player.passEndedCloses(withNotice = false))
+        assertTrue("a minimized session ends when reading ends", player.passEndedCloses(withNotice = false))
     }
 
     @Test
-    fun aNoticeOpensThePill() {
+    fun aNoticeExpandsAMinimizedPlayer() {
         val player = ListenPresentation()
         player.sessionStarted()
         player.minimize()

@@ -61,7 +61,6 @@ import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.listen.AutoScroll
 import com.blainemiller.scripturealone.ui.listen.ListenAndScrollControls
 import com.blainemiller.scripturealone.ui.listen.ListenController
-import com.blainemiller.scripturealone.ui.listen.ListenPill
 import com.blainemiller.scripturealone.ui.listen.NowPlayingBar
 import com.blainemiller.scripturealone.ui.listen.rememberListenStart
 import kotlinx.coroutines.CancellationException
@@ -254,6 +253,11 @@ fun ReaderScreen(
         listenStart { scope.launch { listen.playSelection(model.translationId, model.rights, model.chapter?.translation?.language, model.verses(ranges)) } }
     })
     fun listenFromTop() {
+        // Minimized, the Listen button is the player: it opens the bar again.
+        if (listen?.isPresented == true && listen.isMinimized) {
+            listen.expand()
+            return
+        }
         val chapter = model.chapter?.takeIf { it.ref == model.location && it.translation.id == model.translationId } ?: return
         val top = model.topVerse?.let(VerseRef::fromKey)
             ?.takeIf { it.book == chapter.ref.book && it.chapter == chapter.ref.chapter }?.verse ?: 1
@@ -544,31 +548,23 @@ fun ReaderScreen(
                         autoScrolling = true
                     },
                     listening = listening && listen?.isPlaying == true,
+                    minimized = listening && listen?.isMinimized == true,
+                    muted = listen?.isMuted == true,
+                    reference = listen?.nowPlayingTitle.orEmpty(),
                     onListen = ::listenFromTop,
                 )
             }
             // The Now Playing bar above the selection bar, both above the toolbar — iOS's bottom inset.
             Column(
-                // Full width so the pill can sit at the end; a Column takes no touches, so the page
-                // beside the pill stays tappable.
                 Modifier.align(Alignment.BottomCenter)
-                    .fillMaxWidth()
                     .windowInsetsPadding(SystemBars.bottomSafe)
                     .padding(start = 16.dp, end = 16.dp, bottom = 10.dp + 52.dp + 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                // Minimized, the player is a small pill at the end edge: reading goes on (the verse stays
-                // marked, the columns keep turning) with the page clear.
+                // Minimized, the bar folds into the bottom bar's Listen button and nothing floats over
+                // the text; reading goes on (the verse stays marked, the columns keep turning).
                 val minimized = listen?.isMinimized == true
-                AnimatedVisibility(
-                    listening && minimized,
-                    modifier = Modifier.align(Alignment.End),
-                    enter = slideInVertically { it / 2 } + fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    listen?.let { CappedFontScale { ListenPill(it, palette) } }
-                }
                 AnimatedVisibility(
                     listening && !minimized,
                     enter = slideInVertically { it / 2 } + fadeIn(),

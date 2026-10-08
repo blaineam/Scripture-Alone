@@ -92,7 +92,7 @@ class ListenController private constructor(private val app: Context) {
     private var noticeState by mutableStateOf<String?>(null)
     /**
      * A short note for the bar — a sleep timer that ended, a voice that couldn't be used. A notice opens
-     * a minimized player again: the pill has no room to say it.
+     * a minimized player again: the Listen button has no room to say it.
      */
     var notice: String?
         get() = noticeState
@@ -100,12 +100,12 @@ class ListenController private constructor(private val app: Context) {
             noticeState = value
             if (value != null) present { noticeShown() }
         }
-    /** Whether the player is up, and as the full bar or the minimized pill ([ListenPresentation]). */
+    /** Whether the player is up, and as the full bar or minimized into the Listen button ([ListenPresentation]). */
     private val presentation = ListenPresentation()
     private var presentationMode by mutableStateOf(ListenPresentation.Mode.HIDDEN)
-    /** True while the player — the full bar or the pill — should show. */
+    /** True while the player — the full bar, or minimized into the Listen button — is up. */
     val isPresented: Boolean get() = presentationMode != ListenPresentation.Mode.HIDDEN
-    /** The reader minimized the player: the pill shows instead of the bar while reading goes on. */
+    /** The reader minimized the player: no bar over the text; the Listen button shows the session. */
     val isMinimized: Boolean get() = presentationMode == ListenPresentation.Mode.MINIMIZED
 
     private inline fun present(change: ListenPresentation.() -> Unit) {
@@ -471,15 +471,15 @@ class ListenController private constructor(private val app: Context) {
 
     // MARK: Minimizing
 
-    /** Hides the bar behind the small pill; reading, the marked verse and the page turns go on. */
+    /** Hides the bar into the Listen button; reading, the marked verse and the page turns go on. */
     fun minimize() = present { minimize() }
 
-    /** Opens the full bar again from the pill. */
+    /** Opens the full bar again (the Listen button, while minimized). */
     fun expand() = present { expand() }
 
     /**
      * Leaves the bar up, paused at the start of what was read, so play reads it again — unless the
-     * player was minimized: then reading has simply ended, and the pill goes away with it.
+     * player was minimized: then reading has simply ended, and the Listen button goes back to Listen.
      */
     private fun endPass(notice: String?) {
         var closes = false

@@ -76,8 +76,9 @@
     <!-- Now-playing bar button (accessibility label). -->
     <string name="listen_stop">Stop Listening</string>
     <string name="listen_minimize">Minimize player</string>
-    <string name="listen_expand">Expand player</string>
-    <string name="listen_minimize_hint">Listening continues.</string>
+    <string name="listen_minimized_playing">Listening — %1$s, expand player</string>
+    <string name="listen_minimized_paused">Paused — %1$s, expand player</string>
+    <string name="listen_minimized_muted">Listening, muted by silent mode — %1$s, expand player</string>
     <!-- Now-playing status line while paused. -->
     <string name="listen_paused">Paused</string>
     <!-- Now-playing status line. %1$s is the voice's name, %2$s the speed, e.g. "System Voice · 1.25×". -->
