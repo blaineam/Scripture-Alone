@@ -1,6 +1,9 @@
 package com.blainemiller.scripturealone.app
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.view.KeyEvent
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
@@ -44,10 +47,14 @@ class ReaderFlowsTest : AppTest() {
         launch()
         tapDesc(verse1)
         assertShown("the selection bar", desc("Clear Selection"))
+        // Selected, the verse is underlined (dotted), not filled.
+        val selected = yellowPixels(verse1)
         tapDesc("Highlight Yellow")
         // TalkBack hears the highlight on the verse; the reader draws it as one rounded band.
         val state = desc(verse1).onFirst().fetchSemanticsNode().config.getOrNull(SemanticsProperties.StateDescription)
         assertEquals("Highlighted yellow", state?.substringBefore(',')?.trim())
+        val highlighted = yellowPixels(verse1)
+        assertTrue("the highlight is painted behind the verse ($selected → $highlighted)", highlighted > selected * 4 + 200)
 
         // Highlighting ends the selection, as on iOS; select the verse again to favorite it.
         assertFalse("highlighting clears the selection", desc("Clear Selection").exists())
@@ -63,6 +70,28 @@ class ReaderFlowsTest : AppTest() {
         waitFor("John 1:1 under Highlights") { text("John 1:1").exists() }
         tapText("Favorites")
         waitFor("John 1:1 under Favorites") { text("John 1:1").exists() }
+    }
+
+    /**
+     * Yellow-highlighter pixels drawn where [verse]'s node lies (every other pixel, as a count): the
+     * window drawn in software, which runs the reader's own drawBehind (`verseMarks`).
+     */
+    private fun yellowPixels(verse: String): Int {
+        val bounds = desc(verse).onFirst().fetchSemanticsNode().boundsInWindow
+        var image: Bitmap? = null
+        scenario!!.onActivity { activity ->
+            val root = activity.window.decorView
+            image = Bitmap.createBitmap(root.width, root.height, Bitmap.Config.ARGB_8888).also { root.draw(Canvas(it)) }
+        }
+        val bitmap = image!!
+        var count = 0
+        for (x in bounds.left.toInt().coerceAtLeast(0) until bounds.right.toInt().coerceAtMost(bitmap.width) step 2) {
+            for (y in bounds.top.toInt().coerceAtLeast(0) until bounds.bottom.toInt().coerceAtMost(bitmap.height) step 2) {
+                val c = bitmap.getPixel(x, y)
+                if (Color.red(c) > 200 && Color.green(c) > 160 && Color.blue(c) < Color.red(c) - 60) count++
+            }
+        }
+        return count
     }
 
     @Test fun theVerseImageDesignerSavesOnCtrlS() {
