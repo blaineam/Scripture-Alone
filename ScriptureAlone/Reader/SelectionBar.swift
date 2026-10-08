@@ -22,11 +22,14 @@ struct SelectionBar: View {
                 Spacer()
                 Button { ListenController.shared.playSelection(in: model) } label: {
                     Label("Listen", systemImage: "headphones").font(.subheadline.weight(.semibold))
+                        .contentShape(.rect)
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.tint)
                 Button { model.selection.removeAll() } label: {
                     Image(systemName: "xmark").font(.subheadline.weight(.semibold))
+                        .frame(minWidth: 28, minHeight: 28)
+                        .contentShape(.rect)
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
@@ -138,7 +141,9 @@ struct SelectionBar: View {
     /// One flexible slot in the action row: shrinks with the bar, never below a 28-pt target.
     private struct BarCell: ViewModifier {
         func body(content: Content) -> some View {
-            content.frame(minWidth: 28, maxWidth: .infinity, minHeight: 36)
+            // The whole cell is the control: the bar floats over the page, and a tap in a symbol's
+            // open middle (a heart, an eraser) must not fall through to the text.
+            content.frame(minWidth: 28, maxWidth: .infinity, minHeight: 36).contentShape(.rect)
         }
     }
 

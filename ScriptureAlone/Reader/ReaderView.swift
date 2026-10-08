@@ -46,6 +46,8 @@ struct ReaderView: View {
     @State private var pendingNote: UUID?
     @State private var autoScrolling = false
     @State private var study = StudyModel()
+    /// The spread the column reader shows: the bottom bar's arrows turn it (`ColumnSpreads`).
+    @State private var spreads = ColumnSpreads()
     @Environment(ShareCoordinator.self) private var shareCoordinator
 
     #if os(iOS)
@@ -73,7 +75,7 @@ struct ReaderView: View {
                                                               verseCount: model.source?.verseCount(model.location) ?? 0),
                         style: style, autoScrollSpeed: autoScrolling ? autoScrollSpeed : 0,
                         onTap: handle, onReachedEnd: advanceWhileScrolling, onUserScroll: { autoScrolling = false },
-                        coveredBySheet: studySheetShown.wrappedValue, tappedVerse: tappedVerse)
+                        coveredBySheet: studySheetShown.wrappedValue, tappedVerse: tappedVerse, spreads: spreads)
                 .ignoresSafeArea(edges: .bottom)
                 .background(Color(style.palette.page))
                 .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { readerWidth = $0 }
@@ -100,15 +102,21 @@ struct ReaderView: View {
                         TranslationDownloadBanner()
                     }
                 }
-                .safeAreaInset(edge: .bottom) {
+                // The Now Playing and selection bars float over the page: they come and go, and
+                // nothing under them is lost when they close, so the page never gives up room to
+                // them — the columns and the column decision measure the whole page between the
+                // top and bottom bars.
+                .overlay(alignment: .bottom) {
                     VStack(spacing: 8) {
                         if ListenController.shared.isListening(in: model) {
                             NowPlayingBar()
+                                .takesTaps(cornerRadius: 24)
                                 .padding(.horizontal)
                                 .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
                         if !model.selection.isEmpty {
                             SelectionBar(onNote: createNoteFromSelection)
+                                .takesTaps(cornerRadius: 26)
                                 .padding(.horizontal)
                                 .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
@@ -353,16 +361,34 @@ struct ReaderView: View {
         Binding(get: { study.isOn && studyAsSheet && !showNotes }, set: { if !$0 { study.isOn = false } })
     }
 
+    /// In the column reader the arrows turn spreads, and change the chapter past the first or last
+    /// one (`ColumnSpreads`); in the scrolling reader they change the chapter.
     private var previousButton: some View {
-        Button { model.previous() } label: { Label("Previous Chapter", systemImage: "chevron.left") }
-            .disabled(model.location.previous == nil)
+        Button {
+            if spreads.active { spreads.turn(forward: false) } else { model.previous() }
+        } label: {
+            if spreads.hasPrevious {
+                Label("Previous Page", systemImage: "chevron.left")
+            } else {
+                Label("Previous Chapter", systemImage: "chevron.left")
+            }
+        }
+            .disabled(!spreads.hasPrevious && model.location.previous == nil)
             .keyboardShortcut("[", modifiers: .command)
             .accessibilityIdentifier("reader.previousChapter")
     }
 
     private var nextButton: some View {
-        Button { model.next() } label: { Label("Next Chapter", systemImage: "chevron.right") }
-            .disabled(model.location.next == nil)
+        Button {
+            if spreads.active { spreads.turn(forward: true) } else { model.next() }
+        } label: {
+            if spreads.hasNext {
+                Label("Next Page", systemImage: "chevron.right")
+            } else {
+                Label("Next Chapter", systemImage: "chevron.right")
+            }
+        }
+            .disabled(!spreads.hasNext && model.location.next == nil)
             .keyboardShortcut("]", modifiers: .command)
             .accessibilityIdentifier("reader.nextChapter")
     }
@@ -666,6 +692,7 @@ private struct ChapterPane: View {
     /// The iPhone Study sheet is up over the lower part of the page.
     let coveredBySheet: Bool
     let tappedVerse: Int?
+    let spreads: ColumnSpreads
 
     @Query private var highlights: [Highlight]
     @Query(sort: \Note.updatedAt, order: .reverse) private var notes: [Note]
@@ -679,8 +706,9 @@ private struct ChapterPane: View {
     ///   — where its highlights are stored, which is not always this chapter's own numbers.
     init(chapter: ChapterRef, markKeys: ClosedRange<Int>, style: ReaderStyle, autoScrollSpeed: Double,
          onTap: @escaping (ChapterTap) -> Void, onReachedEnd: @escaping () -> Void, onUserScroll: @escaping () -> Void,
-         coveredBySheet: Bool, tappedVerse: Int?) {
+         coveredBySheet: Bool, tappedVerse: Int?, spreads: ColumnSpreads) {
         self.chapter = chapter
+        self.spreads = spreads
         self.coveredBySheet = coveredBySheet
         self.tappedVerse = tappedVerse
         self.style = style
@@ -702,11 +730,14 @@ private struct ChapterPane: View {
         // text beneath another's reference.
         if let layout = model.layout, model.layoutChapter == chapter, let source = model.source {
             let input = renderInput(source: source)
-            // Side-by-side columns when the window is wide enough for two at a comfortable
-            // measure, as a printed page is set; one scrolling column otherwise, and while the
-            // page scrolls itself.
+            // Side-by-side columns when each holds a comfortable measure of the reader's own font,
+            // as a printed page is set; one scrolling column otherwise, and while the page scrolls
+            // itself.
             GeometryReader { geometry in
-                let columns = ReaderColumns.count(width: geometry.size.width, height: geometry.size.height, fontSize: style.size)
+                let columns = ReaderColumns.count(width: geometry.size.width, height: geometry.size.height,
+                                                  safeTop: geometry.safeAreaInsets.top,
+                                                  safeBottom: geometry.safeAreaInsets.bottom,
+                                                  compactHeight: shortPage, metrics: columnMetrics)
                 // The iPhone Study sheet rests at a little under half the screen, and the maps and
                 // places it opens come up to about half: the text keeps to the half above them.
                 let covered = coveredBySheet
@@ -714,7 +745,7 @@ private struct ChapterPane: View {
                     // A phone held sideways: a short page, so a one-line chapter header.
                     let paged = input.withCompactHeader(shortPage)
                     ColumnChapterView(configuration: configuration(cache.render(layout: layout, input: paged, style: style)),
-                                      columns: columns)
+                                      columns: columns, spreads: spreads)
                 } else {
                     let configuration = configuration(cache.render(layout: layout, input: input, style: style))
                     ChapterTextView(configuration: covered ? configuration.covered(geometry.size.height * 0.42) : configuration)
@@ -733,6 +764,12 @@ private struct ChapterPane: View {
         } else {
             ProgressView()
         }
+    }
+
+    /// The reader's font measured for the column decision (`ReaderColumns.count`).
+    private var columnMetrics: ReaderColumns.Metrics {
+        ReaderColumns.metrics(font: style.family.font(size: style.size), lineSpacing: style.lineSpacing,
+                              language: model.textLanguage)
     }
 
     /// A phone held sideways (`ReaderColumns.verticalInsets`).
@@ -845,6 +882,19 @@ private struct ReaderPopoverView: View {
                 .padding()
             }
             .frame(idealWidth: 340, maxHeight: 420)
+        }
+    }
+}
+
+private extension View {
+    /// A bar floating over the page keeps every tap inside its outline: a tap between its controls
+    /// (or in a symbol's transparent middle) would otherwise fall through and select a verse.
+    func takesTaps(cornerRadius: CGFloat) -> some View {
+        background {
+            Color.clear
+                .contentShape(.rect(cornerRadius: cornerRadius))
+                .onTapGesture {}
+                .accessibilityHidden(true)
         }
     }
 }

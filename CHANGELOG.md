@@ -54,6 +54,28 @@
   as before. Ephesians 2 (BSB) on a phone held sideways: 9 lines on the first spread instead of 1
   clear line; on a tablet held sideways, 30 instead of 13. On Android.
 
+- An iPhone held sideways reads in two columns whatever the system text size. On iPhone the
+  reader's text is the size you set times the system text size, and the columns wanted 18 ems each
+  on a pane at least 360 points tall: an iPhone Pro Max lost them at any system text size above the
+  default (19 points becomes 21 at the next size up, and two 18-em columns across its 832-point pane
+  need 19.8 or less), the height cleared by two points, and an iPhone Pro, or a Pro Max with Display
+  Zoom, never got them. Now two columns are set whenever each holds a comfortable line of your font
+  at your size (at least 30 characters; 16 in Chinese, Japanese and Korean) and the page between the
+  top and bottom bars holds at least six lines a column; otherwise one scrolling column, as before.
+  A Pro Max keeps its columns through the three system text sizes above the default; an iPhone Pro
+  gets them too. On iPhone, iPad and Mac.
+
+- The floating bars take no room from the page. The selection bar and Listen's Now Playing bar float
+  over the text and are gone in a moment, so nothing is kept clear for them: the columns on iPad and
+  Mac no longer stop 110 (Mac: 96) points above the foot of the window, and on iPhone and iPad the
+  page no longer shrinks while a bar is up. A tap anywhere on a bar stays on the bar instead of
+  selecting the verse under it. On iPhone, iPad and Mac; Android's bars already floated.
+
+- In the column reader the bottom bar's arrows turn the page. Previous Page and Next Page move a
+  spread at a time and change the chapter only past the first or last spread, as on Android and as
+  the Mac's arrow keys already did; in the scrolling reader they change the chapter as before. On
+  iPhone, iPad and Mac.
+
 - Highlights have rounded corners. A highlighted passage was a stack of hard rectangles, one per
   line; now it is one band with its outer corners rounded (about 5 points, scaled to the line), the
   corners where one line meets the next left square, and two lines of poetry a few points apart

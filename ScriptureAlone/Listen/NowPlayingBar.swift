@@ -38,7 +38,7 @@ struct NowPlayingBar: View {
                 speedMenu
                 optionsMenu
                 Button { listen.stop() } label: {
-                    Image(systemName: "xmark").font(.subheadline.weight(.semibold)).frame(width: 28, height: 32)
+                    Image(systemName: "xmark").font(.subheadline.weight(.semibold)).frame(width: 28, height: 32).contentShape(.rect)
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
@@ -82,7 +82,7 @@ struct NowPlayingBar: View {
 
     private var transport: some View {
         HStack(spacing: 10) {
-            Button { listen.previousVerse() } label: { Image(systemName: "backward.fill").frame(width: 28, height: 32) }
+            Button { listen.previousVerse() } label: { Image(systemName: "backward.fill").frame(width: 28, height: 32).contentShape(.rect) }
                 .accessibilityLabel("Previous Verse")
             Group {
                 if case .preparing = listen.phase {
@@ -94,11 +94,12 @@ struct NowPlayingBar: View {
                             .font(.title3)
                             .contentTransition(.symbolEffect(.replace))
                             .frame(width: 32, height: 32)
+                            .contentShape(.rect)
                     }
                     .accessibilityLabel(listen.isPlaying ? "Pause" : "Play")
                 }
             }
-            Button { listen.nextVerse() } label: { Image(systemName: "forward.fill").frame(width: 28, height: 32) }
+            Button { listen.nextVerse() } label: { Image(systemName: "forward.fill").frame(width: 28, height: 32).contentShape(.rect) }
                 .accessibilityLabel("Next Verse")
         }
         .buttonStyle(.plain)

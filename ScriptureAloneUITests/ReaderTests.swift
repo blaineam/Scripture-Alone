@@ -11,6 +11,8 @@ final class ReaderTests: ScriptureAloneUITestCase {
         XCTAssertEqual(button("reader.translationMenu").value as? String, "BSB")
         // Nothing is selected yet.
         XCTAssertFalse(app.otherElements["selection.bar"].exists)
+        // In columns (iPad) the arrow turns John 3's spreads first.
+        turnToLastSpread()
         button("reader.nextChapter").tap()
         waitForPassage("John 4")
         wait(for: readerText, valueContaining: "Samaritan")
@@ -25,6 +27,18 @@ final class ReaderTests: ScriptureAloneUITestCase {
         wait(for: control, label: "Auto-Scroll")
     }
 
+    /// In the column reader the next arrow says "Next Page" while there is a spread to turn to:
+    /// turns them all, so the arrow goes to the next chapter (or, at the Bible's end, nowhere).
+    func turnToLastSpread() {
+        let next = button("reader.nextChapter")
+        var turns = 0
+        while next.label == "Next Page", turns < 30 {
+            next.tap()
+            turns += 1
+            _ = waitUntil(timeout: 0.8) { false }
+        }
+    }
+
     func testGenesisOneHasNoPreviousChapter() {
         launch(chapter: "1:1")
         waitForPassage("Genesis 1")
@@ -35,6 +49,9 @@ final class ReaderTests: ScriptureAloneUITestCase {
 
     func testRevelation22HasNoNextChapter() {
         launch(chapter: "66:22")
+        waitForPassage("Revelation 22")
+        // In columns (iPad) the arrow turns the chapter's spreads; past the last there is nothing.
+        turnToLastSpread()
         waitForPassage("Revelation 22")
         XCTAssertFalse(button("reader.nextChapter").isEnabled)
         XCTAssertTrue(button("reader.previousChapter").isEnabled)
@@ -60,8 +77,8 @@ final class ReaderTests: ScriptureAloneUITestCase {
         addTeardownBlock { @MainActor in XCUIDevice.shared.orientation = .portrait }
         launch(chapter: "49:2")
         waitForPassage("Ephesians 2")
-        // A phone shorter than a Pro Max or Plus sideways reads one scrolling column (`ReaderColumns.count`).
-        try XCTSkipIf(app.windows.firstMatch.frame.height < 420, "this phone reads one column sideways")
+        // Any current iPhone sideways holds two columns at the default text size (`ReaderColumns.count`),
+        // a Pro as well as a Pro Max; the test used to skip phones under 420 points tall sideways.
         let columns = app.textViews.matching(identifier: "reader.text")
         XCTAssertTrue(waitUntil { columns.count >= 2 }, "landscape didn't set the chapter in columns")
         let window = app.windows.firstMatch.frame
@@ -79,5 +96,63 @@ final class ReaderTests: ScriptureAloneUITestCase {
         XCTAssertLessThanOrEqual(column.minY - top, 28, "a band of empty page between the top bar and the text")
         XCTAssertLessThanOrEqual(column.maxY, bottom, "the text runs under the bottom bar's buttons")
         XCTAssertLessThanOrEqual(bottom - column.maxY, 28, "a band of empty page above the bottom bar")
+    }
+
+    /// The Now Playing bar floats over the columns: the page keeps both columns at their full height
+    /// while it is up, rather than giving up room (or falling back to one column) for it.
+    func testLandscapeColumnsStayWhileListening() throws {
+        XCUIDevice.shared.orientation = .landscapeLeft
+        addTeardownBlock { @MainActor in XCUIDevice.shared.orientation = .portrait }
+        launch(chapter: "49:2")
+        waitForPassage("Ephesians 2")
+        let columns = app.textViews.matching(identifier: "reader.text")
+        XCTAssertTrue(waitUntil { columns.count >= 2 }, "landscape didn't set the chapter in columns")
+        let before = columns.element(boundBy: 0).frame
+        button("reader.listen").tap()
+        assertExists(app.buttons["Pause"], "the Now Playing bar didn't appear")
+        XCTAssertTrue(waitUntil { columns.count >= 2 }, "listening sent the chapter back to one column")
+        XCTAssertEqual(columns.element(boundBy: 0).frame.height, before.height, accuracy: 1,
+                       "the columns gave up room to the Now Playing bar")
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "landscape-listening"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        app.buttons["Stop Listening"].tap()
+    }
+
+    /// In the column reader the bottom bar's arrows turn spreads ("Next Page"), and change the chapter
+    /// only past the last spread; upright, in the scrolling reader, they change the chapter.
+    func testArrowsTurnSpreadsInColumns() throws {
+        try XCTSkipIf(isPad, "iPhone run: the iPad suite covers its own columns")
+        XCUIDevice.shared.orientation = .landscapeLeft
+        addTeardownBlock { @MainActor in XCUIDevice.shared.orientation = .portrait }
+        launch(chapter: "49:2")
+        waitForPassage("Ephesians 2")
+        let columns = app.textViews.matching(identifier: "reader.text")
+        XCTAssertTrue(waitUntil { columns.count >= 2 }, "landscape didn't set the chapter in columns")
+        let previous = button("reader.previousChapter"), next = button("reader.nextChapter")
+        wait(for: next, label: "Next Page")
+        wait(for: previous, label: "Previous Chapter")
+        next.tap()
+        waitForPassage("Ephesians 2")
+        wait(for: previous, label: "Previous Page")
+        previous.tap()
+        wait(for: previous, label: "Previous Chapter")
+        // On to the last spread, then one more: the next chapter.
+        var turns = 0
+        while next.label == "Next Page", turns < 30 {
+            next.tap()
+            turns += 1
+            _ = waitUntil(timeout: 0.8) { false }
+        }
+        XCTAssertGreaterThanOrEqual(turns, 1, "Ephesians 2 should take more than one spread")
+        wait(for: next, label: "Next Chapter")
+        next.tap()
+        waitForPassage("Ephesians 3")
+        // Upright: one scrolling column, and the arrows change the chapter.
+        XCUIDevice.shared.orientation = .portrait
+        wait(for: next, label: "Next Chapter")
+        next.tap()
+        waitForPassage("Ephesians 4")
     }
 }

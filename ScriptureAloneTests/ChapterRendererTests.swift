@@ -151,54 +151,116 @@ struct ChapterRendererTests {
     }
 
     /// An iPhone Pro Max held sideways: the column view is 832 × 362 points under a top bar, with
-    /// the bottom bar's 78 points of safe area inside it. The reserve for the floating bars left each
-    /// column five lines with a band of empty page beneath; now the text fills the page from bar to
-    /// bar, and still no line is cut at a column's foot.
+    /// the bottom bar's 78 points of safe area inside it. The old 110-point reserve for the floating
+    /// bars left each column five lines with a band of empty page beneath; now the text fills the
+    /// page from bar to bar, and still no line is cut at a column's foot.
     @Test func aPhoneHeldSidewaysFillsTheColumnsFromBarToBar() throws {
         let width: CGFloat = 832, height: CGFloat = 362, safeBottom: CGFloat = 78
-        #expect(ReaderColumns.count(width: width, height: height, fontSize: 18) == 2)
-        let columnWidth = (width - ReaderColumns.margin * 2 - ReaderColumns.gutter) / 2
+        #expect(columns(width: width, height: height, safeBottom: safeBottom, size: 18) == 2)
+        let columnWidth = ReaderColumns.columnWidth(width: width, columns: 2)
         let tall = ReaderColumns.columnHeight(height: height, safeTop: 0, safeBottom: safeBottom, compactHeight: true)
-        let short = ReaderColumns.columnHeight(height: height, safeTop: 0, safeBottom: safeBottom, compactHeight: false)
+        let reserved = max(120, height - 20 - safeBottom - 110)
         #expect(tall >= 260, "the column stops well short of the bottom bar: \(tall)")
         #expect(tall + 8 + safeBottom + 6 <= height + 0.5, "the column runs under the bottom bar")
-        let before = spread(try render(style()), width: columnWidth, height: short)
+        let before = spread(try render(style()), width: columnWidth, height: reserved)
         let after = spread(try render(style(), compactHeader: true), width: columnWidth, height: tall)
         #expect(!before.overflow && !after.overflow, "a line runs past a column's foot")
         #expect(after.lines.reduce(0, +) >= before.lines.reduce(0, +) + 7,
                 "a sideways spread holds \(after.lines) lines, against \(before.lines) before")
-        // A tablet or Mac window (regular height) keeps the room for the floating bars.
-        #expect(ReaderColumns.verticalInsets(safeTop: 0, safeBottom: 20, compactHeight: false) == (top: 20, bottom: 130))
     }
 
-    /// A highlight wrapping over three lines — starting mid-line, ending mid-line — is one shape:
-    /// only its outer corners are rounded, and where one line meets the next the corners stay square.
-    @Test func aWrappedHighlightRoundsOnlyItsOuterCorners() {
-        let bands = HighlightShape.bands([
-            CGRect(x: 50, y: 0, width: 250, height: 28),
-            CGRect(x: 0, y: 28, width: 300, height: 28),
-            CGRect(x: 0, y: 56, width: 120, height: 28),
-        ])
-        typealias C = HighlightShape.Corners
-        #expect(bands.map(\.corners) == [
-            C(topLeft: true, topRight: true, bottomRight: false, bottomLeft: false),
-            C(topLeft: true, topRight: false, bottomRight: true, bottomLeft: false),
-            C(topLeft: false, topRight: false, bottomRight: true, bottomLeft: true),
-        ])
-        #expect(bands.allSatisfy { $0.radius >= 4 && $0.radius <= 6 })
-        // A verse number's raised run and the words after it on one line are one band, all rounded.
-        let line = HighlightShape.bands([CGRect(x: 0, y: 0, width: 12, height: 26), CGRect(x: 12, y: 1, width: 200, height: 27)])
-        #expect(line.count == 1)
-        #expect(line.first?.corners == .all)
-        #expect(line.first?.rect == CGRect(x: 0, y: 0, width: 212, height: 28))
-        // Two lines of poetry, 3 points apart, join; a line a paragraph's width away does not.
-        let poetry = HighlightShape.bands([CGRect(x: 40, y: 0, width: 300, height: 28),
-                                           CGRect(x: 60, y: 31, width: 200, height: 28),
-                                           CGRect(x: 60, y: 120, width: 200, height: 28)])
-        #expect(poetry[0].rect.maxY == 31)
-        #expect(poetry[0].corners == .all)
-        #expect(poetry[1].corners == C(topLeft: false, topRight: false, bottomRight: true, bottomLeft: true))
-        #expect(poetry[2].corners == .all)
+    /// No layout keeps room for the selection, Now Playing or highlighter bars: they float over the
+    /// page and are gone in a moment. A tablet or Mac window's columns run to just above its bottom bar.
+    @Test func columnsKeepNoRoomForTheFloatingBars() {
+        #expect(ReaderColumns.verticalInsets(safeTop: 0, safeBottom: 20, compactHeight: false) == (top: 20, bottom: 40))
+        #expect(ReaderColumns.verticalInsets(safeTop: 0, safeBottom: 78, compactHeight: true) == (top: 8, bottom: 84))
+    }
+
+    // MARK: Columns or one scrolling column
+
+    /// The column decision for a page `width` × `height` (the reader's pane, as SwiftUI measures it)
+    /// whose bottom bar covers `safeBottom`, at `size` points of `family`.
+    func columns(width: CGFloat, height: CGFloat, safeTop: CGFloat = 0, safeBottom: CGFloat, compact: Bool = true,
+                 size: CGFloat, family: FontFamily = .newYork, lineSpacing: CGFloat = 1.35, language: String = "en") -> Int {
+        let metrics = ReaderColumns.metrics(font: family.font(size: size), lineSpacing: lineSpacing, language: language)
+        return ReaderColumns.count(width: width, height: height, safeTop: safeTop, safeBottom: safeBottom,
+                                   compactHeight: compact, metrics: metrics)
+    }
+
+    /// An iPhone Pro Max held sideways: an 832 × 362 pane with the bottom bar's 78 points inside it.
+    /// The old rule wanted 18 ems a column, which two columns there only hold up to 19.8 points: the
+    /// default is 19, so one step up the size slider sent the reader back to one scrolling column.
+    @Test func aProMaxSidewaysKeepsColumnsAtLargerSizes() {
+        for size: CGFloat in [17, 19, 20, 22, 24] {
+            #expect(columns(width: 832, height: 362, safeBottom: 78, size: size) == 2, "\(size) pt")
+        }
+        for family in FontFamily.allCases {
+            #expect(columns(width: 832, height: 362, safeBottom: 78, size: 19, family: family) == 2, "\(family)")
+        }
+    }
+
+    /// On iPhone the reader's size is the slider's times the system text size (`dynamicTypeScale`).
+    /// The old rule took a Pro Max's columns away at any system text size above the default: at
+    /// 19 points × xLarge's 1.12 two 18-em columns no longer fitted 832 points. All three sizes above
+    /// the default keep them now.
+    @Test func largerSystemTextSizesKeepColumnsOnAProMax() {
+        for (name, scale) in [("xLarge", 19.0 / 17), ("xxLarge", 21.0 / 17), ("xxxLarge", 23.0 / 17)] {
+            #expect(columns(width: 832, height: 362, safeTop: 78, safeBottom: 0, size: 19 * scale) == 2, "\(name)")
+        }
+        #expect(columns(width: 750, height: 324, safeTop: 78, safeBottom: 0, size: 19 * 19.0 / 17) == 2, "iPhone Pro, xLarge")
+    }
+
+    /// The old rule also wanted a pane at least 360 points tall, which a Pro Max cleared by two
+    /// points: an iPhone Pro (and a Pro Max with Display Zoom) held sideways is a 750 × 324 pane, and a
+    /// larger system text size makes the bars taller. Both still hold a readable column.
+    @Test func shorterPhonesAndTallerBarsStillGetColumns() {
+        #expect(columns(width: 750, height: 324, safeBottom: 78, size: 19) == 2)
+        #expect(columns(width: 750, height: 324, safeBottom: 78, size: 21) == 2)
+        // Accessibility text sizes: a top bar 30 points taller and a bottom bar 12 points taller.
+        #expect(columns(width: 832, height: 332, safeBottom: 90, size: 19) == 2)
+        #expect(columns(width: 750, height: 294, safeBottom: 90, size: 19) == 2)
+    }
+
+    @Test func columnsTooNarrowOrTooShortScrollInstead() {
+        // Too narrow: a very large size sideways, or any phone upright.
+        #expect(columns(width: 832, height: 362, safeBottom: 78, size: 32) == 1)
+        #expect(columns(width: 750, height: 324, safeBottom: 78, size: 26) == 1)
+        #expect(columns(width: 440, height: 800, safeTop: 0, safeBottom: 90, compact: false, size: 19) == 1)
+        // Too short: a pane with room for only a few lines a column.
+        #expect(columns(width: 832, height: 180, safeBottom: 78, size: 19) == 1)
+        // Very wide line spacing at a large size leaves too few lines on a short page.
+        #expect(columns(width: 832, height: 300, safeBottom: 78, size: 24, lineSpacing: 2) == 1)
+    }
+
+    /// Every comfortable column the decision allows really is one: at least the minimum measure
+    /// across, and at least the minimum lines down, at the column size `ColumnChapterView` lays out.
+    @Test func aColumnTheDecisionAllowsHoldsTheMeasure() {
+        for size in stride(from: CGFloat(12), through: 40, by: 1) {
+            let metrics = ReaderColumns.metrics(font: FontFamily.newYork.font(size: size), lineSpacing: 1.35, language: "en")
+            guard ReaderColumns.count(width: 832, height: 362, safeTop: 0, safeBottom: 78, compactHeight: true,
+                                      metrics: metrics) == 2 else { continue }
+            #expect(ReaderColumns.columnWidth(width: 832, columns: 2) / metrics.characterWidth >= ReaderColumns.minimumCharacters)
+            #expect(ReaderColumns.columnHeight(height: 362, safeTop: 0, safeBottom: 78, compactHeight: true)
+                    / metrics.lineHeight >= ReaderColumns.minimumLines)
+        }
+    }
+
+    /// iPad and Mac windows: two columns when wide, one in a narrow window or Split View.
+    @Test func tabletAndDesktopWindows() {
+        #expect(columns(width: 1180, height: 760, safeTop: 70, safeBottom: 70, compact: false, size: 19) == 2)
+        #expect(columns(width: 820, height: 1100, safeTop: 70, safeBottom: 70, compact: false, size: 19) == 2)
+        #expect(columns(width: 500, height: 1100, safeTop: 70, safeBottom: 70, compact: false, size: 19) == 1)
+    }
+
+    /// Chinese, Japanese and Korean characters are each about an em wide, so their measure is counted
+    /// in characters of their own.
+    @Test func ideographicTextIsMeasuredInItsOwnCharacters() {
+        let latin = ReaderColumns.metrics(font: FontFamily.newYork.font(size: 19), lineSpacing: 1.35, language: "en")
+        let chinese = ReaderColumns.metrics(font: FontFamily.newYork.font(size: 19), lineSpacing: 1.35, language: "zh-Hans")
+        #expect(chinese.characterWidth > latin.characterWidth * 1.6)
+        #expect(chinese.minimumCharacters == ReaderColumns.minimumIdeographs)
+        #expect(columns(width: 832, height: 362, safeBottom: 78, size: 19, language: "zh-Hans") == 2)
+        #expect(columns(width: 832, height: 362, safeBottom: 78, size: 26, language: "ja") == 1)
     }
 
     @Test func noticeLinksBecomeHTTPS() {
