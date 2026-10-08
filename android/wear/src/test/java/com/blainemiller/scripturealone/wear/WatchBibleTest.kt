@@ -137,6 +137,20 @@ class WatchBibleTest {
         assertTrue("it reads John 3:16", bible.edition().verses(john316).single().text.contains("loved the world"))
     }
 
+    /**
+     * Closing an edition releases its database: receiving an edition opens the new file to check it and
+     * closes it before moving it into place, and that close used to do nothing for a compact edition
+     * (the connection leaked, one per edition received).
+     */
+    @Test fun closingACompactEditionReleasesItsDatabase() {
+        val file = File(app.cacheDir, "BSB-Watch.sqlite").apply { writeBytes(File(watchResources, "BSB-Watch.sqlite").readBytes()) }
+        val rows = AndroidEditionRows(file)
+        assertEquals("BSB", rows.query("SELECT value FROM meta WHERE key = 'id'") { it.text(0) }.single())
+        rows.close()
+        val afterClose = runCatching { rows.query("SELECT value FROM meta") { it.text(0) } }
+        assertTrue("a closed edition can't be read", afterClose.exceptionOrNull() is IllegalStateException)
+    }
+
     /** A sealed package's header whose signed terms keep it off wearables (the body is never opened). */
     private fun prohibitedPackage(): ByteArray {
         val header = (

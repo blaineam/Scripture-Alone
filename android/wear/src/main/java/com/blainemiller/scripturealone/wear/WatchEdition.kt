@@ -186,4 +186,6 @@ class AndroidEditionRows(file: File) : EditionRows {
             }
             buildList { while (cursor.moveToNext()) add(map(row)) }
         }
+
+    override fun close() = db.close()
 }
