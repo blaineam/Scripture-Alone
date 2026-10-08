@@ -25,6 +25,10 @@
 // Not suites on purpose: the screenshot rig (Tools/capture_screenshots.sh — captures aren't a
 // gate), the Play/ASC scripts. The instrumented Android tests (connectedDebugAndroidTest, incl.
 // SystemBarsInsetsTest) run inside `android-release-smoke`'s emulator session.
+// ScriptureAloneCore is measured by the `core` suite (swift test); the app suites report the app's own
+// targets (the app, its widgets and extensions, the watch app).
+const CORE = ['ScriptureAloneCore'];
+
 export default {
   name: 'Scripture Alone',
   suites: {
@@ -49,6 +53,7 @@ export default {
     //    widgets and the Background Assets extension.
     ios: {
       type: 'xcodebuild-test',
+      coverageExclude: CORE,
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAlone',
       destination: 'platform=iOS Simulator,name=SA UI iPhone 17 Pro,OS=27.0',
@@ -62,6 +67,7 @@ export default {
     // ── The same bundle on the native macOS destination (kept buildable, and the Mac widgets).
     macos: {
       type: 'xcodebuild-test',
+      coverageExclude: CORE,
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAlone',
       destination: 'platform=macOS',
@@ -83,6 +89,7 @@ export default {
     //      xcrun simctl create "SA UI Watch S11 46mm" "Apple Watch Series 11 (46mm)" com.apple.CoreSimulator.SimRuntime.watchOS-27-0
     'ui-iphone': {
       type: 'xcodebuild-test',
+      coverageExclude: CORE,
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAloneUITests',
       destination: 'platform=iOS Simulator,name=SA UI iPhone 17 Pro,OS=27.0',
@@ -96,6 +103,7 @@ export default {
     },
     'ui-ipad': {
       type: 'xcodebuild-test',
+      coverageExclude: CORE,
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAloneUITests',
       destination: 'platform=iOS Simulator,name=SA UI iPad Pro 13-inch (M5),OS=27.0',
@@ -112,6 +120,7 @@ export default {
     //    translation picker. -UITestMode installs the BSB's watch edition (Debug builds only).
     'ui-watch': {
       type: 'xcodebuild-test',
+      coverageExclude: CORE,
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAloneWatch',
       destination: 'platform=watchOS Simulator,name=SA UI Watch S11 46mm,OS=27.0',
@@ -160,7 +169,7 @@ export default {
       args: ['--no-daemon', ':shared:test', ':shared:coverageSummary'],
       cwd: 'android',
       secrets: ['SA_CONTENT_KEY_SEED'],
-      env: { JAVA_HOME: '/opt/homebrew/opt/openjdk@17' },
+      env: { JAVA_HOME: '/opt/homebrew/opt/openjdk@17', ANDROID_HOME: '/opt/homebrew/share/android-commandlinetools' },
       description: 'Android :shared unit tests (canon, snapshot, Wear link, sealed packages, SpeechThread)',
     },
 
@@ -194,7 +203,8 @@ export default {
       args: ['--no-daemon', ':wear:assembleRelease', '-PdebugSignedRelease'],
       cwd: 'android',
       secrets: ['SA_CONTENT_KEY_SEED'],
-      env: { JAVA_HOME: '/opt/homebrew/opt/openjdk@17' },
+      // ANDROID_HOME too: a fresh checkout (a worktree) has no local.properties naming the SDK.
+      env: { JAVA_HOME: '/opt/homebrew/opt/openjdk@17', ANDROID_HOME: '/opt/homebrew/share/android-commandlinetools' },
       description: 'Wear OS release build (R8)',
     },
 
