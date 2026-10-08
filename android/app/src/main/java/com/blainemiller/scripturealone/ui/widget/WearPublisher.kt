@@ -52,25 +52,45 @@ object WearPublisher {
     private val WATCH_CARRIES = setOf("NASB2020")
 
     fun publishTranslation(context: Context, translation: String, changedAt: Double) {
-        val sealed = sealedPackage(context, translation)
+        val item = translationItem(
+            translation, changedAt, sealedPackage(context, translation),
+            importedAbbreviation = TranslationLibrary.imported(translation)?.info?.abbreviation,
+        )
+        if (WidgetPrefs.published(context, "translation") == item.signature) return
+        val request = PutDataMapRequest.create(WearLink.PATH_TRANSLATION).apply {
+            dataMap.putString(WearLink.KEY_TRANSLATION, item.translation)
+            dataMap.putDouble(WearLink.KEY_CHANGED_AT, item.changedAt)
+            if (item.notForWatch) dataMap.putBoolean(WearLink.KEY_NOT_FOR_WATCH, true)
+            item.label?.let { dataMap.putString(WearLink.KEY_TRANSLATION_LABEL, it) }
+        }.asPutDataRequest().setUrgent()
+        if (put(context) { Wearable.getDataClient(context).putDataItem(request) }) {
+            WidgetPrefs.setPublished(context, "translation", item.signature)
+        }
+    }
+
+    /**
+     * What the translation item tells the watch about the reader's choice: whether its terms keep it off
+     * the watch ([notForWatch] — the watch then says why it isn't there) and, when the reader sees it called
+     * something other than its id, that name for the watch's footer ([label]).
+     */
+    internal data class TranslationItem(val translation: String, val changedAt: Double, val notForWatch: Boolean, val label: String?) {
+        /** Unchanged since the last put means nothing to send. */
+        val signature: String get() = "t:$translation@$changedAt" + (if (notForWatch) ":off" else "") + (label?.let { ":$it" } ?: "")
+    }
+
+    /**
+     * [TranslationItem] for [translation]: [sealed] is its sealed package on this phone, if it has one;
+     * [importedAbbreviation] the abbreviation of the import it is, if it is one.
+     */
+    internal fun translationItem(translation: String, changedAt: Double, sealed: File?, importedAbbreviation: String?): TranslationItem {
         val header = sealed?.let(WearableLicence::unverifiedHeader)
         // As [keptOffWatch]: a sealed package whose header can't be read doesn't go either.
         val notForWatch = sealed != null && header?.policy?.allowsWearables != true
         // What the reader sees it called here, for the watch's footer: the package's or the import's own.
         val label = header?.translation?.abbreviation?.takeIf { it.isNotBlank() }
-            ?: TranslationLibrary.imported(translation)?.info?.abbreviation
+            ?: importedAbbreviation?.takeIf { it.isNotBlank() }
             ?: translation
-        val signature = "t:$translation@$changedAt" + (if (notForWatch) ":off" else "") + (if (label != translation) ":$label" else "")
-        if (WidgetPrefs.published(context, "translation") == signature) return
-        val request = PutDataMapRequest.create(WearLink.PATH_TRANSLATION).apply {
-            dataMap.putString(WearLink.KEY_TRANSLATION, translation)
-            dataMap.putDouble(WearLink.KEY_CHANGED_AT, changedAt)
-            if (notForWatch) dataMap.putBoolean(WearLink.KEY_NOT_FOR_WATCH, true)
-            if (label != translation) dataMap.putString(WearLink.KEY_TRANSLATION_LABEL, label)
-        }.asPutDataRequest().setUrgent()
-        if (put(context) { Wearable.getDataClient(context).putDataItem(request) }) {
-            WidgetPrefs.setPublished(context, "translation", signature)
-        }
+        return TranslationItem(translation, changedAt, notForWatch, label.takeIf { it != translation })
     }
 
     /** The reader picked another accent colour ([hex], 0xRRGGBB, its dark value); the watch follows. */
