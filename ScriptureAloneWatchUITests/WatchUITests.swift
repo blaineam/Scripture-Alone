@@ -146,6 +146,43 @@ final class WatchUITests: XCTestCase {
                       "the BSB isn't the chosen translation: \(bsb.label)")
     }
 
+    /// The phone reads a translation its publisher keeps off watches (1.1.4): the picker's footer
+    /// names it as the phone does — "NASB 1995", not its id — and says why it isn't here. The phone's
+    /// choice arrives through the defaults WatchConnectivity writes, set here from the launch arguments.
+    func testPickerFooterExplainsATranslationLicensedOffWatches() {
+        launch(["-watch.translation.phone", "NASB1995", "-watch.translation.phoneNotForWatch", "YES",
+                "-watch.translation.phoneLabel", "NASB 1995", "-watch.translation.phoneAt", "1"])
+        homeRow("Translation").tap()
+        let footer = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@",
+                                                          "NASB 1995 on your iPhone isn't available on the watch")).firstMatch
+        reveal(footer)
+        XCTAssertFalse(app.staticTexts["NASB1995"].exists, "the footer names the phone's Bible by its id")
+    }
+
+    func testPickerFooterExplainsAnOnlineTranslation() {
+        launch(["-watch.translation.phone", "ESV", "-watch.translation.phoneLabel", "ESV", "-watch.translation.phoneAt", "1"])
+        homeRow("Translation").tap()
+        reveal(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "ESV on your iPhone can't be read here")).firstMatch)
+    }
+
+    /// Remove a translation the phone sent — swipe, Remove — and the watch reads its own Bible again.
+    func testRemovingATranslationThePhoneSent() {
+        launch()
+        homeRow("Translation").tap()
+        let bsb = row("BSB")
+        reveal(bsb)
+        bsb.swipeLeft()
+        let remove = app.buttons["Remove"]
+        assertExists(remove, "swiping the BSB offers Remove")
+        remove.tap()
+        XCTAssertTrue(waitForNonExistence(of: row("BSB")), "the BSB is still in the picker")
+    }
+
+    private func waitForNonExistence(of element: XCUIElement, timeout: TimeInterval = 10) -> Bool {
+        let gone = expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: element)
+        return XCTWaiter.wait(for: [gone], timeout: timeout) == .completed
+    }
+
     func testLinkOpensTheVerse() {
         launch(["-watchRoute", "scripturealone://open?ref=43003016-43003017"])
         assertExists(app.staticTexts["John 3:16–17"])
