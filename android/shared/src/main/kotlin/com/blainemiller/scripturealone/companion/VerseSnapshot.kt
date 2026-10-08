@@ -94,6 +94,17 @@ data class VerseSnapshot(
 
     fun items(kinds: Set<Kind>): List<Item> = items.filter { it.kind in kinds }
 
+    /**
+     * This snapshot as it may travel to a watch when its text is in a translation whose publisher keeps
+     * it off wearables (`PackagePolicy.wearables`): references, colours, note titles and bodies (the
+     * reader's own words) and dates only — every verse's text and the coming days' passages removed.
+     * The watch draws the text from its own edition instead, as it already prefers to.
+     */
+    fun strippedOfText(): VerseSnapshot = copy(items = items.map { it.copy(text = "") }, daily = null)
+
+    /** What the phone sends the watch: this, or — when its translation is kept off watches — [strippedOfText]. */
+    fun forWatch(translationKeptOffWatch: Boolean): VerseSnapshot = if (translationKeptOffWatch) strippedOfText() else this
+
     // MARK: Encoding
 
     /** Sorted keys, so an unchanged library encodes to identical bytes, as `JSONEncoder(.sortedKeys)`. */

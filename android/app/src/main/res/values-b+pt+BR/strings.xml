@@ -858,6 +858,7 @@
     <string name="data_pack_download_failed">Não foi possível baixar %1$s. (Erro do Google Play %2$d)</string>
     <string name="data_pack_not_from_play">O %1$s é entregue pelo Google Play, e esta cópia do app não foi instalada pelo Google Play.</string>
     <string name="data_package_not_a_package">Isso não é um pacote de tradução.</string>
+    <string name="data_package_not_for_wearables">A licença desta tradução não permite usá-la em um relógio.</string>
     <string name="data_package_unsupported_version">Este pacote é da versão %1$d; este app lê a versão %2$d.</string>
     <string name="data_package_damaged_header">Os detalhes deste pacote estão danificados: %1$s</string>
     <string name="data_package_unreadable">Não foi possível ler o pacote: %1$s</string>

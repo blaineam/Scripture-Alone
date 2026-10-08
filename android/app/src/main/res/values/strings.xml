@@ -1601,6 +1601,7 @@
 
     <!-- Translation packages (.sabible) and their content keys: why one was refused -->
     <string name="data_package_not_a_package">That isn\'t a translation package.</string>
+    <string name="data_package_not_for_wearables">This translation\'s licence doesn\'t allow it on a watch.</string>
     <!-- Error. %1$d is the package’s file-format version; %2$d is the version this app reads. -->
     <string name="data_package_unsupported_version">This package is version %1$d; this app reads version %2$d.</string>
     <!-- Error. %1$s is a technical detail. -->

@@ -163,7 +163,7 @@ public-domain texts:
 ```
 allowCopy            allowShare           allowVerseImages
 allowNotesExport     allowExternalHandoff allowOfflineStorage
-maxQuotationVerses   expires
+maxQuotationVerses   expires              wearables
 ```
 
 A publisher who permits reading and quotation but no export, no image sharing and no hand-off to
@@ -172,6 +172,32 @@ to lapse on a date sets `expires`, and the package stops opening. Two details ar
 permission **missing** from a policy reads as *no*, so a policy written by an older tool or truncated
 in transit can never grant something by omission; and an `expires` the app cannot parse **refuses the
 package**, rather than quietly becoming "no expiry" because of a typo.
+
+**`wearables`** — `"allowed"` or `"prohibited"` — says whether the text may be on a watch or any
+other wearable at all. It is the one term where a missing key does not read as *no*, and that is
+deliberate: it arrived after packages were already on readers' watches under licences that covered
+them, and a reader must not lose a translation because the tool that packaged it predates a field. So
+absent means allowed, as it always did. Any value other than the two words is read as `prohibited`,
+for the same reason an unreadable `expires` refuses the package. The term needs no format version
+bump: it is a new key in the signed policy, which an older app ignores. That cuts both ways and is
+worth knowing before relying on it: an app from before the term cannot enforce it, so an older phone
+could still send such a package to an older watch. It protects from the first release that knows it.
+
+A publisher who keeps a translation off wearables gets that everywhere it could leak:
+
+| Where | What happens |
+|---|---|
+| The phone (iPhone, Android) | Never sends the package to the watch, nor any of its text: the Android phone's favorites/highlights/notes snapshot travels as references only when it is in that translation (the Apple Watch reads those through iCloud as references already). The watch is told why the translation isn't there. |
+| The watch (Apple Watch, Wear OS) | Refuses to open the package — after verifying the signature, so the refusal obeys the publisher's own words (`TranslationPackageError.notForWearables`) — refuses one the phone sends, and deletes one it finds among its received files. |
+| The watch's picker | Doesn't list it; when it is what the phone is reading, says so: "NASB 1995 on your iPhone isn't available on the watch: its licence doesn't allow it." |
+| Verse of the Day, complications, tiles | Fall back to the public daily list's own translation. They never held the licensed text, and no earlier snapshot of it is kept. |
+| Read-aloud on the watch | Speaks only what the watch can open, which this is not. |
+| A build | Never bundles such a package into a watch app: the Wear OS build falls back to the ASV's compact edition, and both release pipelines stop with an error, because the watch's own Bible is a decision, not a fallback. |
+
+The phone's decision to send reads the header without the key, and that is safe in both directions:
+editing a header to say "allowed" breaks its signature, so the watch refuses the package it was sent;
+editing one to say "prohibited" only gets a file the attacker already held deleted. iPhone, iPad and
+Mac read such a package exactly as before.
 
 The policy becomes a `TranslationRights` value — the same type the bundled ASV gets from its licence
 line. Everything downstream (the share sheet, the verse image, the notes export, the Mi Speaks
@@ -227,6 +253,7 @@ Where the code is:
 | `…/Package/ChapterTextSource.swift` | The seam: a store and a package, read through one protocol |
 | `…/TranslationRights.swift` | The single gate, for packaged and public-domain texts alike |
 | `…/Package/PackageSearchIndex.swift` | The sealed search index: tokeniser, query, postings, buckets |
+| `…/Package/WearableLicence.swift` | The `wearables` term: the device a package opens on, the phone's send check, the watch's sweep |
 | `Tools/package_translation.py` | What a publisher runs, with their own keys, on their own machine |
 
 One behaviour differs from a store, and it is small: the index holds no postings for one- and
@@ -392,6 +419,11 @@ The test suite states the security properties as executable assertions. By name,
 | `aPolicyThatForbidsExportIsRefusedByTheAppsOwnGate` | The app's own gating code refuses what the policy forbids |
 | `packagedAndPublicDomainTextsAreJudgedByOneCodePath` | One permission system, not two |
 | `aMissingFieldInAPolicyGrantsNothing` | A policy fails closed |
+| `theTermIsReadAsAllowedProhibitedOrAbsent` | `wearables`: absent and "allowed" allow, anything else does not |
+| `aFlippedOrStrippedTermFailsTheSignature` | Flipping `wearables` (same length) or removing it breaks the signature, on any device |
+| `aWatchRefusesAProhibitedPackageAndAPhoneDoesNot` | A watch refuses a package licensed off wearables; a phone reads it |
+| `aWatchDeletesAProhibitedPackageItFinds` | The watch's sweep removes such a package and nothing else |
+| `theVerseOfDaySnapshotFallsBackFromAProhibitedTranslation` | No complication text from a translation licensed off wearables |
 | `noApiHandsOutMoreThanASelection` | No call returns more than a selection |
 | `chaptersAreDecryptedOneAtATimeFromTheirOwnByteRanges` | A package with one corrupt chapter still opens and still reads the rest |
 | `thereIsExactlyOneDecryptingEntryPoint` | Asserted against the source: one sealed box is opened, in one place, per chapter |

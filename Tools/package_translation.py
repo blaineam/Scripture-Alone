@@ -20,6 +20,10 @@ machine it was built on, and the key that opens the result never enters this rep
 
     # anyone, with no key at all
     ./Tools/package_translation.py inspect --package ~/packages/ASV.sabible
+    ./Tools/package_translation.py wearables --package ~/packages/ASV.sabible   # allowed | prohibited
+
+    # a translation whose licence keeps it off watches and other wearables entirely
+    ./Tools/package_translation.py build … --no-wearables
 
     # the demonstration: the bundled public-domain texts, packaged with a demonstration key
     ./Tools/package_translation.py demo
@@ -433,6 +437,29 @@ def build_package(*, identity: dict, policy: dict, chapters: list[dict], content
             + bytes(body))
 
 
+# The `wearables` term: whether the text may be on a watch or other wearable at all. Absent means
+# allowed — what every package built before the term meant — so it is written only when stated. The
+# apps read any other value as prohibited; this tool refuses to write one.
+WEARABLES = ("allowed", "prohibited")
+
+
+def check_wearables(policy: dict) -> dict:
+    value = policy.get("wearables")
+    if value is not None and value not in WEARABLES:
+        sys.exit(f"wearables must be one of {', '.join(WEARABLES)}, not {value!r}.")
+    return policy
+
+
+def restrict_wearables(policy: dict, *sources: str | None) -> dict:
+    """The policy with `wearables` tightened to "prohibited" if any source says so. Never loosens."""
+    if "prohibited" in sources:
+        policy = dict(policy, wearables="prohibited")
+    return check_wearables(policy)
+
+
+from sabible_wearables import wearables_term  # noqa: E402 — how the apps read the term
+
+
 def policy_from_arguments(arguments: argparse.Namespace) -> dict:
     policy = {
         "allowCopy": arguments.allow_copy,
@@ -445,13 +472,15 @@ def policy_from_arguments(arguments: argparse.Namespace) -> dict:
     }
     if arguments.expires:
         policy["expires"] = arguments.expires
+    if arguments.wearables:
+        policy["wearables"] = arguments.wearables
     if arguments.policy:
         supplied = json.loads(Path(arguments.policy).expanduser().read_text(encoding="utf-8"))
-        unknown = set(supplied) - set(policy) - {"expires"}
+        unknown = set(supplied) - set(policy) - {"expires", "wearables"}
         if unknown:
             sys.exit(f"Unknown policy keys: {', '.join(sorted(unknown))}")
         policy.update(supplied)
-    return policy
+    return check_wearables(policy)
 
 
 # --------------------------------------------------------------------------------------- read back
@@ -510,7 +539,9 @@ def command_build(arguments: argparse.Namespace) -> None:
     if not identity["copyright"].strip():
         sys.exit("A package needs a copyright line: the reader prints it and the app's gates read it.")
 
-    data = build_package(identity=identity, policy=policy_from_arguments(arguments),
+    # A store built with `build_bibles.py --no-wearables` carries the restriction; it only tightens.
+    policy = restrict_wearables(policy_from_arguments(arguments), meta.get("wearables"))
+    data = build_package(identity=identity, policy=policy,
                          chapters=chapters, content_key=content_key, signing_key=signing_key,
                          build_index=arguments.index)
     out = Path(arguments.out).expanduser()
@@ -526,6 +557,7 @@ def command_build(arguments: argparse.Namespace) -> None:
     print(f"  content key id   {header['crypto']['keyID']}")
     print(f"  publisher key id {header['crypto']['publisherKeyID']}")
     print(f"  policy           {json.dumps(header['policy'], sort_keys=True)}")
+    print(f"  wearables        {wearables_term(header['policy'])}")
 
 
 def command_inspect(arguments: argparse.Namespace) -> None:
@@ -535,6 +567,8 @@ def command_inspect(arguments: argparse.Namespace) -> None:
     print(json.dumps({key: value for key, value in header.items() if key != "chapters"},
                      indent=2, ensure_ascii=False, sort_keys=True))
     print(f"chapters: {len(header['chapters'])}")
+    stated = "" if "wearables" in header["policy"] else " (not stated: allowed, as every older package)"
+    print(f"wearables: {wearables_term(header['policy'])}{stated}")
     print(f"header sha256: {hashlib.sha256(header_bytes).hexdigest()}")
     print(f"body: {len(data) - body_offset:,} bytes, sealed")
     if arguments.publisher_key:
@@ -547,6 +581,18 @@ def command_inspect(arguments: argparse.Namespace) -> None:
         expected = publisher_key_id(public_raw)
         match = "matches" if expected == header["crypto"]["publisherKeyID"] else "DOES NOT MATCH"
         print(f"signature: verifies; key id {expected} {match} the header")
+
+
+def command_wearables(arguments: argparse.Namespace) -> None:
+    """Prints `allowed` or `prohibited` — the package's wearables term, read with no key.
+
+    For build scripts deciding whether a package may go into a watch app. The signature is not
+    checked here (no key is needed to read a header); the watch apps check it before they obey the
+    term, so a header edited to say "allowed" is one no watch will open.
+    """
+    data = Path(arguments.package).expanduser().read_bytes()
+    header, _, _, _ = parse_header(data)
+    print(wearables_term(header["policy"]))
 
 
 def command_demo(arguments: argparse.Namespace) -> None:
@@ -619,8 +665,25 @@ def add_policy_arguments(parser: argparse.ArgumentParser) -> None:
     group.add_argument("--expires", default=None,
                        help="ISO 8601 date the licence lapses, e.g. 2028-01-01. The package then "
                             "refuses to open.")
+    add_wearables_arguments(group, loosen=True)
     group.add_argument("--policy", default=None,
                        help="a JSON file of the same keys, applied over the flags above")
+
+
+def add_wearables_arguments(group, loosen: bool) -> None:
+    """`--no-wearables` (and, where the terms are the caller's own, `--wearables allowed|prohibited`)."""
+    if loosen:
+        group.add_argument("--wearables", choices=WEARABLES, default=None,
+                           help="whether the text may be on a watch or other wearable at all. Unset "
+                                "writes no term, which the apps read as allowed (default: unset)")
+    group.add_argument("--no-wearables", dest="wearables", action="store_const", const="prohibited",
+                       default=None,
+                       help="keep the translation off watches and wearables entirely: the phone never "
+                            "sends it or its text to a watch, and a watch refuses to open it. The "
+                            "same as --wearables prohibited" if loosen else
+                            "keep the translation off watches and wearables entirely: the phone never "
+                            "sends it or its text to a watch, and a watch refuses to open it. Only "
+                            "tightens the terms in Tools/licensed/")
 
 
 
@@ -779,6 +842,7 @@ def command_licensed(arguments: argparse.Namespace) -> None:
     key, as `bundle` is; its public half is written beside the package for the app to pin.
     """
     edition, policy = licensed_edition(arguments.edition)
+    check_wearables(policy)
     raw_seed = os.environ.get(arguments.seed_env, "")
     if not raw_seed:
         sys.exit(f"${arguments.seed_env} is not set. It must hold the build's content-key seed.")
@@ -788,6 +852,8 @@ def command_licensed(arguments: argparse.Namespace) -> None:
 
     meta, chapters = read_store(Path(arguments.store).expanduser())
     check_edition(edition, chapters)
+    # The licence's own terms, tightened (never loosened) by --no-wearables or a store built with it.
+    policy = restrict_wearables(policy, arguments.wearables, meta.get("wearables"))
     identity = {key: edition[key] for key in ("id", "name", "abbreviation", "publisher", "copyright", "license")}
     content_key = HKDF(algorithm=hashes.SHA256(), length=32, salt=b"scripture-alone-content-key-v1",
                        info=edition["id"].encode()).derive(seed)
@@ -803,7 +869,8 @@ def command_licensed(arguments: argparse.Namespace) -> None:
     out.write_bytes(data)
     key_out = out.with_name(f"{edition['id']}-signing.pub")
     key_out.write_bytes(public_raw)
-    print(f"{out} — {edition['name']}, {len(data):,} bytes, {len(chapters):,} chapters")
+    print(f"{out} — {edition['name']}, {len(data):,} bytes, {len(chapters):,} chapters, "
+          f"wearables {wearables_term(policy)}")
     print(f"{key_out} — publisher key id {publisher_key_id(public_raw)}; its private half is gone")
 
 
@@ -852,7 +919,13 @@ def main(argv: list[str]) -> None:
     licensed.add_argument("--out", required=True, help="where the .sabible goes")
     licensed.add_argument("--seed-env", default="SA_CONTENT_KEY_SEED",
                           help="environment variable holding the secret content-key seed")
+    add_wearables_arguments(licensed, loosen=False)
     licensed.set_defaults(handler=command_licensed)
+
+    wearables = commands.add_parser(
+        "wearables", help="print the package's wearables term (allowed | prohibited) — no key needed")
+    wearables.add_argument("--package", required=True)
+    wearables.set_defaults(handler=command_wearables)
 
     demo = commands.add_parser("demo", help="package the bundled public-domain texts with a demonstration key")
     demo.add_argument("--out-dir", default=str(DEMO_DIRECTORY))

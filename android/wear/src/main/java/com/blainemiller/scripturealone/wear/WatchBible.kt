@@ -19,6 +19,7 @@ import com.blainemiller.scripturealone.data.daily.DailyVerseCatalog
 import com.blainemiller.scripturealone.data.sabible.PublisherKeyring
 import com.blainemiller.scripturealone.data.sabible.SealedKeys
 import com.blainemiller.scripturealone.data.sabible.TranslationPackage
+import com.blainemiller.scripturealone.data.sabible.WearableLicence
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,6 +42,12 @@ import java.time.Instant
  * compact editions the phone writes, carrying their `kjv_map` and `meta.language`. Every translation the
  * reader imported on the phone arrives the same way, and leaves when the phone's list of imports no
  * longer has it ([phoneImports]).
+ *
+ * **Licensed off the watch.** A sealed package whose signed terms say `wearables: prohibited` never
+ * opens here ([openSealed] asks [TranslationPackage.open] to refuse it), is never accepted from the phone
+ * ([receiveEdition]), is deleted if found among the received files at launch, and — since it is never
+ * among [editions] — is never the source of Verse of the Day on the tile, the complication or the home
+ * screen, which fall back to the daily list's own text.
  *
  * **Which one is shown.** The most recent choice the watch can actually show wins: the reader picking
  * one here, or the phone reporting a switch there ([TranslationChoice]). A phone choice the watch has no
@@ -83,6 +90,8 @@ class WatchBible private constructor(private val app: Context) {
          * ([WearFavorites]). Shown as asked until the phone's next snapshot agrees.
          */
         val pendingFavorites: Map<String, Boolean> = emptyMap(),
+        /** The phone said its translation's licence keeps it off watches, for the picker to explain. */
+        val phoneTranslationNotForWatch: Boolean = false,
     ) {
         /** The favorites' ranges as the phone last sent them. */
         val snapshotFavorites: Set<String>
@@ -119,13 +128,25 @@ class WatchBible private constructor(private val app: Context) {
     private val prefs = app.getSharedPreferences("watch", Context.MODE_PRIVATE)
     private val opened = mutableMapOf<String, WatchEdition>()
 
+    /** Bundled sealed packages whose headers keep them off wearables. Read once, without a key. */
+    private val bundledProhibited: Set<String> by lazy {
+        BUNDLED.filter { it in SEALED }.filter { id ->
+            try {
+                app.assets.open("$id$SEALED_SUFFIX").use { WearableLicence.unverifiedPolicy(it) }?.allowsWearables == false
+            } catch (e: IOException) {
+                false
+            }
+        }.toSet()
+    }
+
     private val _state: MutableStateFlow<State>
     val state: StateFlow<State>
 
     init {
+        removeProhibitedPackages()
         val editions = readEditions()
         val (translation, chosen) = resolve(editions)
-        _state = MutableStateFlow(State(translation, prefs.getString(Keys.PHONE, null), readSnapshot(), editions, chosen, accent(), pendingFavorites()))
+        _state = MutableStateFlow(state(translation, editions, chosen))
         state = _state.asStateFlow()
         nameBooks()
     }
@@ -141,10 +162,14 @@ class WatchBible private constructor(private val app: Context) {
         publish()
     }
 
-    /** The phone reported the translation the reader switched to, and when. */
-    fun phoneChose(id: String, at: Double) {
+    /**
+     * The phone reported the translation the reader switched to, and when — and whether its licence
+     * keeps it off watches, in which case it will never arrive and the picker says so.
+     */
+    fun phoneChose(id: String, at: Double, notForWatch: Boolean = false) {
         val newer = (prefs.getString(Keys.PHONE_AT, null)?.toDoubleOrNull() ?: 0.0) < at || prefs.getString(Keys.PHONE, null) != id
         val edit = prefs.edit().putString(Keys.PHONE, id).putString(Keys.PHONE_AT, at.toString())
+            .putBoolean(Keys.PHONE_NOT_FOR_WATCH, notForWatch)
         // Choosing again on the phone a translation removed here asks for it back.
         if (newer) edit.remove(Keys.removed(id))
         edit.apply()
@@ -172,6 +197,23 @@ class WatchBible private constructor(private val app: Context) {
 
     private fun savePending(pending: Map<String, Boolean>) {
         prefs.edit().putStringSet(Keys.PENDING_FAVORITES, pending.map { (range, wanted) -> "$range=${if (wanted) 1 else 0}" }.toSet()).apply()
+    }
+
+    /**
+     * Deletes any received package whose terms keep it off wearables, however it got here (an older
+     * phone app, a restore), and forgets it. Opening would refuse it anyway; this keeps it off disk.
+     */
+    private fun removeProhibitedPackages() {
+        val removed = WearableLicence.removeProhibitedPackages(receivedDirectory(app))
+        for (file in removed) forget(file.name.removeSuffix(SEALED_SUFFIX))
+    }
+
+    private fun forget(id: String) {
+        opened.remove(id)
+        prefs.edit()
+            .remove(Keys.name(id)).remove(Keys.language(id)).remove(Keys.abbreviation(id))
+            .remove(Keys.digest(id)).remove(Keys.version(id)).remove(Keys.import(id))
+            .apply()
     }
 
     /** The phone reported the reader's accent colour (0xRRGGBB, its dark-page value). */
@@ -251,6 +293,11 @@ class WatchBible private constructor(private val app: Context) {
             partial.delete()
             return false
         }
+        // A package whose publisher keeps it off wearables is never kept, whoever sent it.
+        if (id in SEALED && !WearableLicence.allowsWearables(partial)) {
+            partial.delete()
+            return false
+        }
         val info = try {
             val edition = open(id, partial)
             try {
@@ -258,7 +305,9 @@ class WatchBible private constructor(private val app: Context) {
             } finally {
                 edition.close()
             }
-        } catch (e: RuntimeException) {
+        } catch (e: Exception) {
+            // A RuntimeException from a damaged edition, or a TranslationPackageException from a
+            // package that won't open here (NotForWearables among them).
             null
         }
         if (info == null) {
@@ -326,11 +375,20 @@ class WatchBible private constructor(private val app: Context) {
         )
     }
 
+    private fun state(translation: String, editions: List<Edition>, chosen: Boolean): State {
+        val phone = prefs.getString(Keys.PHONE, null)
+        val notForWatch = prefs.getBoolean(Keys.PHONE_NOT_FOR_WATCH, false)
+        // A snapshot an older phone app sent with text in a translation licensed off wearables: shown as
+        // references, its text drawn from the watch's own edition, until the phone sends a new one.
+        val snapshot = readSnapshot()?.let { if (notForWatch && it.translation == phone) it.strippedOfText() else it }
+        return State(translation, phone, snapshot, editions, chosen, accent(), pendingFavorites(), phoneTranslationNotForWatch = notForWatch)
+    }
+
     private fun publish() {
         val before = _state.value
         val editions = readEditions()
         val (translation, chosen) = resolve(editions)
-        _state.value = State(translation, prefs.getString(Keys.PHONE, null), readSnapshot(), editions, chosen, accent(), pendingFavorites())
+        _state.value = state(translation, editions, chosen)
         nameBooks()
         if (before.translation != translation || before.editions != editions) refreshSurfaces(app)
     }
@@ -358,7 +416,9 @@ class WatchBible private constructor(private val app: Context) {
 
     /** The bundled editions, then the received ones by id. */
     private fun readEditions(): List<Edition> {
-        val bundled = BUNDLED.map { Edition(it, NAMES.getValue(it), bundled = true) }
+        // A bundled package licensed off wearables is not offered (the build refuses to carry one; this
+        // is the second line).
+        val bundled = BUNDLED.filter { it !in bundledProhibited }.map { Edition(it, NAMES.getValue(it), bundled = true) }
         val suffix = WatchEditionBuilder.fileName("")
         val received = receivedDirectory(app).listFiles().orEmpty()
             .filter { it.isFile && !it.name.startsWith(".") && (it.name.endsWith(suffix) || it.name.endsWith(SEALED_SUFFIX)) }
@@ -419,7 +479,9 @@ class WatchBible private constructor(private val app: Context) {
         val contentKey = SealedKeys.derive(seed, id)
         seed.fill(0)
         return try {
-            TranslationPackage.open(file, PublisherKeyring(listOf(publisher)), contentKey)
+            // forWearable: this is a watch, so a package licensed off wearables is refused after its
+            // signature proves the term is the publisher's.
+            TranslationPackage.open(file, PublisherKeyring(listOf(publisher)), contentKey, forWearable = true)
         } finally {
             contentKey.fill(0)
         }
@@ -514,6 +576,7 @@ class WatchBible private constructor(private val app: Context) {
         const val CHOICE_AT = "watch.translation.choiceAt"
         const val PHONE = "watch.translation.phone"
         const val PHONE_AT = "watch.translation.phoneAt"
+        const val PHONE_NOT_FOR_WATCH = "watch.translation.phoneNotForWatch"
         const val ACCENT = "watch.accent"
         fun name(id: String) = "watch.edition.$id.name"
         fun language(id: String) = "watch.edition.$id.language"

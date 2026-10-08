@@ -32,10 +32,16 @@ public struct TranslationRights: Hashable, Sendable, Codable {
     public var maxQuotationVerses: Int
     /// When the grant lapses. Nil for a grant that does not.
     public var expires: Date?
+    /// Read the text on a watch or other wearable at all — a package's `wearables` term
+    /// (`PackagePolicy.wearables`). False means the translation never reaches a watch: the phone
+    /// does not send it, nor any of its text, and a watch refuses to open it. Every translation
+    /// without such a term may go, as it always could.
+    public var allowWearables: Bool
 
     public init(allowCopy: Bool, allowShare: Bool, allowVerseImages: Bool, allowNotesExport: Bool,
                 allowExternalHandoff: Bool, allowOfflineStorage: Bool, maxQuotationVerses: Int,
-                expires: Date? = nil) {
+                expires: Date? = nil, allowWearables: Bool = true) {
+        self.allowWearables = allowWearables
         self.allowCopy = allowCopy
         self.allowShare = allowShare
         self.allowVerseImages = allowVerseImages
@@ -44,6 +50,21 @@ public struct TranslationRights: Hashable, Sendable, Codable {
         self.allowOfflineStorage = allowOfflineStorage
         self.maxQuotationVerses = maxQuotationVerses
         self.expires = expires
+    }
+
+    /// `allowWearables` arrived after rights were first encoded (keepsakes, the imported library), so
+    /// a value written before it reads as it always behaved: allowed.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        allowCopy = try container.decode(Bool.self, forKey: .allowCopy)
+        allowShare = try container.decode(Bool.self, forKey: .allowShare)
+        allowVerseImages = try container.decode(Bool.self, forKey: .allowVerseImages)
+        allowNotesExport = try container.decode(Bool.self, forKey: .allowNotesExport)
+        allowExternalHandoff = try container.decode(Bool.self, forKey: .allowExternalHandoff)
+        allowOfflineStorage = try container.decode(Bool.self, forKey: .allowOfflineStorage)
+        maxQuotationVerses = try container.decode(Int.self, forKey: .maxQuotationVerses)
+        expires = try container.decodeIfPresent(Date.self, forKey: .expires)
+        allowWearables = try container.decodeIfPresent(Bool.self, forKey: .allowWearables) ?? true
     }
 
     /// No cap at all. Not a very large number that some future verse count could reach: the whole

@@ -10,12 +10,28 @@ plugins {
 val packagesDir: File = rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources/Packages").asFile
 
 /**
+ * A package's `wearables` term, from its plaintext header (docs/encrypted-translations.md) — no key needed.
+ * Absent or "allowed" is allowed, anything else is not, exactly as the apps read it. A watch build never
+ * carries a package its licence keeps off wearables; the watch would refuse to open it anyway.
+ */
+fun allowsWearables(file: File): Boolean = file.inputStream().use { input ->
+    val preamble = input.readNBytes(14)
+    val length = java.nio.ByteBuffer.wrap(preamble, 10, 4).int
+    val header = groovy.json.JsonSlurper().parseText(String(input.readNBytes(length), Charsets.UTF_8)) as Map<*, *>
+    val term = (header["policy"] as? Map<*, *>)?.get("wearables")
+    term == null || term == "allowed"
+}
+
+/**
  * Whether this build carries the sealed NASB 2020 — the watch's own Bible and its default, as on the
  * Apple Watch. The release workflow copies the package and key into the iOS resources from private
  * storage (docs/lockman/README.md); without them (a developer's build) the watch carries the ASV's
  * compact edition instead, so it still has something to read.
  */
-val carriesNasb: Boolean = File(packagesDir, "NASB2020.sabible").exists() && File(packagesDir, "NASB2020-signing.pub").exists()
+val carriesNasb: Boolean = File(packagesDir, "NASB2020.sabible").exists() && File(packagesDir, "NASB2020-signing.pub").exists() &&
+    allowsWearables(File(packagesDir, "NASB2020.sabible")).also { allowed ->
+        if (!allowed) logger.warn("NASB2020.sabible is licensed off wearables: the watch carries the ASV's compact edition instead")
+    }
 
 /** The build's secret seed, masked exactly as the phone's (`contentKeySeedMasked` in app/build.gradle.kts). */
 val contentKeySeedMasked: String = System.getenv("SA_CONTENT_KEY_SEED").orEmpty().let { raw ->

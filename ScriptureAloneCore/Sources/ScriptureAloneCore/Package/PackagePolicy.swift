@@ -19,12 +19,25 @@ public struct PackagePolicy: Hashable, Sendable, Codable {
     /// ISO 8601, either a date (`2027-01-01`) or a timestamp (`2027-01-01T00:00:00Z`). Nil for a
     /// grant that does not lapse.
     public var expires: String?
+    /// Whether the text may be on a watch or other wearable: `"allowed"` or `"prohibited"`
+    /// (`PackagePolicy.Wearables`). Nil — the key absent — for every package built before the term
+    /// existed, and it means what those packages always meant: allowed. This is the one term where
+    /// absence is not "no", deliberately: the packages already on readers' watches were licensed for
+    /// them, and a reader must not lose a translation because a tool predates a field. Any value other
+    /// than the two words fails closed, like an unreadable `expires`.
+    public var wearables: String?
+
+    /// The two values `wearables` may hold.
+    public enum Wearables: String, CaseIterable, Sendable {
+        case allowed, prohibited
+    }
 
     public init(allowCopy: Bool = true, allowShare: Bool = true, allowVerseImages: Bool = true,
                 allowNotesExport: Bool = true, allowExternalHandoff: Bool = false,
                 allowOfflineStorage: Bool = true,
                 maxQuotationVerses: Int = TranslationInfo.quotationVerseLimit,
-                expires: String? = nil) {
+                expires: String? = nil, wearables: String? = nil) {
+        self.wearables = wearables
         self.allowCopy = allowCopy
         self.allowShare = allowShare
         self.allowVerseImages = allowVerseImages
@@ -49,6 +62,14 @@ public struct PackagePolicy: Hashable, Sendable, Codable {
         allowOfflineStorage = try container.decodeIfPresent(Bool.self, forKey: .allowOfflineStorage) ?? false
         maxQuotationVerses = try container.decodeIfPresent(Int.self, forKey: .maxQuotationVerses) ?? 0
         expires = try container.decodeIfPresent(String.self, forKey: .expires)
+        wearables = try container.decodeIfPresent(String.self, forKey: .wearables)
+    }
+
+    /// Whether a watch may hold this text. Absent is allowed (see `wearables`); `"allowed"` is
+    /// allowed; anything else — `"prohibited"`, a typo, a different case — is not.
+    public var allowsWearables: Bool {
+        guard let wearables else { return true }
+        return wearables == Wearables.allowed.rawValue
     }
 
     /// Reading, and nothing else: the strictest terms a publisher could grant while still having an
@@ -80,7 +101,8 @@ public struct PackagePolicy: Hashable, Sendable, Codable {
                                  allowExternalHandoff: allowExternalHandoff,
                                  allowOfflineStorage: allowOfflineStorage,
                                  maxQuotationVerses: maxQuotationVerses,
-                                 expires: expiryDate)
+                                 expires: expiryDate,
+                                 allowWearables: allowsWearables)
     }
 
     /// `2027-01-01T00:00:00Z` or the bare `2027-01-01`, which means midnight UTC that morning.
@@ -107,6 +129,7 @@ public extension PackagePolicy {
                   allowExternalHandoff: rights.allowExternalHandoff,
                   allowOfflineStorage: rights.allowOfflineStorage,
                   maxQuotationVerses: rights.maxQuotationVerses,
-                  expires: rights.expires.map(PackagePolicy.iso8601))
+                  expires: rights.expires.map(PackagePolicy.iso8601),
+                  wearables: rights.allowWearables ? nil : Wearables.prohibited.rawValue)
     }
 }

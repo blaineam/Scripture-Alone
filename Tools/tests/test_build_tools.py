@@ -218,6 +218,60 @@ class PackageTranslationTest(unittest.TestCase):
         with self.assertRaises(SystemExit):
             pt.parse_header(b"PK\x03\x04 not a package at all")
 
+    def test_the_wearables_term_is_set_by_flag_and_signed(self):
+        """`--no-wearables` writes `wearables: prohibited` into the signed policy; unset writes nothing."""
+        with tempfile.TemporaryDirectory() as outside:
+            store = self.tiny_store(outside)
+            keys = Path(outside) / "keys"
+            quietly(pt.main, ["keygen", "--out-dir", str(keys)])
+            common = ["build", "--store", str(store), "--content-key", str(keys / "content.key"),
+                      "--signing-key", str(keys / "signing.key"), "--publisher", "Test", "--no-index"]
+            plain, restricted = Path(outside) / "plain.sabible", Path(outside) / "restricted.sabible"
+            quietly(pt.main, common + ["--out", str(plain)])
+            quietly(pt.main, common + ["--out", str(restricted), "--no-wearables"])
+
+            self.assertNotIn("wearables", pt.parse_header(plain.read_bytes())[0]["policy"])
+            header, header_bytes, signature, _ = pt.parse_header(restricted.read_bytes())
+            self.assertEqual(header["policy"]["wearables"], "prohibited")
+            for package, term in ((plain, "allowed"), (restricted, "prohibited")):
+                out = io.StringIO()
+                with redirect_stdout(out):
+                    pt.main(["wearables", "--package", str(package)])
+                self.assertEqual(out.getvalue().strip(), term)
+
+            # Flipped to the same length — JSON whitespace pads "allowed" — the signature fails.
+            public = ed25519.Ed25519PublicKey.from_public_bytes(pt.read_key_bytes(keys / "signing.pub", "k"))
+            public.verify(signature, header_bytes)
+            flipped = header_bytes.replace(b'"wearables":"prohibited"', b'"wearables":"allowed"   ')
+            self.assertNotEqual(flipped, header_bytes)
+            self.assertEqual(json.loads(flipped)["policy"]["wearables"], "allowed")
+            with self.assertRaises(InvalidSignature):
+                public.verify(signature, flipped)
+
+            # --wearables allowed states it; anything else is refused before a package is written.
+            stated = Path(outside) / "stated.sabible"
+            quietly(pt.main, common + ["--out", str(stated), "--wearables", "allowed"])
+            self.assertEqual(pt.parse_header(stated.read_bytes())[0]["policy"]["wearables"], "allowed")
+            with self.assertRaises(SystemExit):
+                quietly(pt.main, common + ["--out", str(stated), "--wearables", "sometimes"])
+
+    def test_a_store_built_with_no_wearables_carries_it_and_it_only_tightens(self):
+        policy = {"allowCopy": True, "wearables": "allowed"}
+        self.assertEqual(pt.restrict_wearables(policy, None)["wearables"], "allowed")
+        self.assertEqual(pt.restrict_wearables(policy, "prohibited")["wearables"], "prohibited")
+        self.assertEqual(pt.restrict_wearables({"wearables": "prohibited"}, "allowed")["wearables"], "prohibited")
+        self.assertNotIn("wearables", pt.restrict_wearables({"allowCopy": True}, None))
+        with self.assertRaises(SystemExit):
+            quietly(pt.check_wearables, {"wearables": "Prohibited"})
+        # The apps' reading: absent or "allowed" is allowed; anything else is not.
+        self.assertEqual(pt.wearables_term({}), "allowed")
+        self.assertEqual(pt.wearables_term({"wearables": "allowed"}), "allowed")
+        self.assertEqual(pt.wearables_term({"wearables": "prohibited"}), "prohibited")
+        self.assertEqual(pt.wearables_term({"wearables": "maybe"}), "prohibited")
+        # The licence file carries no term today, so the NASB packages keep today's behaviour.
+        for edition in ("NASB2020", "NASB1995"):
+            self.assertEqual(pt.wearables_term(pt.licensed_edition(edition)[1]), "allowed")
+
     def test_keys_inside_the_repository_are_refused(self):
         with self.assertRaises(SystemExit):
             quietly(pt.refuse_if_inside_repository, ROOT / "keys" / "content.key", "a content key")

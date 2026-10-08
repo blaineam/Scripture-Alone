@@ -93,6 +93,13 @@ object WearLink {
     const val KEY_TRANSLATION = "translation"
 
     /**
+     * On [PATH_TRANSLATION]: true when the phone's translation is one whose publisher keeps it off
+     * watches (`PackagePolicy.wearables`). The phone never sends it, nor its text; the watch says why
+     * it isn't there. `WatchLinkKeys.translationNotForWatch`.
+     */
+    const val KEY_NOT_FOR_WATCH = "translationNotForWatch"
+
+    /**
      * When the reader switched to it on the phone, in seconds since 1970. Recorded at the switch, not
      * at send time, so a phone launch that merely re-reports an old choice cannot override a newer
      * pick made on the watch.

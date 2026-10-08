@@ -13,7 +13,10 @@ import ScriptureAloneCore
 /// KJV, the language Bibles and imports as a `WatchEdition` (about a third of the full store's size),
 /// only when their terms allow offline storage. The list of imports travels too, so one removed on
 /// the phone (or on another device, through iCloud) is removed from the watch. An online translation
-/// is never sent: its terms forbid storing it, and it has no file.
+/// is never sent: its terms forbid storing it, and it has no file. Nor is a sealed translation whose
+/// publisher keeps it off wearables (`PackagePolicy.wearables`): not the package, and no text from it
+/// (the watch reads favorites, highlights and notes as references through iCloud and draws their text
+/// from its own Bible, so nothing else here carries verse text).
 ///
 /// See `WatchPhoneLink` on the watch for why the choice travels as application context and the
 /// edition as a file transfer.
@@ -87,6 +90,7 @@ final class WatchLink: NSObject {
         if let pending {
             context[WatchLinkKeys.translation] = pending.id
             context[WatchLinkKeys.changedAt] = defaults.double(forKey: Self.changedAtKey)
+            if Self.isKeptOffWatch(pending.id) { context[WatchLinkKeys.translationNotForWatch] = true }
         }
         try? session.updateApplicationContext(context)
     }
@@ -96,7 +100,7 @@ final class WatchLink: NSObject {
               WatchLinkKeys.isSafeID(entry.id) else { return }
         let context = session.receivedApplicationContext
         let inWatchApp = context[WatchLinkKeys.bundled] as? [String] ?? WatchLinkKeys.legacyBundled
-        guard !inWatchApp.contains(entry.id) else { return }
+        guard !inWatchApp.contains(entry.id), !Self.isKeptOffWatch(entry.id) else { return }
         // A sealed translation goes as the package itself, once it has been downloaded here.
         let sealed = WatchLinkKeys.sealed.contains(entry.id)
         let packageFile = sealed ? AssetPack(translationID: entry.id).flatMap { AssetLibrary.shared.url(of: $0) } : nil
@@ -117,6 +121,9 @@ final class WatchLink: NSObject {
         let heldVersion = versions?[id]
         Task.detached(priority: .utility) {
             if sealed {
+                // The file's own terms, read again from the bytes about to go: a package swapped in
+                // after the one opened here was checked must not slip past.
+                guard WearableLicence.allowsWearables(packageAt: url) else { return }
                 // Copied aside first: the transfer reads the file until it is done, and the reader may
                 // remove the download meanwhile.
                 let copy = URL.cachesDirectory.appending(path: "WatchEditions/\(id).sabible")
@@ -152,6 +159,13 @@ final class WatchLink: NSObject {
     /// their verse numbering.
     private static func isPackBible(_ id: String) -> Bool {
         AssetPack(translationID: id) != nil
+    }
+
+    /// Whether the publisher's signed terms keep `id` off watches (`PackagePolicy.wearables`). Asked of
+    /// the package as opened and verified here; one not open here has nothing to send anyway.
+    static func isKeptOffWatch(_ id: String) -> Bool {
+        guard let package = SealedTranslations.shared.package(id) else { return false }
+        return !package.rights.allowWearables
     }
 
     /// Imported translations live in `ImportedLibrary.directory`; bundled ones are inside the app.

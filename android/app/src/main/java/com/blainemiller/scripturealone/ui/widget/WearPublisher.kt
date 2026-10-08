@@ -10,6 +10,9 @@ import com.blainemiller.scripturealone.data.translations.ImportedTranslation
 import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.companion.WearLink
+import com.blainemiller.scripturealone.data.BundledDatabase
+import com.blainemiller.scripturealone.data.BundledTranslations
+import com.blainemiller.scripturealone.data.sabible.WearableLicence
 import com.google.android.gms.tasks.Tasks
 import android.net.Uri
 import com.google.android.gms.wearable.Asset
@@ -34,6 +37,11 @@ import java.util.concurrent.TimeUnit
  * what it already carries. Every translation the reader imported travels the same way ([publishImports]), with
  * the list of imports, so one removed on the phone leaves the watch too.
  *
+ * **Licensed off the watch.** A sealed translation whose publisher keeps it off wearables
+ * (`PackagePolicy.wearables: prohibited`) is never sent ([keptOffWatch]): not its package — an item an
+ * older app put is deleted — and not its text, which the favorites/highlights/notes snapshot carries
+ * only as references when it is in that translation. The watch is told why it isn't there.
+ *
  * Every call is best-effort: a phone without Google Play services, or with no watch, simply has no one
  * to tell, and the Data Layer delivers to a watch paired later on its own.
  */
@@ -43,11 +51,13 @@ object WearPublisher {
     private val WATCH_CARRIES = setOf("NASB2020")
 
     fun publishTranslation(context: Context, translation: String, changedAt: Double) {
-        val signature = "t:$translation@$changedAt"
+        val notForWatch = keptOffWatch(context, translation)
+        val signature = "t:$translation@$changedAt" + if (notForWatch) ":off" else ""
         if (WidgetPrefs.published(context, "translation") == signature) return
         val request = PutDataMapRequest.create(WearLink.PATH_TRANSLATION).apply {
             dataMap.putString(WearLink.KEY_TRANSLATION, translation)
             dataMap.putDouble(WearLink.KEY_CHANGED_AT, changedAt)
+            if (notForWatch) dataMap.putBoolean(WearLink.KEY_NOT_FOR_WATCH, true)
         }.asPutDataRequest().setUrgent()
         if (put(context) { Wearable.getDataClient(context).putDataItem(request) }) {
             WidgetPrefs.setPublished(context, "translation", signature)
@@ -67,7 +77,9 @@ object WearPublisher {
     }
 
     /** The snapshot as an asset: it can pass the 100 KB a data item may carry inline. */
-    fun publishSnapshot(context: Context, snapshot: VerseSnapshot) {
+    fun publishSnapshot(context: Context, full: VerseSnapshot) {
+        // Text in a translation licensed off wearables stays on the phone: the watch gets references.
+        val snapshot = full.forWatch(translationKeptOffWatch = keptOffWatch(context, full.translation))
         val json = snapshot.copy(generatedAt = java.time.Instant.EPOCH).encoded()
         val signature = "s:${json.hashCode()}:${json.length}"
         if (WidgetPrefs.published(context, "snapshot") == signature) return
@@ -95,6 +107,11 @@ object WearPublisher {
         if (!AssetLibrary.isAttached) AssetLibrary.attach(context)
         if (!AssetLibrary.isOnDevice(pack)) return
         val source = AssetLibrary.file(context, pack) ?: return
+        // The package's own terms, read from the bytes that would go.
+        if (!WearableLicence.maySendToWatch(source, sealed = pack.isSealed)) {
+            withdrawEdition(context, translation)
+            return
+        }
         val format = if (pack.isSealed) "sealed" else WatchEditionBuilder.FORMAT
         val signature = "e:$format:${source.length()}:${source.lastModified()}"
         if (WidgetPrefs.published(context, "edition.$translation") == signature) return
@@ -218,6 +235,42 @@ object WearPublisher {
             }
         } finally {
             edition.delete()
+        }
+    }
+
+    /**
+     * Whether [translation]'s publisher keeps it off watches (`PackagePolicy.wearables`) — read from
+     * the sealed package on this phone, the NASB 2020 in the app or a downloaded pack. Unverified, which
+     * is safe: a header edited to "allowed" fails the watch's signature check, so nothing it sends opens.
+     * A translation that isn't a sealed package carries no such term.
+     */
+    fun keptOffWatch(context: Context, translation: String): Boolean {
+        val file = try {
+            when {
+                translation in BundledTranslations.LICENSED && BundledDatabase.hasAsset(context, "$translation.sabible") ->
+                    BundledDatabase.file(context, "$translation.sabible")
+                else -> {
+                    val pack = AssetPack.forTranslation(translation)?.takeIf { it.isSealed } ?: return false
+                    if (!AssetLibrary.isAttached) AssetLibrary.attach(context)
+                    if (!AssetLibrary.isOnDevice(pack)) return false
+                    AssetLibrary.file(context, pack) ?: return false
+                }
+            }
+        } catch (e: Exception) {
+            return false
+        }
+        return !WearableLicence.allowsWearables(file)
+    }
+
+    /**
+     * Deletes the edition item an earlier app version put for [translation], so a watch paired or
+     * reinstalled later can't receive a package its licence now keeps off wearables.
+     */
+    private fun withdrawEdition(context: Context, translation: String) {
+        if (WidgetPrefs.published(context, "edition.$translation").isNullOrEmpty()) return
+        val uri = Uri.Builder().scheme("wear").path(WearLink.editionPath(translation)).build()
+        if (put(context) { Wearable.getDataClient(context).deleteDataItems(uri, DataClient.FILTER_LITERAL) }) {
+            WidgetPrefs.setPublished(context, "edition.$translation", "")
         }
     }
 

@@ -33,15 +33,23 @@ final class WatchPhoneLink: NSObject {
     /// Reads the phone's choice out of an application context. Done on the delegate's own queue,
     /// before any hop to the main actor: the context is `[String: Any]`, which isn't Sendable, but
     /// the two values in it are.
-    fileprivate nonisolated static func phoneChoice(in context: [String: Any]) -> (id: String, at: TimeInterval)? {
+    fileprivate nonisolated static func phoneChoice(in context: [String: Any]) -> PhoneChoice? {
         guard let id = context[WatchLinkKeys.translation] as? String,
               let changedAt = context[WatchLinkKeys.changedAt] as? TimeInterval else { return nil }
-        return (id, changedAt)
+        return PhoneChoice(id: id, at: changedAt,
+                           notForWatch: context[WatchLinkKeys.translationNotForWatch] as? Bool ?? false)
     }
 
-    fileprivate func apply(_ choice: (id: String, at: TimeInterval)?) {
+    fileprivate struct PhoneChoice: Sendable {
+        let id: String
+        let at: TimeInterval
+        /// The publisher keeps this translation off watches; the phone will never send it.
+        let notForWatch: Bool
+    }
+
+    fileprivate func apply(_ choice: PhoneChoice?) {
         guard let choice else { return }
-        bible?.phoneChose(choice.id, at: choice.at)
+        bible?.phoneChose(choice.id, at: choice.at, notForWatch: choice.notForWatch)
     }
 
     /// The imports the phone offers, when its context says (an older phone app doesn't).
@@ -105,6 +113,9 @@ extension WatchPhoneLink: WCSessionDelegate {
         // here, synchronously, before anything hops to the main actor.
         guard let id = file.metadata?[WatchLinkKeys.translation] as? String,
               WatchLinkKeys.isSafeID(id), !WatchBible.bundledIDs.contains(id) else { return }
+        // A package whose publisher keeps it off wearables is never kept, whoever sent it: returning
+        // leaves it where the system deletes it. (Opening would refuse it too; this keeps it off disk.)
+        if WatchBible.sealedIDs.contains(id), !WearableLicence.allowsWearables(packageAt: file.fileURL) { return }
         let destination = WatchBible.receivedURL(for: id)
         try? FileManager.default.removeItem(at: destination)
         guard (try? FileManager.default.moveItem(at: file.fileURL, to: destination)) != nil else { return }
@@ -154,7 +165,11 @@ struct WatchTranslationsView: View {
     }
 
     @ViewBuilder private var footer: some View {
-        if let phone = bible.phoneTranslation, !bible.editions.contains(where: { $0.id == phone }) {
+        if let phone = bible.phoneTranslation, !bible.editions.contains(where: { $0.id == phone }),
+           bible.phoneTranslationNotForWatch {
+            // Never in the list: its publisher keeps it off watches, so it is hidden here, not greyed.
+            Text("\(phone) on your iPhone isn't available on the watch: its licence doesn't allow it.")
+        } else if let phone = bible.phoneTranslation, !bible.editions.contains(where: { $0.id == phone }) {
             Text("\(phone) on your iPhone can't be read here. Online translations can't be stored on the watch.")
         } else {
             Text("Follows your iPhone. A translation you import there appears here too.")

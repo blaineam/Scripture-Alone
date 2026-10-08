@@ -32,6 +32,11 @@ data class TranslationRights(
     val maxQuotationVerses: Long,
     /** When the grant lapses. Null for a grant that does not. */
     val expires: Instant? = null,
+    /**
+     * Read the text on a watch at all — a package's `wearables` term. False keeps the translation, and
+     * any of its text, off the watch entirely; every translation without such a term may go.
+     */
+    val allowWearables: Boolean = true,
 ) {
     enum class Permission { COPY, SHARE, VERSE_IMAGES, NOTES_EXPORT, EXTERNAL_HANDOFF, OFFLINE_STORAGE }
 

@@ -271,6 +271,13 @@ jobs:
             echo "::error title=No NASB 2020::$SA_LICENSED_REPO has no NASB2020.sabible and NASB2020-signing.pub; the app would open to a download"
             exit 1
           fi
+          # The Wear OS app carries the NASB 2020 as its own Bible. One licensed off wearables
+          # (policy.wearables) would leave the watch on the ASV's compact edition instead — the build
+          # falls back by itself — which is the owner's call, not a release script's: stop and say so.
+          if [ "$(python3 Tools/sabible_wearables.py ScriptureAlone/Resources/Packages/NASB2020.sabible)" != "allowed" ]; then
+            echo "::error title=NASB 2020 licensed off wearables::The package's terms keep it off watches; decide what the Wear OS app carries before releasing"
+            exit 1
+          fi
 
       - name: Build release bundles (phone + Wear OS)
         working-directory: android

@@ -858,6 +858,7 @@
     <string name="data_pack_download_failed">%1$sをダウンロードできませんでした。（Google Playエラー %2$d）</string>
     <string name="data_pack_not_from_play">%1$sはGoogle Playから配信されますが、このアプリはGoogle Playからインストールされていません。</string>
     <string name="data_package_not_a_package">翻訳パッケージではありません。</string>
+    <string name="data_package_not_for_wearables">この翻訳のライセンスでは、時計での利用が許可されていません。</string>
     <string name="data_package_unsupported_version">このパッケージはバージョン%1$dですが、このアプリはバージョン%2$dに対応しています。</string>
     <string name="data_package_damaged_header">このパッケージの情報が破損しています: %1$s</string>
     <string name="data_package_unreadable">パッケージを読み取れませんでした: %1$s</string>

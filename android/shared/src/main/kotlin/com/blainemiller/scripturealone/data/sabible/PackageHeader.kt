@@ -65,7 +65,17 @@ data class PackagePolicy(
     val allowOfflineStorage: Boolean,
     val maxQuotationVerses: Long,
     val expires: String?,
+    /**
+     * Whether the text may be on a watch or other wearable: `"allowed"` or `"prohibited"`. Null — the
+     * key absent — for every package built before the term existed, and it means what those packages
+     * always meant: allowed. The one term where absence is not "no", deliberately (see
+     * `PackagePolicy.swift`); any value other than the two words fails closed.
+     */
+    val wearables: String? = null,
 ) {
+    /** Whether a watch may hold this text: absent or `"allowed"`; anything else is not. */
+    val allowsWearables: Boolean get() = wearables == null || wearables == WEARABLES_ALLOWED
+
     /**
      * The expiry as an instant, or null for a grant that does not lapse. Throws if `expires` is
      * present but unreadable: an expiry the app cannot parse must stop the package, never quietly
@@ -79,6 +89,9 @@ data class PackagePolicy(
     }
 
     companion object {
+        const val WEARABLES_ALLOWED = "allowed"
+        const val WEARABLES_PROHIBITED = "prohibited"
+
         /** `2027-01-01T00:00:00Z`, or the bare `2027-01-01`, which means midnight UTC that morning. */
         internal fun parseIso8601(text: String): Instant? {
             try {
@@ -158,6 +171,7 @@ internal object PackageHeaderParser {
                 allowOfflineStorage = policy.optionalBoolean("allowOfflineStorage") ?: false,
                 maxQuotationVerses = policy.optionalLong("maxQuotationVerses") ?: 0L,
                 expires = policy.optionalString("expires"),
+                wearables = policy.optionalString("wearables"),
             ),
             crypto = PackageCryptoParameters(
                 cipher = crypto.string("cipher"),

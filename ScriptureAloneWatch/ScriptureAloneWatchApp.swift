@@ -136,7 +136,12 @@ enum WatchRoute: Hashable {
 /// picking one here, or the phone reporting that they switched there. So switching to the KJV on
 /// the phone moves the watch too, and picking the BSB on the watch keeps it until the phone
 /// changes again. A phone choice the watch has no edition of — an online translation, whose terms
-/// forbid storing it — is remembered but not applied, and the watch keeps what it had.
+/// forbid storing it, or a sealed one whose publisher keeps it off wearables — is remembered but not
+/// applied, and the watch keeps what it had.
+///
+/// **Licensed off the watch.** A package whose signed terms say `wearables: prohibited` never opens
+/// here (`TranslationPackage.open` refuses it on watchOS), is deleted if one is found among the
+/// received files, and is never the source of the complications' text (`publishVerseOfDay`).
 @Observable
 final class WatchBible {
     /// Translations inside the watch app. The phone skips sending these.
@@ -174,6 +179,8 @@ final class WatchBible {
 
     /// The phone's translation, even when the watch can't show it, for the picker to explain.
     private(set) var phoneTranslation: String?
+    /// Whether the phone said its translation's licence keeps it off watches.
+    private(set) var phoneTranslationNotForWatch = false
 
     @ObservationIgnored private var stores: [String: any ChapterTextSource] = [:]
     @ObservationIgnored private let defaults = UserDefaults.standard
@@ -194,6 +201,12 @@ final class WatchBible {
     }
 
     func reloadEditions() {
+        // However one arrived — an older phone app, a restore — a package licensed off wearables goes.
+        for removed in WearableLicence.removeProhibitedPackages(in: Self.receivedDirectory) {
+            let id = removed.deletingPathExtension().lastPathComponent
+            stores[id] = nil
+            Self.forgetReceived(id)
+        }
         let bundled = Self.bundledIDs.compactMap { id -> Edition? in
             guard let url = Bundle.main.url(forResource: id, withExtension: "sabible"),
                   let source = open(id: id, url: url) else { return nil }
@@ -220,6 +233,7 @@ final class WatchBible {
             .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         editions = bundled + received
         phoneTranslation = defaults.string(forKey: Keys.phone)
+        phoneTranslationNotForWatch = defaults.bool(forKey: Keys.phoneNotForWatch)
         resolve()
     }
 
@@ -231,10 +245,12 @@ final class WatchBible {
     }
 
     /// The phone reported the translation the reader switched to, and when.
-    func phoneChose(_ id: String, at changedAt: TimeInterval) {
+    func phoneChose(_ id: String, at changedAt: TimeInterval, notForWatch: Bool = false) {
         defaults.set(id, forKey: Keys.phone)
         defaults.set(changedAt, forKey: Keys.phoneAt)
+        defaults.set(notForWatch, forKey: Keys.phoneNotForWatch)
         phoneTranslation = id
+        phoneTranslationNotForWatch = notForWatch
         resolve()
     }
 
@@ -317,11 +333,13 @@ final class WatchBible {
     /// Puts the translation the watch reads where the complications read it (the App Group), with
     /// the coming days' Verse of the Day for one the daily list doesn't carry — an import the
     /// phone sent — and reloads them when it changed.
+    ///
+    /// With nothing the watch may read open, the snapshot falls back to the public list's translation
+    /// with no text of its own (`VerseSnapshot.forWearable`), so a complication never goes on showing a
+    /// translation that has since been licensed off the watch.
     private func publishVerseOfDay() {
-        guard let store else { return }
-        let snapshot = VerseSnapshot(generatedAt: .now, translation: translation, items: [],
-                                     abbreviation: store.info.abbreviation,
-                                     daily: DailyVerseLibrary.ownTexts(from: store))
+        let snapshot = VerseSnapshot.forWearable(source: store, translation: translation,
+                                                 daily: DailyVerseLibrary.ownTexts(from:))
         if let previous = AppGroup.readSnapshot(), previous.translation == snapshot.translation,
            previous.abbreviation == snapshot.abbreviation, previous.daily == snapshot.daily { return }
         if AppGroup.write(snapshot) { WidgetCenter.shared.reloadAllTimelines() }
@@ -356,6 +374,7 @@ final class WatchBible {
         static let choiceAt = "watch.translation.choiceAt"
         static let phone = "watch.translation.phone"
         static let phoneAt = "watch.translation.phoneAt"
+        static let phoneNotForWatch = "watch.translation.phoneNotForWatch"
     }
 
     /// How the Bible on the watch numbers its verses against the KJV keys marks are stored under —

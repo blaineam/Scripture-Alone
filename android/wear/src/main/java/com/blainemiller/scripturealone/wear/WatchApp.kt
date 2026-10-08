@@ -598,7 +598,10 @@ private fun TranslationsScreen(bible: WatchBible, state: WatchBible.State) {
         }
         item {
             val phone = state.phoneTranslation
-            val footer = if (phone != null && state.editions.none { it.id == phone }) {
+            val footer = if (phone != null && state.editions.none { it.id == phone } && state.phoneTranslationNotForWatch) {
+                // Never in the list: its publisher keeps it off watches, so it is hidden, not greyed.
+                stringResource(R.string.wear_translation_phone_not_licensed, phone)
+            } else if (phone != null && state.editions.none { it.id == phone }) {
                 stringResource(R.string.wear_translation_phone_unavailable, phone)
             } else {
                 stringResource(R.string.wear_translation_follows_phone)

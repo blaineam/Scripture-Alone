@@ -51,6 +51,9 @@ public enum TranslationPackageError: Error, Equatable, LocalizedError {
     /// The header does not match the signature: a byte of it changed, or the policy was edited.
     case signatureInvalid
     case expired(Date)
+    /// The publisher's terms keep this translation off watches and other wearables
+    /// (`PackagePolicy.wearables`), and this is one.
+    case notForWearables
     case wrongContentKey
     case chapterMissing(ChapterRef)
     /// The chapter's own authentication failed: moved from another package, replayed under a
@@ -74,6 +77,7 @@ public enum TranslationPackageError: Error, Equatable, LocalizedError {
         case .unknownPublisherKey(let id): String(localized: "This package is signed by a key this app doesn’t know (\(id)).", bundle: .module, comment: "Error. %@ is a key identifier.")
         case .signatureInvalid: String(localized: "This package’s details or terms have been altered, so it can’t be opened.", bundle: .module)
         case .expired(let date): String(localized: "This translation’s licence ended \(date.formatted(date: .abbreviated, time: .omitted)).", bundle: .module, comment: "Error. %@ is a date.")
+        case .notForWearables: String(localized: "This translation’s licence doesn’t allow it on a watch.", bundle: .module, comment: "Error shown when a licensed Bible translation is not permitted on Apple Watch or other wearables.")
         case .wrongContentKey: String(localized: "This translation’s key isn’t the one that opens this package.", bundle: .module)
         case .chapterMissing(let chapter): String(localized: "\(chapter.display) isn’t in this translation.", bundle: .module, comment: "Error. %@ is a chapter reference, e.g. “John 3”.")
         case .chapterTampered(let chapter): String(localized: "\(chapter.display) failed its integrity check, so it can’t be shown.", bundle: .module, comment: "Error. %@ is a chapter reference, e.g. “John 3”.")
@@ -294,15 +298,20 @@ public final class TranslationPackage: @unchecked Sendable {
     ///   - contentKey: the 32-byte AES key. In the app this comes from the keychain; it is never in
     ///     the repository and never in the package.
     ///   - now: for the expiry check. Explicit so the test suite can state the expiry rule.
+    ///   - device: what kind of device is opening it. A watch refuses a package whose terms keep it
+    ///     off wearables (`TranslationPackageError.notForWearables`), after the signature has proved
+    ///     those terms are the publisher's. Defaults to this device, so the watch app cannot forget.
     public static func open(url: URL, keyring: PublisherKeyring, contentKey: SymmetricKey,
-                           now: Date = Date()) throws -> TranslationPackage {
-        try TranslationPackage(url: url, keyring: keyring, contentKey: contentKey, now: now, checkKeyID: true)
+                           now: Date = Date(), device: PackageDevice = .current) throws -> TranslationPackage {
+        try TranslationPackage(url: url, keyring: keyring, contentKey: contentKey, now: now, checkKeyID: true,
+                               device: device)
     }
 
     /// `checkKeyID: false` skips the courtesy check that the key named in the header is the key we
     /// hold, so the test suite can prove that AES-GCM — not that check — is what actually refuses a
     /// wrong key. Nothing in the app calls it that way.
-    init(url: URL, keyring: PublisherKeyring, contentKey: SymmetricKey, now: Date, checkKeyID: Bool) throws {
+    init(url: URL, keyring: PublisherKeyring, contentKey: SymmetricKey, now: Date, checkKeyID: Bool,
+         device: PackageDevice = .current) throws {
         self.url = url
         self.contentKey = contentKey
         let file: FileHandle
@@ -400,6 +409,9 @@ public final class TranslationPackage: @unchecked Sendable {
             let rights = try decoded.policy.rights()
             if let expires = rights.expires, now >= expires {
                 throw TranslationPackageError.expired(expires)
+            }
+            if device == .wearable, !rights.allowWearables {
+                throw TranslationPackageError.notForWearables
             }
             if checkKeyID, TranslationPackageKeys.contentKeyID(contentKey) != decoded.crypto.keyID {
                 throw TranslationPackageError.wrongContentKey

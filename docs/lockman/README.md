@@ -115,6 +115,15 @@ us, and how the text gets from Lockman into the app without breaking any of it.
    still sealed. Every other Bible, the ASV included, is a download too, so Xcode Cloud and the Android
    release workflow refuse to build without the NASB 2020. API.Bible's NASB is not offered beside a
    licensed edition.
+   **Watches.** Both NASB agreements cover the Apple Watch and Wear OS today, so neither package
+   carries a `wearables` term, and none is in `Tools/licensed/nasb.json`. If a licence ever keeps an
+   edition off watches, package it with the restriction — `build_bibles.py --licensed NASB1995 …
+   --no-wearables` records it in the store, or pass `--no-wearables` to `package_translation.py
+   licensed` — and the term is signed into the package. The phones then never send it, or any of its
+   text, to a watch, and the watches refuse and delete it (docs/encrypted-translations.md, "wearables").
+   The NASB 2020 is the watches' own Bible, so a 2020 package licensed off wearables stops both release
+   pipelines until the watches are given something else to carry. `python3 Tools/sabible_wearables.py
+   <package>` prints a package's term without a key.
 6. **It becomes the default by itself.** `ci_scripts/ci_post_clone.sh` (iOS) and the "Fetch licensed
    translations" step in `android.yml` copy the package into the build. When the package, its signing
    key and the seed are all present, the NASB 2020 is listed first and is what a fresh install opens

@@ -1028,6 +1028,9 @@ def build(translation, output_dir=OUTPUT_DIR):
     db.execute("INSERT INTO meta VALUES ('tokenizer', ?)", (tokenizer.split()[0],))
     if translation.get("locale"):
         db.execute("INSERT INTO meta VALUES ('language', ?)", (translation["locale"],))
+    # A licence that keeps the text off wearables (`--licensed … --no-wearables`); packaging carries it.
+    if translation.get("wearables"):
+        db.execute("INSERT INTO meta VALUES ('wearables', ?)", (translation["wearables"],))
     total = 0
     for ordinal, code in enumerate(BOOKS, start=1):
         book = books[code]
@@ -1219,6 +1222,10 @@ def build_licensed(arguments):
     --lockman reads The Lockman Foundation's coded text file (or their zip holding it); see
     Tools/lockman.py. Its report names references and codes only, never the text.
 
+    --no-wearables records that the licence keeps this translation off watches and other wearables
+    (`meta.wearables = prohibited`); `package_translation.py licensed` carries it into the signed
+    package policy, where the apps enforce it. It only ever tightens the terms in Tools/licensed/.
+
     Identity comes from Tools/licensed/*.json, so the store is named exactly as its licence says.
     Then seal it with `Tools/package_translation.py licensed`, which checks the edition again.
     """
@@ -1241,6 +1248,8 @@ def build_licensed(arguments):
         sys.exit(f"No licensed edition called {edition_id} in Tools/licensed/.")
     translation = {key: edition[key] for key in ("id", "name", "abbreviation", "copyright", "license")}
     translation.update({"source": edition["link"], source[0]: source[1], "markers": markers})
+    if "--no-wearables" in arguments:
+        translation["wearables"] = "prohibited"
     LICENSED.append(translation)
     build(translation, output_dir=out_dir)
 

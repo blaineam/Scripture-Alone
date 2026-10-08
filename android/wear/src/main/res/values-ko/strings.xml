@@ -37,6 +37,7 @@
     <string name="wear_note_deleted">노트 삭제됨</string>
     <string name="wear_note_edit_on_phone">휴대폰에서 노트를 편집하세요.</string>
     <string name="wear_translation_phone_unavailable">휴대폰의 %1$s은(는) 여기서 읽을 수 없습니다. 온라인 번역본은 워치에 저장할 수 없습니다.</string>
+    <string name="wear_translation_phone_not_licensed">휴대폰의 %1$s은(는) 워치에서 사용할 수 없습니다. 라이선스에서 허용하지 않습니다.</string>
     <string name="wear_translation_follows_phone">휴대폰을 따릅니다. 거기서 가져온 번역본이 여기에도 표시됩니다.</string>
     <string name="wear_add_favorite">즐겨찾기에 추가</string>
     <string name="wear_remove_favorite">즐겨찾기에서 제거</string>

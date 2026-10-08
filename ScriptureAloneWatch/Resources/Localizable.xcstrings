@@ -105,6 +105,59 @@
         }
       }
     },
+    "%@ on your iPhone isn't available on the watch: its licence doesn't allow it." : {
+      "comment" : "Translation picker footer. %@ is a Bible translation abbreviation, e.g. NASB 1995. Its publisher's licence does not permit it on watches.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ auf deinem iPhone ist auf der Watch nicht verfügbar: Die Lizenz erlaubt es nicht."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ de tu iPhone no está disponible en el reloj: su licencia no lo permite."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ de votre iPhone n’est pas disponible sur la montre : sa licence ne le permet pas."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ sul tuo iPhone non è disponibile sull’orologio: la licenza non lo consente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhone の%@は Watch では利用できません。ライセンスで許可されていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhone의 %@은(는) 시계에서 사용할 수 없습니다. 라이선스에서 허용하지 않습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ do seu iPhone não está disponível no relógio: a licença não permite."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhone 上的 %@ 无法在手表上使用：其许可不允许。"
+          }
+        }
+      }
+    },
     "%lld" : {
       "localizations" : {
         "de" : {

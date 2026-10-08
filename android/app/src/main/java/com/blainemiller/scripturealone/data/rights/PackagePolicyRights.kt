@@ -15,4 +15,5 @@ fun PackagePolicy.rights(): TranslationRights = TranslationRights(
     allowOfflineStorage = allowOfflineStorage,
     maxQuotationVerses = maxQuotationVerses,
     expires = expiryInstant(),
+    allowWearables = allowsWearables,
 )

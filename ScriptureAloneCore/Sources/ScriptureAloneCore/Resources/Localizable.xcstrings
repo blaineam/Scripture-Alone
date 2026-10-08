@@ -12609,6 +12609,59 @@
         }
       }
     },
+    "This translation’s licence doesn’t allow it on a watch." : {
+      "comment" : "Error shown when a licensed Bible translation is not permitted on Apple Watch or other wearables.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Lizenz dieser Übersetzung erlaubt sie nicht auf einer Uhr."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La licencia de esta traducción no permite usarla en un reloj."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La licence de cette traduction ne l’autorise pas sur une montre."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La licenza di questa traduzione non ne consente l’uso su un orologio."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この翻訳のライセンスでは、ウォッチでの利用が許可されていません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 번역본의 라이선스는 시계에서의 사용을 허용하지 않습니다."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A licença desta tradução não permite usá-la em um relógio."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此译本的许可不允许在手表上使用。"
+          }
+        }
+      }
+    },
     "This translation’s licence ended %@." : {
       "comment" : "Error. %@ is a date.",
       "localizations" : {

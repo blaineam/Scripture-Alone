@@ -37,6 +37,7 @@
     <string name="wear_note_deleted">Nota excluída</string>
     <string name="wear_note_edit_on_phone">Edite as notas no celular.</string>
     <string name="wear_translation_phone_unavailable">Não é possível ler %1$s do seu celular aqui. Traduções on-line não podem ser armazenadas no relógio.</string>
+    <string name="wear_translation_phone_not_licensed">%1$s do seu celular não está disponível no relógio: a licença não permite.</string>
     <string name="wear_translation_follows_phone">Acompanha o celular. Uma tradução importada lá também aparece aqui.</string>
     <string name="wear_add_favorite">Adicionar aos favoritos</string>
     <string name="wear_remove_favorite">Remover dos favoritos</string>

@@ -37,6 +37,7 @@
     <string name="wear_note_deleted">メモを削除しました</string>
     <string name="wear_note_edit_on_phone">メモの編集はスマートフォンで行えます。</string>
     <string name="wear_translation_phone_unavailable">スマートフォンの%1$sはここでは読めません。オンラインの翻訳は時計に保存できません。</string>
+    <string name="wear_translation_phone_not_licensed">スマートフォンの%1$sは時計では利用できません。ライセンスで許可されていません。</string>
     <string name="wear_translation_follows_phone">スマートフォンに従います。そちらで読み込んだ翻訳はここにも表示されます。</string>
     <string name="wear_add_favorite">お気に入りに追加</string>
     <string name="wear_remove_favorite">お気に入りから削除</string>

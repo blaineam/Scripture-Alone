@@ -37,6 +37,7 @@
     <string name="wear_note_deleted">Note supprimée</string>
     <string name="wear_note_edit_on_phone">Modifiez vos notes sur votre téléphone.</string>
     <string name="wear_translation_phone_unavailable">%1$s ne peut pas être lue ici depuis votre téléphone. Les traductions en ligne ne peuvent pas être stockées sur la montre.</string>
+    <string name="wear_translation_phone_not_licensed">%1$s de votre téléphone n’est pas disponible sur la montre : sa licence ne le permet pas.</string>
     <string name="wear_translation_follows_phone">Suit votre téléphone. Une traduction importée là-bas apparaît ici aussi.</string>
     <string name="wear_add_favorite">Ajouter aux favoris</string>
     <string name="wear_remove_favorite">Retirer des favoris</string>

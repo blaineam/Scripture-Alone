@@ -858,6 +858,7 @@
     <string name="data_pack_download_failed">%1$s konnte nicht geladen werden. (Google Play-Fehler %2$d)</string>
     <string name="data_pack_not_from_play">Die %1$s wird über Google Play geliefert, und diese App wurde nicht über Google Play installiert.</string>
     <string name="data_package_not_a_package">Das ist kein Übersetzungspaket.</string>
+    <string name="data_package_not_for_wearables">Die Lizenz dieser Übersetzung erlaubt sie nicht auf einer Uhr.</string>
     <string name="data_package_unsupported_version">Dieses Paket hat Version %1$d; diese App liest Version %2$d.</string>
     <string name="data_package_damaged_header">Die Details dieses Pakets sind beschädigt: %1$s</string>
     <string name="data_package_unreadable">Das Paket konnte nicht gelesen werden: %1$s</string>

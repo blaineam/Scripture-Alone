@@ -26,6 +26,21 @@
 - Select a reference anywhere on Android ("Rom 8:28") and choose Open in Scripture Alone, or share
   text to Scripture Alone: the passage opens; text that isn't a reference is searched for. A Verse of
   the Day tile for Quick Settings shows today's reference and opens it. On Android.
+- A licensed translation can be kept off watches entirely. A sealed package's signed terms gain a
+  `wearables` term — `allowed` or `prohibited` — set with `--no-wearables` when packaging
+  (`Tools/package_translation.py build|licensed`, or `build_bibles.py --licensed … --no-wearables`)
+  and covered by the package's signature, so it can't be stripped or flipped. With it, the iPhone
+  and Android phone never send the translation to the watch, nor any of its text (the Wear OS
+  snapshot of favorites, highlights and notes then carries references only); the Apple Watch and
+  Wear OS refuse to open such a package, refuse one sent to them and delete one they find; the
+  watch's translation list leaves it out and says why when the phone is reading it ("NASB 1995 on
+  your iPhone isn't available on the watch: its licence doesn't allow it", in all nine languages);
+  and Verse of the Day, complications and tiles fall back to the daily list's own translation. A
+  package without the term behaves exactly as before, so nothing changes for the NASB, whose
+  agreements cover watches. A watch app never bundles a package licensed off wearables: the Wear OS
+  build falls back to the ASV, and both release pipelines stop and say so. iPhone, iPad and Mac
+  read such a translation as before. `python3 Tools/sabible_wearables.py <package>` prints the term
+  without a key. On iPhone, Apple Watch, Android and Wear OS.
 
 - Android reads in columns on a wide screen, as iPhone, iPad and Mac do. A phone held sideways, a
   tablet, an unfolded foldable or a wide Chromebook window shows the chapter as a spread of two

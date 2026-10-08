@@ -58,6 +58,15 @@ if [ "${CI_XCODE_CLOUD:-}" = "TRUE" ] && [ ! -f ScriptureAlone/Resources/Package
   echo "error: the NASB 2020 is not in this build, and nothing else is in the app to open to" >&2
   exit 1
 fi
+# The Apple Watch app carries the NASB 2020 as its own Bible. A package whose licence keeps it off
+# wearables (`policy.wearables`, docs/encrypted-translations.md) would ship inside the watch app and
+# be refused there, leaving the watch with nothing to open to. Choosing the watch's Bible instead is the
+# owner's call, not a build script's, so refuse rather than ship that.
+if [ -f ScriptureAlone/Resources/Packages/NASB2020.sabible ] \
+   && [ "$(python3 Tools/sabible_wearables.py ScriptureAlone/Resources/Packages/NASB2020.sabible)" != "allowed" ]; then
+  echo "error: the NASB 2020 package is licensed off wearables, but the Apple Watch app bundles it as its only Bible" >&2
+  exit 1
+fi
 # ---- end licensed translations -----------------------------------------------
 
 # The seed file must exist BEFORE xcodegen runs: XcodeGen lists the files that are on disk when it

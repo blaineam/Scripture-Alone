@@ -14,6 +14,7 @@ object PackageMessageText {
 
     private fun resource(message: PackageMessage): Int = when (message) {
         PackageMessage.NOT_A_PACKAGE -> R.string.data_package_not_a_package
+        PackageMessage.NOT_FOR_WEARABLES -> R.string.data_package_not_for_wearables
         PackageMessage.UNSUPPORTED_VERSION -> R.string.data_package_unsupported_version
         PackageMessage.DAMAGED_HEADER -> R.string.data_package_damaged_header
         PackageMessage.UNREADABLE -> R.string.data_package_unreadable

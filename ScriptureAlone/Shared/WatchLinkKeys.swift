@@ -28,6 +28,10 @@ enum WatchLinkKeys {
     /// Translations sent as their sealed package (`<id>.sabible`) rather than a compact edition: the
     /// licensed text stays encrypted on the watch too, and the ASV is only ever a package.
     nonisolated static let sealed: Set<String> = ["ASV", "NASB1995", "NASB2020"]
+    /// Phone → watch, application context: true when the reader's current translation is one whose
+    /// publisher keeps it off watches (`PackagePolicy.wearables`). The phone never sends it; the
+    /// watch says why it isn't there instead of suggesting it is on its way.
+    nonisolated static let translationNotForWatch = "translationNotForWatch"
     /// Phone → watch, file metadata: a fingerprint of the store the edition was made from.
     nonisolated static let version = "version"
     /// Phone → watch, file metadata: "import" for a translation the reader imported, otherwise absent.

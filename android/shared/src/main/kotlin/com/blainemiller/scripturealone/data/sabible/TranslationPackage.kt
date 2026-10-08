@@ -293,13 +293,17 @@ class TranslationPackage private constructor(
          * @param keyring the Ed25519 keys this build pins; a package signed by anything else is refused.
          * @param contentKey the 32-byte AES key — see [SealedKeys].
          * @param now for the expiry check; explicit so tests can state the rule.
+         * @param forWearable true on a watch: a package whose signed terms keep it off wearables
+         *   ([PackagePolicy.wearables]) is refused with [TranslationPackageException.NotForWearables].
+         *   The Wear OS app always passes true — `PackageDevice.current` on the Apple Watch.
          */
         fun open(
             file: File,
             keyring: PublisherKeyring,
             contentKey: ByteArray,
             now: Instant = Instant.now(),
-        ): TranslationPackage = open(file, keyring, contentKey, now, checkKeyId = true)
+            forWearable: Boolean = false,
+        ): TranslationPackage = open(file, keyring, contentKey, now, checkKeyId = true, forWearable = forWearable)
 
         /**
          * `checkKeyId = false` skips the courtesy check that the header names the key we hold, so a
@@ -311,6 +315,7 @@ class TranslationPackage private constructor(
             contentKey: ByteArray,
             now: Instant,
             checkKeyId: Boolean,
+            forWearable: Boolean = false,
         ): TranslationPackage {
             require(contentKey.size == 32) { "an AES-256 content key is 32 bytes" }
             val channel = try {
@@ -319,7 +324,7 @@ class TranslationPackage private constructor(
                 throw TranslationPackageException.Unreadable(e.message ?: "open failed", e)
             }
             try {
-                return authenticate(channel, keyring, contentKey, now, checkKeyId)
+                return authenticate(channel, keyring, contentKey, now, checkKeyId, forWearable)
             } catch (e: Throwable) {
                 channel.close()
                 throw e
@@ -332,6 +337,7 @@ class TranslationPackage private constructor(
             contentKey: ByteArray,
             now: Instant,
             checkKeyId: Boolean,
+            forWearable: Boolean,
         ): TranslationPackage {
             val size = try {
                 channel.size()
@@ -404,6 +410,7 @@ class TranslationPackage private constructor(
 
             val expires = header.policy.expiryInstant()
             if (expires != null && !now.isBefore(expires)) throw TranslationPackageException.Expired(expires)
+            if (forWearable && !header.policy.allowsWearables) throw TranslationPackageException.NotForWearables()
             if (checkKeyId && SabibleKeys.contentKeyId(contentKey) != header.crypto.keyId) {
                 throw TranslationPackageException.WrongContentKey()
             }

@@ -858,6 +858,7 @@
     <string name="data_pack_download_failed">无法下载 %1$s。（Google Play 错误 %2$d）</string>
     <string name="data_pack_not_from_play">%1$s由 Google Play 提供，而本应用并非从 Google Play 安装。</string>
     <string name="data_package_not_a_package">这不是译本安装包。</string>
+    <string name="data_package_not_for_wearables">此译本的许可不允许在手表上使用。</string>
     <string name="data_package_unsupported_version">此安装包为版本 %1$d；本应用可读取版本 %2$d。</string>
     <string name="data_package_damaged_header">此安装包的详细信息已损坏：%1$s</string>
     <string name="data_package_unreadable">无法读取该数据包：%1$s</string>
