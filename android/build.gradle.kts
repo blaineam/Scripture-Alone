@@ -69,6 +69,9 @@ subprojects {
         description = "Prints this module's line coverage as a soren-coverage line."
         dependsOn(report)
         val xml = layout.buildDirectory.file("reports/coverage/coverage.xml")
+        // A floor, never lowered: -PcoverageFloors=app:60,wear:60,shared:90 (the android suite).
+        val floor = providers.gradleProperty("coverageFloors").orNull.orEmpty().split(',')
+            .map { it.split(':') }.firstOrNull { it.size == 2 && it[0] == module }?.get(1)?.toDoubleOrNull()
         doLast {
             val text = xml.get().asFile.readText()
             // The report's own totals are the last LINE counter, after every package's.
@@ -80,6 +83,7 @@ subprojects {
             val pct = if (executable == 0L) 0.0 else Math.round(covered * 1000.0 / executable) / 10.0
             println("soren-coverage: {\"covered\":$covered,\"executable\":$executable,\"targets\":[{\"name\":\":$module\",\"covered\":$covered,\"executable\":$executable}]}")
             println(":$module line coverage: $pct% ($covered/$executable)")
+            if (floor != null && pct < floor) throw GradleException(":$module line coverage $pct% is below its $floor% floor")
         }
     }
 }
