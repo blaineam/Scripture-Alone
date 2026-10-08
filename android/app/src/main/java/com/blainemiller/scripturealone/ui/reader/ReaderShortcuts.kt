@@ -18,6 +18,7 @@ enum class ReaderCommand(@StringRes private val titleRes: Int) {
     FAVORITE(R.string.reader_shortcut_favorite),
     LARGER_TEXT(R.string.reader_shortcut_larger_text),
     SMALLER_TEXT(R.string.reader_shortcut_smaller_text),
+    LISTEN_PLAYER(R.string.reader_shortcut_listen_player),
     ;
 
     /** The label the keyboard shortcuts helper lists, in the app's language. */
@@ -39,6 +40,7 @@ enum class ReaderCommand(@StringRes private val titleRes: Int) {
  * | ⇧⌘M | Ctrl+Shift+M | Maps & Timeline (Study's Context tab) |
  * | ⌘D | Ctrl+D | Favorite the selection |
  * | ⌘+ / ⌘− | Ctrl+= (or +) / Ctrl+− | Text size, a point at a time |
+ * | ⌥⌘L | Ctrl+Alt+L | Minimize the Listen player to its pill, or expand it again |
  * | Esc | Esc | Clear the selection — Android turns an unhandled Esc into Back, which the reader handles |
  *
  * Share Designer's ⌘S (Save Image…) is Mac-only on iOS and isn't carried over. Pure apart from
@@ -66,6 +68,7 @@ object ReaderShortcuts {
         Shortcut(ReaderCommand.FAVORITE, KeyEvent.KEYCODE_D),
         Shortcut(ReaderCommand.LARGER_TEXT, KeyEvent.KEYCODE_EQUALS),
         Shortcut(ReaderCommand.SMALLER_TEXT, KeyEvent.KEYCODE_MINUS),
+        Shortcut(ReaderCommand.LISTEN_PLAYER, KeyEvent.KEYCODE_L, alt = true),
     )
 
     /** Keys that mean the same as one in [all] but aren't listed twice: + typed with Shift, the keypad. */

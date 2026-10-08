@@ -43,6 +43,9 @@
     <string name="listen_scroll_steady">Gleichmäßig</string>
     <string name="listen_scroll_brisk">Zügig</string>
     <string name="listen_stop">Vorlesen beenden</string>
+    <string name="listen_minimize">Player minimieren</string>
+    <string name="listen_expand">Player öffnen</string>
+    <string name="listen_minimize_hint">Das Vorlesen geht weiter.</string>
     <string name="listen_paused">Pausiert</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">Schließen</string>
@@ -169,6 +172,7 @@
     <string name="reader_shortcut_go_to">Zu Stelle springen</string>
     <string name="reader_shortcut_study_back">Zurück zum Studium</string>
     <string name="reader_shortcut_maps">Karten &amp; Zeitleiste</string>
+    <string name="reader_shortcut_listen_player">Player minimieren oder öffnen</string>
     <string name="reader_shortcut_favorite">Favorit hinzufügen oder entfernen</string>
     <string name="reader_shortcut_larger_text">Größere Schrift</string>
     <string name="reader_shortcut_smaller_text">Kleinere Schrift</string>

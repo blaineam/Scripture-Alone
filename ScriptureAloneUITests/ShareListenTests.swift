@@ -135,6 +135,138 @@ final class ListenTests: ScriptureAloneUITestCase {
         app.buttons["Stop Listening"].tap()
     }
 
+    /// Minimize hides the bar behind a small pill while reading goes on: the pill names the verse
+    /// being read and plays/pauses; tapping it brings the full bar back, where Stop ends listening.
+    func testMinimizeKeepsListeningThenExpandAndStop() {
+        launch()
+        let listen = button("reader.listen")
+        listen.tap()
+        wait(for: listen, label: "Pause Listening")
+        assertExists(app.buttons["Stop Listening"], "the Now Playing bar didn't appear")
+        // Move on a few verses, so the pill has to follow the reading, not the chapter's start.
+        for _ in 0..<3 { app.buttons["Next Verse"].tap() }
+        attach("listen-expanded")
+
+        let minimize = button("listen.minimize")
+        assertExists(minimize)
+        XCTAssertEqual(minimize.label, "Minimize player")
+        minimize.tap()
+
+        // The pill is up; the bar (and its Stop) is gone; reading is still playing.
+        let pill = app.otherElements["listen.pill"]
+        assertExists(pill, "minimizing didn't show the pill")
+        let expand = button("listen.expand")
+        assertExists(expand)
+        XCTAssertEqual(expand.label, "Expand player")
+        wait(for: expand, valueContaining: "John 3:")
+        XCTAssertNotEqual(expand.value as? String, "John 3:1", "the pill doesn't follow the verse being read")
+        waitForDisappearance(app.buttons["Stop Listening"])
+        let playPause = button("listen.pill.playPause")
+        XCTAssertEqual(playPause.label, "Pause", "minimizing stopped the reading")
+        XCTAssertEqual(listen.label, "Pause Listening", "the session ended when the player was minimized")
+        attach("listen-minimized")
+
+        // Pause and play from the pill; the toolbar follows.
+        playPause.tap()
+        wait(for: playPause, label: "Play")
+        wait(for: listen, label: "Listen")
+        playPause.tap()
+        wait(for: playPause, label: "Pause")
+        wait(for: listen, label: "Pause Listening")
+
+        // The toolbar's Listen is play/pause for the minimized session, not a new one.
+        listen.tap()
+        wait(for: playPause, label: "Play")
+        listen.tap()
+        wait(for: playPause, label: "Pause")
+
+        if !isPad {
+            // Landscape: the columns, with the pill clear in the corner.
+            addTeardownBlock { @MainActor in XCUIDevice.shared.orientation = .portrait }
+            rotate(to: .landscapeLeft)
+            assertExists(pill)
+            expand.tap()
+            assertExists(app.buttons["Stop Listening"])
+            // A verse on: the columns turn to the spread that holds it.
+            app.buttons["Next Verse"].tap()
+            attach("listen-expanded-landscape")
+            button("listen.minimize").tap()
+            assertExists(pill)
+            wait(for: expand, valueContaining: "John 3:")
+            attach("listen-minimized-landscape")
+            rotate(to: .portrait)
+        }
+
+        expand.tap()
+        assertExists(app.buttons["Stop Listening"], "the pill didn't open the bar")
+        waitForDisappearance(pill)
+        XCTAssertEqual(app.buttons["Pause"].label, "Pause", "expanding interrupted the reading")
+        app.buttons["Stop Listening"].tap()
+        waitForDisappearance(app.buttons["Pause"])
+        XCTAssertFalse(pill.exists)
+        XCTAssertEqual(listen.label, "Listen")
+
+        // A new session opens the full bar, never the pill.
+        listen.tap()
+        assertExists(app.buttons["Stop Listening"])
+        XCTAssertFalse(pill.exists, "a new session opened minimized")
+        app.buttons["Stop Listening"].tap()
+        waitForDisappearance(app.buttons["Pause"])
+    }
+
+    /// A swipe down on the bar minimizes it too.
+    func testSwipingTheBarDownMinimizes() {
+        launch()
+        button("reader.listen").tap()
+        let bar = app.otherElements["listen.bar"]
+        assertExists(bar)
+        bar.swipeDown()
+        assertExists(app.otherElements["listen.pill"], "swiping down didn't minimize the bar")
+        XCTAssertEqual(button("listen.pill.playPause").label, "Pause")
+        button("listen.expand").tap()
+        app.buttons["Stop Listening"].tap()
+        waitForDisappearance(app.buttons["Pause"])
+    }
+
+    /// Silent mode's mute shows on the pill, which unmutes on its own.
+    func testThePillUnmutesASilentSession() throws {
+        try XCTSkipIf(isPad, "iPhone only: an iPad has no ring/silent switch")
+        launch(["-uiTestSilenced"])
+        button("reader.listen").tap()
+        assertExists(app.buttons["listen.unmute"])
+        button("listen.minimize").tap()
+        let unmute = button("listen.pill.unmute")
+        assertExists(unmute, "the pill doesn't show that Silent mode muted Listen")
+        XCTAssertEqual(unmute.label, "Unmute")
+        attach("listen-minimized-muted")
+        unmute.tap()
+        waitForDisappearance(unmute)
+        XCTAssertEqual(button("listen.pill.playPause").label, "Pause")
+        button("listen.expand").tap()
+        XCTAssertFalse(app.buttons["listen.unmute"].exists, "Unmute on the pill didn't hold")
+        app.buttons["Stop Listening"].tap()
+        waitForDisappearance(app.buttons["Pause"])
+    }
+
+    private func attach(_ name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    /// Turns the device and waits out the rotation: snapshot frames are the final ones, so a tap
+    /// while the page is still turning lands where the element will be, not where it is.
+    private func rotate(to orientation: UIDeviceOrientation) {
+        XCUIDevice.shared.orientation = orientation
+        let wide = orientation.isLandscape
+        XCTAssertTrue(waitUntil {
+            let frame = app.windows.firstMatch.frame
+            return (frame.width > frame.height) == wide
+        }, "the app never turned")
+        RunLoop.current.run(until: Date().addingTimeInterval(1.0))
+    }
+
     func testListeningToTheSelection() {
         launch(["-uiTestSelect", "43:3:16-17"])
         let bar = app.otherElements["selection.bar"]

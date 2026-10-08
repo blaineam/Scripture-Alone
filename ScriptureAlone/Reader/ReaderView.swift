@@ -108,7 +108,15 @@ struct ReaderView: View {
                 // top and bottom bars.
                 .overlay(alignment: .bottom) {
                     VStack(spacing: 8) {
-                        if ListenController.shared.isListening(in: model) {
+                        // Minimized, the player is a small pill at the trailing edge: reading goes
+                        // on (the verse stays marked, the columns keep turning) with the page clear.
+                        if ListenController.shared.isListening(in: model), ListenController.shared.isMinimized {
+                            ListenPill()
+                                .takesTaps(cornerRadius: 22)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                .padding(.horizontal)
+                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                        } else if ListenController.shared.isListening(in: model) {
                             NowPlayingBar()
                                 .takesTaps(cornerRadius: 24)
                                 .padding(.horizontal)
@@ -125,6 +133,7 @@ struct ReaderView: View {
                 }
                 .animation(.snappy, value: model.selection.isEmpty)
                 .animation(.snappy, value: ListenController.shared.isListening(in: model))
+                .animation(.snappy, value: ListenController.shared.isMinimized)
                 .contextReaderHooks()
                 .toolbar { toolbar }
                 #if os(iOS)

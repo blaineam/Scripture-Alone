@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -30,6 +31,8 @@ import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FastRewind
 import androidx.compose.material.icons.rounded.Headphones
@@ -54,8 +57,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -78,19 +86,41 @@ import com.blainemiller.scripturealone.ui.reader.glass
  * being read and the voice and speed beneath it; previous verse, play/pause, next verse; the speed
  * menu; the options menu (voice, Continue to Next Chapter, sleep timer — its icon a moon while a timer
  * runs); and Stop. A notice, when there is one, sits in a row above with its own dismiss button.
+ * The chevron centred on its top edge (or a swipe down on the bar) minimizes it to [ListenPill] while reading
+ * goes on; the ✕ at the far end is Stop.
  */
 @Composable
 fun NowPlayingBar(listen: ListenController, palette: ReaderPalette, modifier: Modifier = Modifier) {
+    val minimize = stringResource(R.string.listen_minimize)
     Column(
         modifier
             .widthIn(max = 560.dp)
             .fillMaxWidth()
+            .testTag("listen.bar")
             .glass(palette, RoundedCornerShape(24.dp), lifted = true, opacity = 0.985f)
             // Swallows taps between the controls, so they don't fall through and select a verse.
             .takesTaps()
+            // A swipe down tucks the bar away, as a sheet's would; reading goes on.
+            .pointerInput(listen) {
+                var pulled = 0f
+                detectVerticalDragGestures(
+                    onDragStart = { pulled = 0f },
+                    onDragEnd = { if (pulled > SWIPE_DOWN_DP.dp.toPx()) listen.minimize() },
+                ) { change, amount ->
+                    change.consume()
+                    pulled += amount
+                }
+            }
+            .semantics { customActions = listOf(CustomAccessibilityAction(minimize) { listen.minimize(); true }) }
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+        // Minimize: a chevron centred on the bar's top edge, where a sheet's handle sits (the bar also
+        // swipes down), away from Stop — and taking no room from the row, which needs it on a phone.
+        BarButton(
+            Icons.Rounded.KeyboardArrowDown, minimize, palette.secondary, width = 64.dp, height = 20.dp, iconSize = 24.dp,
+            modifier = Modifier.align(Alignment.CenterHorizontally).offset(y = (-4).dp),
+        ) { listen.minimize() }
         if (listen.isMuted) MutedRow(palette) { listen.unmute() }
         listen.notice?.let { NoticeRow(it, palette) { listen.notice = null } }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -108,6 +138,67 @@ fun NowPlayingBar(listen: ListenController, palette: ReaderPalette, modifier: Mo
             SpeedMenu(listen, palette)
             OptionsMenu(listen, palette)
             BarButton(Icons.Rounded.Close, stringResource(R.string.listen_stop), palette.secondary, width = 28.dp, iconSize = 20.dp) { listen.stop() }
+        }
+    }
+}
+
+/** How far a downward swipe on the bar must travel to minimize it. */
+private const val SWIPE_DOWN_DP = 36
+
+/**
+ * The minimized player — `ListenPill` in `ScriptureAlone/Listen/NowPlayingBar.swift`: a small glass
+ * pill with play/pause and the verse being read, at the end edge of the page while reading goes on.
+ * Tapping the reference opens the full bar again. When the phone's silent or vibrate setting muted the
+ * session, a bell button unmutes it from here.
+ */
+@Composable
+fun ListenPill(listen: ListenController, palette: ReaderPalette, modifier: Modifier = Modifier) {
+    val expand = stringResource(R.string.listen_expand)
+    val reference = listen.nowPlayingTitle
+    Row(
+        modifier
+            .testTag("listen.pill")
+            .glass(palette, CircleShape, lifted = true, opacity = 0.985f)
+            .takesTaps()
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (listen.phase is ListenController.Phase.Preparing) {
+            val preparing = stringResource(R.string.listen_preparing)
+            Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(
+                    color = palette.secondary, strokeWidth = 2.dp,
+                    modifier = Modifier.size(18.dp).semantics { contentDescription = preparing },
+                )
+            }
+        } else {
+            val playing = listen.isPlaying
+            BarButton(
+                if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                stringResource(if (playing) R.string.listen_pause else R.string.listen_play),
+                palette.ink, width = 40.dp, height = 40.dp, iconSize = 26.dp,
+            ) { listen.togglePlayPause() }
+        }
+        Row(
+            Modifier
+                .heightIn(min = 40.dp)
+                .clip(CircleShape)
+                .clickable(role = Role.Button, onClickLabel = expand) { listen.expand() }
+                .semantics(mergeDescendants = true) {
+                    // "Expand player, John 3:16" — the action, then the verse being read.
+                    contentDescription = "$expand, $reference"
+                }
+                .padding(start = 2.dp, end = if (listen.isMuted) 4.dp else 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(reference, color = palette.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Icon(Icons.Rounded.KeyboardArrowUp, null, tint = palette.secondary, modifier = Modifier.size(18.dp))
+        }
+        if (listen.isMuted) {
+            BarButton(Icons.Rounded.NotificationsOff, stringResource(R.string.listen_unmute), palette.accent, width = 36.dp, height = 40.dp, iconSize = 20.dp) {
+                listen.unmute()
+            }
         }
     }
 }
@@ -265,11 +356,13 @@ private fun BarButton(
     label: String,
     tint: Color,
     width: Dp,
+    height: Dp = 34.dp,
     iconSize: Dp = 24.dp,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
     Box(
-        Modifier.size(width = width, height = 34.dp).clip(RoundedCornerShape(10.dp)).clickable(role = Role.Button, onClick = onClick)
+        modifier.size(width = width, height = height).clip(RoundedCornerShape(10.dp)).clickable(role = Role.Button, onClick = onClick)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {

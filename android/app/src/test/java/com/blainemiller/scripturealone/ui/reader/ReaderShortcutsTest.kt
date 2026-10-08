@@ -26,6 +26,7 @@ class ReaderShortcutsTest {
         assertEquals(ReaderCommand.FAVORITE, ReaderShortcuts.match(KeyEvent.KEYCODE_D, ctrl))
         assertEquals(ReaderCommand.LARGER_TEXT, ReaderShortcuts.match(KeyEvent.KEYCODE_EQUALS, ctrl))
         assertEquals(ReaderCommand.SMALLER_TEXT, ReaderShortcuts.match(KeyEvent.KEYCODE_MINUS, ctrl))
+        assertEquals(ReaderCommand.LISTEN_PLAYER, ReaderShortcuts.match(KeyEvent.KEYCODE_L, ctrl or alt))
     }
 
     @Test

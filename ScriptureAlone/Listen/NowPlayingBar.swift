@@ -2,6 +2,9 @@ import SwiftUI
 import ScriptureAloneCore
 
 /// The compact glass bar shown while listening: transport, speed, voice and sleep timer.
+///
+/// The chevron centred on its top edge (or a swipe down on the bar) minimizes it to `ListenPill` while
+/// reading goes on; the ✕ at the trailing edge is Stop, which ends listening.
 struct NowPlayingBar: View {
     @Environment(ReaderModel.self) private var model
     @Environment(\.scenePhase) private var scenePhase
@@ -18,6 +21,9 @@ struct NowPlayingBar: View {
 
     var body: some View {
         VStack(spacing: 6) {
+            minimizeButton
+                .padding(.top, -6)
+                .padding(.bottom, -4)
             if listen.isMuted {
                 mutedRow
             }
@@ -52,8 +58,40 @@ struct NowPlayingBar: View {
         .padding(.vertical, 10)
         .frame(maxWidth: 560)
         .glassEffect(.regular, in: .rect(cornerRadius: 24))
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("listen.bar")
+        // A swipe down tucks the bar away, as a sheet's would; reading goes on.
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 20)
+                .onEnded { drag in
+                    let size = drag.translation
+                    if size.height > 36, size.height > abs(size.width) { listen.minimize() }
+                }
+        )
+        .accessibilityAction(named: Text("Minimize player", comment: "Accessibility action and button: hide the read-aloud bar behind a small pill while reading continues")) {
+            listen.minimize()
+        }
         .onAppear(perform: refreshVoices)
         .onChange(of: scenePhase) { if scenePhase == .active { refreshVoices() } }
+    }
+
+    /// Minimize: a chevron centred on the bar's top edge, where a sheet's grabber sits (the bar also
+    /// swipes down), away from Stop so the two are never mistaken — and taking no room from the row,
+    /// where the verse and voice need every point on an iPhone.
+    private var minimizeButton: some View {
+        Button { listen.minimize() } label: {
+            Image(systemName: "chevron.compact.down")
+                .font(.title3.weight(.medium))
+                .frame(width: 64, height: 18)
+                .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(.secondary)
+        .keyboardShortcut("l", modifiers: [.command, .option])
+        .accessibilityLabel(Text("Minimize player", comment: "Accessibility action and button: hide the read-aloud bar behind a small pill while reading continues"))
+        .accessibilityHint(Text("Listening continues.", comment: "Accessibility hint for the Minimize player button"))
+        .accessibilityIdentifier("listen.minimize")
+        .help(Text("Minimize player", comment: "Accessibility action and button: hide the read-aloud bar behind a small pill while reading continues"))
     }
 
     private var status: String {
@@ -232,5 +270,74 @@ struct NowPlayingBar: View {
 
     static func speedLabel(_ speed: Double) -> String {
         speed.formatted(.number.precision(.fractionLength(0...2))) + "×"
+    }
+}
+
+/// The minimized player: a small glass pill with play/pause and the verse being read, floating in a
+/// corner of the page while reading goes on. Tapping the reference opens the full bar again. When
+/// Silent mode muted the session, a bell button unmutes it from here.
+struct ListenPill: View {
+    private var listen: ListenController { ListenController.shared }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            playPause
+            Button { listen.expand() } label: {
+                HStack(spacing: 6) {
+                    Text(listen.nowPlayingTitle)
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(1)
+                    Image(systemName: "chevron.up")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.leading, 2)
+                .padding(.trailing, listen.isMuted ? 2 : 6)
+                .frame(minHeight: 36)
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut("l", modifiers: [.command, .option])
+            .accessibilityLabel(Text("Expand player", comment: "Accessibility label and button: open the full read-aloud bar from its minimized pill"))
+            .accessibilityValue(Text(listen.nowPlayingTitle))
+            .accessibilityIdentifier("listen.expand")
+            .help(Text("Expand player", comment: "Accessibility label and button: open the full read-aloud bar from its minimized pill"))
+            if listen.isMuted {
+                Button { listen.unmute() } label: {
+                    Image(systemName: "bell.slash.fill")
+                        .font(.subheadline)
+                        .foregroundStyle(.tint)
+                        .frame(width: 32, height: 36)
+                        .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Unmute", comment: "Button: play the read-aloud audio although the iPhone is in Silent mode"))
+                .accessibilityHint(Text("Silent mode is on, so Listen started muted.", comment: "Accessibility hint for the Unmute button. “Listen” is the read-aloud feature's name."))
+                .accessibilityIdentifier("listen.pill.unmute")
+            }
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .glassEffect(.regular, in: .capsule)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("listen.pill")
+    }
+
+    @ViewBuilder private var playPause: some View {
+        if case .preparing = listen.phase {
+            ProgressView().controlSize(.small).frame(width: 36, height: 36)
+                .accessibilityLabel("Preparing")
+        } else {
+            Button { listen.togglePlayPause() } label: {
+                Image(systemName: listen.isPlaying ? "pause.fill" : "play.fill")
+                    .font(.body)
+                    .contentTransition(.symbolEffect(.replace))
+                    .frame(width: 36, height: 36)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(listen.isPlaying ? "Pause" : "Play")
+            .accessibilityIdentifier("listen.pill.playPause")
+        }
     }
 }

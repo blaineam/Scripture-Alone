@@ -75,6 +75,9 @@
     <string name="listen_scroll_brisk">Brisk</string>
     <!-- Now-playing bar button (accessibility label). -->
     <string name="listen_stop">Stop Listening</string>
+    <string name="listen_minimize">Minimize player</string>
+    <string name="listen_expand">Expand player</string>
+    <string name="listen_minimize_hint">Listening continues.</string>
     <!-- Now-playing status line while paused. -->
     <string name="listen_paused">Paused</string>
     <!-- Now-playing status line. %1$s is the voice's name, %2$s the speed, e.g. "System Voice · 1.25×". -->
@@ -330,6 +333,7 @@
     <string name="reader_shortcut_study_back">Back in Study</string>
     <!-- Opens the maps and timeline in Study. -->
     <string name="reader_shortcut_maps">Maps &amp; Timeline</string>
+    <string name="reader_shortcut_listen_player">Minimize or Expand Player</string>
     <string name="reader_shortcut_favorite">Add to or Remove from Favorites</string>
     <string name="reader_shortcut_larger_text">Larger Text</string>
     <string name="reader_shortcut_smaller_text">Smaller Text</string>

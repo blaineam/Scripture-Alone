@@ -43,6 +43,9 @@
     <string name="listen_scroll_steady">보통</string>
     <string name="listen_scroll_brisk">빠르게</string>
     <string name="listen_stop">듣기 중지</string>
+    <string name="listen_minimize">플레이어 최소화</string>
+    <string name="listen_expand">플레이어 펼치기</string>
+    <string name="listen_minimize_hint">읽기는 계속됩니다.</string>
     <string name="listen_paused">일시정지됨</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">닫기</string>
@@ -169,6 +172,7 @@
     <string name="reader_shortcut_go_to">본문으로 이동</string>
     <string name="reader_shortcut_study_back">묵상으로 돌아가기</string>
     <string name="reader_shortcut_maps">지도 &amp; 연표</string>
+    <string name="reader_shortcut_listen_player">플레이어 최소화 또는 펼치기</string>
     <string name="reader_shortcut_favorite">즐겨찾기 추가/삭제</string>
     <string name="reader_shortcut_larger_text">글자 크게</string>
     <string name="reader_shortcut_smaller_text">글자 작게</string>

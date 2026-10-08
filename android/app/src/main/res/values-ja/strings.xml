@@ -43,6 +43,9 @@
     <string name="listen_scroll_steady">一定</string>
     <string name="listen_scroll_brisk">速め</string>
     <string name="listen_stop">読み上げを停止</string>
+    <string name="listen_minimize">プレーヤーをしまう</string>
+    <string name="listen_expand">プレーヤーを開く</string>
+    <string name="listen_minimize_hint">読み上げは続きます。</string>
     <string name="listen_paused">一時停止中</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">閉じる</string>
@@ -169,6 +172,7 @@
     <string name="reader_shortcut_go_to">箇所へ移動</string>
     <string name="reader_shortcut_study_back">スタディに戻る</string>
     <string name="reader_shortcut_maps">地図 &amp; 年表</string>
+    <string name="reader_shortcut_listen_player">プレーヤーをしまう／開く</string>
     <string name="reader_shortcut_favorite">お気に入りに追加／削除</string>
     <string name="reader_shortcut_larger_text">文字を大きく</string>
     <string name="reader_shortcut_smaller_text">文字を小さく</string>

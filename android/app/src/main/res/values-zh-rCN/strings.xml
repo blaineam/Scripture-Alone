@@ -43,6 +43,9 @@
     <string name="listen_scroll_steady">平稳</string>
     <string name="listen_scroll_brisk">轻快</string>
     <string name="listen_stop">停止朗读</string>
+    <string name="listen_minimize">最小化播放器</string>
+    <string name="listen_expand">展开播放器</string>
+    <string name="listen_minimize_hint">朗读会继续。</string>
     <string name="listen_paused">已暂停</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">忽略</string>
@@ -169,6 +172,7 @@
     <string name="reader_shortcut_go_to">跳转至经文</string>
     <string name="reader_shortcut_study_back">返回研读</string>
     <string name="reader_shortcut_maps">地图和年表</string>
+    <string name="reader_shortcut_listen_player">最小化或展开播放器</string>
     <string name="reader_shortcut_favorite">添加或移除收藏</string>
     <string name="reader_shortcut_larger_text">放大文字</string>
     <string name="reader_shortcut_smaller_text">缩小文字</string>

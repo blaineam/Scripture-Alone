@@ -43,6 +43,9 @@
     <string name="listen_scroll_steady">Constante</string>
     <string name="listen_scroll_brisk">Rápida</string>
     <string name="listen_stop">Dejar de escuchar</string>
+    <string name="listen_minimize">Minimizar reproductor</string>
+    <string name="listen_expand">Expandir reproductor</string>
+    <string name="listen_minimize_hint">La lectura continúa.</string>
     <string name="listen_paused">En pausa</string>
     <string name="listen_status_voice_speed">%1$s · %2$s</string>
     <string name="listen_dismiss_notice">Descartar</string>
@@ -169,6 +172,7 @@
     <string name="reader_shortcut_go_to">Ir al pasaje</string>
     <string name="reader_shortcut_study_back">Volver al estudio</string>
     <string name="reader_shortcut_maps">Mapas y cronología</string>
+    <string name="reader_shortcut_listen_player">Minimizar o expandir reproductor</string>
     <string name="reader_shortcut_favorite">Añadir o quitar de favoritos</string>
     <string name="reader_shortcut_larger_text">Texto más grande</string>
     <string name="reader_shortcut_smaller_text">Texto más pequeño</string>

@@ -42,10 +42,17 @@ final class ListenController {
     private(set) var phase: Phase = .idle
     /// The verse being read, while listening.
     private(set) var speakingVerse: Int?
-    /// A short note for the bar — a fallback, a failure, a sleep timer that ended.
-    var notice: String?
-    /// True while the bar should show.
-    private(set) var isPresented = false
+    /// A short note for the bar — a fallback, a failure, a sleep timer that ended. A notice opens a
+    /// minimized player again: the pill has no room to say it.
+    var notice: String? {
+        didSet { if notice != nil { presentation.noticeShown() } }
+    }
+    /// Whether the player is up, and whether it shows as the full bar or the minimized pill.
+    private(set) var presentation = ListenPresentation()
+    /// True while the player — the full bar or the pill — should show.
+    var isPresented: Bool { presentation.isPresented }
+    /// The reader minimized the player: the pill shows instead of the bar while reading goes on.
+    var isMinimized: Bool { presentation.isMinimized }
     private(set) var sleepTimer: SleepTimer = .off
     /// Whether this listening session is muted by the iPhone's Silent mode (`ListenMute`).
     private(set) var mute = ListenMute()
@@ -219,7 +226,7 @@ final class ListenController {
         self.items = items
         current = 0
         notice = nil
-        isPresented = true
+        presentation.sessionStarted()
         session += 1
         #if os(iOS)
         if SilentSwitch.applies {
@@ -392,13 +399,21 @@ final class ListenController {
         updateNowPlaying()
     }
 
+    // MARK: Minimizing
+
+    /// Hides the bar behind the small pill; reading, the marked verse and the page turns go on.
+    func minimize() { presentation.minimize() }
+
+    /// Opens the full bar again from the pill.
+    func expand() { presentation.expand() }
+
     /// Stops and hides the bar.
     ///
     /// `isPresented` goes false first so the bar leaves the screen even if teardown below is slow,
     /// and the remote commands are switched off so the system stops sending transport events to an
     /// app that is no longer playing anything.
     func stop() {
-        isPresented = false
+        presentation.sessionEnded()
         session += 1
         mute.end()
         setRemoteCommandsEnabled(false)
@@ -486,8 +501,13 @@ final class ListenController {
         endPass(notice: nil)
     }
 
-    /// Leaves the bar up, paused at the start of what was read, so play reads it again.
+    /// Leaves the bar up, paused at the start of what was read, so play reads it again — unless the
+    /// player was minimized: then reading has simply ended, and the pill goes away with it.
     private func endPass(notice: String?) {
+        if presentation.passEndedCloses(withNotice: notice != nil) {
+            stop()
+            return
+        }
         stopOutput()
         current = items.first?.key == 0 ? 1 : 0
         phase = items.isEmpty ? .idle : .paused
@@ -814,6 +834,48 @@ private nonisolated final class PlayerDelegate: NSObject, AVAudioPlayerDelegate,
 
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         onFinish?()
+    }
+}
+
+/// How the player shows: not at all, as the full Now Playing bar, or minimized to a small pill while
+/// reading goes on (the verse stays marked and the columns keep turning).
+///
+/// Every new listening session opens the full bar: it carries Stop, Silent mode's Unmute, the voice
+/// and the speed, which a reader who has just pressed Listen may want, and a pill that appeared on its
+/// own would hide them. Minimizing lasts for the session only — nothing is remembered.
+struct ListenPresentation: Equatable {
+    enum Mode: Equatable { case hidden, expanded, minimized }
+
+    private(set) var mode: Mode = .hidden
+
+    var isPresented: Bool { mode != .hidden }
+    var isMinimized: Bool { mode == .minimized }
+
+    /// Listen started (the toolbar, a selection, an intent): the full bar, even if a pill was up.
+    mutating func sessionStarted() { mode = .expanded }
+
+    /// The reader minimized the bar.
+    mutating func minimize() { if mode == .expanded { mode = .minimized } }
+
+    /// The reader tapped the pill.
+    mutating func expand() { if mode == .minimized { mode = .expanded } }
+
+    /// Listening stopped — Stop, or the end of reading while minimized.
+    mutating func sessionEnded() { mode = .hidden }
+
+    /// Something to tell the reader: the pill opens into the bar, where the notice shows.
+    mutating func noticeShown() { if mode == .minimized { mode = .expanded } }
+
+    /// Reading came to its end. The full bar stays up, paused, so play reads it again; a minimized
+    /// player closes — unless there's a notice to show, which opens the bar instead. Returns whether
+    /// the session should stop.
+    mutating func passEndedCloses(withNotice: Bool) -> Bool {
+        guard mode == .minimized else { return false }
+        if withNotice {
+            mode = .expanded
+            return false
+        }
+        return true
     }
 }
 

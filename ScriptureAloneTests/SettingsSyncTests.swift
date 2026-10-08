@@ -52,7 +52,7 @@ final class SettingsSyncTests {
         ])
         defaults.set("light", forKey: SettingsKey.theme)   // what the app wrote for itself at first launch
 
-        final class Box: @unchecked Sendable { var notes: [Notification] = [] }
+        nonisolated final class Box: @unchecked Sendable { var notes: [Notification] = [] }
         let box = Box()
         let token = NotificationCenter.default.addObserver(forName: SettingsSync.restoredNotification, object: nil, queue: nil) {
             box.notes.append($0)

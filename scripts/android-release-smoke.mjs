@@ -15,7 +15,8 @@
  *     headless on port SA_EMULATOR_PORT (default 5556) and shuts it down at the end. Every adb and
  *     Gradle call targets that serial; an emulator running any other AVD is never touched.
  *  4. Installs it fresh and drives it with uiautomator: launch → open a chapter (Go To) → Listen →
- *     Previous/Next tapped as fast as adb can send them (the 1.1.0-rc.5 ANR) → the share card (three styles, Customize › Strong shadow) →
+ *     Previous/Next tapped as fast as adb can send them (the 1.1.0-rc.5 ANR) → Minimize player (the pill,
+ *     still reading; its play/pause), Expand, a swipe down to minimize, Stop → the share card (three styles, Customize › Strong shadow) →
  *     a 48-megapixel photo imported as a slide. After every step: the process must be alive, with
  *     no crash and no ANR in the logs.
  *  5. Runs the instrumented tests (connectedDebugAndroidTest — incl. SystemBarsInsetsTest) on the
@@ -302,7 +303,33 @@ async function smoke() {
 	if (!(await find('Stop Listening', { timeout: 5_000 }))) { screenshot('skips'); fail('the Now Playing bar stopped answering after the skips'); }
 	log(`UI answered ${Date.now() - t0} ms after the burst`);
 	alive('Listen with fast skips');
+
+	// Minimize: the bar becomes a pill naming the verse being read, and reading goes on.
+	screenshot('listen-expanded');
+	await tap('Minimize player');
+	const pill = await find(/^Expand player, .+:\d+/, { timeout: 5_000 });
+	if (!pill) { screenshot('minimize'); fail('Minimize player did not show the pill'); }
+	if (await find('Stop Listening', { timeout: 1_000 })) { screenshot('minimize'); fail('the full bar stayed up after Minimize player'); }
+	if (!(await find('Pause', { timeout: 3_000 }))) { screenshot('minimize'); fail('minimizing stopped the reading'); }
+	log(`pill: ${pill.desc}`);
+	screenshot('listen-minimized');
+	await tap('Pause');
+	if (!(await find('Play', { timeout: 5_000 }))) { screenshot('pill'); fail("the pill's Pause did not pause"); }
+	await tap('Play');
+	if (!(await find('Pause', { timeout: 10_000 }))) { screenshot('pill'); fail("the pill's Play did not play"); }
+	alive('Listen minimized');
+	await tap(/^Expand player, /);
+	if (!(await find('Stop Listening', { timeout: 5_000 }))) { screenshot('expand'); fail('the pill did not open the bar'); }
+	// A swipe down on the bar minimizes it too.
+	const chevron = await find('Minimize player', { timeout: 3_000 });
+	if (!chevron) fail('the bar has no Minimize player');
+	const [cx, cy] = center(chevron);
+	shell(`input swipe ${cx + 120} ${cy} ${cx + 120} ${cy + 260} 250`);
+	if (!(await find(/^Expand player, /, { timeout: 5_000 }))) { screenshot('swipe'); fail('swiping the bar down did not minimize it'); }
+	await tap(/^Expand player, /);
+	alive('Listen expanded again');
 	await tap('Stop Listening');
+	if (await find(/^Expand player, /, { timeout: 1_500 })) { screenshot('stop'); fail('the pill outlived Stop'); }
 
 	// The share card: select a verse, Share › Share Image…, then export it to the share sheet.
 	const verse = nodes(dump()).find((n) => /^Verse \d+\./.test(n.desc) && n.bounds[1] > 400);
