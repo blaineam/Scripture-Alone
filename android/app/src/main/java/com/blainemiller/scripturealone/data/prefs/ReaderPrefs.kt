@@ -60,8 +60,12 @@ object ReaderKeys {
     val AUTO_SCROLL_SPEED = doublePreferencesKey("reader.autoScrollSpeed")
 
     // The verse-image designer's remembered choices — `ShareSettingsKey` in `ShareStyle.swift`.
-    /** "parchment", "ink", … (`ShareTemplate` raw values, which are also the links' `tp`). */
+    /** The ground: "parchment", "watercolor", … (`ShareBackground` raw values; the first eight are the links' `tp`). */
     val SHARE_TEMPLATE = stringPreferencesKey("share.template")
+    /** The picked text colour as "RRGGBB", or empty for the ground's own. */
+    val SHARE_INK = stringPreferencesKey("share.ink")
+    /** "none", "soft" or "strong". */
+    val SHARE_SHADOW = stringPreferencesKey("share.shadow")
     /** "square", "story" or "wide". */
     val SHARE_ASPECT = stringPreferencesKey("share.aspect")
     /** A `FontFamily` raw value, as `reader.fontFamily`. */
@@ -107,6 +111,8 @@ data class ReaderSettings(
     val columns: Boolean? = null,
     val fontFamily: String? = null,
     val shareTemplate: String? = null,
+    val shareInk: String? = null,
+    val shareShadow: String? = null,
     val shareAspect: String? = null,
     val shareFontFamily: String? = null,
     val shareAlignment: String? = null,
@@ -135,6 +141,8 @@ data class ReaderSettings(
             columns = p[ReaderKeys.COLUMNS],
             fontFamily = p[ReaderKeys.FONT_FAMILY],
             shareTemplate = p[ReaderKeys.SHARE_TEMPLATE],
+            shareInk = p[ReaderKeys.SHARE_INK],
+            shareShadow = p[ReaderKeys.SHARE_SHADOW],
             shareAspect = p[ReaderKeys.SHARE_ASPECT],
             shareFontFamily = p[ReaderKeys.SHARE_FONT_FAMILY],
             shareAlignment = p[ReaderKeys.SHARE_ALIGNMENT],

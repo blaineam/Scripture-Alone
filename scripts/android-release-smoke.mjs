@@ -15,7 +15,7 @@
  *     headless on port SA_EMULATOR_PORT (default 5556) and shuts it down at the end. Every adb and
  *     Gradle call targets that serial; an emulator running any other AVD is never touched.
  *  4. Installs it fresh and drives it with uiautomator: launch → open a chapter (Go To) → Listen →
- *     Previous/Next tapped as fast as adb can send them (the 1.1.0-rc.5 ANR) → the share card →
+ *     Previous/Next tapped as fast as adb can send them (the 1.1.0-rc.5 ANR) → the share card (three styles, Customize › Strong shadow) →
  *     a 48-megapixel photo imported as a slide. After every step: the process must be alive, with
  *     no crash and no ANR in the logs.
  *  5. Runs the instrumented tests (connectedDebugAndroidTest — incl. SystemBarsInsetsTest) on the
@@ -313,6 +313,28 @@ async function smoke() {
 	await tap(/^Share Image/);
 	if (!(await find(/^Preview: /, { timeout: 10_000 }))) { screenshot('share'); fail('the share card designer did not open'); }
 	screenshot('share-card');
+	// A ready-made style or three, then Customize › a strong shadow: the preview follows each tap.
+	for (const style of ['Watercolor', 'Golden Hour', 'Linen']) {
+		const tile = await find(style, { timeout: 5_000 });
+		if (!tile) { screenshot('share-styles'); fail(`the ${style} style is not in the Styles row`); }
+		tapAt(center(tile));
+		await sleep(1_500);
+		screenshot(`share-style-${style.toLowerCase().replace(/ /g, '-')}`);
+	}
+	await tap('Customize');
+	// The fine controls open beneath the Styles; scroll the controls (not the pinned preview) to the shadow.
+	let strong = await find('Strong', { timeout: 2_000 });
+	for (let i = 0; i < 5 && !strong; i++) {
+		const [w, h] = (shell('wm size').match(/(\d+)x(\d+)\s*$/) || [0, 1080, 2400]).slice(1).map(Number);
+		shell(`input swipe ${w / 2} ${Math.round(h * 0.85)} ${w / 2} ${Math.round(h * 0.6)} 400`);
+		await sleep(800);
+		strong = await find('Strong', { timeout: 2_000 });
+	}
+	if (!strong) { screenshot('missing'); fail('Customize has no Strong shadow'); }
+	tapAt(center(strong));
+	await sleep(1_000);
+	screenshot('share-customized');
+	alive('share styles');
 	const exportButton = nodes(dump()).find((n) => n.desc === 'Share Image' && n.clickable);
 	if (exportButton) {
 		tapAt(center(exportButton));

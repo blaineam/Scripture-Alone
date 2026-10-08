@@ -2,6 +2,23 @@
 
 ## After 1.0.0
 
+- A better verse image. The designer opens on a row of ready-made **Styles** — each a background
+  with the text color, shadow and typeface made for it, so one tap gives a finished card:
+  Parchment, Watercolor, Golden Hour, Linen, Night, Bokeh, Dawn, Lattice, Mist, Film, Contour,
+  Dusk, Canvas, Sage, Tide, Ink, Stone, Sand, Blush, Olive and Minimal. The grounds are drawn on
+  the device from code (paper fibres and grain, linen and canvas weaves, film grain, a watercolor
+  wash, soft bokeh, a golden-hour light leak, a fine lattice and contour lines, plus soft solids,
+  two-tones and duotones) — no image files — and stay crisp at the 2160-pixel export. **Customize**
+  (one tap down) holds the background (Clean and Textured), the text color (Automatic, five colors
+  that suit the background, or any color), the shadow (None, Soft, Strong) and the typeface,
+  alignment and what to show. The text color follows the background until you pick one. Every card
+  is checked for contrast against the background as drawn — 4.5:1 on its average, 3:1 on its
+  busiest patch — and a picked color that wouldn't read is nudged darker or lighter (or given a
+  soft shadow), with a note saying so. The last design is remembered (and synced with your other
+  devices on iPhone, iPad and Mac); share links carry the nearest of the web's eight templates.
+  VoiceOver and TalkBack name every style, background and color; all nine languages. Shortcuts'
+  Create Verse Image can use any of the styles. On iPhone, iPad, Mac and Android.
+
 - Favorite a verse on Wear OS. A passage on the watch has a heart, as on Apple Watch: tap it to add
   the verse to your favorites or take it off. The phone keeps your library, so the tap goes to the
   phone (when it's out of reach, as soon as it's back) and the watch shows the heart filled at once.

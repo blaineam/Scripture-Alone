@@ -32,11 +32,10 @@ import com.blainemiller.scripturealone.data.userdata.Selection
 import com.blainemiller.scripturealone.data.userdata.UserData
 import com.blainemiller.scripturealone.data.userdata.UserDataStore
 import java.io.File
-import com.blainemiller.scripturealone.ui.share.ShareAlignment
 import com.blainemiller.scripturealone.ui.share.ShareAspect
 import com.blainemiller.scripturealone.ui.share.ShareSource
 import com.blainemiller.scripturealone.ui.share.ShareStyle
-import com.blainemiller.scripturealone.ui.share.ShareTemplate
+import com.blainemiller.scripturealone.ui.share.ShareBackground
 import com.blainemiller.scripturealone.data.VerseNumbering
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookNames
@@ -194,16 +193,8 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     )
 
     // The verse-image designer's remembered choices — `ShareSettingsKey`, per device, iOS defaults.
-    var shareTemplate by persisted(ShareTemplate.fromRaw(saved.shareTemplate) ?: ShareTemplate.PARCHMENT) { p, v -> p[ReaderKeys.SHARE_TEMPLATE] = v.raw }
-    var shareAspect by persisted(ShareAspect.fromRaw(saved.shareAspect) ?: ShareAspect.SQUARE) { p, v -> p[ReaderKeys.SHARE_ASPECT] = v.raw }
-    var shareFamily by persisted(ReaderFontFamily.fromRaw(saved.shareFontFamily) ?: ReaderFontFamily.DEFAULT) { p, v -> p[ReaderKeys.SHARE_FONT_FAMILY] = v.raw }
-    var shareAlignment by persisted(ShareAlignment.fromRaw(saved.shareAlignment) ?: ShareAlignment.CENTER) { p, v -> p[ReaderKeys.SHARE_ALIGNMENT] = v.raw }
-    var shareRedLetters by persisted(saved.shareRedLetters ?: true) { p, v -> p[ReaderKeys.SHARE_RED_LETTERS] = v }
-    var shareVerseNumbers by persisted(saved.shareVerseNumbers ?: true) { p, v -> p[ReaderKeys.SHARE_VERSE_NUMBERS] = v }
-    var shareWordmark by persisted(saved.shareWordmark ?: true) { p, v -> p[ReaderKeys.SHARE_WORDMARK] = v }
-
-    val shareStyle: ShareStyle
-        get() = ShareStyle(shareTemplate, shareAspect, shareFamily, shareAlignment, shareRedLetters, shareVerseNumbers, shareWordmark)
+    /** The verse-image design, remembered under iOS's `share.*` keys ([ShareStyle.save]). */
+    var shareStyle by persisted(ShareStyle.from(saved)) { p, v -> v.save(p) }
 
     private var loading: Job? = null
 
@@ -673,9 +664,11 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
     fun openDesigner(payload: ShareLinkPayload) {
         viewModelScope.launch {
             val source = shareSource(payload.ranges, payload.translation, payload)?.takeIf { it.imagesAllowed } ?: return@launch
-            ShareTemplate.fromRaw(payload.template)?.let { shareTemplate = it }
-            ShareAspect.fromRaw(payload.aspect)?.let { shareAspect = it }
-            ReaderFontFamily.fromShareToken(payload.font)?.let { shareFamily = it }
+            var style = shareStyle
+            ShareBackground.fromRaw(payload.template)?.let { style = style.copy(background = it, ink = null) }
+            ShareAspect.fromRaw(payload.aspect)?.let { style = style.copy(aspect = it) }
+            ReaderFontFamily.fromShareToken(payload.font)?.let { style = style.copy(family = it) }
+            shareStyle = style
             sharedPassage = null
             designer = source
         }

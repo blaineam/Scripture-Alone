@@ -248,7 +248,7 @@ struct ShareDesigner: View {
                         .buttonStyle(.plain)
                         .id(item)
                         .accessibilityLabel(item.title)
-                        .accessibilityHint(Text("Applies this style's background, text color, shadow and typeface", comment: "VoiceOver hint on a verse-image style"))
+                        .accessibilityHint(Text("Applies this style’s background, text color, shadow and typeface", comment: "VoiceOver hint on a verse-image style"))
                         .accessibilityIdentifier("share.style.\(item.rawValue)")
                         .accessibilityAddTraits(chosen ? .isSelected : [])
                     }

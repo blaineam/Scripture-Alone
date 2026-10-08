@@ -186,6 +186,14 @@ With `W`, `H` the canvas size and `S = min(W, H)`:
 
 Use system fonts only; don't load web fonts from a third-party CDN (it would leak the visit).
 
+**The app has more looks than the web.** Its designer offers 21 grounds (`ShareBackground` in
+`ShareStyle.swift`), drawn with texture on the device; a link carries the nearest of the eight
+templates above as `tp`: the eight themselves, `watercolor`/`canvas` → `linen`, `glow`/`grain` →
+`ink`, `bokeh`/`dusk`/`tide` → `night`, `lattice`/`contour`/`mist`/`sage` → `stone`, `sand` →
+`parchment`, `blush` → `dawn`. A text color or shadow picked in the app doesn't travel. An app
+opening a link with one of the eight names draws that ground (Parchment and Linen with their paper
+and weave textures).
+
 The source of truth for all of the above is `ScriptureAlone/Share/ShareStyle.swift` (templates,
 aspects, typeface tokens) and `ShareCard.swift` (metrics and layout); keep this table in step.
 

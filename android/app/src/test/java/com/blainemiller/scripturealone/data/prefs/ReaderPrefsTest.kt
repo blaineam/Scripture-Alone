@@ -50,11 +50,13 @@ class ReaderPrefsTest {
         val names = listOf(
             ReaderKeys.FONT_FAMILY, ReaderKeys.SHARE_TEMPLATE, ReaderKeys.SHARE_ASPECT, ReaderKeys.SHARE_FONT_FAMILY,
             ReaderKeys.SHARE_ALIGNMENT, ReaderKeys.SHARE_RED_LETTERS, ReaderKeys.SHARE_VERSE_NUMBERS, ReaderKeys.SHARE_WORDMARK,
+            ReaderKeys.SHARE_INK, ReaderKeys.SHARE_SHADOW,
         ).map { it.name }
         assertEquals(
             listOf(
                 "reader.fontFamily", "share.template", "share.aspect", "share.fontFamily",
                 "share.alignment", "share.redLetters", "share.verseNumbers", "share.wordmark",
+                "share.ink", "share.shadow",
             ),
             names,
         )

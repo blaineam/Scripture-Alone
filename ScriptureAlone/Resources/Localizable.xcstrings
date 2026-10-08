@@ -6373,7 +6373,7 @@
         }
       }
     },
-    "Applies this style's background, text color, shadow and typeface" : {
+    "Applies this style’s background, text color, shadow and typeface" : {
       "comment" : "VoiceOver hint on a verse-image style",
       "localizations" : {
         "de" : {

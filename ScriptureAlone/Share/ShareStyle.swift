@@ -165,7 +165,7 @@ nonisolated enum ShareBackground: String, CaseIterable, Identifiable, Sendable {
         case .parchment: 0x8A5A2B
         case .watercolor: 0x4C6A8A
         case .glow: 0xFFC98F
-        case .linen: 0x8E6E44
+        case .linen: 0x9C7A4E
         case .night: 0xA9B8F0
         case .bokeh: 0xFFE0B8
         case .dawn: 0x6B4A6E

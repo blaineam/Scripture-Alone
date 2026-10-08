@@ -41,7 +41,7 @@ class ShareCardRenderer(private val context: Context) {
 
     /** The passage's wrapped height at [size] — the fitter's measurement. */
     fun passageHeight(passage: SharePassageText, size: Float, style: ShareStyle): Float =
-        passageLayout(passage, size, style, ShareCardMetrics(style.aspect).textWidth, colors = false).height.toFloat()
+        passageLayout(passage, size, style, ShareCardMetrics(style.aspect).textWidth, colors = null).height.toFloat()
 
     /** Fits [source] to [style]: the largest size that holds it, trimming whole verses if none does. */
     fun fit(source: ShareSource, style: ShareStyle): ShareCardFitter.Result = ShareCardFitter.fit(
@@ -49,30 +49,48 @@ class ShareCardRenderer(private val context: Context) {
         rangesOf = source::rangesOf, measure = { passage, size -> passageHeight(passage, size, style) },
     )
 
-    fun draw(canvas: Canvas, content: ShareCardContent, style: ShareStyle) {
+    /**
+     * Draws the card. The ground is [backdrop] (drawn ahead by [ShareBackdrop.bitmap]) stretched over
+     * the card, or — with [pixelsPerPoint] — painted straight onto this canvas, or else its flat
+     * colours. [colors] are the legible ones `ShareContrast.resolve` chose for the measured ground.
+     */
+    fun draw(
+        canvas: Canvas,
+        content: ShareCardContent,
+        style: ShareStyle,
+        colors: ShareColors = style.colors(ShareBackdrop.stats(style.background)),
+        backdrop: Bitmap? = null,
+        pixelsPerPoint: Float? = null,
+    ) {
         val metrics = ShareCardMetrics(style.aspect)
-        val template = style.template
+        val background = style.background
         val w = metrics.width
         val h = metrics.height
 
-        // Background: flat, or a top-to-bottom gradient through the stops.
-        val ground = Paint(Paint.ANTI_ALIAS_FLAG)
-        if (template.background.size == 1) {
-            ground.color = argb(template.background[0])
-        } else {
-            val stops = template.background.indices.map { it / (template.background.size - 1f) }.toFloatArray()
-            ground.shader = LinearGradient(0f, 0f, 0f, h, template.background.map(::argb).toIntArray(), stops, Shader.TileMode.CLAMP)
+        when {
+            backdrop != null -> canvas.drawBitmap(backdrop, null, RectF(0f, 0f, w, h), Paint(Paint.FILTER_BITMAP_FLAG))
+            pixelsPerPoint != null -> ShareBackdrop.draw(background, canvas, w, h, pixelsPerPoint)
+            else -> {
+                // Flat, or a top-to-bottom gradient through the stops.
+                val ground = Paint(Paint.ANTI_ALIAS_FLAG)
+                if (background.colors.size == 1) {
+                    ground.color = argb(background.colors[0])
+                } else {
+                    val stops = background.colors.indices.map { it / (background.colors.size - 1f) }.toFloatArray()
+                    ground.shader = LinearGradient(0f, 0f, 0f, h, background.colors.map(::argb).toIntArray(), stops, Shader.TileMode.CLAMP)
+                }
+                canvas.drawRect(0f, 0f, w, h, ground)
+            }
         }
-        canvas.drawRect(0f, 0f, w, h, ground)
 
-        if (template.hasFrame) {
+        if (background.hasFrame) {
             // `strokeBorder` inside a rectangle inset by 3.5% of the short side.
             val inset = metrics.short * 0.035f
             val line = 1.5f
             val frame = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 setStyle(Paint.Style.STROKE)
                 strokeWidth = line
-                color = argb(template.accent, 0.35f)
+                color = argb(colors.accent, 0.35f)
             }
             canvas.drawRect(inset + line / 2, inset + line / 2, w - inset - line / 2, h - inset - line / 2, frame)
         }
@@ -84,15 +102,15 @@ class ShareCardRenderer(private val context: Context) {
         val bottom = h - metrics.verticalPadding
 
         // The footer sits at the bottom inside the padding; passage and reference are centred above it.
-        val footerLayouts = if (footer) footerLayouts(content, style, metrics, width) else emptyList()
+        val footerLayouts = if (footer) footerLayouts(content, style, metrics, width, colors) else emptyList()
         val footerHeight = if (footer) {
             max(metrics.wordmarkBlock, footerLayouts.sumOf { it.height.toDouble() }.toFloat() + FOOTER_SPACING * (footerLayouts.size - 1).coerceAtLeast(0))
         } else {
             0f
         }
 
-        var passage = passageLayout(content.passage, content.fontSize, style, width, colors = true)
-        val reference = referenceLayout(content, style, metrics, width)
+        var passage = passageLayout(content.passage, content.fontSize, style, width, colors)
+        val reference = referenceLayout(content, style, metrics, width, colors)
         val referenceBlock = metrics.referenceSize * 1.2f + ruleThickness(metrics) + metrics.referenceSize * 0.9f + reference.height
         val available = bottom - top - footerHeight
         // `minimumScaleFactor(0.6)`: a single verse too long even at the smallest size is drawn smaller.
@@ -101,7 +119,7 @@ class ShareCardRenderer(private val context: Context) {
             var size = content.fontSize
             while (size > content.fontSize * 0.6f) {
                 size *= 0.96f
-                passage = passageLayout(content.passage, size, style, width, colors = true)
+                passage = passageLayout(content.passage, size, style, width, colors)
                 if (passage.height <= target) break
             }
         }
@@ -109,7 +127,7 @@ class ShareCardRenderer(private val context: Context) {
         var y = top + ((available - groupHeight) / 2f).coerceAtLeast(0f)
         canvas.save()
         canvas.translate(left, y)
-        passage.draw(canvas)
+        drawShadowed(canvas, passage, colors, content.fontSize)
         canvas.restore()
         y += passage.height
 
@@ -117,13 +135,13 @@ class ShareCardRenderer(private val context: Context) {
         y += metrics.referenceSize * 1.2f
         val ruleHeight = ruleThickness(metrics)
         val ruleLeft = if (style.alignment == ShareAlignment.CENTER) left + (width - metrics.ruleWidth) / 2 else left
-        val rule = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = argb(template.accent, 0.7f) }
+        val rule = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = argb(colors.accent, 0.7f) }
         canvas.drawRoundRect(RectF(ruleLeft, y, ruleLeft + metrics.ruleWidth, y + ruleHeight), ruleHeight / 2, ruleHeight / 2, rule)
         y += ruleHeight + metrics.referenceSize * 0.9f
 
         canvas.save()
         canvas.translate(left, y)
-        reference.draw(canvas)
+        drawShadowed(canvas, reference, colors, metrics.referenceSize)
         canvas.restore()
 
         if (footer) {
@@ -131,7 +149,7 @@ class ShareCardRenderer(private val context: Context) {
             for (layout in footerLayouts) {
                 canvas.save()
                 canvas.translate(left, fy)
-                layout.draw(canvas)
+                drawShadowed(canvas, layout, colors, metrics.wordmarkSize)
                 canvas.restore()
                 fy += layout.height + FOOTER_SPACING
             }
@@ -147,8 +165,27 @@ class ShareCardRenderer(private val context: Context) {
         val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.scale(scale, scale)
-        draw(canvas, content, style)
+        // The ground painted at the output size, so grain and weave land one per output pixel.
+        draw(canvas, content, style, pixelsPerPoint = scale)
         return bitmap
+    }
+
+    /**
+     * Draws [layout] with the card's text shadow (`ShareShadow.layers`): one layer for Soft, the wide
+     * one then the tight one for Strong.
+     */
+    private fun drawShadowed(canvas: Canvas, layout: StaticLayout, colors: ShareColors, size: Float) {
+        val layers = colors.shadow.layers(size, colors.glow)
+        if (layers.isEmpty()) {
+            layout.draw(canvas)
+            return
+        }
+        val paint = layout.paint
+        for (layer in layers.reversed()) {
+            paint.setShadowLayer(max(0.5f, layer.radius), 0f, layer.y, argb(colors.shadowColor, layer.opacity))
+            layout.draw(canvas)
+        }
+        paint.clearShadowLayer()
     }
 
     private fun ruleThickness(metrics: ShareCardMetrics) = max(2f, metrics.referenceSize * 0.08f)
@@ -156,19 +193,18 @@ class ShareCardRenderer(private val context: Context) {
     private fun alignment(style: ShareStyle) =
         if (style.alignment == ShareAlignment.CENTER) Layout.Alignment.ALIGN_CENTER else Layout.Alignment.ALIGN_NORMAL
 
-    private fun passageLayout(passage: SharePassageText, size: Float, style: ShareStyle, width: Float, colors: Boolean): StaticLayout {
-        val template = style.template
+    private fun passageLayout(passage: SharePassageText, size: Float, style: ShareStyle, width: Float, colors: ShareColors?): StaticLayout {
         val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             typeface = face(style.family)
             textSize = size
             fontVariationSettings = style.family.variationSettings(size)
-            color = argb(template.ink)
+            color = argb(colors?.ink ?: 0)
         }
         val text = SpannableString(passage.text)
-        if (colors && style.redLetters) {
+        if (colors != null && style.redLetters) {
             for (range in passage.red) {
                 if (range.first < 0 || range.last >= text.length) continue
-                text.setSpan(ForegroundColorSpan(argb(template.red)), range.first, range.last + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                text.setSpan(ForegroundColorSpan(argb(colors.red)), range.first, range.last + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
         for (range in passage.numbers) {
@@ -176,7 +212,7 @@ class ShareCardRenderer(private val context: Context) {
             val end = range.last + 1
             text.setSpan(AbsoluteSizeSpan((size * ShareCardMetrics.NUMBER_SCALE).roundToInt()), range.first, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             text.setSpan(RiseSpan(size * ShareCardMetrics.NUMBER_RISE), range.first, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            if (colors) text.setSpan(ForegroundColorSpan(argb(template.accent)), range.first, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            if (colors != null) text.setSpan(ForegroundColorSpan(argb(colors.accent)), range.first, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         return StaticLayout.Builder.obtain(text, 0, text.length, paint, ceil(width).toInt())
             .setAlignment(alignment(style))
@@ -186,7 +222,7 @@ class ShareCardRenderer(private val context: Context) {
     }
 
     /** "JOHN 3:16  ·  ASV": bold, tracked 0.12 em, accent; two lines at most, shrunk to fit as iOS's 0.5 scale factor. */
-    private fun referenceLayout(content: ShareCardContent, style: ShareStyle, metrics: ShareCardMetrics, width: Float): StaticLayout {
+    private fun referenceLayout(content: ShareCardContent, style: ShareStyle, metrics: ShareCardMetrics, width: Float, colors: ShareColors): StaticLayout {
         val text = "${content.reference.uppercase()}  ·  ${content.translation}"
         var size = metrics.referenceSize
         while (true) {
@@ -195,7 +231,7 @@ class ShareCardRenderer(private val context: Context) {
                 textSize = size
                 fontVariationSettings = style.family.variationSettings(size, bold = true)
                 letterSpacing = 0.12f
-                color = argb(style.template.accent)
+                color = argb(colors.accent)
             }
             val layout = StaticLayout.Builder.obtain(text, 0, text.length, paint, ceil(width).toInt())
                 .setAlignment(alignment(style))
@@ -209,13 +245,13 @@ class ShareCardRenderer(private val context: Context) {
         }
     }
 
-    private fun footerLayouts(content: ShareCardContent, style: ShareStyle, metrics: ShareCardMetrics, width: Float): List<StaticLayout> {
+    private fun footerLayouts(content: ShareCardContent, style: ShareStyle, metrics: ShareCardMetrics, width: Float, colors: ShareColors): List<StaticLayout> {
         val layouts = mutableListOf<StaticLayout>()
         content.notice?.let { notice ->
             val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
                 typeface = Typeface.DEFAULT
                 textSize = metrics.wordmarkSize * 0.7f
-                color = argb(style.template.ink, 0.55f)
+                color = argb(colors.ink, 0.7f)
             }
             layouts += StaticLayout.Builder.obtain(notice, 0, notice.length, paint, ceil(width).toInt())
                 .setAlignment(alignment(style)).setIncludePad(false).setMaxLines(2)
@@ -226,7 +262,7 @@ class ShareCardRenderer(private val context: Context) {
                 typeface = face(style.family, italic = true)
                 textSize = metrics.wordmarkSize
                 fontVariationSettings = style.family.variationSettings(metrics.wordmarkSize)
-                color = argb(style.template.accent, 0.6f)
+                color = argb(colors.accent, 0.75f)
             }
             layouts += StaticLayout.Builder.obtain(WORDMARK, 0, WORDMARK.length, paint, ceil(width).toInt())
                 .setAlignment(alignment(style)).setIncludePad(false).build()

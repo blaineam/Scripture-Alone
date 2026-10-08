@@ -40,7 +40,7 @@ import com.blainemiller.scripturealone.ui.share.ShareCardMetrics
 import com.blainemiller.scripturealone.ui.share.ShareCardRenderer
 import com.blainemiller.scripturealone.ui.share.ShareLinkNumbers
 import com.blainemiller.scripturealone.ui.share.ShareStyle
-import com.blainemiller.scripturealone.ui.share.ShareTemplate
+import com.blainemiller.scripturealone.ui.share.ShareBackground
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -102,7 +102,7 @@ private fun CardButton(title: String, palette: ReaderPalette, onClick: () -> Uni
 
 /** The link's look: its template, typeface and aspect, centred, with red letters as the link carries them. */
 internal fun linkStyle(payload: ShareLinkPayload) = ShareStyle(
-    template = ShareTemplate.fromRaw(payload.template) ?: ShareTemplate.PARCHMENT,
+    background = ShareBackground.fromRaw(payload.template) ?: ShareBackground.PARCHMENT,
     aspect = ShareAspect.fromRaw(payload.aspect) ?: ShareAspect.SQUARE,
     family = ReaderFontFamily.fromShareToken(payload.font) ?: ReaderFontFamily.DEFAULT,
 )

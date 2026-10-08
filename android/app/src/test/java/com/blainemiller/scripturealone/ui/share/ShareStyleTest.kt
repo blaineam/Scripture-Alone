@@ -7,6 +7,10 @@ import com.blainemiller.scripturealone.data.share.AppLink
 import com.blainemiller.scripturealone.data.share.SharePassageText
 import com.blainemiller.scripturealone.data.share.ShareVerse
 import com.blainemiller.scripturealone.ui.reader.ReaderFontFamily
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.mutablePreferencesOf
+import com.blainemiller.scripturealone.data.prefs.ReaderKeys
+import com.blainemiller.scripturealone.data.prefs.ReaderSettings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -17,17 +21,130 @@ import org.junit.Test
 /** The designer's values and rules against `ShareStyle.swift`, `ShareCard.swift` and `docs/share-links.md`. */
 class ShareStyleTest {
 
-    @Test fun templatesAreTheSwiftOnesInOrder() {
+    @Test fun templatesAreTheLinkNamesAndGroundsOfTheSameName() {
         assertEquals(
             listOf("parchment", "ink", "dawn", "night", "linen", "stone", "olive", "minimal"),
             ShareTemplate.entries.map { it.raw },
         )
-        assertEquals(listOf(0xF7D9C4L, 0xEFB4A8L, 0xA893CCL), ShareTemplate.DAWN.background)
-        assertEquals(0x3B2F20L, ShareTemplate.PARCHMENT.ink)
-        assertEquals(0xC9A45CL, ShareTemplate.INK.accent)
-        assertEquals(0xFFA48AL, ShareTemplate.OLIVE.red)
-        assertEquals(setOf(ShareTemplate.PARCHMENT, ShareTemplate.LINEN), ShareTemplate.entries.filter { it.hasFrame }.toSet())
+        for (template in ShareTemplate.entries) {
+            assertEquals(template.raw, template.background.raw)
+            assertEquals(template, template.background.linkTemplate)
+        }
         assertNull(ShareTemplate.fromRaw("sepia"))
+    }
+
+    /** The grounds and their colours, in the Swift order (`ShareBackground`). */
+    @Test fun groundsAreTheSwiftOnesInOrder() {
+        assertEquals(
+            listOf(
+                "parchment", "watercolor", "glow", "linen", "night", "bokeh", "dawn", "lattice", "mist", "grain", "contour", "dusk",
+                "canvas", "sage", "tide", "ink", "stone", "sand", "blush", "olive", "minimal",
+            ),
+            ShareBackground.entries.map { it.raw },
+        )
+        assertEquals(listOf(0xF7D9C4L, 0xEFB4A8L, 0xA893CCL), ShareBackground.DAWN.colors)
+        assertEquals(0x3B2F20L, ShareBackground.PARCHMENT.ink)
+        assertEquals(0xC9A45CL, ShareBackground.INK.accent)
+        assertEquals(0xFFA48AL, ShareBackground.OLIVE.red)
+        assertEquals(setOf(ShareBackground.PARCHMENT, ShareBackground.LINEN, ShareBackground.CANVAS), ShareBackground.entries.filter { it.hasFrame }.toSet())
+        assertEquals(9, ShareBackground.TEXTURED.size)
+        assertEquals(ShareTemplate.LINEN, ShareBackground.WATERCOLOR.linkTemplate)
+        assertEquals(ShareTemplate.NIGHT, ShareBackground.BOKEH.linkTemplate)
+    }
+
+    // Contrast — `ShareStyleTests.swift`.
+
+    @Test fun contrastRatiosFollowWCAG() {
+        assertEquals(21.0, ShareContrast.ratio(0x000000, 0xFFFFFF), 0.01)
+        assertEquals(1.0, ShareContrast.ratio(0x777777, 0x777777), 0.0001)
+        assertTrue(ShareContrast.ratio(0x767676, 0xFFFFFF) > 4.5)
+        assertTrue(ShareContrast.ratio(0x777777, 0xFFFFFF) < 4.5)
+    }
+
+    /** Every ready-made style reads as it is on its ground as drawn (`referenceStats`), unadjusted. */
+    @Test fun everyStyleIsLegibleWithoutAdjustment() {
+        for (background in ShareBackground.entries) {
+            val stats = background.referenceStats
+            val colors = ShareStyle().applying(background).colors(stats)
+            val check = ShareContrast.check(colors.ink, stats)
+            assertTrue("$background text ${check.mean}", check.mean >= ShareContrast.TARGET)
+            assertTrue("$background worst ${check.worst}", check.worst >= ShareContrast.MINIMUM || background.presetShadow != ShareShadow.NONE)
+            assertFalse("$background needed adjusting", colors.adjusted)
+            assertEquals(background.ink, colors.ink)
+            assertTrue("$background accent", ShareContrast.ratio(colors.accent, stats.mean) >= ShareContrast.MINIMUM)
+            assertTrue("$background red", ShareContrast.ratio(colors.red, stats.mean) >= ShareContrast.MINIMUM)
+            for (swatch in background.palette) {
+                assertTrue("${swatch.hex} on $background", ShareContrast.ratio(swatch.hex, stats.mean) >= ShareContrast.MINIMUM)
+            }
+        }
+    }
+
+    @Test fun aPickedColorTooFaintIsNudgedUntilItReads() {
+        val stats = ShareBackground.PARCHMENT.referenceStats
+        val colors = ShareStyle().applying(ShareBackground.PARCHMENT).copy(ink = 0xE8D9B8).colors(stats)
+        assertTrue(colors.adjusted)
+        assertTrue(ShareContrast.ratio(colors.ink, stats.mean) >= ShareContrast.TARGET)
+        assertTrue(ShareContrast.luminance(colors.ink) < ShareContrast.luminance(0xE8D9B8))
+    }
+
+    @Test fun aPickedColorThatReadsIsKeptExactly() {
+        val colors = ShareStyle().applying(ShareBackground.NIGHT).copy(ink = 0xE9C77F).colors(ShareBackground.NIGHT.referenceStats)
+        assertEquals(0xE9C77FL, colors.ink)
+        assertFalse(colors.adjusted)
+    }
+
+    @Test fun aBusyGroundGetsAShadowWhenThereIsNone() {
+        val stats = ShareBackdropStats(0x202020, 0xD0D0D0, 0x101010)
+        val colors = ShareContrast.resolve(ShareBackground.INK, 0xFFFFFF, ShareShadow.NONE, stats)
+        assertEquals(0xFFFFFFL, colors.ink)
+        assertEquals(ShareShadow.SOFT, colors.shadow)
+        assertTrue(colors.adjusted)
+        assertEquals(0x000000L, colors.shadowColor)
+        assertEquals(ShareShadow.STRONG, ShareContrast.resolve(ShareBackground.INK, 0xFFFFFF, ShareShadow.STRONG, stats).shadow)
+    }
+
+    @Test fun theContrastPickerChoosesLightOnDarkAndDarkOnLight() {
+        val candidates = listOf(0x111111L, 0xFFFFFFL, 0x1F2F4AL, 0xF5EBD7L)
+        assertTrue(ShareContrast.luminance(ShareContrast.bestInk(ShareBackground.NIGHT.referenceStats, candidates)) > 0.7)
+        assertEquals(0x111111L, ShareContrast.bestInk(ShareBackground.MINIMAL.referenceStats, candidates))
+    }
+
+    @Test fun theTextColorFollowsTheGroundUntilOneIsPicked() {
+        var style = ShareStyle().applying(ShareBackground.PARCHMENT).copy(background = ShareBackground.NIGHT)
+        assertEquals(ShareBackground.NIGHT.ink, style.colors(ShareBackground.NIGHT.referenceStats).ink)
+        style = style.copy(ink = 0xE9C77F, background = ShareBackground.INK)
+        assertEquals(0xE9C77FL, style.colors(ShareBackground.INK.referenceStats).ink)
+        style = style.applying(ShareBackground.WATERCOLOR)
+        assertNull(style.ink)
+        assertEquals(ShareShadow.SOFT, style.shadow)
+        assertEquals(ReaderFontFamily.PALATINO, style.family)
+    }
+
+    // Remembering.
+
+    @Test fun theDesignIsRememberedUnderTheIosKeys() {
+        val style = ShareStyle().applying(ShareBackground.BOKEH).copy(ink = 0xCFE0F7, aspect = ShareAspect.STORY, redLetters = false)
+        val prefs = mutablePreferencesOf()
+        style.save(prefs)
+        assertEquals("bokeh", prefs[ReaderKeys.SHARE_TEMPLATE])
+        assertEquals("CFE0F7", prefs[ReaderKeys.SHARE_INK])
+        assertEquals("strong", prefs[ReaderKeys.SHARE_SHADOW])
+        assertEquals(style, ShareStyle.from(ReaderSettings.from(prefs)))
+        style.copy(ink = null).save(prefs)
+        assertNull(ShareStyle.from(ReaderSettings.from(prefs)).ink)
+        // A fresh install, and a template saved before these styles.
+        assertEquals(ShareStyle(), ShareStyle.from(ReaderSettings.from(emptyPreferences())))
+        val legacy = ShareStyle.from(ReaderSettings.from(mutablePreferencesOf(ReaderKeys.SHARE_TEMPLATE to "night")))
+        assertEquals(ShareBackground.NIGHT, legacy.background)
+        assertEquals(ShareShadow.NONE, legacy.shadow)
+    }
+
+    /** Values printed by `ShareBackdrop.swift` (`ShareStyleTests.noiseMatchesTheAndroidPort`). */
+    @Test fun noiseMatchesTheSwift() {
+        assertEquals(0x02BCEC5F, ShareNoise.hash(1, 2, 3))
+        assertEquals(0x20F89503, ShareNoise.hash(12, -7, 99))
+        assertEquals(0.4618003f, ShareNoise.fbm(3.7f, 11.2f, 4, 42), 1e-5f)
+        assertEquals(-2_023_758_861, ShareNoise.seed("watercolor"))
     }
 
     @Test fun aspectsAreLaidOutAt1080OnTheLongSide() {
@@ -114,7 +231,7 @@ class ShareStyleTest {
 
     @Test fun linksCarryTheDesignersTemplateTypefaceAndAspect() {
         val verses = listOf(verse(16, "For God so loved the world").copy(red = listOf(0..3)), verse(17))
-        val style = ShareStyle(template = ShareTemplate.NIGHT, aspect = ShareAspect.STORY, family = ReaderFontFamily.GEORGIA)
+        val style = ShareStyle(background = ShareBackground.NIGHT, aspect = ShareAspect.STORY, family = ReaderFontFamily.GEORGIA)
         val link = source(verses).link(style)!!
         val payload = (AppLink.parse(link) as AppLink.Share).payload
         assertEquals("night", payload.template)

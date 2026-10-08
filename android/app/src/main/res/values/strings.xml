@@ -1230,6 +1230,49 @@
     <string name="share_font_for">For %1$s</string>
     <!-- Accessibility label of the check mark on the chosen option. -->
     <string name="share_selected">Selected</string>
+    <string name="share_background_watercolor">Watercolor</string>
+    <string name="share_background_glow">Golden Hour</string>
+    <string name="share_background_bokeh">Bokeh</string>
+    <string name="share_background_lattice">Lattice</string>
+    <string name="share_background_mist">Mist</string>
+    <string name="share_background_grain">Film</string>
+    <string name="share_background_contour">Contour</string>
+    <string name="share_background_dusk">Dusk</string>
+    <string name="share_background_canvas">Canvas</string>
+    <string name="share_background_sage">Sage</string>
+    <string name="share_background_tide">Tide</string>
+    <string name="share_background_sand">Sand</string>
+    <string name="share_background_blush">Blush</string>
+    <string name="share_ink_navy">Navy</string>
+    <string name="share_ink_forest">Forest</string>
+    <string name="share_ink_burgundy">Burgundy</string>
+    <string name="share_ink_white">White</string>
+    <string name="share_ink_cream">Cream</string>
+    <string name="share_ink_gold">Gold</string>
+    <string name="share_ink_sky">Sky</string>
+    <string name="share_ink_rose">Rose</string>
+    <string name="share_shadow_none">None</string>
+    <string name="share_shadow_soft">Soft</string>
+    <string name="share_shadow_strong">Strong</string>
+    <string name="share_styles">Styles</string>
+    <string name="share_customize">Customize</string>
+    <string name="share_customize_shown">Shown</string>
+    <string name="share_customize_hidden">Hidden</string>
+    <string name="share_background">Background</string>
+    <string name="share_background_clean">Clean</string>
+    <string name="share_background_textured">Textured</string>
+    <string name="share_text_color">Text Color</string>
+    <string name="share_shadow">Shadow</string>
+    <string name="share_ink_adjusted">Adjusted to stay readable on this background.</string>
+    <string name="share_ink_custom">Custom Color</string>
+    <string name="share_style_hint">Applies this style’s background, text color, shadow and typeface</string>
+    <string name="share_ink_automatic">Automatic</string>
+    <string name="share_ink_black">Black</string>
+    <string name="share_ink_sepia">Sepia</string>
+    <string name="share_color_hue">Hue</string>
+    <string name="share_color_saturation">Saturation</string>
+    <string name="share_color_brightness">Brightness</string>
+    <string name="share_ink_selected_custom">Custom Color, %1$s</string>
 
     <!-- ===== Camera: scanning a sermon slide (SlideCapture.kt, SlideScanner.kt, SlideReviewSheet.kt, SlidePhotoSection.kt) ===== -->
 
