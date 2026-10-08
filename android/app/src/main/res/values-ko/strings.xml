@@ -840,8 +840,8 @@
     <string name="data_online_cache_write_failed">해당 장을 저장할 수 없습니다: %1$s</string>
     <string name="data_import_unreadable_file">해당 파일을 읽을 수 없습니다: %1$s</string>
     <string name="data_import_not_a_zip">해당 파일은 ePub이 아닙니다 — ZIP 컨테이너가 아닙니다.</string>
-    <string name="data_import_damaged_archive">해당 ePub이 손상되었습니다: %1$s</string>
-    <string name="data_import_entry_too_large">해당 ePub에 비정상적으로 큰 파일이 있습니다(%1$s).</string>
+    <string name="data_import_damaged_archive">해당 파일이 손상되었습니다: %1$s</string>
+    <string name="data_import_entry_too_large">해당 압축 파일에 비정상적으로 큰 파일이 있습니다(%1$s).</string>
     <string name="data_import_not_an_epub">해당 파일은 읽을 수 있는 ePub이 아닙니다: %1$s</string>
     <string name="data_import_unsupported_format">이 앱은 해당 파일을 읽을 수 없습니다: %1$s</string>
     <string name="data_import_protected_by_drm">%1$s 이 앱은 보호된 파일을 열 수 없습니다.</string>
@@ -852,7 +852,7 @@
     <string name="data_import_drm_adobe_adept">해당 ePub은 Adobe DRM으로 보호되어 있습니다.</string>
     <string name="data_import_drm_readium_lcp">해당 ePub은 LCP 라이선스로 보호되어 있습니다.</string>
     <string name="data_import_drm_apple_fairplay">해당 ePub은 Apple FairPlay DRM으로 보호되어 있습니다.</string>
-    <string name="data_import_drm_zip_entry_encryption">해당 ePub의 내용은 암호로 암호화되어 있습니다.</string>
+    <string name="data_import_drm_zip_entry_encryption">해당 파일의 내용은 암호로 암호화되어 있습니다.</string>
     <string name="data_import_detail_no_container">META-INF/container.xml이 없습니다</string>
     <string name="data_import_detail_unknown_format">ePub도 USFM книг 모음도 아닙니다</string>
     <string name="data_import_detail_no_usfm_files">압축 파일에 USFM 파일이 없습니다</string>

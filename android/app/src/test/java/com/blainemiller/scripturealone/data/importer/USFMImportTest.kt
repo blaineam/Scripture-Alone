@@ -345,6 +345,22 @@ class USFMImportTest {
         }
     }
 
+    /**
+     * A USFM zip is a ZIP too: damaged, holding an oversized entry or password-encrypted, it is refused
+     * with the same errors as an ePub — so no language's copy of them names the ePub format.
+     */
+    @Test fun zipErrorsNameNoFormat() {
+        val folders = File("src/main/res").listFiles { f -> f.name.startsWith("values") }.orEmpty()
+        for (key in listOf("data_import_damaged_archive", "data_import_entry_too_large", "data_import_drm_zip_entry_encryption")) {
+            val copies = folders.mapNotNull { folder ->
+                val file = File(folder, "strings.xml").takeIf { it.exists() } ?: return@mapNotNull null
+                Regex("<string name=\"$key\">([^<]*)</string>").find(file.readText())?.let { folder.name to it.groupValues[1] }
+            }
+            assertEquals(key, 9, copies.size)
+            for ((folder, copy) in copies) assertFalse("$folder $key: $copy", copy.contains("ePub"))
+        }
+    }
+
     // MARK: - Coverage
 
     @Test fun reportsPartialCoverage() {

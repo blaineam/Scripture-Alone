@@ -1517,9 +1517,9 @@
     <string name="data_import_unreadable_file">Couldn’t read that file: %1$s</string>
     <string name="data_import_not_a_zip">That file isn’t an ePub — it isn’t a ZIP container.</string>
     <!-- Error. %1$s is a technical detail. -->
-    <string name="data_import_damaged_archive">That ePub is damaged: %1$s</string>
+    <string name="data_import_damaged_archive">That file is damaged: %1$s</string>
     <!-- Error. %1$s is a file name inside the ePub. -->
-    <string name="data_import_entry_too_large">That ePub contains an implausibly large file (%1$s).</string>
+    <string name="data_import_entry_too_large">That archive contains an implausibly large file (%1$s).</string>
     <!-- Error. %1$s is a technical detail. -->
     <string name="data_import_not_an_epub">That file isn’t a readable ePub: %1$s</string>
     <!-- Error. %1$s is a technical detail. -->
@@ -1534,7 +1534,7 @@
     <string name="data_import_drm_adobe_adept">That ePub is protected with Adobe DRM.</string>
     <string name="data_import_drm_readium_lcp">That ePub is protected with an LCP licence.</string>
     <string name="data_import_drm_apple_fairplay">That ePub is protected with Apple’s FairPlay DRM.</string>
-    <string name="data_import_drm_zip_entry_encryption">That ePub’s contents are password-encrypted.</string>
+    <string name="data_import_drm_zip_entry_encryption">That file’s contents are password-encrypted.</string>
     <!-- Completes “That file isn’t a readable ePub: %1$s”. Keep META-INF/container.xml as it is. -->
     <string name="data_import_detail_no_container">it has no META-INF/container.xml</string>
     <!-- Completes “This app can’t read that file: %1$s”. -->

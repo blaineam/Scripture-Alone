@@ -33,6 +33,10 @@
 - Importing a USFM zip or a PDF with no copyright line no longer says "That ePub carries no
   copyright line": the message now says "That file", whatever the format. All nine languages. On
   iPhone, iPad, Mac and Android.
+- A damaged USFM zip — or one with an oversized file or password-protected contents — is no longer
+  called an ePub when it's refused: "That file is damaged", "That archive contains an implausibly
+  large file", "That file's contents are password-encrypted". All nine languages. On iPhone, iPad,
+  Mac and Android.
 - The watch's Translation screen names the phone's translation as the phone does ("NASB 1995",
   or an import's own abbreviation) when it can't show it, instead of an internal name like
   "NASB1995". On Apple Watch and Wear OS.

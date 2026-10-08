@@ -10703,108 +10703,108 @@
         }
       }
     },
-    "That ePub contains an implausibly large file (%@)." : {
-      "comment" : "Error. %@ is a file name inside the ePub.",
+    "That archive contains an implausibly large file (%@)." : {
+      "comment" : "Error. %@ is a file name inside the ZIP (an ePub or a USFM zip).",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dieses ePub enthält eine unplausibel große Datei (%@)."
+            "value" : "Dieses Archiv enthält eine unplausibel große Datei (%@)."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ese ePub contiene un archivo de tamaño inverosímil (%@)."
+            "value" : "Ese archivo comprimido contiene un archivo de tamaño inverosímil (%@)."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cet ePub contient un fichier anormalement volumineux (%@)."
+            "value" : "Cette archive contient un fichier anormalement volumineux (%@)."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quell'ePub contiene un file di dimensioni implausibili (%@)."
+            "value" : "Quell'archivio contiene un file di dimensioni implausibili (%@)."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "そのePubには大きすぎるファイル (%@) が含まれています。"
+            "value" : "そのアーカイブには大きすぎるファイル (%@) が含まれています。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "해당 ePub에 비정상적으로 큰 파일(%@)이 있습니다."
+            "value" : "해당 압축 파일에 비정상적으로 큰 파일(%@)이 있습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esse ePub contém um arquivo grande demais para ser plausível (%@)."
+            "value" : "Esse arquivo compactado contém um arquivo grande demais para ser plausível (%@)."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "该 ePub 含有一个大小异常的文件（%@）。"
+            "value" : "该压缩包含有一个大小异常的文件（%@）。"
           }
         }
       }
     },
-    "That ePub is damaged: %@" : {
-      "comment" : "Error. %@ is a technical detail.",
+    "That file is damaged: %@" : {
+      "comment" : "Error: a ZIP (an ePub or a USFM zip) that is truncated or corrupt. %@ is a technical detail.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dieses ePub ist beschädigt: %@"
+            "value" : "Diese Datei ist beschädigt: %@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ese ePub está dañado: %@"
+            "value" : "Ese archivo está dañado: %@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cet ePub est endommagé : %@"
+            "value" : "Ce fichier est endommagé : %@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quell'ePub è danneggiato: %@"
+            "value" : "Quel file è danneggiato: %@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "そのePubは破損しています: %@"
+            "value" : "そのファイルは破損しています: %@"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "해당 ePub이 손상되었습니다: %@"
+            "value" : "해당 파일이 손상되었습니다: %@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esse ePub está danificado: %@"
+            "value" : "Esse arquivo está danificado: %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "该 ePub 已损坏：%@"
+            "value" : "该文件已损坏：%@"
           }
         }
       }
@@ -11017,54 +11017,55 @@
         }
       }
     },
-    "That ePub’s contents are password-encrypted." : {
+    "That file’s contents are password-encrypted." : {
+      "comment" : "Error: a ZIP (an ePub or a USFM zip) with password-protected entries.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Der Inhalt dieses ePub ist passwortverschlüsselt."
+            "value" : "Der Inhalt dieser Datei ist passwortverschlüsselt."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El contenido de ese ePub está cifrado con contraseña."
+            "value" : "El contenido de ese archivo está cifrado con contraseña."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le contenu de cet ePub est chiffré par mot de passe."
+            "value" : "Le contenu de ce fichier est chiffré par mot de passe."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il contenuto di quell’ePub è cifrato con password."
+            "value" : "Il contenuto di quel file è cifrato con password."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "その ePub の内容はパスワードで暗号化されています。"
+            "value" : "そのファイルの内容はパスワードで暗号化されています。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 ePub의 내용은 암호로 암호화되어 있습니다."
+            "value" : "해당 파일의 내용은 암호로 암호화되어 있습니다."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O conteúdo desse ePub está criptografado com senha."
+            "value" : "O conteúdo desse arquivo está criptografado com senha."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "该 ePub 的内容已用密码加密。"
+            "value" : "该文件的内容已用密码加密。"
           }
         }
       }

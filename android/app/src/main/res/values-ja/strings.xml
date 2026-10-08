@@ -840,8 +840,8 @@
     <string name="data_online_cache_write_failed">その章を保存できませんでした: %1$s</string>
     <string name="data_import_unreadable_file">そのファイルを読み取れませんでした: %1$s</string>
     <string name="data_import_not_a_zip">このファイルは ePub ではありません（ZIP コンテナではありません）。</string>
-    <string name="data_import_damaged_archive">この ePub は破損しています: %1$s</string>
-    <string name="data_import_entry_too_large">この ePub には異常に大きいファイル（%1$s）が含まれています。</string>
+    <string name="data_import_damaged_archive">このファイルは破損しています: %1$s</string>
+    <string name="data_import_entry_too_large">このアーカイブには異常に大きいファイル（%1$s）が含まれています。</string>
     <string name="data_import_not_an_epub">このファイルは読み取れる ePub ではありません: %1$s</string>
     <string name="data_import_unsupported_format">このファイルは読み込めません: %1$s</string>
     <string name="data_import_protected_by_drm">%1$s 保護されたファイルは開けません。</string>
@@ -852,7 +852,7 @@
     <string name="data_import_drm_adobe_adept">この ePub は Adobe DRM で保護されています。</string>
     <string name="data_import_drm_readium_lcp">この ePub は LCP ライセンスで保護されています。</string>
     <string name="data_import_drm_apple_fairplay">この ePub は Apple の FairPlay DRM で保護されています。</string>
-    <string name="data_import_drm_zip_entry_encryption">この ePub の内容はパスワードで暗号化されています。</string>
+    <string name="data_import_drm_zip_entry_encryption">このファイルの内容はパスワードで暗号化されています。</string>
     <string name="data_import_detail_no_container">META-INF/container.xml がありません</string>
     <string name="data_import_detail_unknown_format">ePub でも USFM 書巻のセットでもありません</string>
     <string name="data_import_detail_no_usfm_files">アーカイブに USFM ファイルがありません</string>

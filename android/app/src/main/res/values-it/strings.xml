@@ -840,8 +840,8 @@
     <string name="data_online_cache_write_failed">Impossibile salvare quel capitolo: %1$s</string>
     <string name="data_import_unreadable_file">Impossibile leggere quel file: %1$s</string>
     <string name="data_import_not_a_zip">Quel file non è un ePub: non è un contenitore ZIP.</string>
-    <string name="data_import_damaged_archive">Quell\'ePub è danneggiato: %1$s</string>
-    <string name="data_import_entry_too_large">Quell\'ePub contiene un file di dimensioni implausibili (%1$s).</string>
+    <string name="data_import_damaged_archive">Quel file è danneggiato: %1$s</string>
+    <string name="data_import_entry_too_large">Quell\'archivio contiene un file di dimensioni implausibili (%1$s).</string>
     <string name="data_import_not_an_epub">Quel file non è un ePub leggibile: %1$s</string>
     <string name="data_import_unsupported_format">L\'app non può leggere quel file: %1$s</string>
     <string name="data_import_protected_by_drm">%1$s L\'app non può aprire file protetti.</string>
@@ -852,7 +852,7 @@
     <string name="data_import_drm_adobe_adept">Quell\'ePub è protetto da DRM Adobe.</string>
     <string name="data_import_drm_readium_lcp">Quell\'ePub è protetto da licenza LCP.</string>
     <string name="data_import_drm_apple_fairplay">Quell\'ePub è protetto dal DRM FairPlay di Apple.</string>
-    <string name="data_import_drm_zip_entry_encryption">Il contenuto di quell\'ePub è cifrato con password.</string>
+    <string name="data_import_drm_zip_entry_encryption">Il contenuto di quel file è cifrato con password.</string>
     <string name="data_import_detail_no_container">non ha META-INF/container.xml</string>
     <string name="data_import_detail_unknown_format">non è né un ePub né un insieme di libri USFM</string>
     <string name="data_import_detail_no_usfm_files">l\'archivio non contiene file USFM</string>

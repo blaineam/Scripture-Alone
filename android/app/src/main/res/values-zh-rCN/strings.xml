@@ -840,8 +840,8 @@
     <string name="data_online_cache_write_failed">无法保存该章：%1$s</string>
     <string name="data_import_unreadable_file">无法读取该文件：%1$s</string>
     <string name="data_import_not_a_zip">该文件不是 ePub——它不是 ZIP 容器。</string>
-    <string name="data_import_damaged_archive">该 ePub 已损坏：%1$s</string>
-    <string name="data_import_entry_too_large">该 ePub 含有一个大小异常的文件（%1$s）。</string>
+    <string name="data_import_damaged_archive">该文件已损坏：%1$s</string>
+    <string name="data_import_entry_too_large">该压缩包含有一个大小异常的文件（%1$s）。</string>
     <string name="data_import_not_an_epub">该文件不是可读取的 ePub：%1$s</string>
     <string name="data_import_unsupported_format">此应用无法读取该文件：%1$s</string>
     <string name="data_import_protected_by_drm">%1$s 此应用无法打开受保护的文件。</string>
@@ -852,7 +852,7 @@
     <string name="data_import_drm_adobe_adept">该 ePub 受 Adobe DRM 保护。</string>
     <string name="data_import_drm_readium_lcp">该 ePub 受 LCP 许可保护。</string>
     <string name="data_import_drm_apple_fairplay">该 ePub 受 Apple FairPlay DRM 保护。</string>
-    <string name="data_import_drm_zip_entry_encryption">该 ePub 的内容已用密码加密。</string>
+    <string name="data_import_drm_zip_entry_encryption">该文件的内容已用密码加密。</string>
     <string name="data_import_detail_no_container">其中没有 META-INF/container.xml</string>
     <string name="data_import_detail_unknown_format">它既不是 ePub，也不是一组 USFM 书卷</string>
     <string name="data_import_detail_no_usfm_files">压缩包中没有 USFM 文件</string>

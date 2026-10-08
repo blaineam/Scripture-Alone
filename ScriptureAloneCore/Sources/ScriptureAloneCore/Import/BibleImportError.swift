@@ -34,8 +34,8 @@ public enum BibleImportError: Error, LocalizedError, Equatable, Sendable {
         switch self {
         case .unreadableFile(let message): String(localized: "Couldn’t read that file: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
         case .notAZipArchive: String(localized: "That file isn’t an ePub — it isn’t a ZIP container.", bundle: .module)
-        case .damagedArchive(let message): String(localized: "That ePub is damaged: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
-        case .entryTooLarge(let name): String(localized: "That ePub contains an implausibly large file (\(name)).", bundle: .module, comment: "Error. %@ is a file name inside the ePub.")
+        case .damagedArchive(let message): String(localized: "That file is damaged: \(message)", bundle: .module, comment: "Error: a ZIP (an ePub or a USFM zip) that is truncated or corrupt. %@ is a technical detail.")
+        case .entryTooLarge(let name): String(localized: "That archive contains an implausibly large file (\(name)).", bundle: .module, comment: "Error. %@ is a file name inside the ZIP (an ePub or a USFM zip).")
         case .notAnEPUB(let message): String(localized: "That file isn’t a readable ePub: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
         case .unsupportedFormat(let message): String(localized: "This app can’t read that file: \(message)", bundle: .module, comment: "Error. %@ is a technical detail.")
         case .protectedByDRM(let evidence): String(localized: "\(evidence.explanation) This app cannot open protected files.", bundle: .module, comment: "Error. %@ is a sentence saying how the file is protected.")
@@ -76,7 +76,7 @@ public enum DRMEvidence: String, Sendable, Equatable, Hashable, Codable {
         case .adobeADEPT: String(localized: "That ePub is protected with Adobe DRM.", bundle: .module)
         case .readiumLCP: String(localized: "That ePub is protected with an LCP licence.", bundle: .module)
         case .appleFairPlay: String(localized: "That ePub is protected with Apple’s FairPlay DRM.", bundle: .module)
-        case .zipEntryEncryption: String(localized: "That ePub’s contents are password-encrypted.", bundle: .module)
+        case .zipEntryEncryption: String(localized: "That file’s contents are password-encrypted.", bundle: .module, comment: "Error: a ZIP (an ePub or a USFM zip) with password-protected entries.")
         case .pdfPassword: String(localized: "That PDF is locked with a password.", bundle: .module)
         case .pdfCopyProtected: String(localized: "That PDF’s owner doesn’t allow its text to be copied.", bundle: .module)
         }

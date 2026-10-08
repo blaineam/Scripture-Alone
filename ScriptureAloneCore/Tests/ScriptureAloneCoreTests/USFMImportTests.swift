@@ -308,6 +308,35 @@ import Testing
         #expect(message.contains("That file carries no copyright line"))
     }
 
+    /// A USFM zip is a ZIP too: a damaged one, one with an oversized entry or with password-encrypted
+    /// entries is refused with the same errors as an ePub, so they mustn't call it an ePub either.
+    @Test func zipErrorsNameNoFormat() throws {
+        for error in [BibleImportError.damagedArchive("the central directory is truncated"),
+                      .entryTooLarge("GEN.usfm"), .protectedByDRM(.zipEntryEncryption)] {
+            let message = try #require(error.errorDescription)
+            #expect(!message.contains("ePub"), "\(error): \(message)")
+        }
+    }
+
+    /// The catalogue's copies of those messages, in every language: none names the ePub format.
+    @Test func zipErrorsNameNoFormatInAnyLanguage() throws {
+        let catalog = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appending(path: "Sources/ScriptureAloneCore/Resources/Localizable.xcstrings")
+        let json = try #require(try JSONSerialization.jsonObject(with: Data(contentsOf: catalog)) as? [String: Any])
+        let strings = try #require(json["strings"] as? [String: Any])
+        for key in ["That file is damaged: %@", "That archive contains an implausibly large file (%@).",
+                    "That file’s contents are password-encrypted."] {
+            let entry = try #require(strings[key] as? [String: Any], "\(key) is not in the catalogue")
+            let localizations = try #require(entry["localizations"] as? [String: [String: Any]])
+            #expect(localizations.count == 8, "\(key): \(localizations.keys.sorted())")
+            for (language, value) in localizations {
+                let text = (value["stringUnit"] as? [String: Any])?["value"] as? String ?? ""
+                #expect(!text.isEmpty && !text.contains("ePub"), "\(language): \(text)")
+            }
+        }
+    }
+
     // MARK: - Coverage
 
     @Test func reportsPartialCoverage() throws {
