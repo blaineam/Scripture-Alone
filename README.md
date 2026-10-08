@@ -199,6 +199,24 @@ Guide behaves as offline), a silent Listen, and always the BSB — never a licen
 slide. The watch installs its BSB edition (Debug builds only). Soren runs them all
 (`node ../_shared/soren/soren.mjs run "Scripture Alone" ui-iphone ui-ipad ui-watch`).
 
+Android: `./gradlew testDebugUnitTest :shared:test` runs the JVM tests of `:app`, `:wear` and
+`:shared`, including whole-app tests under Robolectric (`app/src/test/…/app/`: MainActivity with the
+real reader, the sealed ASV opened through an in-memory stand-in for the Android Keystore, and the
+real databases through androidx.sqlite's JVM library) and the Wear OS screens. Tests in
+`app/src/sharedTest` run both there and on the emulator (`connectedDebugAndroidTest`, inside the
+`android-release-smoke` suite).
+
+**Coverage.** Every Soren suite reports line coverage: the core through `scripts/swift-coverage.mjs`
+(llvm-cov, `Sources/` only), the app suites from their result bundles (the app's own targets — the
+core is the core suite's), Android through JaCoCo (`./gradlew … :app:coverageSummary`, reports in
+`<module>/build/reports/coverage/`). The unit and UI suites measure separate builds; for the app's
+lines covered by any of them, keep the bundles and add them up:
+
+```bash
+SOREN_KEEP_RESULTS=1 node ../_shared/soren/soren.mjs run "Scripture Alone" ios ui-iphone ui-ipad
+node scripts/xcode-coverage-union.mjs <the .xcresult paths Soren logged>
+```
+
 App Store screenshots come from real simulator captures of DEBUG-only scenes over an invented
 demo library (`ScriptureAlone/App/ScreenshotScene.swift`, `ScriptureAlone/Shared/DemoLibrary.swift`),
 framed in [Monkr](https://github.com/blaineam/Monkr) with a caption per scene:

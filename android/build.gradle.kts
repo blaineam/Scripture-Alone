@@ -9,7 +9,7 @@ plugins {
 // ── Line coverage (JaCoCo) for the JVM unit tests of :app, :wear and :shared ─────────────────────
 // Each module gets `coverageReport` (XML + HTML under build/reports/coverage/) and `coverageSummary`,
 // which prints the module's line coverage as one `soren-coverage: {…}` line — Soren's `android` and
-// `android-shared` suites run it after the tests and show the figure (docs/testing.md). Compiler-made
+// `android-shared` suites run it after the tests and show the figure (README › Tests). Compiler-made
 // classes (R, BuildConfig, Compose's lambda singletons) are left out; nothing else is.
 val coverageExcludes = listOf(
     "**/R.class", "**/R$*.class", "**/BuildConfig.class", "**/Manifest*.class",
