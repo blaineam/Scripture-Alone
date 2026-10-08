@@ -22,6 +22,9 @@
 - Importing a USFM zip or a PDF with no copyright line no longer says "That ePub carries no
   copyright line": the message now says "That file", whatever the format. All nine languages. On
   iPhone, iPad, Mac and Android.
+- The watch's Translation screen names the phone's translation as the phone does ("NASB 1995",
+  or an import's own abbreviation) when it can't show it, instead of an internal name like
+  "NASB1995". On Apple Watch and Wear OS.
 - Favorite a verse on Wear OS. A passage on the watch has a heart, as on Apple Watch: tap it to add
   the verse to your favorites or take it off. The phone keeps your library, so the tap goes to the
   phone (when it's out of reach, as soon as it's back) and the watch shows the heart filled at once.

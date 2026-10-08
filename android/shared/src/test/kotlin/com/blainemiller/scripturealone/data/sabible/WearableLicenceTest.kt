@@ -130,6 +130,15 @@ class WearableLicenceTest {
         assertTrue(WearableLicence.maySendToWatch(edition, sealed = false))
     }
 
+    /** The phone names a package to the watch as the reader sees it, from the same unverified read. */
+    @Test fun theHeaderGivesThePhoneTheNameItShows() {
+        val restricted = pkg(prohibited, "NASB1995.sabible")
+        val header = WearableLicence.unverifiedHeader(restricted)
+        assertEquals("T", header?.translation?.abbreviation)
+        assertEquals(false, header?.policy?.allowsWearables)
+        assertNull(WearableLicence.unverifiedHeader(File(folder.root, "junk.sabible").apply { writeText("not a package") }))
+    }
+
     @Test fun aWatchDeletesAProhibitedPackageItFinds() {
         val dir = folder.newFolder("editions")
         pkg(prohibited, "NASB1995.sabible").copyTo(File(dir, "NASB1995.sabible"))

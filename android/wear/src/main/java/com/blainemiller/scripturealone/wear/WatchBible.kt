@@ -92,6 +92,8 @@ class WatchBible private constructor(private val app: Context) {
         val pendingFavorites: Map<String, Boolean> = emptyMap(),
         /** The phone said its translation's licence keeps it off watches, for the picker to explain. */
         val phoneTranslationNotForWatch: Boolean = false,
+        /** What the phone calls [phoneTranslation] ("NASB 1995", not "NASB1995"), for the picker's footer. */
+        val phoneTranslationLabel: String? = null,
     ) {
         /** The favorites' ranges as the phone last sent them. */
         val snapshotFavorites: Set<String>
@@ -166,10 +168,11 @@ class WatchBible private constructor(private val app: Context) {
      * The phone reported the translation the reader switched to, and when — and whether its licence
      * keeps it off watches, in which case it will never arrive and the picker says so.
      */
-    fun phoneChose(id: String, at: Double, notForWatch: Boolean = false) {
+    fun phoneChose(id: String, at: Double, notForWatch: Boolean = false, label: String? = null) {
         val newer = (prefs.getString(Keys.PHONE_AT, null)?.toDoubleOrNull() ?: 0.0) < at || prefs.getString(Keys.PHONE, null) != id
         val edit = prefs.edit().putString(Keys.PHONE, id).putString(Keys.PHONE_AT, at.toString())
             .putBoolean(Keys.PHONE_NOT_FOR_WATCH, notForWatch)
+            .putString(Keys.PHONE_LABEL, WearLink.label(label, id))
         // Choosing again on the phone a translation removed here asks for it back.
         if (newer) edit.remove(Keys.removed(id))
         edit.apply()
@@ -381,7 +384,11 @@ class WatchBible private constructor(private val app: Context) {
         // A snapshot an older phone app sent with text in a translation licensed off wearables: shown as
         // references, its text drawn from the watch's own edition, until the phone sends a new one.
         val snapshot = readSnapshot()?.let { if (notForWatch && it.translation == phone) it.strippedOfText() else it }
-        return State(translation, phone, snapshot, editions, chosen, accent(), pendingFavorites(), phoneTranslationNotForWatch = notForWatch)
+        val label = phone?.let { WearLink.label(prefs.getString(Keys.PHONE_LABEL, null), it) }
+        return State(
+            translation, phone, snapshot, editions, chosen, accent(), pendingFavorites(),
+            phoneTranslationNotForWatch = notForWatch, phoneTranslationLabel = label,
+        )
     }
 
     private fun publish() {
@@ -577,6 +584,7 @@ class WatchBible private constructor(private val app: Context) {
         const val PHONE = "watch.translation.phone"
         const val PHONE_AT = "watch.translation.phoneAt"
         const val PHONE_NOT_FOR_WATCH = "watch.translation.phoneNotForWatch"
+        const val PHONE_LABEL = "watch.translation.phoneLabel"
         const val ACCENT = "watch.accent"
         fun name(id: String) = "watch.edition.$id.name"
         fun language(id: String) = "watch.edition.$id.language"

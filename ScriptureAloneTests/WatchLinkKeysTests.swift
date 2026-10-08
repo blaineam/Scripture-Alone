@@ -24,8 +24,19 @@ struct WatchLinkKeysTests {
     @Test func keysAreDistinct() {
         let keys = [WatchLinkKeys.translation, WatchLinkKeys.changedAt, WatchLinkKeys.editions,
                     WatchLinkKeys.editionVersions, WatchLinkKeys.imports, WatchLinkKeys.accent,
-                    WatchLinkKeys.bundled, WatchLinkKeys.version, WatchLinkKeys.kind]
+                    WatchLinkKeys.bundled, WatchLinkKeys.version, WatchLinkKeys.kind,
+                    WatchLinkKeys.translationNotForWatch, WatchLinkKeys.translationLabel]
         #expect(Set(keys).count == keys.count)
         #expect(WatchLinkKeys.legacyBundled == ["ASV", "BSB", "KJV"], "what 1.1.0 watches carry; never changes")
+    }
+
+    /// The watch's footers name the phone's translation as the phone does, not by its internal id.
+    @Test func theWatchNamesThePhonesTranslationAsThePhoneDoes() {
+        #expect(WatchLinkKeys.label("NASB 1995", for: "NASB1995") == "NASB 1995")
+        #expect(WatchLinkKeys.label("ESV", for: "IMPORT-NN0XUW") == "ESV")
+        // An older phone app sends none; an empty or absurd one is ignored.
+        #expect(WatchLinkKeys.label(nil, for: "NASB1995") == "NASB1995")
+        #expect(WatchLinkKeys.label("  ", for: "NASB1995") == "NASB1995")
+        #expect(WatchLinkKeys.label(String(repeating: "A", count: 65), for: "X") == "X")
     }
 }

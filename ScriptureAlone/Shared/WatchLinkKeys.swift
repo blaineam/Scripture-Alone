@@ -32,11 +32,24 @@ enum WatchLinkKeys {
     /// publisher keeps it off watches (`PackagePolicy.wearables`). The phone never sends it; the
     /// watch says why it isn't there instead of suggesting it is on its way.
     nonisolated static let translationNotForWatch = "translationNotForWatch"
+    /// Phone → watch, application context: what the reader sees the current translation called on the
+    /// phone (its abbreviation, "NASB 1995"), for the watch to name one it can't show. The identifier
+    /// is internal ("NASB1995", "IMPORT-NN0XUW"); a phone app that doesn't send this leaves the watch
+    /// falling back to it.
+    nonisolated static let translationLabel = "translationLabel"
     /// Phone → watch, file metadata: a fingerprint of the store the edition was made from.
     nonisolated static let version = "version"
     /// Phone → watch, file metadata: "import" for a translation the reader imported, otherwise absent.
     nonisolated static let kind = "kind"
     nonisolated static let importKind = "import"
+
+    /// What the watch calls the phone's translation: the label the phone sent, else its identifier.
+    /// Bounded, since it is drawn as-is in a footer.
+    nonisolated static func label(_ label: String?, for id: String) -> String {
+        guard let label = label?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !label.isEmpty, label.count <= 64 else { return id }
+        return label
+    }
 
     /// A received file is saved under its translation's identifier, so the identifier has to be a
     /// safe file name: no separators, no dots, nothing that could climb out of the directory.

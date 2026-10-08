@@ -48,7 +48,10 @@ object PhoneLink {
             WearLink.PATH_TRANSLATION -> {
                 val id = map.getString(WearLink.KEY_TRANSLATION) ?: return
                 if (!WearLink.isSafeId(id)) return
-                bible.phoneChose(id, map.getDouble(WearLink.KEY_CHANGED_AT), map.getBoolean(WearLink.KEY_NOT_FOR_WATCH, false))
+                bible.phoneChose(
+                    id, map.getDouble(WearLink.KEY_CHANGED_AT), map.getBoolean(WearLink.KEY_NOT_FOR_WATCH, false),
+                    map.getString(WearLink.KEY_TRANSLATION_LABEL),
+                )
             }
             WearLink.PATH_ACCENT -> bible.phoneAccent(map.getInt(WearLink.KEY_ACCENT))
             WearLink.PATH_SNAPSHOT -> {

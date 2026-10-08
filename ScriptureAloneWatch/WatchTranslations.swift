@@ -37,7 +37,8 @@ final class WatchPhoneLink: NSObject {
         guard let id = context[WatchLinkKeys.translation] as? String,
               let changedAt = context[WatchLinkKeys.changedAt] as? TimeInterval else { return nil }
         return PhoneChoice(id: id, at: changedAt,
-                           notForWatch: context[WatchLinkKeys.translationNotForWatch] as? Bool ?? false)
+                           notForWatch: context[WatchLinkKeys.translationNotForWatch] as? Bool ?? false,
+                           label: context[WatchLinkKeys.translationLabel] as? String)
     }
 
     fileprivate struct PhoneChoice: Sendable {
@@ -45,11 +46,13 @@ final class WatchPhoneLink: NSObject {
         let at: TimeInterval
         /// The publisher keeps this translation off watches; the phone will never send it.
         let notForWatch: Bool
+        /// What the phone calls it ("NASB 1995"), when the phone says.
+        let label: String?
     }
 
     fileprivate func apply(_ choice: PhoneChoice?) {
         guard let choice else { return }
-        bible?.phoneChose(choice.id, at: choice.at, notForWatch: choice.notForWatch)
+        bible?.phoneChose(choice.id, at: choice.at, notForWatch: choice.notForWatch, label: choice.label)
     }
 
     /// The imports the phone offers, when its context says (an older phone app doesn't).
@@ -165,12 +168,13 @@ struct WatchTranslationsView: View {
     }
 
     @ViewBuilder private var footer: some View {
+        // Named as the phone names it ("NASB 1995"), never by its internal identifier ("NASB1995").
         if let phone = bible.phoneTranslation, !bible.editions.contains(where: { $0.id == phone }),
            bible.phoneTranslationNotForWatch {
             // Never in the list: its publisher keeps it off watches, so it is hidden here, not greyed.
-            Text("\(phone) on your iPhone isn't available on the watch: its licence doesn't allow it.")
+            Text("\(bible.phoneTranslationLabel) on your iPhone isn't available on the watch: its licence doesn't allow it.")
         } else if let phone = bible.phoneTranslation, !bible.editions.contains(where: { $0.id == phone }) {
-            Text("\(phone) on your iPhone can't be read here. Online translations can't be stored on the watch.")
+            Text("\(bible.phoneTranslationLabel) on your iPhone can't be read here. Online translations can't be stored on the watch.")
         } else {
             Text("Follows your iPhone. A translation you import there appears here too.")
         }

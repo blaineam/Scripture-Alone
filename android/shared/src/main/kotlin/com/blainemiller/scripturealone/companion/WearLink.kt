@@ -100,6 +100,17 @@ object WearLink {
     const val KEY_NOT_FOR_WATCH = "translationNotForWatch"
 
     /**
+     * On [PATH_TRANSLATION]: what the reader sees the phone's translation called ("NASB 1995"), for the
+     * watch to name one it can't show — the id is internal ("NASB1995", "IMPORT-NN0XUW"). Absent from an
+     * older phone app, when the watch falls back to the id. `WatchLinkKeys.translationLabel`.
+     */
+    const val KEY_TRANSLATION_LABEL = "translationLabel"
+
+    /** What the watch calls the phone's translation: the label the phone sent, else its id. `WatchLinkKeys.label`. */
+    fun label(label: String?, id: String): String =
+        label?.trim()?.takeIf { it.isNotEmpty() && it.length <= 64 } ?: id
+
+    /**
      * When the reader switched to it on the phone, in seconds since 1970. Recorded at the switch, not
      * at send time, so a phone launch that merely re-reports an old choice cannot override a newer
      * pick made on the watch.

@@ -189,7 +189,7 @@ A publisher who keeps a translation off wearables gets that everywhere it could 
 |---|---|
 | The phone (iPhone, Android) | Never sends the package to the watch, nor any of its text: the Android phone's favorites/highlights/notes snapshot travels as references only when it is in that translation (the Apple Watch reads those through iCloud as references already). The watch is told why the translation isn't there. |
 | The watch (Apple Watch, Wear OS) | Refuses to open the package — after verifying the signature, so the refusal obeys the publisher's own words (`TranslationPackageError.notForWearables`) — refuses one the phone sends, and deletes one it finds among its received files. |
-| The watch's picker | Doesn't list it; when it is what the phone is reading, says so: "NASB1995 on your iPhone isn't available on the watch: its licence doesn't allow it." |
+| The watch's picker | Doesn't list it; when it is what the phone is reading, says so, by the name the phone shows: "NASB 1995 on your iPhone isn't available on the watch: its licence doesn't allow it." |
 | Verse of the Day, complications, tiles | Fall back to the public daily list's own translation. They never held the licensed text, and no earlier snapshot of it is kept. |
 | Read-aloud on the watch | Speaks only what the watch can open, which this is not. |
 | A build | Never bundles such a package into a watch app: the Wear OS build falls back to the ASV's compact edition, and both release pipelines stop with an error, because the watch's own Bible is a decision, not a fallback. |

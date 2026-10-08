@@ -42,4 +42,14 @@ class WearLinkTest {
             assertTrue("\"$bad\" should be refused", !WearLink.isSafeId(bad))
         }
     }
+
+    /** The watch's footers name the phone's translation as the phone does — `WatchLinkKeysTests.swift`. */
+    @Test fun theWatchNamesThePhonesTranslationAsThePhoneDoes() {
+        assertEquals("NASB 1995", WearLink.label("NASB 1995", "NASB1995"))
+        assertEquals("ESV", WearLink.label("ESV", "IMPORT-NN0XUW"))
+        // An older phone app sends none; an empty or absurd one is ignored.
+        assertEquals("NASB1995", WearLink.label(null, "NASB1995"))
+        assertEquals("NASB1995", WearLink.label("  ", "NASB1995"))
+        assertEquals("X", WearLink.label("A".repeat(65), "X"))
+    }
 }

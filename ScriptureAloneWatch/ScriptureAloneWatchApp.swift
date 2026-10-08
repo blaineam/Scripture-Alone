@@ -181,6 +181,13 @@ final class WatchBible {
     private(set) var phoneTranslation: String?
     /// Whether the phone said its translation's licence keeps it off watches.
     private(set) var phoneTranslationNotForWatch = false
+    /// What the phone calls its translation ("NASB 1995"), when it said; see `phoneTranslationLabel`.
+    private(set) var phoneTranslationSentLabel: String?
+
+    /// The phone's translation as the reader sees it named there, for the picker's footer.
+    var phoneTranslationLabel: String {
+        WatchLinkKeys.label(phoneTranslationSentLabel, for: phoneTranslation ?? "")
+    }
 
     @ObservationIgnored private var stores: [String: any ChapterTextSource] = [:]
     @ObservationIgnored private let defaults = UserDefaults.standard
@@ -234,6 +241,7 @@ final class WatchBible {
         editions = bundled + received
         phoneTranslation = defaults.string(forKey: Keys.phone)
         phoneTranslationNotForWatch = defaults.bool(forKey: Keys.phoneNotForWatch)
+        phoneTranslationSentLabel = defaults.string(forKey: Keys.phoneLabel)
         resolve()
     }
 
@@ -245,12 +253,14 @@ final class WatchBible {
     }
 
     /// The phone reported the translation the reader switched to, and when.
-    func phoneChose(_ id: String, at changedAt: TimeInterval, notForWatch: Bool = false) {
+    func phoneChose(_ id: String, at changedAt: TimeInterval, notForWatch: Bool = false, label: String? = nil) {
         defaults.set(id, forKey: Keys.phone)
         defaults.set(changedAt, forKey: Keys.phoneAt)
         defaults.set(notForWatch, forKey: Keys.phoneNotForWatch)
+        defaults.set(label, forKey: Keys.phoneLabel)
         phoneTranslation = id
         phoneTranslationNotForWatch = notForWatch
+        phoneTranslationSentLabel = label
         resolve()
     }
 
@@ -375,6 +385,7 @@ final class WatchBible {
         static let phone = "watch.translation.phone"
         static let phoneAt = "watch.translation.phoneAt"
         static let phoneNotForWatch = "watch.translation.phoneNotForWatch"
+        static let phoneLabel = "watch.translation.phoneLabel"
     }
 
     /// How the Bible on the watch numbers its verses against the KJV keys marks are stored under —

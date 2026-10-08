@@ -91,6 +91,7 @@ final class WatchLink: NSObject {
             context[WatchLinkKeys.translation] = pending.id
             context[WatchLinkKeys.changedAt] = defaults.double(forKey: Self.changedAtKey)
             if Self.isKeptOffWatch(pending.id) { context[WatchLinkKeys.translationNotForWatch] = true }
+            if pending.abbreviation != pending.id { context[WatchLinkKeys.translationLabel] = pending.abbreviation }
         }
         try? session.updateApplicationContext(context)
     }

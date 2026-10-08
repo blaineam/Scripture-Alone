@@ -7,6 +7,7 @@ import com.blainemiller.scripturealone.companion.VerseSnapshot
 import com.blainemiller.scripturealone.companion.WatchEditionBuilder
 import com.blainemiller.scripturealone.companion.WearImports
 import com.blainemiller.scripturealone.data.translations.ImportedTranslation
+import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.companion.WearLink
@@ -51,13 +52,21 @@ object WearPublisher {
     private val WATCH_CARRIES = setOf("NASB2020")
 
     fun publishTranslation(context: Context, translation: String, changedAt: Double) {
-        val notForWatch = keptOffWatch(context, translation)
-        val signature = "t:$translation@$changedAt" + if (notForWatch) ":off" else ""
+        val sealed = sealedPackage(context, translation)
+        val header = sealed?.let(WearableLicence::unverifiedHeader)
+        // As [keptOffWatch]: a sealed package whose header can't be read doesn't go either.
+        val notForWatch = sealed != null && header?.policy?.allowsWearables != true
+        // What the reader sees it called here, for the watch's footer: the package's or the import's own.
+        val label = header?.translation?.abbreviation?.takeIf { it.isNotBlank() }
+            ?: TranslationLibrary.imported(translation)?.info?.abbreviation
+            ?: translation
+        val signature = "t:$translation@$changedAt" + (if (notForWatch) ":off" else "") + (if (label != translation) ":$label" else "")
         if (WidgetPrefs.published(context, "translation") == signature) return
         val request = PutDataMapRequest.create(WearLink.PATH_TRANSLATION).apply {
             dataMap.putString(WearLink.KEY_TRANSLATION, translation)
             dataMap.putDouble(WearLink.KEY_CHANGED_AT, changedAt)
             if (notForWatch) dataMap.putBoolean(WearLink.KEY_NOT_FOR_WATCH, true)
+            if (label != translation) dataMap.putString(WearLink.KEY_TRANSLATION_LABEL, label)
         }.asPutDataRequest().setUrgent()
         if (put(context) { Wearable.getDataClient(context).putDataItem(request) }) {
             WidgetPrefs.setPublished(context, "translation", signature)
@@ -245,21 +254,27 @@ object WearPublisher {
      * A translation that isn't a sealed package carries no such term.
      */
     fun keptOffWatch(context: Context, translation: String): Boolean {
-        val file = try {
-            when {
-                translation in BundledTranslations.LICENSED && BundledDatabase.hasAsset(context, "$translation.sabible") ->
-                    BundledDatabase.file(context, "$translation.sabible")
-                else -> {
-                    val pack = AssetPack.forTranslation(translation)?.takeIf { it.isSealed } ?: return false
+        val file = sealedPackage(context, translation) ?: return false
+        return !WearableLicence.allowsWearables(file)
+    }
+
+    /** [translation]'s sealed package on this phone — the NASB 2020 in the app or a downloaded pack — or null. */
+    private fun sealedPackage(context: Context, translation: String): File? = try {
+        when {
+            translation in BundledTranslations.LICENSED && BundledDatabase.hasAsset(context, "$translation.sabible") ->
+                BundledDatabase.file(context, "$translation.sabible")
+            else -> {
+                val pack = AssetPack.forTranslation(translation)?.takeIf { it.isSealed }
+                if (pack == null) {
+                    null
+                } else {
                     if (!AssetLibrary.isAttached) AssetLibrary.attach(context)
-                    if (!AssetLibrary.isOnDevice(pack)) return false
-                    AssetLibrary.file(context, pack) ?: return false
+                    if (AssetLibrary.isOnDevice(pack)) AssetLibrary.file(context, pack) else null
                 }
             }
-        } catch (e: Exception) {
-            return false
         }
-        return !WearableLicence.allowsWearables(file)
+    } catch (e: Exception) {
+        null
     }
 
     /**

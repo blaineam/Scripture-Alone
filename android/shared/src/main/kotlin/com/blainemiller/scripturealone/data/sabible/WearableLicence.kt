@@ -18,7 +18,13 @@ import java.nio.ByteBuffer
 object WearableLicence {
 
     /** The policy in a package's header, unverified. Null when it is not a readable package. */
-    fun unverifiedPolicy(input: InputStream): PackagePolicy? = try {
+    fun unverifiedPolicy(input: InputStream): PackagePolicy? = unverifiedHeader(input)?.policy
+
+    /**
+     * A package's header, unverified: its policy, and the name the reader sees it called (the phone tells
+     * the watch "NASB 1995", not the id "NASB1995"). Null when it is not a readable package.
+     */
+    fun unverifiedHeader(input: InputStream): TranslationPackageHeader? = try {
         val magic = SabibleFormat.MAGIC
         val preamble = readFully(input, magic.size + 6)
         if (preamble.size != magic.size + 6 || !preamble.copyOfRange(0, magic.size).contentEquals(magic)) {
@@ -29,7 +35,7 @@ object WearableLicence {
                 null
             } else {
                 val header = readFully(input, length.toInt())
-                if (header.size != length.toInt()) null else PackageHeaderParser.parse(header).policy
+                if (header.size != length.toInt()) null else PackageHeaderParser.parse(header)
             }
         }
     } catch (e: IOException) {
@@ -50,8 +56,10 @@ object WearableLicence {
         return if (read == count) buffer else buffer.copyOf(read)
     }
 
-    fun unverifiedPolicy(file: File): PackagePolicy? = try {
-        file.inputStream().buffered().use(::unverifiedPolicy)
+    fun unverifiedPolicy(file: File): PackagePolicy? = unverifiedHeader(file)?.policy
+
+    fun unverifiedHeader(file: File): TranslationPackageHeader? = try {
+        file.inputStream().buffered().use(::unverifiedHeader)
     } catch (e: IOException) {
         null
     }
