@@ -4,12 +4,13 @@ A free, private, offline Bible for iPhone, iPad and Mac. Zero ads, zero trackers
 account — and it all works offline, anywhere in the world. Your highlights and notes sync
 only through your own iCloud.
 
-**Android:** a native Kotlin/Compose port for phones, tablets and Wear OS is in closed beta on
-Google Play. To test it, join
-[scripture-alone-android-beta](https://groups.google.com/g/scripture-alone-android-beta), then
-[opt in on Google Play](https://play.google.com/apps/testing/com.blainemiller.scripturealone)
-with the same Google account. Without Google Play, the
-[APK on GitHub](https://github.com/blaineam/Scripture-Alone/releases/tag/android-v1.0.0-beta.1)
+**Get it:** [App Store](https://apps.apple.com/us/app/scripture-alone-bible/id6813729762) (iPhone,
+iPad, Apple silicon Mac, Apple Watch) · [Google Play](https://play.google.com/store/apps/details?id=com.blainemiller.scripturealone)
+(Android phones, tablets and Wear OS)
+
+**Android:** a native Kotlin/Compose port for phones, tablets and Wear OS, on
+[Google Play](https://play.google.com/store/apps/details?id=com.blainemiller.scripturealone). Without Google Play, the
+[APK on GitHub](https://github.com/blaineam/Scripture-Alone/releases/tag/android-v1.0.0-beta.8)
 has everything built in (read its notes first). Its source is in [`android/`](android/); what it does and doesn't
 match on iOS is tracked in [docs/android-parity.md](docs/android-parity.md).
 
