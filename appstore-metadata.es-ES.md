@@ -66,7 +66,13 @@ rvr1960,reina valera,lbla,biblia,ansiedad,duelo,consuelo,devocional,sermones,com
 Ahora con la NASB 2020. Descubre lo que la Biblia dice de lo que estás viviendo y estudia sin conexión con comentarios, mapas y cronologías. Sin anuncios ni cuentas.
 
 ## whats_new
-1.1.3 — En el iPhone, el título del pasaje (tócalo para ir a cualquier parte: Ir a) ahora siempre cabe en la barra de herramientas. El botón de traducción ahora es un icono, y la traducción que estás leyendo aparece marcada en su menú. Si el nombre de un libro es demasiado largo para el espacio, se abrevia, por ejemplo «1Ts 5». En el iPad y el Mac, el botón conserva el nombre de la traducción. Las imágenes de la Guía de uso muestran la nueva barra de herramientas.
+1.1.4 — La lectura llena la pantalla. El iPhone en horizontal, el iPad y el Mac muestran el capítulo en dos columnas que van de la barra superior a la inferior, con cualquier tamaño de texto y, en el iPhone, con un encabezado de una sola línea. En columnas, las flechas de la barra inferior pasan de página. Los subrayados tienen ahora las esquinas redondeadas.
+
+Escuchar: minimiza el reproductor y la lectura sigue; el botón de los auriculares de la barra de herramientas pasa a ser el reproductor y muestra si está leyendo o en pausa. Tócalo para recuperar el reproductor. Con el iPhone en modo silencio, Escuchar empieza sin sonido: el marcador avanza por los versículos en silencio y tu música sigue sonando. Toca para activar el sonido.
+
+Compartir un versículo: la imagen del versículo se abre con 21 Estilos listos para usar —Pergamino, Acuarela, Hora dorada, Noche y más—, cada uno con su fondo, su color de texto y su sombra. En Personalizar tienes fondos lisos y con textura, color del texto y sombra, y cada tarjeta se comprueba para que el texto se lea bien. Crear imagen de versículo en Atajos puede usar cualquier estilo.
+
+Además: las barras de selección y de reproducción flotan sobre el texto en lugar de quitarle espacio a la página; el Apple Watch nombra la traducción de tu iPhone como lo hace tu iPhone; y los mensajes al importar ya no llaman «ePub» a cualquier archivo.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

@@ -66,7 +66,13 @@ andacht,predigt,kommentar,themen,trost,angst,trauer,lutherbibel,elberfelder,kjv,
 Jetzt mit der NASB 2020. Finde, was die Bibel zu dem sagt, was dich bewegt, und studiere offline mit Kommentaren, Karten und Zeitleisten. Ohne Werbung, ohne Konto.
 
 ## whats_new
-1.1.3 — Auf dem iPhone passt der Titel der Stelle (tippe darauf, um überallhin zu springen – Gehe zu) jetzt immer in die Symbolleiste. Die Schaltfläche für die Übersetzung ist jetzt ein Symbol; in ihrem Menü ist die Übersetzung, die du gerade liest, abgehakt. Ist ein Buchname zu lang für den Platz, wird er abgekürzt, etwa „1Thess 5“. Auf iPad und Mac zeigt die Schaltfläche weiterhin den Namen der Übersetzung. Die Bilder im Benutzerhandbuch zeigen die neue Symbolleiste.
+1.1.4 — Lesen füllt den Bildschirm. Ein iPhone im Querformat sowie iPad und Mac zeigen das Kapitel in zwei Spalten, die von der oberen bis zur unteren Leiste reichen – bei jeder Textgröße, auf dem iPhone mit einer einzeiligen Überschrift. In Spalten blättern die Pfeile der unteren Leiste um. Markierungen haben jetzt abgerundete Ecken.
+
+Anhören: Minimiere den Player, und das Vorlesen geht weiter – die Kopfhörertaste in der Symbolleiste wird zum Player und zeigt, ob gelesen wird oder pausiert ist; tippe darauf, um den Player zurückzuholen. Ist dein iPhone stumm geschaltet, startet Anhören ohne Ton: Die Versmarkierung läuft lautlos mit, und deine Musik spielt weiter. Tippe, um den Ton einzuschalten.
+
+Vers teilen: Das Versbild öffnet sich mit 21 fertigen Stilen – Pergament, Aquarell, Goldene Stunde, Nacht und mehr –, jeder mit eigenem Hintergrund, eigener Textfarbe und eigenem Schatten. Unter Anpassen findest du schlichte und strukturierte Hintergründe, Textfarbe und Schatten, und jede Karte wird geprüft, damit der Text gut lesbar bleibt. „Versbild erstellen“ in Kurzbefehle kann jeden Stil verwenden.
+
+Außerdem: Die Auswahl- und Wiedergabeleiste schweben über dem Text, statt der Seite Platz wegzunehmen; die Apple Watch nennt die Übersetzung deines iPhone so wie dein iPhone; und Meldungen beim Importieren nennen nicht mehr jede Datei „ePub“.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

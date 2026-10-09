@@ -64,7 +64,13 @@ nasb 2020,nasb 1995,kjv,asv,bsb,topical,anxiety,grief,comfort,commentary,devotio
 Now with the NASB 2020. Find what the Bible says about what you're going through and study offline with commentary, maps and timelines. No ads, no accounts.
 
 ## whats_new
-1.1.3 — On iPhone, the passage title (tap it to go anywhere — Go To) now always fits in the toolbar. The translation button is now an icon, with the translation you're reading checked in its menu, and a book name too long for the space shortens to its abbreviation, like "1 Thess 5". On iPad and Mac, the translation's name stays on its button. The User Guide's pictures show the new toolbar.
+1.1.4 — Reading fills the screen. An iPhone held sideways, and iPad and Mac, show the chapter in two columns that run from the top bar to the bottom one, at any text size, with a one-line header on iPhone. In columns, the bottom bar's arrows turn the page. Highlights now have rounded corners.
+
+Listen: minimize the player and the reading goes on — the headphones button in the toolbar becomes the player, showing whether it's reading or paused; tap it to bring the player back. On an iPhone set to Silent, Listen starts muted: the verse marker moves along without a sound and your music keeps playing. Tap to unmute.
+
+Share a verse: the verse image opens on 21 ready-made Styles — Parchment, Watercolor, Golden Hour, Night and more — each with its own background, text color and shadow. Customize has Clean and Textured backgrounds, text color and shadow, and every card is checked so the words stay readable. Create Verse Image in Shortcuts can use any style.
+
+Also: the selection and Now Playing bars float over the text instead of taking room from the page; Apple Watch names your iPhone's translation the way your iPhone does; and import messages no longer call every file an ePub.
 
 ## review_notes
 Scripture Alone is an open-source Bible app (AGPL-3.0, https://github.com/blaineam/Scripture-Alone). No account or login is required for any feature, and the app reads offline from its first launch.

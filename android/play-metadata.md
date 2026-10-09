@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.1.4 — Listen stays quick: skipping back and forth between verses responds right away, even on phones with a slow speech voice. Imported pictures, slide photos and User Guide images now use far less memory. In landscape with three-button navigation, the toolbar, sheets and Study pane no longer slip under the navigation bar, and every screen fits neatly around the status bar and camera cutout.
+1.1.4 — Phones held sideways, tablets and foldables read in two columns that fill the page; arrows turn pages. Minimize Listen into the headphones button while reading goes on; on silent or vibrate it starts muted, tap to unmute. Share a verse with 21 ready-made styles. Wear OS: favorite verses, remove translations. Also: Listen and Verse Image shortcuts, Open in Scripture Alone for selected text, a Verse of the Day Quick Settings tile, tap-to-focus slide camera, imported Bibles in backup.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

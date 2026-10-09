@@ -53,5 +53,5 @@ Vos surlignages, notes et favoris restent sur votre appareil : ni serveur, ni co
 Conçue pour aider à étudier la Parole de Dieu et à se rapprocher du Christ.
 
 ## release_notes
-1.1.4 — L'écoute réagit tout de suite : passer d'un verset à l'autre, en avant ou en arrière, est immédiat, même sur les téléphones à la voix lente. Les images importées, les photos de diapositives et les images du guide d'utilisation consomment bien moins de mémoire. En paysage avec la navigation à trois boutons, la barre d'outils, les feuilles et le volet Étude ne passent plus sous la barre de navigation, et chaque écran s'ajuste à la barre d'état et à l'encoche.
+1.1.4 — Téléphones en paysage, tablettes et pliables lisent sur deux colonnes pleine page ; les flèches tournent la page. Réduisez Écouter dans le bouton casque, la lecture continue ; en silencieux ou vibreur, elle démarre sans le son. Partagez un verset avec 21 styles. Wear OS : versets favoris, retrait de traductions. Et : raccourcis Écouter et Image de verset, Ouvrir dans Scripture Alone, vignette Verset du jour, mise au point au toucher pour les diapositives, Bibles importées sauvegardées.
 

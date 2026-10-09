@@ -53,5 +53,5 @@ As suas marcações, notas e favoritos ficam no seu aparelho. Não há servidor 
 Feito para ajudar as pessoas a estudar a Palavra de Deus e a se aproximar de Cristo.
 
 ## release_notes
-1.1.4 — Ouvir responde na hora: avançar e voltar entre versículos é imediato, mesmo em celulares com voz lenta. Imagens importadas, fotos de slides e imagens do Guia do usuário agora usam muito menos memória. Na horizontal com navegação por três botões, a barra de ferramentas, as folhas e o painel Estudo não ficam mais sob a barra de navegação, e cada tela se ajusta à barra de status e ao recorte da câmera.
+1.1.4 — Celulares na horizontal, tablets e dobráveis leem em duas colunas que ocupam a página; as setas viram a página. Minimize o Ouvir no botão de fones e a leitura continua; no silencioso ou vibrar, começa sem som. Compartilhe versículos com 21 estilos prontos. Wear OS: versículos favoritos e remoção de traduções. E mais: atalhos para Ouvir e Imagem do versículo, Abrir no Scripture Alone, um bloco Versículo do dia, foco ao tocar ao escanear slides e Bíblias importadas no backup.
 

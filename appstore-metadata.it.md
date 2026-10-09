@@ -66,7 +66,13 @@ bibbia,riveduta,diodati,cei,argomenti,ansia,lutto,conforto,devozionale,sermone,r
 Ora con la NASB 2020. Scopri che cosa dice la Bibbia di ciò che stai vivendo e studia offline con commentari, mappe e cronologie. Senza pubblicità né account.
 
 ## whats_new
-1.1.3 — Su iPhone il titolo del passo (toccalo per andare ovunque: Vai a) ora entra sempre nella barra degli strumenti. Il pulsante della traduzione ora è un'icona e la traduzione che stai leggendo è spuntata nel suo menu. Se il nome di un libro è troppo lungo per lo spazio, viene abbreviato, ad esempio «1Ts 5». Su iPad e Mac il pulsante mantiene il nome della traduzione. Le immagini della Guida all'uso mostrano la nuova barra degli strumenti.
+1.1.4 — La lettura riempie lo schermo. iPhone in orizzontale, iPad e Mac mostrano il capitolo su due colonne che vanno dalla barra superiore a quella inferiore, con qualsiasi dimensione del testo e, su iPhone, con un'intestazione su una sola riga. In colonne, le frecce della barra inferiore girano pagina. Le evidenziazioni ora hanno gli angoli arrotondati.
+
+Ascolta: riduci il lettore e la lettura continua; il pulsante delle cuffie nella barra degli strumenti diventa il lettore e mostra se sta leggendo o è in pausa. Toccalo per riaprire il lettore. Con iPhone in modalità silenziosa, Ascolta parte senza audio: il segno avanza di versetto in versetto in silenzio e la tua musica continua. Tocca per riattivare l'audio.
+
+Condividi un versetto: l'immagine del versetto si apre su 21 Stili pronti, come Pergamena, Acquerello, Ora d'oro e Notte, ognuno con il suo sfondo, il suo colore del testo e la sua ombra. In Personalizza trovi sfondi semplici e con texture, colore del testo e ombra, e ogni scheda viene controllata perché il testo resti leggibile. Crea immagine del versetto in Comandi Rapidi può usare qualsiasi stile.
+
+Inoltre: le barre di selezione e di riproduzione fluttuano sopra il testo invece di togliere spazio alla pagina; Apple Watch chiama la traduzione del tuo iPhone come la chiama il tuo iPhone; e i messaggi di importazione non chiamano più «ePub» qualsiasi file.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

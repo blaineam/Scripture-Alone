@@ -1,6 +1,6 @@
 # Changelog
 
-## After 1.0.0
+## 1.1.4 (2026-10-08)
 
 - Minimize the Listen player without stopping it. The chevron on the player's top edge (or a swipe
   down on it, or ⌥⌘L — Ctrl+Alt+L on Android and Chromebooks) folds the player into the Listen
@@ -162,6 +162,9 @@
   home, favorites, notes, highlights, books and the translation picker. A DEBUG-only `-UITestMode`
   makes each launch deterministic and offline. Soren suites `ui-iphone`, `ui-ipad` and `ui-watch`.
   No change for readers.
+
+## After 1.0.0, through 1.1.3
+
 - On a phone the passage title is always in the toolbar, so Go To is always a tap away: the
   translation button is a symbol (the translation is checked in its menu), and a book name too long
   for the room left becomes its abbreviation ("1 Thess 5", "Song 2"). iPad, Mac and Android tablets

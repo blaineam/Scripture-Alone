@@ -53,5 +53,5 @@ Evidenziazioni, note e preferiti restano sul tuo dispositivo. Nessun server, nes
 Nata per aiutare le persone a studiare la Parola di Dio e a crescere nella vicinanza a Cristo.
 
 ## release_notes
-1.1.4 — L'ascolto risponde subito: passare avanti e indietro tra i versetti è immediato, anche sui telefoni con una voce lenta. Le immagini importate, le foto delle diapositive e le immagini della Guida utente ora usano molta meno memoria. In orizzontale con la navigazione a tre pulsanti, la barra degli strumenti, i pannelli e l'area Studio non finiscono più sotto la barra di navigazione, e ogni schermata si adatta alla barra di stato e al foro della fotocamera.
+1.1.4 — Telefoni in orizzontale, tablet e pieghevoli leggono su due colonne a tutta pagina; le frecce girano pagina. Riduci Ascolta nel pulsante delle cuffie e la lettura continua; in silenzioso o vibrazione parte senza audio. Condividi un versetto con 21 stili. Wear OS: versetti preferiti e rimozione di traduzioni. Inoltre: scorciatoie Ascolta e Immagine del versetto, Apri in Scripture Alone, riquadro Versetto del giorno, messa a fuoco al tocco per le slide, Bibbie importate nel backup.
 

@@ -53,5 +53,5 @@ Subrayados, notas y favoritos se quedan en tu dispositivo. Sin servidor ni cuent
 Hecha para ayudar a estudiar la Palabra de Dios y acercarse más a Cristo.
 
 ## release_notes
-1.1.4 — Escuchar responde al instante: saltar adelante y atrás entre versículos es inmediato, incluso en teléfonos con una voz lenta. Las imágenes importadas, las fotos de diapositivas y las imágenes de la Guía de usuario ahora usan mucha menos memoria. En horizontal con navegación de tres botones, la barra de herramientas, las hojas y el panel de Estudio ya no quedan bajo la barra de navegación, y cada pantalla se ajusta a la barra de estado y al recorte de la cámara.
+1.1.4 — Teléfonos en horizontal, tabletas y plegables leen en dos columnas a toda página; las flechas pasan página. Minimiza Escuchar en el botón de auriculares y la lectura sigue; en silencio o vibración empieza sin sonido. Comparte versículos con 21 estilos. Wear OS: favoritos y quitar traducciones. Más: accesos directos a Escuchar e Imagen del versículo, Abrir en Scripture Alone, mosaico Versículo del día, enfoque al tocar en diapositivas y Biblias importadas en la copia de seguridad.
 
