@@ -73,7 +73,7 @@ links to third-party stores or files — the import section points to the websit
   captured before the NASB 2020 (commit f3253c0); the Lockman agreement forbids AI handling of NASB
   text, and the guide doesn't need it. Re-capture English screens in the BSB or KJV if they need
   replacing.
-- When a licensed translation (ESV, CSB, NKJV, LSB) ships in the app, update chapter 4 ("More
+- When a licensed translation (ESV, CSB, LSB) ships in the app, update chapter 4 ("More
   translations offline") and chapter 5 (online keys) in every language.
 - Third-party links (api.esv.org, api.bible, the Ligonier ePub, the CSB pew Bible PDF) are checked
   by hand; run through them before a release.

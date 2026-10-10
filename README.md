@@ -125,8 +125,9 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 
 ## On the way
 
-- **More translations** — the NASB 2020 and NASB 1995 are licensed from The Lockman Foundation and
-  built in; CSB, ESV, NKJV and LSB licenses are being requested from their publishers. Licensed texts will never be committed to this repository. A licensed translation
+- **More translations** — the NASB 2020 and NASB 1995 are licensed from The Lockman Foundation, the first publisher to
+  license a translation to Scripture Alone, and built in; ESV, CSB and LSB licenses have been
+  requested from their publishers. The NKJV and NIV are not being pursued at this time. Licensed texts will never be committed to this repository. A licensed translation
   ships as a signed, encrypted package (`.sabible`): chapters sealed one at a time with
   AES-256-GCM, terms in a header signed with the publisher's Ed25519 key and enforced by the same
   code that governs the bundled texts, and a sealed search index so a packaged translation is fully
