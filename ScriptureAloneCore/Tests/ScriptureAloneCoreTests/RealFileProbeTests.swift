@@ -1,4 +1,5 @@
 import Foundation
+import PDFKit
 import Testing
 @testable import ScriptureAloneCore
 
@@ -10,6 +11,21 @@ import Testing
         let env = ProcessInfo.processInfo.environment
         let url = URL(filePath: env["SA_IMPORT_PROBE"]!)
         let out = URL(filePath: env["SA_IMPORT_PROBE_OUT"] ?? NSTemporaryDirectory())
+        // `SA_IMPORT_PROBE_PAGES=12,40-42`: how the PDF reader lays out those pages, and the runs it reads.
+        if let pages = env["SA_IMPORT_PROBE_PAGES"], let document = PDFDocument(url: url) {
+            var lines: [String] = []
+            for part in pages.split(separator: ",") {
+                let ends = part.split(separator: "-").compactMap { Int($0) }
+                guard let first = ends.first else { continue }
+                for index in first...(ends.last ?? first) where index < document.pageCount {
+                    lines.append("=== page \(index)")
+                    let runs = PDFBibleReader.runs(on: document.page(at: index)) { lines.append($0) }
+                    lines += runs.map { String(format: "%5.1f %@ ", $0.size, $0.ownLine ? "|" : " ") + $0.text.replacingOccurrences(of: "\n", with: "⏎") }
+                }
+            }
+            try lines.joined(separator: "\n").write(to: out.appending(path: "pages.txt"), atomically: true, encoding: .utf8)
+            if env["SA_IMPORT_PROBE_PAGES_ONLY"] != nil { return }
+        }
         let (bible, preview) = try BibleFileImporter().read(url)
         let report = ImportCoverageReport(bible)
         var lines = ["format: \(preview.format) docs: \(preview.documentCount)",

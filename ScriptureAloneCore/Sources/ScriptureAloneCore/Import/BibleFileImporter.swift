@@ -190,13 +190,15 @@ public struct BibleFileImporter: Sendable {
 
     /// A PDF rarely names itself usefully (its title is often the layout file's). The translation
     /// its copyright page names is the better name; the document title, then the file name, follow.
+    /// A file with no copyright page at all can still name its translation in its title or file
+    /// name ("NewKingJamesBible.pdf"); the publisher's own notice then stands in for the page.
     static func suggestedIdentity(for document: PDFDocument, url: URL) -> ImportedTranslationIdentity {
         let front = PDFBibleReader.frontMatter(of: document)
         let attributes = document.documentAttributes ?? [:]
         let title = (attributes[PDFDocumentAttribute.titleAttribute] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let terms = PublisherTerms.matching(text: front)
-        let name = terms?.markers.first ?? title.flatMap { $0.isEmpty ? nil : $0 }
-            ?? url.deletingPathExtension().lastPathComponent.replacingOccurrences(of: "_", with: " ")
+        let fileName = spacedWords(url.deletingPathExtension().lastPathComponent)
+        let terms = PublisherTerms.matching(text: front) ?? PublisherTerms.matching(text: (title ?? "") + "\n" + fileName)
+        let name = terms?.markers.first ?? title.flatMap { $0.isEmpty ? nil : $0 } ?? fileName
         let copyrightLine = front.components(separatedBy: .newlines)
             .map { $0.replacingOccurrences(of: "\u{AD}", with: "").trimmingCharacters(in: .whitespaces) }
             .first { $0.contains("©") || $0.localizedCaseInsensitiveContains("copyright ") }
@@ -208,6 +210,13 @@ public struct BibleFileImporter: Sendable {
             copyright: copyright,
             license: ImportedTranslationIdentity.unknownLicense,
             source: "Imported PDF")
+    }
+
+    /// A file name as words: "NewKingJamesBible" and "new_king-james" both read "New King James".
+    static func spacedWords(_ name: String) -> String {
+        name.replacing(/(\p{Ll})(\p{Lu})/) { "\($0.output.1) \($0.output.2)" }
+            .replacing(/[_\-.]+/, with: " ")
+            .trimmingCharacters(in: .whitespaces)
     }
 
     // MARK: - Sniffing

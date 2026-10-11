@@ -78,6 +78,55 @@ import Testing
         #expect(text.contains("Babylon, for"))
     }
 
+    @Test func aChapterPrintedWithItsFirstVerseNumberAndInLineVerseNumbers() {
+        let reader = PDFBibleReader(options: .init())
+        var lastVerse = 0
+        var chapterOpen = false
+        // A title barely larger than the headings, a list of chapter links, then "1" + ":1", and
+        // verse numbers a little smaller than the text, set in its lines.
+        let page = [PDFBibleReader.Run(text: "GENESIS\n", size: 15.6, ownLine: true),
+                    PDFBibleReader.Run(text: "Chapter 1 Chapter 2 Chapter 3\n", size: 10.8, ownLine: true),
+                    PDFBibleReader.Run(text: "The Creation of the World\n", size: 13.8, ownLine: true),
+                    run("1", 14.4), run(":1 ", 11.4), run("In the beginning, God created the heavens and the earth. ", 10.8),
+                    run("2", 9), run("The earth was without form", 10.8)]
+        let (document, outside) = reader.scan(page, page: 0, body: 10.8, rare: [], outside: true, lastVerse: &lastVerse, chapterOpen: &chapterOpen)
+        #expect(!outside)
+        guard case .place(let book, _) = document.flow.first else { Issue.record("no book title"); return }
+        #expect(book == .genesis)
+        #expect(document.flow.contains { if case .marker(let marker) = $0 { marker.isChapter && marker.chapter == 1 } else { false } })
+        #expect(document.flow.contains { if case .marker(let marker) = $0 { marker.verse == 2 } else { false } })
+        let text = document.flow.compactMap { if case .text(let text, _) = $0 { text } else { nil } }.joined()
+        #expect(!text.contains("Chapter"))
+        #expect(!text.contains(":1"))
+        #expect(lastVerse == 2)
+    }
+
+    @Test func notesSetAtTheEndOfABookReachTheirCallers() {
+        let reader = PDFBibleReader(options: .init())
+        var lastVerse = 0
+        var chapterOpen = false
+        var endnotes = PDFBibleReader.Endnotes()
+        let text = [PDFBibleReader.Run(text: "RUTH\n", size: 15, ownLine: true),
+                    run("1", 14), run(":1 ", 11), run("In the days when the judges ruled", 10), run("[1]", 8.5), run(" there was a famine.", 10)]
+        let (first, _) = reader.scan(text, page: 0, body: 10, rare: [], outside: true, lastVerse: &lastVerse, chapterOpen: &chapterOpen, endnotes: &endnotes)
+        let notes = [PDFBibleReader.Run(text: "Footnotes\n", size: 13, ownLine: true),
+                     run("[1] 1:1 Or "), run("a dearth", 11), run(" in the land [2] 1:4 Hebrew "), run("lifted up", 11)]
+        let (second, _) = reader.scan(notes, page: 1, body: 10, rare: [], outside: false, lastVerse: &lastVerse, chapterOpen: &chapterOpen, endnotes: &endnotes)
+        endnotes.close()
+        let ids = first.flow.compactMap { if case .noteMarker(let id, _) = $0 { id } else { nil } }
+        #expect(ids.count == 1)
+        #expect(ids.first.flatMap { endnotes.notes[$0] } == "Or a dearth in the land")
+        #expect(endnotes.notes.values.contains("Hebrew lifted up"))
+        // The notes and their heading are not text.
+        #expect(second.flow.isEmpty)
+    }
+
+    @Test func aFileNameCanNameItsTranslation() {
+        #expect(BibleFileImporter.spacedWords("NewKingJamesBible") == "New King James Bible")
+        #expect(BibleFileImporter.spacedWords("new_king-james") == "new king james")
+        #expect(PublisherTerms.matching(text: BibleFileImporter.spacedWords("NewKingJamesBible"))?.abbreviation == "NKJV")
+    }
+
     @Test func versesMustFollowOn() {
         #expect(PDFBibleReader.followsOn(8, after: 7))
         #expect(PDFBibleReader.followsOn(10, after: 7))   // a translation omits a verse

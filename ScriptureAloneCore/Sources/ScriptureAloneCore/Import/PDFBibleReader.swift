@@ -48,14 +48,24 @@ struct PDFBibleReader {
         guard body > 0 else { throw BibleImportError.noScriptureFound }
         let rare = Self.rareSizes(pages.flatMap { $0 }, body: body)
 
-        var assembler = Assembler(options: options)
         var outside = true   // before the first book title, and after anything that isn't one
         var lastVerse = 0
         var chapterOpen = false
+        var endnotes = Endnotes()
+        var documents: [ScannedDocument] = []
         for (index, runs) in pages.enumerated() {
             let (document, stillOutside) = scan(runs, page: index, body: body, rare: rare, outside: outside,
-                                                lastVerse: &lastVerse, chapterOpen: &chapterOpen)
+                                                lastVerse: &lastVerse, chapterOpen: &chapterOpen, endnotes: &endnotes)
             outside = stillOutside
+            documents.append(document)
+        }
+        // Notes gathered at the end of a book reach back to the pages that call them.
+        endnotes.close()
+        var assembler = Assembler(options: options)
+        for (index, var document) in documents.enumerated() {
+            for case .noteMarker(let id?, _) in document.flow where document.notes[id] == nil {
+                document.notes[id] = endnotes.notes[id]
+            }
             assembler.consume(document, path: "page \(index + 1)")
         }
         assembler.finish()
@@ -69,12 +79,76 @@ struct PDFBibleReader {
     /// (a psalm's title) numbers the verse the chapter's number already began.
     func scan(_ runs: [Run], page: Int, body: Double, rare: Set<Double>, outside: Bool,
               lastVerse: inout Int, chapterOpen: inout Bool) -> (ScannedDocument, Bool) {
+        var endnotes = Endnotes()
+        return scan(runs, page: page, body: body, rare: rare, outside: outside,
+                    lastVerse: &lastVerse, chapterOpen: &chapterOpen, endnotes: &endnotes)
+    }
+
+    /// Notes set together at the end of a book rather than at the foot of each page, each opening
+    /// with its bracketed caller and the verse it is on ("[12] 3:8 Hebrew wind"). A book's callers
+    /// count from 1, so a note is known by the book it closes and its number.
+    struct Endnotes {
+        /// How many books have begun: the scope of a caller's number.
+        var book = 0
+        /// The book the last title named.
+        var titled: BookID?
+        /// A book's title has been read and none of its chapters has begun: a book of one chapter
+        /// prints no number for it, and its first verse number begins it.
+        var awaitingChapter = false
+        var collecting = false
+        var notes: [String: String] = [:]
+        private var id: String?
+        private var text = ""
+
+        static func id(book: Int, label: String) -> String { "b\(book)-\(label)" }
+
+        /// The bracketed number a run opens with, when the verse it is on follows: an endnote begins.
+        static func opens(_ text: String) -> Bool {
+            text.trimmingCharacters(in: .whitespaces).firstMatch(of: /^\[\d{1,4}\]\s+\d{1,3}:\d{1,3}/) != nil
+        }
+
+        mutating func collect(_ raw: String) {
+            var rest = Substring(raw)
+            while let match = rest.firstMatch(of: /\[(\d{1,4})\]\s+\d{1,3}:\d{1,3}(?:[\-\x{2013}]\d{1,3})?\s*/) {
+                text += rest[..<match.range.lowerBound]
+                close()
+                id = Self.id(book: book, label: String(match.output.1))
+                rest = rest[match.range.upperBound...]
+            }
+            text += rest
+        }
+
+        mutating func close() {
+            if let id {
+                let trimmed = DocumentScanner.collapse(PDFBibleReader.bodyText(text)).trimmingCharacters(in: .whitespaces)
+                if !trimmed.isEmpty { notes[id] = trimmed }
+            }
+            id = nil
+            text = ""
+        }
+    }
+
+    func scan(_ runs: [Run], page: Int, body: Double, rare: Set<Double>, outside: Bool,
+              lastVerse: inout Int, chapterOpen: inout Bool, endnotes: inout Endnotes) -> (ScannedDocument, Bool) {
         var document = ScannedDocument()
+        // A chapter's heading closed the page before ("PSALM 3"), and its words begin on this one:
+        // the chapter's number is on another page, so the "1" here numbers the verse.
+        if chapterOpen, lastVerse == 1 { lastVerse = 0 }
         var outside = outside
         var chapterSinceTitle = true
         var inNotes = false
         var noteID: String?
         var noteText = ""
+
+        /// A verse number in a book whose chapter hasn't begun: the book has one chapter.
+        func openChapter() {
+            guard endnotes.awaitingChapter else { return }
+            var marker = Marker(shapes: [.numberClass], chapter: 1)
+            marker.isChapter = true
+            document.chapterMarkers += 1
+            document.flow.append(.marker(marker))
+            endnotes.awaitingChapter = false
+        }
 
         func closeNote() {
             if let noteID {
@@ -90,12 +164,73 @@ struct PDFBibleReader {
             let text = run.text.replacingOccurrences(of: "\u{AD}", with: "").trimmingCharacters(in: .whitespacesAndNewlines)
             guard !text.isEmpty, !Self.isPrinterSlug(text) else { continue }
             let ratio = run.size / body
-            let next = runs.dropFirst(index + 1).first { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            let nextIndex = runs.indices.dropFirst(index + 1).first { !runs[$0].text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            let next = nextIndex.map { runs[$0] }
+            // A book's title can be set barely larger than a heading; it is a line of its own that
+            // names a book and nothing else.
+            let titlesBook = ratio >= 1.35 && run.ownLine && ScriptureLabels.heading(text).map { $0.book != nil && $0.chapter == nil } == true
+
+            // A book's notes, set after its text: everything up to the next heading or title is theirs.
+            if endnotes.collecting {
+                if !(run.ownLine && ratio > 1.2) {
+                    endnotes.collect(run.text)
+                    continue
+                }
+                endnotes.close()
+                endnotes.collecting = false
+            }
+            if !outside, Endnotes.opens(text) {
+                // The heading over them ("Notes") is theirs, not the next verse's.
+                if case .heading = document.flow.last { document.flow.removeLast() }
+                endnotes.collecting = true
+                endnotes.collect(run.text)
+                continue
+            }
+
+            // A chapter printed with its first verse's number, "1" + ":1", the chapter's number larger.
+            if !outside, ratio > 1.04, let number = Self.number(text), let nextIndex,
+               let verse = runs[nextIndex].text.trimmingCharacters(in: .whitespacesAndNewlines).wholeMatch(of: /:(\d{1,3})/).flatMap({ Int($0.output.1) }),
+               verse <= 2 {
+                var marker = Marker(shapes: [.numberClass], chapter: number)
+                marker.isChapter = true
+                document.chapterMarkers += 1
+                endnotes.awaitingChapter = false
+                document.flow.append(.marker(marker))
+                chapterSinceTitle = true
+                lastVerse = 1
+                chapterOpen = true
+                if verse == 2 {
+                    lastVerse = 2
+                    chapterOpen = false
+                    document.flow.append(.marker(Marker(shapes: [.numberClass], verse: 2)))
+                }
+                skipThrough = nextIndex
+                continue
+            }
+
+            // A list of the book's chapters, "Chapter 1 Chapter 2 …", is navigation.
+            if Self.isChapterList(text) { continue }
+
+            // A line of its own in the text's size naming this book and a chapter ("PSALM 2"): the
+            // chapter's heading, where no number is set large.
+            if !outside, run.ownLine, ratio >= 0.97, let titled = endnotes.titled,
+               let place = ScriptureLabels.heading(text), place.book == titled, let number = place.chapter,
+               number <= titled.chapterCount {
+                var marker = Marker(shapes: [.numberClass], chapter: number)
+                marker.isChapter = true
+                document.chapterMarkers += 1
+                endnotes.awaitingChapter = false
+                document.flow.append(.marker(marker))
+                chapterSinceTitle = true
+                lastVerse = 1
+                chapterOpen = true
+                continue
+            }
 
             // A short line that opens a little larger than the text, in a face of its own: an
             // acrostic letter and its name, a heading set as one line in two fonts — or in two
             // sizes, neither of them the text's ("S" + "hin / " + "Sin").
-            if !outside, ratio > 1.04, ratio < 1.45, !run.ownLine, !run.endsLine,
+            if !outside, !titlesBook, ratio > 1.04, ratio < 1.45, !run.ownLine, !run.endsLine,
                let end = runs.indices.dropFirst(index + 1).first(where: { runs[$0].endsLine }), end - index <= 4 {
                 let line = runs[index...end].map(\.text).joined()
                 let words = line.split(whereSeparator: \.isWhitespace)
@@ -111,7 +246,7 @@ struct PDFBibleReader {
             }
 
             // Titles: a book begins, or something that isn't scripture does.
-            if ratio >= 1.45 {
+            if ratio >= 1.45 || titlesBook {
                 // A drop-cap initial: the first letter of the text, set large. In a book of one
                 // chapter it is where chapter 1 begins, since no number is printed.
                 if text.count == 1, text.first?.isLetter == true {
@@ -120,6 +255,7 @@ struct PDFBibleReader {
                         var marker = Marker(shapes: [.numberClass], chapter: 1)
                         marker.isChapter = true
                         document.chapterMarkers += 1
+                        endnotes.awaitingChapter = false
                         document.flow.append(.marker(marker))
                         chapterSinceTitle = true
                         lastVerse = 1
@@ -141,12 +277,16 @@ struct PDFBibleReader {
                     var marker = Marker(shapes: [.numberClass], chapter: number)
                     marker.isChapter = true
                     document.chapterMarkers += 1
+                    endnotes.awaitingChapter = false
                     document.flow.append(.marker(marker))
                     chapterSinceTitle = true
                     lastVerse = 1
                     chapterOpen = true
                 } else if let place = ScriptureLabels.heading(text), let book = place.book {
                     outside = false
+                    endnotes.book += 1
+                    endnotes.titled = book
+                    endnotes.awaitingChapter = true
                     chapterSinceTitle = false
                     lastVerse = 0
                     document.flow.append(.place(book, chapter: place.chapter))
@@ -154,6 +294,7 @@ struct PDFBibleReader {
                     var marker = Marker(shapes: [.numberClass], chapter: chapter)
                     marker.isChapter = true
                     document.chapterMarkers += 1
+                    endnotes.awaitingChapter = false
                     document.flow.append(.marker(marker))
                 } else if !text.contains(where: \.isNumber) {
                     outside = true
@@ -199,6 +340,7 @@ struct PDFBibleReader {
                     lastVerse = number
                     chapterOpen = false
                     document.shapeCounts[.superscript, default: 0] += 1
+                    openChapter()
                     document.flow.append(.marker(Marker(shapes: [.superscript], verse: number)))
                 }
                 continue
@@ -211,8 +353,42 @@ struct PDFBibleReader {
             }
 
             // Smaller than the text but not note-sized: headings, and the running heads and page
-            // numbers every page carries, which aren't content.
+            // numbers every page carries, which aren't content — and, in some layouts, the verse
+            // numbers and note callers, which sit in the line rather than on one of their own.
             if ratio < 0.97 {
+                if let label = Self.bracketedCaller(text) {
+                    if options.footnotes {
+                        document.flow.append(.noteMarker(id: Endnotes.id(book: endnotes.book, label: label), label: label))
+                    }
+                    // A caller sits in a word break; the break survives it.
+                    if run.text.first?.isWhitespace == true || run.text.last?.isWhitespace == true
+                        || next?.text.first?.isWhitespace == true {
+                        document.flow.append(.text(" ", red: false))
+                    }
+                    continue
+                }
+                // …followed by the verse's words in the text's size (a note caller can come first). A
+                // page number split by the text layer ("10" + "07 ROMANS 12-14") runs on in the
+                // running head's type.
+                let words = runs.dropFirst(index + 1).first { other in
+                    let trimmed = other.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return !trimmed.isEmpty && Self.bracketedCaller(trimmed) == nil
+                }
+                let wordsFollow = words.map { $0.size / body >= 0.97 } == true
+                // A page number closes the running head's line; a verse number opens its words'.
+                if !run.endsLine, wordsFollow, let number = Self.number(text) {
+                    if number == 1, lastVerse == 1, chapterOpen { continue }
+                    if Self.followsOn(number, after: lastVerse) {
+                        lastVerse = number
+                        chapterOpen = false
+                        // The same kind of number as one set in the text's size: a layout can set a
+                        // book's first verse number larger than the text and the rest smaller.
+                        document.shapeCounts[.numberClass, default: 0] += 1
+                        openChapter()
+                        document.flow.append(.marker(Marker(shapes: [.numberClass], verse: number)))
+                        continue
+                    }
+                }
                 if text.allSatisfy(\.isNumber) || Self.isRunningHead(text) { continue }
                 if options.headings { appendHeading(Self.headingText(text), to: &document) }
                 continue
@@ -230,6 +406,7 @@ struct PDFBibleReader {
                 lastVerse = number
                 chapterOpen = false
                 document.shapeCounts[.numberClass, default: 0] += 1
+                openChapter()
                 document.flow.append(.marker(Marker(shapes: [.numberClass], verse: number)))
                 continue
             }
@@ -391,12 +568,26 @@ struct PDFBibleReader {
         let crossing = pieces.indices.filter {
             pieces[$0].rect.minX < middle - 2 && pieces[$0].rect.maxX > middle + 2 && pieces[$0].rect.width > 40
         }
-        let open = crossing.filter { gutterIsEmpty(pieces[$0].rect) }
+        // A title set large and centred over both columns can leave the gutter strip between two of
+        // its letters ("Gen" | "esis"); type that size is never the text's, and is never cut.
+        let open = crossing.filter { pieces[$0].size < typical * 1.45 && gutterIsEmpty(pieces[$0].rect) }
         let rightOnly = pieces.filter { $0.rect.minX >= middle }.count
         // Judged by the text's own lines: notes set across the foot of the page cross an empty
         // gutter above them, and say nothing about whether the text runs in columns.
         let bodyCrossing = crossing.filter { isBody(pieces[$0]) }
-        let twoColumns = rightOnly > 2 && bodyCrossing.filter { open.contains($0) }.count * 2 >= bodyCrossing.count
+        // On a narrow single-column page the strip can fall in a space between words on many lines,
+        // so the columns must show in the text too: a line right of the gutter stands a gutter's width
+        // from the line beside it on the left. The pieces of one line the text layer split stand a
+        // space apart. Only a line counts as one: a selection can come back as a sliver the height of
+        // the page.
+        let gaps = body.filter { $0.rect.minX >= middle }.compactMap { piece -> CGFloat? in
+            body.filter { other in
+                other.rect.minX < middle && other.rect.maxX <= piece.rect.minX + 1 && other.rect.height < typical * 2
+                    && min(other.rect.maxY, piece.rect.maxY) - max(other.rect.minY, piece.rect.minY) > min(other.rect.height, piece.rect.height) * 0.5
+            }.map { piece.rect.minX - $0.rect.maxX }.min()
+        }
+        let columnar = gaps.filter { $0 >= typical * 0.5 }.count * 2 >= gaps.count
+        let twoColumns = rightOnly > 2 && columnar && bodyCrossing.filter { open.contains($0) }.count * 2 >= bodyCrossing.count
         var spanning = Set<Int>()
         if twoColumns {
             var split: [Piece] = []
@@ -431,6 +622,7 @@ struct PDFBibleReader {
         // verse number hung out into the gutter beside a line belongs with the line it numbers:
         // a narrow piece goes with its nearest neighbour on the same line.
         let isRight: [Bool] = pieces.indices.map { index in
+            guard twoColumns else { return false }
             let piece = pieces[index]
             guard piece.rect.width < 40 else { return piece.rect.minX >= middle }
             // Its neighbours are the lines beside it: overlapping it vertically (a drop cap spans
@@ -462,7 +654,7 @@ struct PDFBibleReader {
         func flush() {
             let lines = { (column: [Int]) in
                 column.map { pieces[$0] }
-                    .sorted { abs($0.rect.maxY - $1.rect.maxY) > 2 ? $0.rect.maxY > $1.rect.maxY : $0.rect.minX < $1.rect.minX }
+                    .sorted { Self.sameRow($0.rect, $1.rect) ? $0.rect.minX < $1.rect.minX : $0.rect.maxY > $1.rect.maxY }
             }
             ordered += lines(band.filter { !isRight[$0] })
             ordered += lines(band.filter { isRight[$0] })
@@ -538,6 +730,12 @@ struct PDFBibleReader {
             lineStart = endsLine
         }
         return runs
+    }
+
+    /// Two pieces on one row of print: level at the top, or centred on one line — a verse number
+    /// set larger than the words beside it stands taller than they do.
+    static func sameRow(_ a: CGRect, _ b: CGRect) -> Bool {
+        abs(a.maxY - b.maxY) <= 2 || abs(a.midY - b.midY) <= min(a.height, b.height) * 0.4
     }
 
     /// Where the text in `range` sits, checked against the text itself. PDFKit's selections don't
@@ -796,6 +994,20 @@ struct PDFBibleReader {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, trimmed.count <= 3, trimmed.allSatisfy(\.isNumber), let value = Int(trimmed), value > 0 else { return nil }
         return value
+    }
+
+    /// "[12]": a note caller in brackets, its number counting through the book.
+    static func bracketedCaller(_ text: String) -> String? {
+        text.trimmingCharacters(in: .whitespacesAndNewlines).wholeMatch(of: /\[(\d{1,4})\]/).map { String($0.output.1) }
+    }
+
+    /// "Chapter 1 Chapter 2 Chapter 3": one word and a number, over and over, counting up.
+    static func isChapterList(_ text: String) -> Bool {
+        let entries = text.matches(of: /(\p{L}+)\s+(\d{1,3})/)
+        guard entries.count >= 2, text.replacing(/(\p{L}+)\s+(\d{1,3})/, with: "").allSatisfy(\.isWhitespace),
+              Set(entries.map { $0.output.1.lowercased() }).count == 1 else { return false }
+        let numbers = entries.compactMap { Int($0.output.2) }
+        return zip(numbers, numbers.dropFirst()).allSatisfy { $1 == $0 + 1 }
     }
 
     static func isCallerLetters(_ text: String) -> Bool {

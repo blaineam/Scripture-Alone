@@ -1,5 +1,6 @@
 package com.blainemiller.scripturealone.data.importer
 
+import com.blainemiller.scripturealone.data.canon.BookID
 import kotlin.math.abs
 import kotlin.math.roundToLong
 
@@ -52,12 +53,23 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
         if (body <= 0) throw BibleImportError.NoScriptureFound()
         val rare = rareSizes(pages.flatten(), body)
 
-        val assembler = Assembler(options)
         var outside = true // before the first book title, and after anything that isn't one
         val lastVerse = intArrayOf(0)
+        val endnotes = Endnotes()
+        val documents = ArrayList<ScannedDocument>()
         for ((index, runs) in pages.withIndex()) {
-            val (document, stillOutside) = scan(runs, index, body, rare, outside, lastVerse)
+            val (document, stillOutside) = scan(runs, index, body, rare, outside, lastVerse, endnotes)
             outside = stillOutside
+            documents += document
+        }
+        // Notes gathered at the end of a book reach back to the pages that call them.
+        endnotes.close()
+        val assembler = Assembler(options)
+        for ((index, document) in documents.withIndex()) {
+            for (item in document.flow) {
+                val id = (item as? FlowItem.NoteMarker)?.id ?: continue
+                if (id !in document.notes) endnotes.notes[id]?.let { document.notes[id] = it }
+            }
             assembler.consume(document, "page ${index + 1}")
         }
         assembler.finish()
@@ -66,11 +78,72 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
     }
 
     /**
+     * Notes set together at the end of a book rather than at the foot of each page, each opening with
+     * its bracketed caller and the verse it is on ("[12] 3:8 Hebrew wind"). A book's callers count from
+     * 1, so a note is known by the book it closes and its number. Also carries, from page to page, the
+     * book the last title named and whether a chapter is still waiting for its first words.
+     */
+    class Endnotes {
+        /** How many books have begun: the scope of a caller's number. */
+        var book = 0
+        /** The book the last title named. */
+        var titled: BookID? = null
+        /** A chapter began and no words have followed it yet. */
+        var chapterOpen = false
+        /**
+         * A book's title has been read and none of its chapters has begun: a book of one chapter prints
+         * no number for it, and its first verse number begins it.
+         */
+        var awaitingChapter = false
+        var collecting = false
+        val notes = HashMap<String, String>()
+        private var id: String? = null
+        private val text = StringBuilder()
+
+        fun collect(raw: String) {
+            var rest = raw
+            while (true) {
+                val match = opening.find(rest) ?: break
+                text.append(rest, 0, match.range.first)
+                close()
+                id = id(book, match.groupValues[1])
+                rest = rest.substring(match.range.last + 1)
+            }
+            text.append(rest)
+        }
+
+        fun close() {
+            id?.let { id ->
+                val trimmed = SwiftText.trimWhitespace(DocumentScanner.collapse(bodyText(text.toString())))
+                if (trimmed.isNotEmpty()) notes[id] = trimmed
+            }
+            id = null
+            text.setLength(0)
+        }
+
+        companion object {
+            private val opening = Regex("""\[(\d{1,4})\]\s+\d{1,3}:\d{1,3}(?:[\-\u2013]\d{1,3})?\s*""")
+            private val opensAtStart = Regex("""^\[\d{1,4}\]\s+\d{1,3}:\d{1,3}""")
+
+            fun id(book: Int, label: String) = "b$book-$label"
+
+            /** The bracketed number a run opens with, when the verse it is on follows: an endnote begins. */
+            fun opens(text: String): Boolean = opensAtStart.containsMatchIn(SwiftText.trimWhitespace(text))
+        }
+    }
+
+    /**
      * Turns one page's runs into a flow. [outside] is true while the reader is in front or back matter:
      * set by a large title that isn't a book, cleared by one that is. [lastVerse] carries across pages.
      */
-    fun scan(runs: List<Run>, page: Int, body: Double, rare: Set<Double>, outside: Boolean, lastVerse: IntArray): Pair<ScannedDocument, Boolean> {
+    fun scan(
+        runs: List<Run>, page: Int, body: Double, rare: Set<Double>, outside: Boolean, lastVerse: IntArray,
+        endnotes: Endnotes = Endnotes(),
+    ): Pair<ScannedDocument, Boolean> {
         val document = ScannedDocument()
+        // A chapter's heading closed the page before ("PSALM 3"), and its words begin on this one: the
+        // chapter's number is on another page, so the "1" here numbers the verse.
+        if (endnotes.chapterOpen && lastVerse[0] == 1) lastVerse[0] = 0
         val flow = ArrayList<FlowItem>()
         var outsideNow = outside
         var chapterSinceTitle = true
@@ -88,8 +161,15 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
         }
 
         fun chapterMarker(number: Int): FlowItem {
+            endnotes.chapterOpen = true
+            endnotes.awaitingChapter = false
             document.chapterMarkers++
             return FlowItem.MarkerItem(Marker(setOf(VerseMarkupShape.NUMBER_CLASS), chapter = number, isChapter = true))
+        }
+
+        /** A verse number in a book whose chapter hasn't begun: the book has one chapter. */
+        fun openChapter() {
+            if (endnotes.awaitingChapter) flow.add(chapterMarker(1))
         }
 
         var skipThrough = -1
@@ -98,11 +178,64 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
             val text = SwiftText.trimWhitespaceAndNewlines(run.text.replace("\u00AD", ""))
             if (text.isEmpty() || isPrinterSlug(text)) continue
             val ratio = run.size / body
-            val next = runs.subList(index + 1, runs.size).firstOrNull { SwiftText.trimWhitespaceAndNewlines(it.text).isNotEmpty() }
+            val nextIndex = (index + 1 until runs.size).firstOrNull { SwiftText.trimWhitespaceAndNewlines(runs[it].text).isNotEmpty() }
+            val next = nextIndex?.let { runs[it] }
+            // A book's title can be set barely larger than a heading; it is a line of its own that names
+            // a book and nothing else.
+            val titlesBook = ratio >= 1.35 && run.ownLine && ScriptureLabels.heading(text)?.let { it.book != null && it.chapter == null } == true
+
+            // A book's notes, set after its text: everything up to the next heading or title is theirs.
+            if (endnotes.collecting) {
+                if (!(run.ownLine && ratio > 1.2)) {
+                    endnotes.collect(run.text)
+                    continue
+                }
+                endnotes.close()
+                endnotes.collecting = false
+            }
+            if (!outsideNow && Endnotes.opens(text)) {
+                // The heading over them ("Notes") is theirs, not the next verse's.
+                if (flow.lastOrNull() is FlowItem.Heading) flow.removeAt(flow.size - 1)
+                endnotes.collecting = true
+                endnotes.collect(run.text)
+                continue
+            }
+
+            // A chapter printed with its first verse's number, "1" + ":1", the chapter's number larger.
+            val chapterNumber = number(text)
+            val firstVerse = nextIndex?.let { colonVerse.matchEntire(SwiftText.trimWhitespaceAndNewlines(runs[it].text))?.groupValues?.get(1)?.toIntOrNull() }
+            if (!outsideNow && ratio > 1.04 && chapterNumber != null && firstVerse != null && firstVerse <= 2) {
+                flow.add(chapterMarker(chapterNumber))
+                chapterSinceTitle = true
+                lastVerse[0] = 1
+                if (firstVerse == 2) {
+                    lastVerse[0] = 2
+                    endnotes.chapterOpen = false
+                    flow.add(FlowItem.MarkerItem(Marker(setOf(VerseMarkupShape.NUMBER_CLASS), verse = 2)))
+                }
+                skipThrough = nextIndex
+                continue
+            }
+
+            // A list of the book's chapters, "Chapter 1 Chapter 2 …", is navigation.
+            if (isChapterList(text)) continue
+
+            // A line of its own in the text's size naming this book and a chapter ("PSALM 2"): the
+            // chapter's heading, where no number is set large.
+            val chapterHeading = if (!outsideNow && run.ownLine && ratio >= 0.97) ScriptureLabels.heading(text) else null
+            val titled = endnotes.titled
+            if (chapterHeading != null && titled != null && chapterHeading.book == titled &&
+                chapterHeading.chapter != null && chapterHeading.chapter <= titled.chapterCount
+            ) {
+                flow.add(chapterMarker(chapterHeading.chapter))
+                chapterSinceTitle = true
+                lastVerse[0] = 1
+                continue
+            }
 
             // A short line that opens a little larger than the text, in a face of its own: an acrostic
             // letter and its name (a Hebrew letter and its name), a heading set as one line in two fonts.
-            if (!outsideNow && ratio > 1.04 && ratio < 1.45 && !run.ownLine && !run.endsLine) {
+            if (!outsideNow && !titlesBook && ratio > 1.04 && ratio < 1.45 && !run.ownLine && !run.endsLine) {
                 val end = (index + 1 until runs.size).firstOrNull { runs[it].endsLine }
                 if (end != null && end - index <= 2) {
                     val line = runs.subList(index, end + 1).joinToString("") { it.text }
@@ -116,7 +249,7 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
             }
 
             // Titles: a book begins, or something that isn't scripture does.
-            if (ratio >= 1.45) {
+            if (ratio >= 1.45 || titlesBook) {
                 // A drop-cap initial: the first letter of the text, set large. In a book of one chapter it
                 // is where chapter 1 begins, since no number is printed.
                 if (SwiftText.characterCount(text) == 1 && text.first().isLetter()) {
@@ -151,6 +284,9 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
                     }
                     place?.book != null -> {
                         outsideNow = false
+                        endnotes.book++
+                        endnotes.titled = place.book
+                        endnotes.awaitingChapter = true
                         chapterSinceTitle = false
                         lastVerse[0] = 0
                         flow.add(FlowItem.Place(place.book, place.chapter))
@@ -191,7 +327,9 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
                     }
                 } else if (number != null && followsOn(number, lastVerse[0])) {
                     lastVerse[0] = number
+                    endnotes.chapterOpen = false
                     document.shapeCounts[VerseMarkupShape.SUPERSCRIPT] = (document.shapeCounts[VerseMarkupShape.SUPERSCRIPT] ?: 0) + 1
+                    openChapter()
                     flow.add(FlowItem.MarkerItem(Marker(setOf(VerseMarkupShape.SUPERSCRIPT), verse = number)))
                 }
                 continue
@@ -204,8 +342,39 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
             }
 
             // Smaller than the text but not note-sized: headings, and the running heads and page numbers
-            // every page carries, which aren't content.
+            // every page carries, which aren't content — and, in some layouts, the verse numbers and note
+            // callers, which sit in the line rather than on one of their own.
             if (ratio < 0.97) {
+                val label = bracketedCaller(text)
+                if (label != null) {
+                    if (options.footnotes) flow.add(FlowItem.NoteMarker(Endnotes.id(endnotes.book, label), label))
+                    // A caller sits in a word break; the break survives it.
+                    if (run.text.firstOrNull()?.isWhitespace() == true || run.text.lastOrNull()?.isWhitespace() == true ||
+                        next?.text?.firstOrNull()?.isWhitespace() == true
+                    ) {
+                        flow.add(FlowItem.Text(" ", false))
+                    }
+                    continue
+                }
+                // …followed by the verse's words in the text's size (a note caller can come first). A page
+                // number split by the text layer ("10" + "07 ROMANS 12-14") runs on in the running head's type.
+                val words = runs.subList(index + 1, runs.size).firstOrNull {
+                    val trimmed = SwiftText.trimWhitespaceAndNewlines(it.text)
+                    trimmed.isNotEmpty() && bracketedCaller(trimmed) == null
+                }
+                val wordsFollow = words != null && words.size / body >= 0.97
+                val inLine = number(text)
+                // A page number closes the running head's row; a verse number opens its words'.
+                if (!run.endsLine && wordsFollow && inLine != null && followsOn(inLine, lastVerse[0])) {
+                    lastVerse[0] = inLine
+                    endnotes.chapterOpen = false
+                    // The same kind of number as one set in the text's size: a layout can set a book's first
+                    // verse number larger than the text and the rest smaller.
+                    document.shapeCounts[VerseMarkupShape.NUMBER_CLASS] = (document.shapeCounts[VerseMarkupShape.NUMBER_CLASS] ?: 0) + 1
+                    openChapter()
+                    flow.add(FlowItem.MarkerItem(Marker(setOf(VerseMarkupShape.NUMBER_CLASS), verse = inLine)))
+                    continue
+                }
                 if (number(text) != null || isRunningHead(text)) continue
                 if (options.headings) appendHeading(headingText(text), flow)
                 continue
@@ -217,7 +386,9 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
             val number = number(text)
             if (number != null && number < 200 && !run.tabbed && followsOn(number, lastVerse[0])) {
                 lastVerse[0] = number
+                endnotes.chapterOpen = false
                 document.shapeCounts[VerseMarkupShape.NUMBER_CLASS] = (document.shapeCounts[VerseMarkupShape.NUMBER_CLASS] ?: 0) + 1
+                openChapter()
                 flow.add(FlowItem.MarkerItem(Marker(setOf(VerseMarkupShape.NUMBER_CLASS), verse = number)))
                 continue
             }
@@ -227,7 +398,9 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
                 if (options.headings) appendHeading(headingText(text), flow)
                 continue
             }
-            flow.add(FlowItem.Text(bodyText(run.text), false))
+            val words = bodyText(run.text)
+            if (words.any { it.isLetter() }) endnotes.chapterOpen = false
+            flow.add(FlowItem.Text(words, false))
         }
         closeNote()
         document.flow = flow
@@ -364,12 +537,25 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
             val crossing = pieces.indices.filter {
                 pieces[it].box.left < middle - 2 && pieces[it].box.right > middle + 2 && pieces[it].box.width > 40
             }.toSet()
-            val open = crossing.filter { gutterIsEmpty(pieces[it].box) }.toSet()
+            // A title set large and centred over both columns can leave the gutter strip between two of
+            // its letters ("Gen" | "esis"); type that size is never the text's, and is never cut.
+            val open = crossing.filter { pieces[it].size < typical * 1.45 && gutterIsEmpty(pieces[it].box) }.toSet()
             val rightOnly = pieces.count { it.box.left >= middle }
             // Judged by the text's own rows: notes set across the foot of the page cross an empty gutter
             // above them, and say nothing about whether the text runs in columns.
             val bodyCrossing = crossing.filter { pieces[it] in body }
-            val twoColumns = rightOnly > 2 && bodyCrossing.count { it in open } * 2 >= bodyCrossing.size
+            // On a narrow single-column page the strip can fall in a space between words on many rows, so
+            // the columns must show in the text too: a row right of the gutter stands a gutter's width from
+            // the row beside it on the left. The pieces of one row the text layer drew apart stand a space
+            // apart. Only a row counts as one, never a sliver the height of the page.
+            val gaps = body.filter { it.box.left >= middle }.mapNotNull { piece ->
+                body.filter { other ->
+                    other.box.left < middle && other.box.right <= piece.box.left + 1 && other.box.height < typical * 2 &&
+                        minOf(other.box.bottom, piece.box.bottom) - maxOf(other.box.top, piece.box.top) > minOf(other.box.height, piece.box.height) * 0.5f
+                }.minOfOrNull { piece.box.left - it.box.right }
+            }
+            val columnar = gaps.count { it >= typical * 0.5 } * 2 >= gaps.size
+            val twoColumns = rightOnly > 2 && columnar && bodyCrossing.count { it in open } * 2 >= bodyCrossing.size
             val spanning = HashSet<Int>()
             if (twoColumns) {
                 val split = ArrayList<Piece>()
@@ -393,6 +579,7 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
             // number hung out into the gutter beside a line belongs with the line it numbers: a narrow
             // piece goes with its nearest neighbour on the same line.
             val isRight = pieces.map { piece ->
+                if (!twoColumns) return@map false
                 if (piece.box.width >= 40) return@map piece.box.left >= middle
                 val sameLine = pieces.filter { other ->
                     val overlap = minOf(other.box.bottom, piece.box.bottom) - maxOf(other.box.top, piece.box.top)
@@ -432,7 +619,10 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
                 val lines: (List<Int>) -> List<Piece> = { column ->
                     column.map { pieces[it] }.sortedWith { a, b ->
                         val top = readingTop(a) - readingTop(b)
-                        if (abs(top) > 2) top.compareTo(0f) else a.box.left.compareTo(b.box.left)
+                        // One row of print: level at the top, or centred on one line — a verse number set
+                        // larger than the words beside it stands taller than they do.
+                        val sameRow = abs(top) <= 2 || abs(a.box.midY - b.box.midY) <= minOf(a.box.height, b.box.height) * 0.4f
+                        if (!sameRow) top.compareTo(0f) else a.box.left.compareTo(b.box.left)
                     }
                 }
                 ordered += lines(band.filter { !isRight[it] })
@@ -638,6 +828,22 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
             val trimmed = SwiftText.trimWhitespaceAndNewlines(text)
             if (trimmed.isEmpty() || trimmed.length > 3 || !trimmed.all { it.isDigit() }) return null
             return trimmed.toIntOrNull()?.takeIf { it > 0 }
+        }
+
+        private val colonVerse = Regex(""":(\d{1,3})""")
+        private val caller = Regex("""\[(\d{1,4})\]""")
+        private val chapterEntry = Regex("""(\p{L}+)\s+(\d{1,3})""")
+
+        /** "[12]": a note caller in brackets, its number counting through the book. */
+        fun bracketedCaller(text: String): String? = caller.matchEntire(SwiftText.trimWhitespaceAndNewlines(text))?.groupValues?.get(1)
+
+        /** "Chapter 1 Chapter 2 Chapter 3": one word and a number, over and over, counting up. */
+        fun isChapterList(text: String): Boolean {
+            val entries = chapterEntry.findAll(text).toList()
+            if (entries.size < 2 || !chapterEntry.replace(text, "").all { it.isWhitespace() }) return false
+            if (entries.map { it.groupValues[1].lowercase() }.toSet().size != 1) return false
+            val numbers = entries.mapNotNull { it.groupValues[2].toIntOrNull() }
+            return numbers.zipWithNext().all { (a, b) -> b == a + 1 }
         }
 
         fun isCallerLetters(text: String): Boolean {

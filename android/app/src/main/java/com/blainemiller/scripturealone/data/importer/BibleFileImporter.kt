@@ -226,13 +226,16 @@ class BibleFileImporter(
 
         /**
          * A PDF rarely names itself usefully (its title is often the layout file's). The translation its
-         * copyright page names is the better name; the document title, then the file name, follow.
+         * copyright page names is the better name; the document title, then the file name, follow. A file
+         * with no copyright page at all can still name its translation in its title or file name
+         * ("NewKingJamesBible.pdf"); the publisher's own notice then stands in for the page.
          */
         internal fun suggestedIdentity(source: PdfTextSource, file: File): ImportedTranslationIdentity {
             val front = PDFBibleReader.frontMatter(source)
             val title = source.title?.let(SwiftText::trimWhitespaceAndNewlines)?.ifEmpty { null }
-            val terms = PublisherTerms.matching(front)
-            val name = terms?.markers?.first() ?: title ?: file.nameWithoutExtension.replace("_", " ")
+            val fileName = spacedWords(file.nameWithoutExtension)
+            val terms = PublisherTerms.matching(front) ?: PublisherTerms.matching((title ?: "") + "\n" + fileName)
+            val name = terms?.markers?.first() ?: title ?: fileName
             val copyrightLine = front.split('\n')
                 .map { SwiftText.trimWhitespace(it.replace("\u00AD", "")) }
                 .firstOrNull { it.contains('©') || it.contains("copyright ", ignoreCase = true) }
@@ -245,6 +248,10 @@ class BibleFileImporter(
                 source = "Imported PDF",
             )
         }
+
+        /** A file name as words: "NewKingJamesBible" and "new_king-james" both read "New King James". */
+        internal fun spacedWords(name: String): String =
+            name.replace(Regex("(\\p{Ll})(\\p{Lu})"), "$1 $2").replace(Regex("[_\\-.]+"), " ").trim()
 
         /**
          * Decides by structure, not by file extension — a `.zip` holding an ePub is an ePub. The

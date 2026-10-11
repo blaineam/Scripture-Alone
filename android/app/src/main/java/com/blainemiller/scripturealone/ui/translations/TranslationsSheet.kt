@@ -158,7 +158,11 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
                     BibleFileImporter(BundledStoreWriter.opener, openPdf = PdfBoxTextSource.opener(context))
                         .importBible(file, identity, TranslationLibrary.importedDirectory(context), RedLetterReference.lookup(context))
                 }.also {
-                    if (cleanUp) file.delete()
+                    if (cleanUp) {
+                        file.delete()
+                        // A picked file is copied into a folder of its own, to keep its name.
+                        file.parentFile?.takeIf { it.name.startsWith("import-") }?.delete()
+                    }
                     TranslationLibrary.reloadImported()
                 }
             }
@@ -177,10 +181,12 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
         importing = name
         scope.launch {
             // The picker hands over a content URI; the importer reads a file, so it is copied into
-            // the app's cache first and deleted after.
+            // the app's cache first and deleted after. The copy keeps the file's name, which can
+            // name its translation when the file has no copyright page.
             val copy = withContext(Dispatchers.IO) {
                 runCatching {
-                    val file = File(context.cacheDir, "import-${System.nanoTime()}")
+                    val folder = File(context.cacheDir, "import-${System.nanoTime()}").apply { mkdirs() }
+                    val file = File(folder, name.replace('/', '_').ifBlank { "import" })
                     context.contentResolver.openInputStream(uri)!!.use { input -> file.outputStream().use { input.copyTo(it) } }
                     file
                 }

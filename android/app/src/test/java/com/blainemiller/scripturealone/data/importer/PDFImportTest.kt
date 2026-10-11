@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.data.importer
 
 import com.blainemiller.scripturealone.data.canon.BookID
+import com.blainemiller.scripturealone.data.rights.PublisherTerms
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -22,6 +23,60 @@ import java.io.File
  */
 class PDFImportTest {
     private fun run(text: String, size: Double = 10.0) = PDFBibleReader.Run(text, size)
+
+    // MARK: - Layouts set apart from the publishers' own
+
+    @Test fun aChapterPrintedWithItsFirstVerseNumberAndInLineVerseNumbers() {
+        val reader = PDFBibleReader(BibleTextExtractor.Options())
+        // A title barely larger than the headings, a list of chapter links, then "1" + ":1", and verse
+        // numbers a little smaller than the text, set in its lines.
+        val page = listOf(
+            PDFBibleReader.Run("GENESIS\n", 15.6, ownLine = true),
+            PDFBibleReader.Run("Chapter 1 Chapter 2 Chapter 3\n", 10.8, ownLine = true),
+            PDFBibleReader.Run("The Creation of the World\n", 13.8, ownLine = true),
+            run("1", 14.4), run(":1 ", 11.4), run("In the beginning, God created the heavens and the earth. ", 10.8),
+            run("2", 9.0), run("The earth was without form", 10.8),
+        )
+        val lastVerse = intArrayOf(0)
+        val (document, outside) = reader.scan(page, 0, 10.8, emptySet(), true, lastVerse)
+        assertFalse(outside)
+        assertEquals(BookID.GENESIS, (document.flow.first() as FlowItem.Place).book)
+        assertTrue(document.flow.any { it is FlowItem.MarkerItem && it.marker.isChapter && it.marker.chapter == 1 })
+        assertTrue(document.flow.any { it is FlowItem.MarkerItem && it.marker.verse == 2 })
+        val text = document.flow.filterIsInstance<FlowItem.Text>().joinToString("") { it.text }
+        assertFalse(text, text.contains("Chapter"))
+        assertFalse(text, text.contains(":1"))
+        assertEquals(2, lastVerse[0])
+    }
+
+    @Test fun notesSetAtTheEndOfABookReachTheirCallers() {
+        val reader = PDFBibleReader(BibleTextExtractor.Options())
+        val lastVerse = intArrayOf(0)
+        val endnotes = PDFBibleReader.Endnotes()
+        val text = listOf(
+            PDFBibleReader.Run("RUTH\n", 15.0, ownLine = true),
+            run("1", 14.0), run(":1 ", 11.0), run("In the days when the judges ruled"), run("[1]", 8.5), run(" there was a famine."),
+        )
+        val (first, _) = reader.scan(text, 0, 10.0, emptySet(), true, lastVerse, endnotes)
+        val notes = listOf(
+            PDFBibleReader.Run("Footnotes\n", 13.0, ownLine = true),
+            run("[1] 1:1 Or "), run("a dearth", 11.0), run(" in the land [2] 1:4 Hebrew "), run("lifted up", 11.0),
+        )
+        val (second, _) = reader.scan(notes, 1, 10.0, emptySet(), false, lastVerse, endnotes)
+        endnotes.close()
+        val ids = first.flow.filterIsInstance<FlowItem.NoteMarker>().mapNotNull { it.id }
+        assertEquals(1, ids.size)
+        assertEquals("Or a dearth in the land", endnotes.notes[ids.first()])
+        assertTrue(endnotes.notes.values.contains("Hebrew lifted up"))
+        // The notes and their heading are not text.
+        assertTrue(second.flow.isEmpty())
+    }
+
+    @Test fun aFileNameCanNameItsTranslation() {
+        assertEquals("New King James Bible", BibleFileImporter.spacedWords("NewKingJamesBible"))
+        assertEquals("new king james", BibleFileImporter.spacedWords("new_king-james"))
+        assertEquals("NKJV", PublisherTerms.matching(BibleFileImporter.spacedWords("NewKingJamesBible"))?.abbreviation)
+    }
 
     // MARK: - The book's own vocabulary
 
