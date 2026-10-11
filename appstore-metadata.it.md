@@ -66,13 +66,7 @@ bibbia,riveduta,diodati,cei,argomenti,ansia,lutto,conforto,devozionale,sermone,r
 Ora con la NASB 2020. Scopri che cosa dice la Bibbia di ciò che stai vivendo e studia offline con commentari, mappe e cronologie. Senza pubblicità né account.
 
 ## whats_new
-1.1.4 — La lettura riempie lo schermo. iPhone in orizzontale, iPad e Mac mostrano il capitolo su due colonne che vanno dalla barra superiore a quella inferiore, con qualsiasi dimensione del testo e, su iPhone, con un'intestazione su una sola riga. In colonne, le frecce della barra inferiore girano pagina. Le evidenziazioni ora hanno gli angoli arrotondati.
-
-Ascolta: riduci il lettore e la lettura continua; il pulsante delle cuffie nella barra degli strumenti diventa il lettore e mostra se sta leggendo o è in pausa. Toccalo per riaprire il lettore. Con iPhone in modalità silenziosa, Ascolta parte senza audio: il segno avanza di versetto in versetto in silenzio e la tua musica continua. Tocca per riattivare l'audio.
-
-Condividi un versetto: l'immagine del versetto si apre su 21 Stili pronti, come Pergamena, Acquerello, Ora d'oro e Notte, ognuno con il suo sfondo, il suo colore del testo e la sua ombra. In Personalizza trovi sfondi semplici e con texture, colore del testo e ombra, e ogni scheda viene controllata perché il testo resti leggibile. Crea immagine del versetto in Comandi Rapidi può usare qualsiasi stile.
-
-Inoltre: le barre di selezione e di riproduzione fluttuano sopra il testo invece di togliere spazio alla pagina; Apple Watch chiama la traduzione del tuo iPhone come la chiama il tuo iPhone; e i messaggi di importazione non chiamano più «ePub» qualsiasi file.
+1.1.5 — Si possono importare più Bibbie in PDF. «Importa un file…» ora legge impaginazioni PDF che prima rifiutava: capitoli stampati come «1:1», numeri di versetto dentro la riga, note raccolte alla fine di ogni libro (conservate come note a piè di pagina sui loro versetti), salmi intitolati «PSALM 2» e pagine strette a una sola colonna. Un PDF senza pagina del copyright che nomina una traduzione nota nel titolo o nel nome del file riporta ora la nota del suo editore.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

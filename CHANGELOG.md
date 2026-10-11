@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.5 (2026-10-10)
+
+- More PDF Bibles import. The PDF reader now follows layouts it used to give up on: a book's title
+  set barely larger than its headings, chapters printed as "1:1", verse numbers set in the line a
+  little smaller than the text, notes gathered at the end of each book (now kept as footnotes on
+  their verses), psalms headed "PSALM 2", a book title centred across both columns, and narrow
+  single-column pages. A PDF with no copyright page that names a translation the app knows in its
+  title or file name now carries that publisher's notice instead of asking for one. On iPhone,
+  iPad, Mac and Android.
+
 ## 1.1.4 (2026-10-08)
 
 - Minimize the Listen player without stopping it. The chevron on the player's top edge (or a swipe
@@ -30,13 +40,6 @@
   VoiceOver and TalkBack name every style, background and color; all nine languages. Shortcuts'
   Create Verse Image can use any of the styles. On iPhone, iPad, Mac and Android.
 
-- More PDF Bibles import. The PDF reader now follows layouts it used to give up on: a book's title
-  set barely larger than its headings, chapters printed as "1:1", verse numbers set in the line a
-  little smaller than the text, notes gathered at the end of each book (now kept as footnotes on
-  their verses), psalms headed "PSALM 2", a book title centred across both columns, and narrow
-  single-column pages. A PDF with no copyright page that names a translation the app knows in its
-  title or file name now carries that publisher's notice instead of asking for one. On iPhone,
-  iPad, Mac and Android.
 - Importing a USFM zip or a PDF with no copyright line no longer says "That ePub carries no
   copyright line": the message now says "That file", whatever the format. All nine languages. On
   iPhone, iPad, Mac and Android.

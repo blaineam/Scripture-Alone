@@ -64,13 +64,7 @@ almeida,acf,nvi,arc,ara,kjv,temas,ansiedade,luto,consolo,comentário,devocional,
 Agora com a NASB 2020. Descubra o que a Bíblia diz sobre o que você está vivendo e estude offline com comentários, mapas e linhas do tempo. Sem anúncios, sem contas.
 
 ## whats_new
-1.1.4 — A leitura ocupa a tela toda. O iPhone na horizontal, o iPad e o Mac mostram o capítulo em duas colunas que vão da barra de cima à de baixo, em qualquer tamanho de texto e, no iPhone, com um cabeçalho de uma só linha. Em colunas, as setas da barra de baixo viram a página. Os destaques agora têm cantos arredondados.
-
-Ouvir: minimize o player e a leitura continua; o botão de fones de ouvido na barra de ferramentas vira o player e mostra se está lendo ou pausado. Toque nele para trazer o player de volta. Com o iPhone no modo Silencioso, Ouvir começa sem som: o marcador acompanha os versículos em silêncio e sua música continua tocando. Toque para ativar o som.
-
-Compartilhar um versículo: a imagem do versículo abre com 21 Estilos prontos — Pergaminho, Aquarela, Hora dourada, Noite e outros —, cada um com seu fundo, sua cor do texto e sua sombra. Em Personalizar você encontra fundos lisos e com textura, cor do texto e sombra, e cada cartão é verificado para que o texto fique legível. Criar imagem do versículo nos Atalhos pode usar qualquer estilo.
-
-Além disso: as barras de seleção e de reprodução flutuam sobre o texto em vez de tirar espaço da página; o Apple Watch chama a tradução do seu iPhone do mesmo jeito que o seu iPhone; e as mensagens de importação não chamam mais qualquer arquivo de “ePub”.
+1.1.5 — Mais Bíblias em PDF podem ser importadas. “Importar um arquivo…” agora lê layouts de PDF que antes recusava: capítulos impressos como “1:1”, números de versículo dentro da linha, notas reunidas no fim de cada livro (mantidas como notas de rodapé nos seus versículos), salmos com o título “PSALM 2” e páginas estreitas de uma só coluna. Um PDF sem página de direitos autorais que cita uma tradução conhecida no título ou no nome do arquivo agora traz o aviso da editora.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

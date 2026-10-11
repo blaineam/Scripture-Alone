@@ -66,13 +66,7 @@ andacht,predigt,kommentar,themen,trost,angst,trauer,lutherbibel,elberfelder,kjv,
 Jetzt mit der NASB 2020. Finde, was die Bibel zu dem sagt, was dich bewegt, und studiere offline mit Kommentaren, Karten und Zeitleisten. Ohne Werbung, ohne Konto.
 
 ## whats_new
-1.1.4 — Lesen füllt den Bildschirm. Ein iPhone im Querformat sowie iPad und Mac zeigen das Kapitel in zwei Spalten, die von der oberen bis zur unteren Leiste reichen – bei jeder Textgröße, auf dem iPhone mit einer einzeiligen Überschrift. In Spalten blättern die Pfeile der unteren Leiste um. Markierungen haben jetzt abgerundete Ecken.
-
-Anhören: Minimiere den Player, und das Vorlesen geht weiter – die Kopfhörertaste in der Symbolleiste wird zum Player und zeigt, ob gelesen wird oder pausiert ist; tippe darauf, um den Player zurückzuholen. Ist dein iPhone stumm geschaltet, startet Anhören ohne Ton: Die Versmarkierung läuft lautlos mit, und deine Musik spielt weiter. Tippe, um den Ton einzuschalten.
-
-Vers teilen: Das Versbild öffnet sich mit 21 fertigen Stilen – Pergament, Aquarell, Goldene Stunde, Nacht und mehr –, jeder mit eigenem Hintergrund, eigener Textfarbe und eigenem Schatten. Unter Anpassen findest du schlichte und strukturierte Hintergründe, Textfarbe und Schatten, und jede Karte wird geprüft, damit der Text gut lesbar bleibt. „Versbild erstellen“ in Kurzbefehle kann jeden Stil verwenden.
-
-Außerdem: Die Auswahl- und Wiedergabeleiste schweben über dem Text, statt der Seite Platz wegzunehmen; die Apple Watch nennt die Übersetzung deines iPhone so wie dein iPhone; und Meldungen beim Importieren nennen nicht mehr jede Datei „ePub“.
+1.1.5 – Mehr PDF-Bibeln lassen sich importieren. „Datei importieren …“ liest jetzt PDF-Layouts, die bisher abgelehnt wurden: Kapitel im Format „1:1“, Versnummern innerhalb der Zeile, Anmerkungen am Ende jedes Buches (als Fußnoten an ihren Versen), Psalmen mit der Überschrift „PSALM 2“ und schmale, einspaltige Seiten. Ein PDF ohne Copyright-Seite, das in Titel oder Dateiname eine bekannte Übersetzung nennt, erhält jetzt den Hinweis ihres Verlags.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

@@ -66,13 +66,7 @@ bible,louis segond,darby,kjv,commentaire,méditation,thèmes,anxiété,deuil,ré
 Désormais avec la NASB 2020. Trouvez ce que la Bible dit de ce que vous traversez et étudiez hors ligne avec commentaires, cartes et chronologies. Sans pub, sans compte.
 
 ## whats_new
-1.1.4 — La lecture occupe tout l'écran. L'iPhone à l'horizontale, l'iPad et le Mac affichent le chapitre sur deux colonnes qui vont de la barre du haut à celle du bas, quelle que soit la taille du texte, avec un en-tête sur une seule ligne sur iPhone. En colonnes, les flèches de la barre du bas tournent la page. Les surlignages ont désormais des coins arrondis.
-
-Écouter : réduisez le lecteur et la lecture continue ; le bouton casque de la barre d'outils devient le lecteur et indique s'il lit ou s'il est en pause. Touchez-le pour retrouver le lecteur. Quand l'iPhone est en mode silencieux, Écouter démarre sans le son : le repère avance de verset en verset en silence et votre musique continue. Touchez pour réactiver le son.
-
-Partager un verset : l'image de verset s'ouvre sur 21 Styles prêts à l'emploi — Parchemin, Aquarelle, Heure dorée, Nuit et d'autres —, chacun avec son fond, sa couleur de texte et son ombre. Personnaliser propose des fonds unis et texturés, la couleur du texte et l'ombre, et chaque carte est vérifiée pour que le texte reste lisible. Créer une image de verset dans Raccourcis peut utiliser n'importe quel style.
-
-Et aussi : les barres de sélection et de lecture flottent au-dessus du texte au lieu de prendre de la place à la page ; l'Apple Watch nomme la traduction de votre iPhone comme le fait votre iPhone ; et les messages d'importation n'appellent plus « ePub » n'importe quel fichier.
+1.1.5 — Davantage de Bibles en PDF s’importent. « Importer un fichier… » lit désormais des mises en page PDF qu’il refusait : chapitres imprimés « 1:1 », numéros de verset dans la ligne, notes regroupées à la fin de chaque livre (conservées en notes de bas de page sur leurs versets), psaumes intitulés « PSALM 2 » et pages étroites sur une seule colonne. Un PDF sans page de copyright qui nomme une traduction connue dans son titre ou son nom de fichier porte désormais la mention de son éditeur.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/
