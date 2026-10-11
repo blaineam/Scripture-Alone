@@ -152,6 +152,19 @@ enum RedLetterInference {
     /// still open, means a closing mark was missed, and starts a new quotation. A ’ between two letters is an apostrophe. A quotation still open at a
     /// chapter whose first words don't reopen it is closed there, so one missed mark can't run
     /// away with the book.
+    /// Straight marks read as the curly ones they stand for, one for one, so offsets hold. A mark
+    /// at the start, or after a space or an opening mark, opens; any other closes — an apostrophe
+    /// between letters stays the closing single mark it is.
+    static func curled(_ scalars: [Unicode.Scalar]) -> [Unicode.Scalar] {
+        var result = scalars
+        for (offset, scalar) in scalars.enumerated() where scalar == "\"" || scalar == "'" {
+            let before = offset > 0 ? result[offset - 1] : nil
+            let opens = before.map { CharacterSet.whitespacesAndNewlines.contains($0) || "([{\u{2014}\u{2013}\u{201C}\u{2018}".unicodeScalars.contains($0) } ?? true
+            result[offset] = scalar == "\"" ? (opens ? "\u{201C}" : "\u{201D}") : (opens ? "\u{2018}" : "\u{2019}")
+        }
+        return result
+    }
+
     static func quotations(in verses: [(ref: VerseRef, text: String)]) -> [Quotation] {
         enum Mark { case double, single }
         var result: [Quotation] = []
@@ -184,7 +197,7 @@ enum RedLetterInference {
             nestedStart = nil
         }
         for (ref, text) in verses {
-            let scalars = Array(text.unicodeScalars)
+            let scalars = curled(Array(text.unicodeScalars))
             if ref.chapterKey != chapter {
                 chapter = ref.chapterKey
                 let first = scalars.first { !CharacterSet.whitespaces.contains($0) }

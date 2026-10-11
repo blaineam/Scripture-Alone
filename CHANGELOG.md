@@ -9,6 +9,12 @@
   single-column pages. A PDF with no copyright page that names a translation the app knows in its
   title or file name now carries that publisher's notice instead of asking for one. On iPhone,
   iPad, Mac and Android.
+- An imported translation that marks no words of Christ takes them from the BSB, and the BSB is
+  now downloaded for it when neither the BSB nor the KJV is on the device yet (once, about 15 MB;
+  offline, the import goes on without red letters). Files set with straight quotation marks
+  ("…") now carry red letters through speeches that run over several verses, as files with
+  curly ones did. A book's last page, with only a line or two in its right-hand column, is read
+  in column order. On iPhone, iPad, Mac and Android.
 
 ## 1.1.4 (2026-10-08)
 

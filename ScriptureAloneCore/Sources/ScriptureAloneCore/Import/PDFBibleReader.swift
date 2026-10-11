@@ -587,7 +587,10 @@ struct PDFBibleReader {
             }.map { piece.rect.minX - $0.rect.maxX }.min()
         }
         let columnar = gaps.filter { $0 >= typical * 0.5 }.count * 2 >= gaps.count
-        let twoColumns = rightOnly > 2 && columnar && bodyCrossing.filter { open.contains($0) }.count * 2 >= bodyCrossing.count
+        // A book's last page can leave the right-hand column a line or two: enough when nothing
+        // crosses the gutter and those lines stand a gutter's width from the column beside them.
+        let enoughRight = rightOnly > 2 || (rightOnly > 0 && crossing.isEmpty && !gaps.isEmpty)
+        let twoColumns = enoughRight && columnar && bodyCrossing.filter { open.contains($0) }.count * 2 >= bodyCrossing.count
         var spanning = Set<Int>()
         if twoColumns {
             var split: [Piece] = []

@@ -79,6 +79,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.BundledTranslations
+import com.blainemiller.scripturealone.data.assets.AssetLibrary
 import com.blainemiller.scripturealone.data.assets.AssetPack
 import com.blainemiller.scripturealone.data.TranslationInfo
 import com.blainemiller.scripturealone.data.VerseRef
@@ -151,6 +152,10 @@ fun TranslationsSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: 
     fun runImport(file: File, name: String, identity: ImportedTranslationIdentity?, cleanUp: Boolean) {
         importing = name
         scope.launch {
+            // Red letters come from the BSB or the KJV; neither is bundled, so when neither has been
+            // downloaded the BSB is fetched first (once, about 15 MB). Offline, the import goes on
+            // without red letters.
+            if (listOf(AssetPack.BSB, AssetPack.KJV).none { AssetLibrary.isOnDevice(it) }) AssetLibrary.ensure(AssetPack.BSB)
             val result = withContext(Dispatchers.IO) {
                 runCatching {
                     // A file that marks no words of Christ can take them from a translation that

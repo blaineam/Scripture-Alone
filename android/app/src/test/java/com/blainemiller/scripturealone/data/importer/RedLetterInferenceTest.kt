@@ -20,6 +20,20 @@ class RedLetterInferenceTest {
         return result.map { String(points, it.start, it.length) }
     }
 
+    @Test fun straightQuotesAreFollowedLikeCurlyOnes() {
+        val curled = RedLetterInference.curled(scalars("He said, \"Don't go.\" ('Why?')"))
+        assertEquals("He said, \u201CDon\u2019t go.\u201D (\u2018Why?\u2019)", String(curled, 0, curled.size))
+        // A speech that runs on over two verses, in a file set with straight marks.
+        val quotations = RedLetterInference.quotations(
+            listOf(
+                ref(BookID.JOHN, 3, 10) to "Jesus answered and said to him, \"Are you the teacher of Israel,",
+                ref(BookID.JOHN, 3, 11) to "and do not know these things? Most assuredly, I say to you.\"",
+            ),
+        )
+        assertEquals(1, quotations.size)
+        assertEquals(listOf(ref(BookID.JOHN, 3, 10), ref(BookID.JOHN, 3, 11)), quotations.first().parts.map { it.verse })
+    }
+
     @Test fun spokenWordsFollowTheirAlignment() {
         val reference = "Jesus saith unto him, I am the way, and the truth, and the life: no man cometh unto the Father, but by me."
         val red = "I am the way, and the truth, and the life: no man cometh unto the Father, but by me."

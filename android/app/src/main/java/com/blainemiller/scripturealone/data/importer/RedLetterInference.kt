@@ -182,6 +182,25 @@ internal object RedLetterInference {
      * open at a chapter whose first words don't reopen it is closed there, so one missed mark can't run
      * away with the book.
      */
+    /**
+     * Straight marks read as the curly ones they stand for, one for one, so offsets hold. A mark at the
+     * start, or after a space or an opening mark, opens; any other closes — an apostrophe between letters
+     * stays the closing single mark it is.
+     */
+    fun curled(scalars: IntArray): IntArray {
+        val result = scalars.copyOf()
+        for (offset in scalars.indices) {
+            val scalar = scalars[offset]
+            if (scalar != '"'.code && scalar != '\''.code) continue
+            val before = if (offset > 0) result[offset - 1] else null
+            val opens = before == null || Character.isWhitespace(before) || before in openers
+            result[offset] = if (scalar == '"'.code) (if (opens) 0x201C else 0x201D) else (if (opens) 0x2018 else 0x2019)
+        }
+        return result
+    }
+
+    private val openers = intArrayOf('('.code, '['.code, '{'.code, 0x2014, 0x2013, 0x201C, 0x2018)
+
     fun quotations(verses: List<Pair<VerseRef, String>>): List<Quotation> {
         val result = ArrayList<Quotation>()
         var open: Quotation? = null
@@ -219,7 +238,7 @@ internal object RedLetterInference {
             nestedStart = null
         }
         for ((ref, text) in verses) {
-            val scalars = text.codePoints().toArray()
+            val scalars = curled(text.codePoints().toArray())
             val chapterKey = ref.book to ref.chapter
             if (chapterKey != chapter) {
                 chapter = chapterKey

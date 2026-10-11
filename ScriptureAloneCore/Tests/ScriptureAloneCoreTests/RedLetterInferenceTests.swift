@@ -13,6 +13,18 @@ import Testing
         return result.map { String(String.UnicodeScalarView(scalars[$0.start..<($0.start + $0.length)])) }
     }
 
+    @Test func straightQuotesAreFollowedLikeCurlyOnes() {
+        let curled = RedLetterInference.curled(Array("He said, \"Don't go.\" ('Why?')".unicodeScalars))
+        #expect(String(String.UnicodeScalarView(curled)) == "He said, \u{201C}Don\u{2019}t go.\u{201D} (\u{2018}Why?\u{2019})")
+        // A speech that runs on over two verses, in a file set with straight marks.
+        let quotations = RedLetterInference.quotations(in: [
+            (VerseRef(.john, 3, 10), "Jesus answered and said to him, \"Are you the teacher of Israel,"),
+            (VerseRef(.john, 3, 11), "and do not know these things? Most assuredly, I say to you.\""),
+        ])
+        #expect(quotations.count == 1)
+        #expect(quotations.first?.parts.map(\.verse) == [VerseRef(.john, 3, 10), VerseRef(.john, 3, 11)])
+    }
+
     @Test func spokenWordsFollowTheirAlignment() {
         let reference = "Jesus saith unto him, I am the way, and the truth, and the life: no man cometh unto the Father, but by me."
         let red = "I am the way, and the truth, and the life: no man cometh unto the Father, but by me."

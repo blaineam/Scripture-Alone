@@ -68,7 +68,12 @@ final class ImportedLibrary {
         let scoped = url.startAccessingSecurityScopedResource()
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         // A file that marks no words of Christ can take them from a translation that does, when
-        // one is on the device (only verses that align closely are marked).
+        // one is on the device (only verses that align closely are marked). Neither is bundled,
+        // so when neither has been downloaded the BSB is fetched first — once, about 15 MB.
+        // Offline, the import goes on without red letters.
+        if ![AssetPack.bsb, .kjv].contains(where: { AssetLibrary.shared.url(of: $0) != nil }) {
+            await AssetLibrary.shared.ensure(.bsb)
+        }
         let redLetters = [AssetPack.bsb, .kjv].lazy
             .map(AssetLibrary.installedURL(for:))
             .first { FileManager.default.fileExists(atPath: $0.path) }

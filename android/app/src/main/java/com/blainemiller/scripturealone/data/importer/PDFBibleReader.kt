@@ -555,7 +555,10 @@ internal class PDFBibleReader(private val options: BibleTextExtractor.Options) {
                 }.minOfOrNull { piece.box.left - it.box.right }
             }
             val columnar = gaps.count { it >= typical * 0.5 } * 2 >= gaps.size
-            val twoColumns = rightOnly > 2 && columnar && bodyCrossing.count { it in open } * 2 >= bodyCrossing.size
+            // A book's last page can leave the right-hand column a row or two: enough when nothing crosses
+            // the gutter and those rows stand a gutter's width from the column beside them.
+            val enoughRight = rightOnly > 2 || (rightOnly > 0 && crossing.isEmpty() && gaps.isNotEmpty())
+            val twoColumns = enoughRight && columnar && bodyCrossing.count { it in open } * 2 >= bodyCrossing.size
             val spanning = HashSet<Int>()
             if (twoColumns) {
                 val split = ArrayList<Piece>()
