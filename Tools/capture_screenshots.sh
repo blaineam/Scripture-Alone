@@ -151,6 +151,8 @@ capture_ios() {  # capture_ios "<sim spec>" <rawKey>
         cp "$slide" "$container/tmp/sample-slide.jpg"
         for entry in "${SCENES[@]}"; do
             IFS='|' read -r file scene extra <<<"$entry"
+            # SHOT_SCENES="01-reader 02-topics" captures just those (e.g. the banner shots); default all.
+            [ -z "${SHOT_SCENES:-}" ] || [[ " $SHOT_SCENES " == *" $file "* ]] || continue
             cap_terminate_foreign "$udid" "$BUNDLE_ID"
             # shellcheck disable=SC2086
             # -translation sets that launch's saved translation: without it, the simulator keeps the
