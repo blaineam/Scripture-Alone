@@ -2,7 +2,7 @@
 
 ## 1.1.6 (2026-10-12)
 
-- **Made for iPhone Duo.** Unfolded, the reader's two columns, the study and notes panels beside the text, and
+- **Optimized for iPhone Duo.** Unfolded, the reader's two columns, the study and notes panels beside the text, and
   the map use the full width of the inner display; folded, every screen fits the cover display. The app is
   rebuilt on the iOS 27.1 SDK and the store listing gains iPhone Duo previews and the new header and
   search-result images. No other changes. On iPhone.
