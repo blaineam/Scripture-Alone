@@ -68,6 +68,13 @@ final class SharedBibleLibrary {
 
     func entry(_ id: Entry.ID) -> Entry? { entries.first { $0.id == id } }
 
+    #if DEBUG
+    /// Test seam: shows these entries without writing them anywhere. `nil` reads the real ones back.
+    func setEntriesForTesting(_ entries: [Entry]?) {
+        if let entries { self.entries = entries } else { load() }
+    }
+    #endif
+
     /// Whether this person has accepted a share here or on another of their devices.
     private var mightHaveShares: Bool {
         !entries.isEmpty || NSUbiquitousKeyValueStore.default.bool(forKey: FamilyCloud.participantKey)

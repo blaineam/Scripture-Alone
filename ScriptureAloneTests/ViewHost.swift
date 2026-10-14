@@ -89,10 +89,12 @@ enum ViewHost {
         return HostedView(view: host, window: window)
         #else
         let controller = UIHostingController(rootView: root)
-        let window = UIWindow(frame: CGRect(origin: .zero, size: size))
-        window.rootViewController = controller
-        window.isHidden = false
-        controller.view.frame = window.bounds
+        let scene = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
+        let window = scene.map { UIWindow(windowScene: $0) }
+        window?.frame = CGRect(origin: .zero, size: size)
+        window?.rootViewController = controller
+        window?.isHidden = false
+        controller.view.frame = CGRect(origin: .zero, size: size)
         controller.view.layoutIfNeeded()
         for _ in 0..<settle {
             await Task.yield()
@@ -107,7 +109,7 @@ enum ViewHost {
 @MainActor
 struct HostedView {
     let view: PlatformView
-    let window: PlatformWindow
+    let window: PlatformWindow?
     var size: CGSize { view.bounds.size }
     var isLaidOut: Bool { view.bounds.width > 0 && view.bounds.height > 0 }
 

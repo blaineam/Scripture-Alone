@@ -31,7 +31,11 @@ final class ImportedLibrary {
         return base
     }
 
-    init() {
+    /// Where the stores are read from and written to (a test points it at a scratch folder).
+    private let directory: URL
+
+    init(directory: URL? = nil) {
+        self.directory = directory ?? Self.directory
         reload()
         // A translation arrived from, or was removed on, another of the reader's devices.
         NotificationCenter.default.addObserver(forName: ImportedBibleSync.changedNotification, object: nil,
@@ -42,7 +46,7 @@ final class ImportedLibrary {
 
     func reload() {
         let files = (try? FileManager.default.contentsOfDirectory(
-            at: Self.directory, includingPropertiesForKeys: nil)) ?? []
+            at: directory, includingPropertiesForKeys: nil)) ?? []
         entries = files
             .filter { $0.pathExtension == "sqlite" }
             .compactMap { url in
@@ -63,7 +67,7 @@ final class ImportedLibrary {
                     as identity: ImportedTranslationIdentity? = nil) async throws -> BibleImportResult {
         busy = name ?? url.deletingPathExtension().lastPathComponent
         defer { busy = nil }
-        let directory = Self.directory
+        let directory = self.directory
         // Files handed over by the document picker are outside our sandbox until asked.
         let scoped = url.startAccessingSecurityScopedResource()
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
