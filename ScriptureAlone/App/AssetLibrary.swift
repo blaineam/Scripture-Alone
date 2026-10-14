@@ -261,6 +261,13 @@ final class AssetLibrary {
 
     func state(of pack: AssetPack) -> State { states[pack] ?? .absent }
 
+    #if DEBUG
+    /// Test seam: shows a pack as failed (or puts its real state back) without touching the network.
+    func overrideState(_ state: State?, of pack: AssetPack) {
+        states[pack] = state ?? (url(of: pack) == nil ? .absent : .ready)
+    }
+    #endif
+
     func isReady(_ pack: AssetPack) -> Bool { state(of: pack) == .ready }
 
     /// The database's path, or nil when it has not been installed yet.

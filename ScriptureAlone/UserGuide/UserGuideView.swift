@@ -5,7 +5,12 @@ import ScriptureAloneCore
 /// follows Dynamic Type — the print edition's look (`docs/manual/template.html`), in light and dark.
 struct UserGuideView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var store = UserGuideStore.shared
+    @State private var store: UserGuideStore
+
+    /// The store is a parameter so a test can show a guide it built; the app uses the shared one.
+    init(store: UserGuideStore = .shared) {
+        _store = State(initialValue: store)
+    }
 
     var body: some View {
         NavigationStack {
