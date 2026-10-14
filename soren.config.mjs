@@ -42,7 +42,7 @@ export default {
       type: 'cmd',
       cmd: 'node',
       // --min: the coverage floor (ratchet up, never down).
-      args: ['scripts/swift-coverage.mjs', '--min=84'],
+      args: ['scripts/swift-coverage.mjs', '--min=85'],
       description: 'ScriptureAloneCore package tests (shared by iOS, iPadOS, macOS, watchOS) + line coverage',
       tags: ['regression'],
     },
@@ -163,9 +163,9 @@ export default {
     android: {
       type: 'gradle',
       cwd: 'android',
-      //    Floors (ratchet up, never down): :app 60%, :wear 60%, :shared 90% (with the app's tests).
+      //    Floors (ratchet up, never down): :app 66%, :wear 68%, :shared 95% (measured 66.3 / 68.9 / 95.7).
       unit: ['--no-daemon', '--max-workers=4', 'testDebugUnitTest', ':shared:test',
-        ':app:coverageSummary', ':wear:coverageSummary', ':shared:coverageSummary', '-PcoverageFloors=app:60,wear:60,shared:90'],
+        ':app:coverageSummary', ':wear:coverageSummary', ':shared:coverageSummary', '-PcoverageFloors=app:66,wear:68,shared:95'],
       secrets: ['SA_CONTENT_KEY_SEED'],
       javaHome: '/opt/homebrew/opt/openjdk@17',
       description: 'Android :app + :wear unit tests (JVM)',
