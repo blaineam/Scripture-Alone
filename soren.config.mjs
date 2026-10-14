@@ -54,6 +54,9 @@ export default {
     //    widgets and the Background Assets extension.
     ios: {
       type: 'xcodebuild-test',
+      // Measured 63.8%: the same tests as macOS plus Listen's transport on a silent speaker, but the
+      // watch app's sources are in this scheme's figure and no unit test can run them.
+      coverageFloor: 62,
       coverageExclude: CORE,
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAlone',
@@ -66,8 +69,12 @@ export default {
     },
 
     // ── The same bundle on the native macOS destination (kept buildable, and the Mac widgets).
+    //    Hopps' coverage figure comes from this suite. The hosted-view tests (ScriptureAloneTests/
+    //    Hosted*Tests, ViewHost.swift) draw the app's screens for real against an in-memory library,
+    //    which is most of its line coverage; coverageFloor ratchets up, never down.
     macos: {
       type: 'xcodebuild-test',
+      coverageFloor: 68,
       coverageExclude: CORE,
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAlone',
