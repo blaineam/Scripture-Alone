@@ -283,7 +283,7 @@ final class ListenController {
     private func readSilentSwitch(_ done: @escaping @MainActor (Bool) -> Void) {
         #if DEBUG
         // UI tests: no probe sound; `-uiTestSilenced` stands in for a phone in Silent mode.
-        if UITestMode.isOn {
+        if UITestMode.isOn || speaksSilentlyForTesting {
             done(UITestMode.silenced)
             return
         }
@@ -524,6 +524,9 @@ final class ListenController {
     // MARK: UI tests
 
     #if DEBUG
+    /// Unit tests: the transport runs (the bar, play/pause, the marked verse) with no voice lookup and no
+    /// audio, as `-UITestMode` does for the UI tests.
+    @ObservationIgnored var speaksSilentlyForTesting = false
     @ObservationIgnored private var uiTestSpeaker: Task<Void, Never>?
 
     /// `-uiTestListenAdvances`: the silent speaker reads on, a verse every 1.5 s while playing, through
@@ -555,7 +558,7 @@ final class ListenController {
         #if DEBUG
         // `-UITestMode`: the transport runs (the bar, play/pause, the marked verse) without a voice
         // lookup or any audio, so a UI test never waits on, or plays, speech.
-        if UITestMode.isOn {
+        if UITestMode.isOn || speaksSilentlyForTesting {
             phase = .playing
             updateNowPlaying()
             startUITestSpeaker()
