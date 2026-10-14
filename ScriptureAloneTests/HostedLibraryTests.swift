@@ -84,9 +84,9 @@ struct HostedLibraryTests {
     }
 
     @Test func theSelectionBarDrawsWithAndWithoutASelection() async {
-        model.selection = [VerseRef(.john, 3, 16).key - VerseRef(.john, 3, 0).key]
+        model.selection = [VerseRef(.john, 3, 16).key]
         #expect(await draw(SelectionBar(onNote: {})).isDrawn)
-        model.selection = Set((1...5).map { $0 })
+        model.selection = Set((1...5).map { VerseRef(.john, 3, $0).key })
         #expect(await draw(SelectionBar(onNote: {}), dark: true).isDrawn)
         model.selection = []
         #expect(await draw(SelectionBar(onNote: {})).isDrawn)

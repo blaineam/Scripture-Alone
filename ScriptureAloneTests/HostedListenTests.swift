@@ -90,7 +90,7 @@ struct HostedListenTests {
     @Test func aSelectionIsReadAndThenTheSessionEnds() async {
         defer { finish() }
         model.show(ChapterRef(.john, 3))
-        model.selection = [16, 17]
+        model.selection = [VerseRef(.john, 3, 16).key, VerseRef(.john, 3, 17).key]
         listen.playSelection(in: model)
         #expect(listen.isListening(in: model))
         #expect(listen.speakingVerse(in: model) == VerseRef(.john, 3, 16).key)

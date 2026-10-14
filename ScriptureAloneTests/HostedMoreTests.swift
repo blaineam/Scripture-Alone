@@ -85,7 +85,7 @@ struct HostedMoreTests {
 
     @Test func theReaderDrawsWithAVerseSelectedAndOnEveryKindOfChapter() async {
         model.show(ChapterRef(.john, 3), verse: 16)
-        model.selection = [16, 17]
+        model.selection = [VerseRef(.john, 3, 16).key, VerseRef(.john, 3, 17).key]
         #expect(await draw(ReaderView()).isDrawn)
         model.selection = []
         for chapter in [ChapterRef(.genesis, 1), ChapterRef(.psalms, 23), ChapterRef(.matthew, 5), ChapterRef(.revelation, 22),
