@@ -388,6 +388,9 @@ async function smoke() {
 		await sleep(1_000);
 	}
 	alive('share card');
+	// The system chooser can outlive a single Back (slow emulator, or a second sheet): keep dismissing until
+	// the Share Image screen's Done is on screen.
+	for (let i = 0; i < 3 && !(await find('Done', { timeout: 3_000 })); i++) { shell('input keyevent 4'); await sleep(1_000); }
 	await tap('Done');
 	const clear = await find('Clear Selection', { timeout: 3_000 });
 	if (clear) { tapAt(center(clear)); await sleep(600); }

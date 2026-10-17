@@ -120,10 +120,11 @@ struct IntentsMoreTests {
         #expect(entity.range == range)
         #expect(entity.reference == "Jude 1:24–25")
         #expect(entity.translation == "ASV" || !entity.translation.isEmpty)
-        #expect(entity.text.contains("Now unto him"))
+        // Every translation says "stumbling"; the wording around it differs.
+        #expect(entity.text.contains("stumbling"))
         #expect(entity.attributeSet.keywords?.first == entity.reference)
         _ = entity.displayRepresentation
-        #expect(try await FavoriteVerseQuery().entities(matching: "unto him").contains { $0.id == entity.id })
+        #expect(try await FavoriteVerseQuery().entities(matching: "stumbling").contains { $0.id == entity.id })
         #expect(try await FavoriteVerseQuery().entities(matching: "zzzzqq").isEmpty)
 
         let open = OpenFavoriteIntent()
