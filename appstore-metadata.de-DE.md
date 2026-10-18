@@ -66,7 +66,7 @@ andacht,predigt,kommentar,themen,trost,angst,trauer,lutherbibel,elberfelder,kjv,
 Jetzt mit der NASB 2020. Finde, was die Bibel zu dem sagt, was dich bewegt, und studiere offline mit Kommentaren, Karten und Zeitleisten. Ohne Werbung, ohne Konto.
 
 ## whats_new
-1.1.6 – Optimiert für das iPhone Duo. Aufgeklappt nutzen Lesen, Studienbereich, Notizen und Karten die volle Breite des Innendisplays; zugeklappt passt alles auf das Außendisplay. Sonst ändert sich nichts.
+1.1.7 — Zuverlässigkeitsverbesserungen im Hintergrund.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

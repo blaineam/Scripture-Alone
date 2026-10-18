@@ -53,5 +53,4 @@ Vos surlignages, notes et favoris restent sur votre appareil : ni serveur, ni co
 Conçue pour aider à étudier la Parole de Dieu et à se rapprocher du Christ.
 
 ## release_notes
-1.1.4 — Téléphones en paysage, tablettes et pliables lisent sur deux colonnes pleine page ; les flèches tournent la page. Réduisez Écouter dans le bouton casque, la lecture continue ; en silencieux ou vibreur, elle démarre sans le son. Partagez un verset avec 21 styles. Wear OS : versets favoris, retrait de traductions. Et : raccourcis Écouter et Image de verset, Ouvrir dans Scripture Alone, vignette Verset du jour, mise au point au toucher pour les diapositives, Bibles importées sauvegardées.
-
+1.1.7 — Corrige un plantage qui pouvait survenir à la première ouverture de l'app sur certains téléphones Android.

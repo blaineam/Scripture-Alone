@@ -66,7 +66,7 @@ NASB 2020 与 NASB 1995 © The Lockman Foundation。经许可使用。www.Lockma
 现已支持 NASB 2020。找到圣经对你正在经历之事的话语，并借助注释、地图与时间线离线研读。无广告，无需账户。
 
 ## whats_new
-1.1.6 — 已针对 iPhone Duo 优化。展开时，阅读、学习面板、笔记和地图会充分利用内屏的整个宽度；折叠时，一切都适配外屏。其他内容没有变化。
+1.1.7 — 改进了后台的可靠性。
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

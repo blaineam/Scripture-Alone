@@ -53,5 +53,4 @@ Evidenziazioni, note e preferiti restano sul tuo dispositivo. Nessun server, nes
 Nata per aiutare le persone a studiare la Parola di Dio e a crescere nella vicinanza a Cristo.
 
 ## release_notes
-1.1.4 — Telefoni in orizzontale, tablet e pieghevoli leggono su due colonne a tutta pagina; le frecce girano pagina. Riduci Ascolta nel pulsante delle cuffie e la lettura continua; in silenzioso o vibrazione parte senza audio. Condividi un versetto con 21 stili. Wear OS: versetti preferiti e rimozione di traduzioni. Inoltre: scorciatoie Ascolta e Immagine del versetto, Apri in Scripture Alone, riquadro Versetto del giorno, messa a fuoco al tocco per le slide, Bibbie importate nel backup.
-
+1.1.7 — Risolto un arresto anomalo che poteva verificarsi alla prima apertura dell'app su alcuni telefoni Android.

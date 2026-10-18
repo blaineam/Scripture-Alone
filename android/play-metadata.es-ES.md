@@ -53,5 +53,4 @@ Subrayados, notas y favoritos se quedan en tu dispositivo. Sin servidor ni cuent
 Hecha para ayudar a estudiar la Palabra de Dios y acercarse más a Cristo.
 
 ## release_notes
-1.1.4 — Teléfonos en horizontal, tabletas y plegables leen en dos columnas a toda página; las flechas pasan página. Minimiza Escuchar en el botón de auriculares y la lectura sigue; en silencio o vibración empieza sin sonido. Comparte versículos con 21 estilos. Wear OS: favoritos y quitar traducciones. Más: accesos directos a Escuchar e Imagen del versículo, Abrir en Scripture Alone, mosaico Versículo del día, enfoque al tocar en diapositivas y Biblias importadas en la copia de seguridad.
-
+1.1.7 — Corrige un cierre inesperado que podía ocurrir la primera vez que se abría la app en algunos teléfonos Android.

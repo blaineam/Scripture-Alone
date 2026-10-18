@@ -55,5 +55,4 @@
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.1.4 — 横置的手机、平板和折叠屏现以铺满页面的两栏阅读，箭头可翻页。收听可最小化到耳机按钮，朗读继续；静音或振动模式下会以静音开始，轻点即可取消静音。用 21 种现成样式分享经文。Wear OS：收藏经节、移除译本。另外还有收听和经文图片快捷方式、“在 Scripture Alone 中打开”、每日经文快捷设置图块、轻点对焦的幻灯片相机，以及导入的圣经随设备备份。
-
+1.1.7 — 修复了部分 Android 手机首次打开应用时可能发生的崩溃。

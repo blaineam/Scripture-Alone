@@ -53,5 +53,4 @@ Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 
 ## release_notes
-1.1.4 — Quer gehaltene Handys, Tablets und Foldables zeigen zwei Spalten über die ganze Seite; Pfeile blättern um. Anhören lässt sich in die Kopfhörertaste minimieren, das Vorlesen geht weiter; bei lautlos oder Vibration startet es stumm. Vers teilen mit 21 fertigen Stilen. Wear OS: Verse favorisieren, Übersetzungen entfernen. Dazu: Verknüpfungen für Anhören und Versbild, „In Scripture Alone öffnen“, eine Kachel „Vers des Tages“, Fokus per Tippen beim Folienscan, importierte Bibeln im Backup.
-
+1.1.7 — Behebt einen Absturz, der beim ersten Öffnen der App auf manchen Android-Handys auftreten konnte.

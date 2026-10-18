@@ -66,7 +66,7 @@ bible,louis segond,darby,kjv,commentaire,méditation,thèmes,anxiété,deuil,ré
 Désormais avec la NASB 2020. Trouvez ce que la Bible dit de ce que vous traversez et étudiez hors ligne avec commentaires, cartes et chronologies. Sans pub, sans compte.
 
 ## whats_new
-1.1.6 — Optimisé pour l'iPhone Duo. Déplié, la lecture, le panneau d'étude, les notes et les cartes occupent toute la largeur de l'écran intérieur ; replié, tout tient sur l'écran extérieur. Rien d'autre ne change.
+1.1.7 — Améliorations de fiabilité en coulisses.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

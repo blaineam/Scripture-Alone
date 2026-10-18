@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.7 (2026-10-18)
+
+- Fixed a crash that could happen the first time the app opened on some Android phones, when the reader and a
+  widget both set up the notes database at once. On Android.
+
 ## 1.1.6 (2026-10-12)
 
 - **Optimized for iPhone Duo.** Unfolded, the reader's two columns, the study and notes panels beside the text, and

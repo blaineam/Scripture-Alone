@@ -66,7 +66,7 @@ rvr1960,reina valera,lbla,biblia,ansiedad,duelo,consuelo,devocional,sermones,com
 Ahora con la NASB 2020. Descubre lo que la Biblia dice de lo que estás viviendo y estudia sin conexión con comentarios, mapas y cronologías. Sin anuncios ni cuentas.
 
 ## whats_new
-1.1.6 — Optimizada para el iPhone Duo. Desplegado, la lectura, el panel de estudio, las notas y los mapas aprovechan todo el ancho de la pantalla interior; plegado, todo cabe en la pantalla exterior. Nada más cambia.
+1.1.7 — Mejoras de fiabilidad entre bambalinas.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

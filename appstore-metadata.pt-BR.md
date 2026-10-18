@@ -64,7 +64,7 @@ almeida,acf,nvi,arc,ara,kjv,temas,ansiedade,luto,consolo,comentário,devocional,
 Agora com a NASB 2020. Descubra o que a Bíblia diz sobre o que você está vivendo e estude offline com comentários, mapas e linhas do tempo. Sem anúncios, sem contas.
 
 ## whats_new
-1.1.6 — Otimizado para o iPhone Duo. Aberto, a leitura, o painel de estudo, as notas e os mapas usam toda a largura da tela interna; fechado, tudo cabe na tela externa. Nada mais muda.
+1.1.7 — Melhorias de confiabilidade nos bastidores.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.1.4 — Phones held sideways, tablets and foldables read in two columns that fill the page; arrows turn pages. Minimize Listen into the headphones button while reading goes on; on silent or vibrate it starts muted, tap to unmute. Share a verse with 21 ready-made styles. Wear OS: favorite verses, remove translations. Also: Listen and Verse Image shortcuts, Open in Scripture Alone for selected text, a Verse of the Day Quick Settings tile, tap-to-focus slide camera, imported Bibles in backup.
+1.1.7 — Fixes a crash that could happen the first time the app opened on some Android phones.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

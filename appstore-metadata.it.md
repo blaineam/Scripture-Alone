@@ -66,7 +66,7 @@ bibbia,riveduta,diodati,cei,argomenti,ansia,lutto,conforto,devozionale,sermone,r
 Ora con la NASB 2020. Scopri che cosa dice la Bibbia di ciò che stai vivendo e studia offline con commentari, mappe e cronologie. Senza pubblicità né account.
 
 ## whats_new
-1.1.6 — Ottimizzato per iPhone Duo. Aperto, la lettura, il pannello di studio, le note e le mappe usano tutta la larghezza del display interno; chiuso, tutto sta nel display esterno. Nient'altro cambia.
+1.1.7 — Miglioramenti di affidabilità dietro le quinte.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/
