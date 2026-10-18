@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.data.userdata
 
 import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.SQLiteException
 import androidx.sqlite.SQLiteStatement
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.driver.bundled.SQLITE_OPEN_CREATE
@@ -25,6 +26,32 @@ interface UserDatabase {
 }
 
 /**
+ * Switches a database to WAL. SQLite does not run the busy handler for this switch when another
+ * connection holds the file, so `busy_timeout` alone still throws "database is locked" (SQLITE_BUSY)
+ * — the first-launch crash when the reader and a widget open the new file together. Retries it, and
+ * gives up quietly: WAL is a nicety, and a database left in its default mode works, with the
+ * busy_timeout covering every later statement.
+ */
+internal fun enableWriteAheadLogging(
+    attempts: Int = 10,
+    pauseMillis: Long = 100,
+    pause: (Long) -> Unit = Thread::sleep,
+    pragma: (String) -> String,
+) {
+    repeat(attempts) { attempt ->
+        try {
+            // Already WAL (it persists in the file): nothing to switch, and no lock to wait for.
+            if (pragma("PRAGMA journal_mode").equals("wal", ignoreCase = true)) return
+            pragma("PRAGMA journal_mode=WAL")
+            return
+        } catch (e: SQLiteException) {
+            if (attempt == attempts - 1) return
+            pause(pauseMillis)
+        }
+    }
+}
+
+/**
  * [UserDatabase] over the bundled SQLite driver — the one the Bible databases are read with, so the
  * app carries a single SQLite build. One connection, held for each statement or transaction.
  */
@@ -38,7 +65,7 @@ class BundledUserDatabase(file: File) : UserDatabase {
         // locked", crashing the first launch). Waiting for the lock instead of failing on it fixes that.
         query("PRAGMA busy_timeout=5000") { it.long(0) }
         // WAL keeps a write from blocking a read and survives a kill mid-write.
-        query("PRAGMA journal_mode=WAL") { it.text(0) }
+        enableWriteAheadLogging { sql -> query(sql) { it.text(0) }.single() }
     }
 
     override fun execute(sql: String, vararg args: Any?) = synchronized(connection) {
