@@ -74,6 +74,7 @@ export default {
     //    which is most of its line coverage; coverageFloor ratchets up, never down.
     macos: {
       type: 'xcodebuild-test',
+      vm: true, // macOS tests run in the QA VM (see _shared/qa-vm), not on this Mac
       coverageFloor: 68,
       coverageExclude: CORE,
       project: 'ScriptureAlone.xcodeproj',
