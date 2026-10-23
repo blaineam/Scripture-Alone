@@ -115,6 +115,11 @@ async function emulatorUp() {
 	}
 	if (!up) fail(`${AVD} did not boot`);
 	shell('settings put global window_animation_scale 0; settings put global transition_animation_scale 0; settings put global animator_duration_scale 0');
+	// sys.boot_completed fires while System UI / the launcher are still starting on a cold headless boot;
+	// a "System UI isn't responding" ANR dialog over the app is what failed the toolbar check. Let the
+	// home screen settle, and clear any ANR that did already pop (dismissSystemDialogs also runs later).
+	await sleep(15_000);
+	dismissSystemDialogs(nodes(dump()));
 	return true;
 }
 
@@ -142,13 +147,27 @@ function nodes(xml) {
 	});
 }
 
-const matches = (n, q) => (q instanceof RegExp ? q.test(n.text) || q.test(n.desc) : n.text === q || n.desc === q);
+// A system-owned "<process> isn't responding" dialog (emulator under load) covers the app and hides every
+// node we look for. It's the host's hiccup, not the app's — tap "Wait". Returns true when one was cleared.
+// Only dialogs that don't name our own package qualify, so a real ANR of the app still fails via alive().
+function dismissSystemDialogs(all) {
+	const anr = all.find((n) => /isn.t responding/i.test(n.text) && !n.text.includes(PKG));
+	const wait = all.find((n) => n.text === 'Wait' && n.bounds[2] > n.bounds[0]);
+	if (!anr || !wait) return false;
+	log(`dismissing system dialog: ${anr.text}`);
+	tapAt(center(wait));
+	return true;
+}
+
+const matches = (n, q) =>(q instanceof RegExp ? q.test(n.text) || q.test(n.desc) : n.text === q || n.desc === q);
 
 async function find(q, { timeout = 15_000 } = {}) {
 	const deadline = Date.now() + timeout;
 	do {
-		const hit = nodes(dump()).find((n) => matches(n, q) && n.bounds[2] > n.bounds[0]);
+		const all = nodes(dump());
+		const hit = all.find((n) => matches(n, q) && n.bounds[2] > n.bounds[0]);
 		if (hit) return hit;
+		if (dismissSystemDialogs(all)) continue;
 		await sleep(700);
 	} while (Date.now() < deadline);
 	return null;
@@ -260,6 +279,7 @@ async function dismissWelcome() {
 	const deadline = Date.now() + 40_000;
 	while (Date.now() < deadline) {
 		const all = nodes(dump());
+		if (dismissSystemDialogs(all)) { await sleep(1_000); continue; }
 		const skip = all.find((n) => n.text === 'Skip' || n.desc === 'Skip');
 		if (skip) { tapAt(center(skip)); await sleep(1_000); continue; }
 		if (all.some((n) => /^Go to passage, currently /.test(n.desc))) { await sleep(1_500); if (!nodes(dump()).some((n) => n.text === 'Skip')) return; continue; }
