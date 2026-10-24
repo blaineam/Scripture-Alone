@@ -37,6 +37,8 @@ struct ReaderView: View {
     @State private var showAppearance = false
     @State private var showTranslations = false
     @State private var showCompare = false
+    @State private var showPlans = false
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showNotes = false
     @State private var notesPath: [UUID] = []
     @State private var popover: ReaderPopover?
@@ -172,6 +174,26 @@ struct ReaderView: View {
                 .frame(minWidth: 680, minHeight: 620)
                 #endif
         }
+        .sheet(isPresented: $showPlans) {
+            PlansView(onOpen: { passage in
+                showPlans = false
+                model.go(to: passage)
+            }, onListen: {
+                showPlans = false
+                Task {
+                    if let first = PlanStore.shared.todaysReading()?.passages.first { model.go(to: first.passage) }
+                    await settle()
+                    if !ListenController.shared.playTodaysReading(in: model) {
+                        ListenController.shared.notice = String(localized: "Today’s reading isn’t available in this translation yet.",
+                                                                comment: "Listen player notice when a plan's passages can't be read")
+                    }
+                }
+            })
+            .environment(model)
+            #if os(macOS)
+            .frame(minWidth: 520, minHeight: 600)
+            #endif
+        }
         .sheet(isPresented: $showTranslations) {
             TranslationsView()
                 .environment(model)
@@ -194,8 +216,17 @@ struct ReaderView: View {
         .background(keyboardShortcuts)
         // Links, intents and Spotlight results, including any that arrived before this view did.
         .onChange(of: AppCommandCenter.shared.pending, initial: true) { performCommands() }
+        // A followed plan picks up the days published since the app was last open, and the reminders
+        // are topped up; both are quiet when offline.
+        .onChange(of: scenePhase, initial: true) {
+            guard scenePhase == .active, !UITestMode.isOn else { return }
+            Task {
+                await PlanStore.shared.refreshImported()
+                PlanReminders.refresh(PlanStore.shared)
+            }
+        }
         // The one-time offer of the User Guide, never over anything else.
-        .userGuidePrompt(blocked: showPicker || showAppearance || showTranslations || showCompare || showNotes
+        .userGuidePrompt(blocked: showPicker || showAppearance || showTranslations || showCompare || showPlans || showNotes
                          || study.isOn || popover != nil || legacy.reading != nil
                          || shareCoordinator.designer != nil)
         #if DEBUG
@@ -407,6 +438,9 @@ struct ReaderView: View {
             Divider()
             Button("Compare Translations…", systemImage: "rectangle.split.2x1") { showCompare = true }
             Button("Manage Translations…", systemImage: "books.vertical") { showTranslations = true }
+            Divider()
+            Button("Reading Plans…", systemImage: "calendar") { showPlans = true }
+                .accessibilityIdentifier("reader.readingPlans")
         } label: {
             // On a phone the abbreviation ("NASB 2020") crowded the passage title out of the bar,
             // leaving nothing to tap for Go To; a symbol keeps the button one fixed size. The
@@ -628,6 +662,7 @@ struct ReaderView: View {
         popover = nil
         showPicker = false
         showCompare = false
+        showPlans = false
         showTranslations = false
         showAppearance = false
         if shareCoordinator.designer != nil { shareCoordinator.designer = nil }
@@ -671,6 +706,21 @@ struct ReaderView: View {
             // Let the chapter lay out before reading it.
             await settle()
             ListenController.shared.playChapter(in: model)
+        case .plans:
+            await settle()
+            showPlans = true
+        case .playTodaysReading:
+            model.selection.removeAll()
+            guard let reading = PlanStore.shared.todaysReading(), let first = reading.passages.first else {
+                showPlans = true
+                return
+            }
+            model.go(to: first.passage)
+            await settle()
+            if !ListenController.shared.playTodaysReading(in: model) {
+                ListenController.shared.notice = String(localized: "Today’s reading isn’t available in this translation yet.",
+                                                        comment: "Listen player notice when a plan's passages can't be read")
+            }
         case .newNote(let ranges):
             let anchors = ranges.isEmpty
                 ? [model.numbering.kjvRange(VerseRange(VerseRef(model.location.book, model.location.chapter, 1),

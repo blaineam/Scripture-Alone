@@ -166,6 +166,7 @@ nonisolated enum ScriptureIntentError: Error, CustomLocalizedStringResourceConve
     case imageNotPermitted(String)
     case imageFailed
     case noteNotFound
+    case noActivePlan
 
     var localizedStringResource: LocalizedStringResource {
         switch self {
@@ -187,6 +188,9 @@ nonisolated enum ScriptureIntentError: Error, CustomLocalizedStringResourceConve
         case .noteNotFound:
             LocalizedStringResource("That note couldn’t be found. It may have been deleted.",
                                     comment: "Siri/Shortcuts error.")
+        case .noActivePlan:
+            LocalizedStringResource("You haven’t started a reading plan. Open Scripture Alone and choose one under Reading Plans.",
+                                    comment: "Siri/Shortcuts error when there is no reading plan to read from.")
         }
     }
 }

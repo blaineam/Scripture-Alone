@@ -1,7 +1,8 @@
 import AppIntents
 
 /// Siri phrases that work with no setup. An app gets ten; the rest of the intents (Open Note, Open
-/// Favorite, Remove from Favorites, Is Favorite, New Note, Show Notes, Show Favorites) are in the
+/// Favorite, Remove from Favorites, Is Favorite, New Note, Show Notes, Show Favorites, Start Today’s
+/// Reading) are in the
 /// Shortcuts app's action list without a phrase of their own.
 ///
 /// Phrases are localized in `Resources/AppShortcuts.xcstrings` — the one catalog the App Intents

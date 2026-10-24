@@ -302,6 +302,27 @@ struct ListenToChapterIntent: AppIntent {
     }
 }
 
+/// "Start today's reading": opens today's passage in the reader's plan and reads it aloud. With no
+/// plan started it says so instead of opening the app to nothing.
+struct StartTodaysReadingIntent: AppIntent {
+    static var title: LocalizedStringResource {
+        LocalizedStringResource("Start Today’s Reading", comment: "App Intent title")
+    }
+    static var description: IntentDescription {
+        IntentDescription(LocalizedStringResource("Reads today’s passage from your Bible reading plan aloud, in your translation.",
+                                                  comment: "App Intent description"))
+    }
+    static var supportedModes: IntentModes { .foreground(.immediate) }
+
+    @MainActor
+    func perform() async throws -> some IntentResult & ProvidesDialog {
+        guard let reading = PlanStore.shared.todaysReading() else { throw ScriptureIntentError.noActivePlan }
+        AppCommandCenter.shared.post(.playTodaysReading)
+        return .result(dialog: IntentDialog(LocalizedStringResource("Reading \(reading.display).",
+                                                                    comment: "Siri confirms today's reading. %@ is a passage like Romans 8.")))
+    }
+}
+
 nonisolated struct ShowFavoritesIntent: AppIntent {
     static var title: LocalizedStringResource {
         LocalizedStringResource("Show Favorites", comment: "App Intent title")

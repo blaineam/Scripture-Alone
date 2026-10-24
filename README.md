@@ -52,6 +52,9 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   or Import from iPhone) and on-device text recognition starts the note: titled with the sermon
   title, linked to every passage on the slide, with the other lines as bullets. Review and edit
   before saving; later slides add to the same note. The photo is discarded unless you keep it.
+- **Reading plans** — Bible in a year (canonical or chronological), book by book, or a church's plan imported
+  from its feed (schedule only; the text is your own translation), with progress, catch-up, a streak, daily
+  reminders and a read-aloud path (`docs/reading-plans.md`).
 - **Listen** — read aloud from the top of the screen or a selection with any installed system voice
   (Premium, Enhanced and Personal Voice included), the spoken verse marked and kept in view, on
   into the next chapter, with speed, sleep timer, lock-screen controls and background audio. On

@@ -13,6 +13,10 @@ enum AppCommand: Equatable {
     case continueReading
     /// Read a chapter aloud: the given passage's, or the one on screen.
     case listen(AppLink?)
+    /// Read today's reading in the reader's plan aloud, opening it first.
+    case playTodaysReading
+    /// Open the reading plans screen.
+    case plans
     /// Start a note on these KJV ranges, or on the chapter on screen when empty.
     case newNote([VerseRange])
 }

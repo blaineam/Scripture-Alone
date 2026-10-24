@@ -158,7 +158,11 @@ final class ListenController {
 
     var isPlaying: Bool { phase == .playing }
 
+    /// A heading for a session that reads prose rather than verses (a plan's study or devotion).
+    private var proseTitle: String?
+
     var nowPlayingTitle: String {
+        if let proseTitle { return proseTitle }
         guard let key = speakingVerse ?? items.first(where: { $0.key > 0 })?.key, let ref = VerseRef(key: key) else {
             return reader?.location.display ?? ""
         }
@@ -190,6 +194,49 @@ final class ListenController {
         start(in: model, scope: .selection, items: verses.map { Item(key: $0.ref.key, text: $0.text) })
     }
 
+    /// Reads a plan's passages aloud in order, each chapter announced, then stops. False when the
+    /// translation has none of them to read (not downloaded, an online key missing).
+    @discardableResult
+    func playReading(_ passages: [PlanPassage], in model: ReaderModel) -> Bool {
+        guard let store = model.source else { return false }
+        var items: [Item] = []
+        for plan in passages {
+            let passage = plan.passage.clamped
+            for chapter in plan.chapters {
+                let first = chapter.chapter == passage.startChapter ? passage.startVerse : nil
+                let last = chapter.chapter == passage.endChapter ? passage.endVerse : nil
+                if first == nil, last == nil {
+                    items += chapterItems(model: model, chapter: chapter, from: 1)
+                    continue
+                }
+                let count = store.verseCount(chapter)
+                guard count > 0 else { continue }
+                // A plan names verses the way the reader types them: in the translation's own numbers.
+                let range = VerseRange(VerseRef(chapter.book, chapter.chapter, first ?? 1),
+                                       VerseRef(chapter.book, chapter.chapter, min(last ?? count, count)))
+                let verses = (try? store.nativeVerses(in: range)) ?? []
+                if first == nil || first == 1 {
+                    items += chapterItems(model: model, chapter: chapter, from: 1).prefix { $0.key == 0 }
+                }
+                items += verses.map { Item(key: $0.ref.key, text: $0.text) }
+            }
+        }
+        guard !items.isEmpty else { return false }
+        start(in: model, scope: .selection, items: items)
+        return true
+    }
+
+    /// Reads a plan's own writing aloud — a devotion, or a weekly study fetched on demand — one paragraph
+    /// at a time. Opt-in: only a reader's tap on "Read Aloud" starts it. False when there is nothing to say.
+    @discardableResult
+    func playProse(_ text: String, title: String, in model: ReaderModel) -> Bool {
+        let paragraphs = text.components(separatedBy: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        guard !paragraphs.isEmpty else { return false }
+        start(in: model, scope: .selection, items: ([title] + paragraphs).map { Item(key: 0, text: $0) })
+        proseTitle = title
+        return true
+    }
+
     /// The toolbar button: start if idle, otherwise play/pause.
     func toolbarAction(in model: ReaderModel) {
         if reader === model, phase != .idle {
@@ -219,6 +266,7 @@ final class ListenController {
 
     private func start(in model: ReaderModel, scope: Scope, items: [Item]) {
         stopOutput()
+        proseTitle = nil
         guard !items.isEmpty else { return }
         reader = model
         translation = model.translationID

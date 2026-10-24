@@ -211,6 +211,20 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Haptic on favorite | ✅ | Emulator-verified 2026-10-08: the selection bar's heart logged `performHapticFeedback(constant=16)` (CONFIRM), usage TOUCH, in `dumpsys vibrator_manager`. `ui/reader/FavoriteHaptics.kt` — `FavoriteButton`'s `.sensoryFeedback(.selection)`: `CONFIRM` (Android 11+, a key tap before) when a verse becomes a favorite, `CLOCK_TICK` when it stops, from the selection bar's heart and the topic list's menu, through `View.performHapticFeedback` without `FLAG_IGNORE_GLOBAL_SETTING`, so the system's touch-feedback switch governs it. `FavoriteHapticsTest` |
 | Ctrl+S in the verse-image designer | ✅ | Emulator-verified 2026-10-08 (`input keycombination KEYCODE_CTRL_LEFT KEYCODE_S` with the designer open on the Create Verse Image shortcut's Proverbs 16:3): "Proverbs 16.3 ASV.png" appeared in MediaStore. `MainActivity.dispatchKeyEvent`: with the designer open, Ctrl+S (no Alt/Shift, not repeated) is Save to Photos (`ReaderViewModel.designerSaves`, collected by `ShareDesigner`) — iPad/Mac's ⌘S |
 
+### Reading plans
+Spec: `docs/reading-plans.md`. The logic is ported and tested; the screens are not.
+
+| Feature | Status | Notes |
+|---|---|---|
+| Plan model, built-in catalog (Bible in a Year canonical and chronological, book by book, devotional scaffolds) | ✅ | `data/plans/ReadingPlan.kt`; `ReadingPlanTest` carries the same cases as `ReadingPlanTests.swift` — 1,189 chapters exactly once in each year plan |
+| Schedule, progress, catch-up, streak, rest weekdays, follow-the-source's-calendar | ✅ | `data/plans/PlanSchedule.kt` (`java.time.LocalDate`; weekdays numbered 1 = Sunday as on iOS, so the JSON is the same) |
+| Importer logic: pasted address, title → passage, posts → plan, WordPress REST JSON, categories, HTML → paragraphs | ✅ | `data/plans/PlanFeed.kt` on `ReferenceParser`; same plan ids as iOS for the same site and title |
+| Importer fetching (REST paging, RSS fallback, offline errors) and the weekly study fetch | ⬜ | `HttpURLConnection` on an IO dispatcher against `PlanFeed`; study shown with a link back, never stored (licensing flag in the spec) |
+| Plans store + Today / plan list / start / import / study screens | ⬜ | Compose, reached from the translation menu as on iOS; JSON file beside `no_backup`, or a table in `UserDatabase` |
+| Daily reminders | ⬜ | WorkManager topping up the next 14 days' notifications (`POST_NOTIFICATIONS` on API 33+), as iOS |
+| Read today's reading aloud | ⬜ | Through the existing `data/listen/` controller; a `playReading(passages)` mirroring `ListenController.playReading`, UI-free |
+| "Start today's reading" entry (App Intent on iOS) | ⬜ | An App Shortcut / Assistant deep link to the same call; a Quick Settings tile is the alternative |
+
 ### Android-only
 
 | Feature | Status | Notes |
