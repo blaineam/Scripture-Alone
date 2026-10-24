@@ -26,11 +26,15 @@ struct TodaysReading: Equatable {
 @Observable
 final class PlanStore {
     static let shared: PlanStore = {
+        #if DEBUG
         // A UI test starts with no plans, and leaves nothing behind or asks for notification permission.
-        guard UITestMode.isOn else { return PlanStore() }
-        let store = PlanStore(directory: FileManager.default.temporaryDirectory.appending(path: "plans-ui-\(UUID().uuidString)"))
-        store.schedulesReminders = false
-        return store
+        if UITestMode.isOn {
+            let store = PlanStore(directory: FileManager.default.temporaryDirectory.appending(path: "plans-ui-\(UUID().uuidString)"))
+            store.schedulesReminders = false
+            return store
+        }
+        #endif
+        return PlanStore()
     }()
 
     private(set) var imported: [ReadingPlan] = []

@@ -219,7 +219,10 @@ struct ReaderView: View {
         // A followed plan picks up the days published since the app was last open, and the reminders
         // are topped up; both are quiet when offline.
         .onChange(of: scenePhase, initial: true) {
-            guard scenePhase == .active, !UITestMode.isOn else { return }
+            guard scenePhase == .active else { return }
+            #if DEBUG
+            if UITestMode.isOn { return }
+            #endif
             Task {
                 PlanStore.shared.rollOverAnnualPlans()
                 await PlanStore.shared.refreshImported()
