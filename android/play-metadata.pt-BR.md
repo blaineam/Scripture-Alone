@@ -53,4 +53,4 @@ As suas marcações, notas e favoritos ficam no seu aparelho. Não há servidor 
 Feito para ajudar as pessoas a estudar a Palavra de Deus e a se aproximar de Cristo.
 
 ## release_notes
-1.1.7 — Corrige uma falha que podia ocorrer na primeira abertura do app em alguns celulares Android.
+1.2.0 — Planos de leitura. Leia a Bíblia em um ano (em ordem ou como os fatos aconteceram), um capítulo por dia de qualquer livro, ou siga o plano da sua igreja: a Disciples Church já vem incluída, e você pode adicionar qualquer site ou feed que indique a passagem do dia. Inclui Morning and Evening, de Spurgeon (em inglês). Cada passagem aparece na sua tradução, com progresso, recuperação, sequência, lembretes diários e leitura em voz alta.

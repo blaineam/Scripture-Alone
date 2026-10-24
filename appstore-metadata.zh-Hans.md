@@ -66,7 +66,7 @@ NASB 2020 与 NASB 1995 © The Lockman Foundation。经许可使用。www.Lockma
 现已支持 NASB 2020。找到圣经对你正在经历之事的话语，并借助注释、地图与时间线离线研读。无广告，无需账户。
 
 ## whats_new
-1.1.7 — 改进了后台的可靠性。
+1.2.0 — 读经计划。一年读完圣经（按顺序，或按事件发生的先后），任选一卷每天读一章，或跟随教会的计划：内置 Disciples Church，也可添加任何标明当天经文的网站或订阅源。收录司布真的《Morning and Evening》（英文）。每段经文都以你自己的译本显示，并提供进度、补读、连续天数、每日提醒和朗读。
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

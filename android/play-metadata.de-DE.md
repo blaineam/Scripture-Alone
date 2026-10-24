@@ -53,4 +53,4 @@ Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 
 ## release_notes
-1.1.7 — Behebt einen Absturz, der beim ersten Öffnen der App auf manchen Android-Handys auftreten konnte.
+1.2.0 — Lesepläne. Lies die Bibel in einem Jahr (der Reihe nach oder in der Reihenfolge der Ereignisse), jeden Tag ein Kapitel durch ein Buch deiner Wahl, oder folge dem Plan deiner Gemeinde: Disciples Church ist eingebaut, und du kannst jede Seite oder jeden Feed hinzufügen, die die Tageslesung nennen. Spurgeons „Morning and Evening“ ist dabei (englisch). Jede Stelle erscheint in deiner eigenen Übersetzung, mit Fortschritt, Aufholen, Serie, täglichen Erinnerungen und Vorlesen.

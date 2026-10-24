@@ -55,4 +55,4 @@
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.1.7 — 修复了部分 Android 手机首次打开应用时可能发生的崩溃。
+1.2.0 — 读经计划。一年读完圣经（按顺序，或按事件发生的先后），任选一卷每天读一章，或跟随教会的计划：内置 Disciples Church，也可添加任何标明当天经文的网站或订阅源。收录司布真的《Morning and Evening》（英文）。每段经文都以你自己的译本显示，并提供进度、补读、连续天数、每日提醒和朗读。

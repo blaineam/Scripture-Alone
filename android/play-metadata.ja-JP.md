@@ -55,4 +55,4 @@ DRM フリーの ePub、テキストレイヤーのある聖書 PDF、USFM フ�
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.1.7 — 一部のAndroidスマートフォンで、アプリを初めて開いたときに起きることがあったクラッシュを修正しました。
+1.2.0 — 読書プラン。1年で聖書を読む（順番どおり、または出来事の順）、好きな書を1日1章ずつ読む、あるいは教会のプランに沿って読めます。Disciples Church は最初から入っており、その日の箇所を示す任意のサイトやフィードも追加できます。スポルジョンの「Morning and Evening」も収録（英語）。どの箇所もあなたの翻訳で表示され、進み具合、遅れの取り戻し、連続日数、毎日のリマインダー、読み上げに対応します。

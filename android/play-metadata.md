@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.1.7 — Fixes a crash that could happen the first time the app opened on some Android phones.
+1.2.0 — Reading plans. Read the Bible in a year (in order, or as it happened), a chapter a day through any book, or follow your church’s plan: Disciples Church is built in, and you can add any site or feed that names the day’s passage. Spurgeon’s Morning and Evening is included (English). Every passage appears in your own translation, with progress, catch-up, a streak, daily reminders and read-aloud.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

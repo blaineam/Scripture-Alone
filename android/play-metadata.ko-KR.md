@@ -55,4 +55,4 @@ DRM이 없는 ePub, 텍스트 레이어가 있는 성경 PDF, USFM 파일처럼 
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.1.7 — 일부 Android 휴대전화에서 앱을 처음 열 때 발생할 수 있던 충돌을 수정했습니다.
+1.2.0 — 읽기 계획. 1년 성경 읽기(순서대로 또는 사건 순서대로), 원하는 책을 하루 한 장씩, 또는 교회의 계획을 따라 읽으세요. Disciples Church가 기본으로 들어 있고, 그날의 본문을 알려 주는 사이트나 피드를 추가할 수도 있습니다. 스펄전의 「Morning and Evening」도 포함(영어). 모든 본문은 내 번역본으로 표시되며 진행 상황, 따라잡기, 연속 일수, 매일 알림, 소리 내어 읽기를 지원합니다.

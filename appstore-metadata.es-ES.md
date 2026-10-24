@@ -66,7 +66,7 @@ rvr1960,reina valera,lbla,biblia,ansiedad,duelo,consuelo,devocional,sermones,com
 Ahora con la NASB 2020. Descubre lo que la Biblia dice de lo que estás viviendo y estudia sin conexión con comentarios, mapas y cronologías. Sin anuncios ni cuentas.
 
 ## whats_new
-1.1.7 — Mejoras de fiabilidad entre bambalinas.
+1.2.0 — Planes de lectura. Lee la Biblia en un año (en orden o según ocurrieron los hechos), un capítulo al día de cualquier libro, o sigue el plan de tu iglesia: Disciples Church viene incluido y puedes añadir cualquier sitio o feed que nombre el pasaje del día. Se incluye Morning and Evening de Spurgeon (en inglés). Cada pasaje aparece en tu propia traducción, con progreso, ponerse al día, racha, recordatorios diarios y lectura en voz alta.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

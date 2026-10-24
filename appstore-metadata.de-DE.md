@@ -66,7 +66,7 @@ andacht,predigt,kommentar,themen,trost,angst,trauer,lutherbibel,elberfelder,kjv,
 Jetzt mit der NASB 2020. Finde, was die Bibel zu dem sagt, was dich bewegt, und studiere offline mit Kommentaren, Karten und Zeitleisten. Ohne Werbung, ohne Konto.
 
 ## whats_new
-1.1.7 — Zuverlässigkeitsverbesserungen im Hintergrund.
+1.2.0 — Lesepläne. Lies die Bibel in einem Jahr (der Reihe nach oder in der Reihenfolge der Ereignisse), jeden Tag ein Kapitel durch ein Buch deiner Wahl, oder folge dem Plan deiner Gemeinde: Disciples Church ist eingebaut, und du kannst jede Seite oder jeden Feed hinzufügen, die die Tageslesung nennen. Spurgeons „Morning and Evening“ ist dabei (englisch). Jede Stelle erscheint in deiner eigenen Übersetzung, mit Fortschritt, Aufholen, Serie, täglichen Erinnerungen und Vorlesen.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

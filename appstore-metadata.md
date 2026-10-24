@@ -64,7 +64,7 @@ nasb 2020,nasb 1995,kjv,asv,bsb,topical,anxiety,grief,comfort,commentary,devotio
 Now with the NASB 2020. Find what the Bible says about what you're going through and study offline with commentary, maps and timelines. No ads, no accounts.
 
 ## whats_new
-1.1.7 — Reliability improvements behind the scenes.
+1.2.0 — Reading plans. Read the Bible in a year (in order, or as it happened), a chapter a day through any book, or follow your church’s plan: Disciples Church is built in, and you can add any site or feed that names the day’s passage. Spurgeon’s Morning and Evening is included (English). Every passage appears in your own translation, with progress, catch-up, a streak, daily reminders and read-aloud.
 
 ## review_notes
 Scripture Alone is an open-source Bible app (AGPL-3.0, https://github.com/blaineam/Scripture-Alone). No account or login is required for any feature, and the app reads offline from its first launch.

@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.8 (in development)
+## 1.2.0 (2026-10-24)
 
 - **Reading plans.** Read through the Bible in a year (in order, or in the order it happened), or one chapter
   a day through any book; or follow a church's plan — Disciples Church's daily reading is built in, and you can
