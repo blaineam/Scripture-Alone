@@ -33,12 +33,16 @@ sealed class AppCommand {
     data class Listen(val passage: AppLink?) : AppCommand()
     /** The verse-image designer on [passage], or on today's Verse of the Day when null. */
     data class VerseImage(val passage: AppLink?) : AppCommand()
+    /** Today's reading in the reader's plan, opened and read aloud — `StartTodaysReadingIntent`. */
+    data object TodaysReading : AppCommand()
+    /** The Reading Plans screen. */
+    data object Plans : AppCommand()
 
     /** Whether carrying this out writes to the reader's notes or favorites. */
     val changesData: Boolean get() = this is NewNote || this is Favorite
 
     /** Whether a web page may not ask for this: it changes the reader's data, or starts speaking. */
-    val needsTrust: Boolean get() = changesData || this is Listen
+    val needsTrust: Boolean get() = changesData || this is Listen || this is TodaysReading
 
     /** What to do instead when [changesData] is refused: just show the passage. */
     val readOnly: AppCommand?
@@ -46,6 +50,7 @@ sealed class AppCommand {
             is NewNote -> passage?.let { Link(it) }
             is Favorite -> Link(passage)
             is Listen -> passage?.let { Link(it) }
+            TodaysReading -> Plans
             else -> this
         }
 
@@ -60,6 +65,8 @@ sealed class AppCommand {
         /** The Listen shortcut (dynamic, named for the chapter — `ui/shortcuts/AppShortcuts.kt`). */
         const val FEATURE_LISTEN = "listen"
         const val FEATURE_VERSE_IMAGE = "verse_image"
+        const val FEATURE_TODAYS_READING = "todays_reading"
+        const val FEATURE_PLANS = "reading_plans"
 
         fun parse(url: String): AppCommand? {
             val parts = LinkParts.of(url) ?: return null
@@ -75,6 +82,8 @@ sealed class AppCommand {
                     "unfavorite" -> return passage()?.let { Favorite(it, add = false) }
                     "listen" -> return Listen(passage())
                     "verse-image", "verseimage", "image" -> return VerseImage(passage())
+                    "todays-reading", "today-reading" -> return TodaysReading
+                    "plans", "reading-plans" -> return Plans
                     "feature" -> return feature(parts.query("name") ?: parts.path.trim('/'))
                 }
             }
@@ -90,6 +99,8 @@ sealed class AppCommand {
             FEATURE_NOTES -> Link(AppLink.Notes)
             FEATURE_LISTEN, "listen_to_chapter", "read_aloud" -> Listen(null)
             FEATURE_VERSE_IMAGE, "create_verse_image", "image" -> VerseImage(null)
+            FEATURE_TODAYS_READING, "start_todays_reading", "reading_plan" -> TodaysReading
+            FEATURE_PLANS, "plans" -> Plans
             // Search with nothing to search for yet: the Go To sheet, whose field searches.
             FEATURE_SEARCH -> Link(AppLink.Search(""))
             else -> null

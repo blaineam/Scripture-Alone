@@ -192,6 +192,7 @@
 		DCDC994CC4ADDD14BD3DE090 /* ColumnReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F72967A273693F90980DA70E /* ColumnReaderTests.swift */; };
 		DD881D91CF4B23CEC7CB02E8 /* HostedListenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8EDAF8D723D94CD27C10E77 /* HostedListenTests.swift */; };
 		E25B483FC4FA988EAF9D5B85 /* ShareCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D9490E2C2C07074CC5136A9 /* ShareCard.swift */; };
+		E2AF984E0AFB1E67C9F7BEBF /* StudyCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07BE7D68BB0E11AA3FD90995 /* StudyCache.swift */; };
 		E306ED72040F902C31B435DF /* WatchHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F623D45503145D4A1FC508E /* WatchHomeView.swift */; };
 		E7E7BB66D01A4CDCF25DC683 /* CatalogDownloaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA3624E4F0F1D5249FD5717E /* CatalogDownloaderTests.swift */; };
 		E85C6125ACAABA95F56A46B8 /* VerseOfDayShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16AF12A3C0ED58D26D26A632 /* VerseOfDayShared.swift */; };
@@ -331,6 +332,7 @@
 		060801F1607F15B63E34EFF7 /* CrossReferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossReferencesView.swift; sourceTree = "<group>"; };
 		0618262E7F0D5AFD6612363E /* PlaceViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceViews.swift; sourceTree = "<group>"; };
 		07881EA7262DD7AB438C9EB2 /* AssetLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLibrary.swift; sourceTree = "<group>"; };
+		07BE7D68BB0E11AA3FD90995 /* StudyCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyCache.swift; sourceTree = "<group>"; };
 		0A1AFE932B4592CED1A13EC4 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		0A35AD23887D5429D641CB50 /* ImportedStudyLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportedStudyLibrary.swift; sourceTree = "<group>"; };
 		0B4035AD8C6AA89E5A0CE15B /* VerseSpeaker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseSpeaker.swift; sourceTree = "<group>"; };
@@ -661,6 +663,7 @@
 				F034B1687BB5E424127C24ED /* PlanReminders.swift */,
 				A592533FBC8106841CE47078 /* PlanStore.swift */,
 				C4F6BCAB95BF747B91664E66 /* PlansView.swift */,
+				07BE7D68BB0E11AA3FD90995 /* StudyCache.swift */,
 			);
 			path = Plans;
 			sourceTree = "<group>";
@@ -1675,6 +1678,7 @@
 				46004442636C39F82714B4AA /* SlideReviewView.swift in Sources */,
 				025956EECFE872BC95A8443F /* SpeechVoices.swift in Sources */,
 				A437CCE33E1410D3BE47154E /* SpotlightSync.swift in Sources */,
+				E2AF984E0AFB1E67C9F7BEBF /* StudyCache.swift in Sources */,
 				551D89B9A0AE47EC704BBE72 /* StudyContextView.swift in Sources */,
 				9F6A991DF19853FCD617D082 /* StudyLanguage.swift in Sources */,
 				25C2BE3906986CBDB86CE152 /* StudyModel.swift in Sources */,

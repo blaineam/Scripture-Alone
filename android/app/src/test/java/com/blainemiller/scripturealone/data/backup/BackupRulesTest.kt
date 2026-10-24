@@ -47,7 +47,8 @@ class BackupRulesTest {
             Rule("file", SettingsBackup.READER_SETTINGS) +
             SettingsBackup.USER_DATA_FILES.map { Rule("file", it) } +
             Rule("file", "${SettingsBackup.KEEPSAKES}/") +
-            Rule("file", "${SettingsBackup.IMPORTS}/")
+            Rule("file", "${SettingsBackup.IMPORTS}/") +
+            Rule("file", "${SettingsBackup.PLANS}/")
 
     @Test
     fun allThreeListsAreSettingsBackupsList() {

@@ -187,6 +187,7 @@ fun ReaderScreen(
     onStudy: () -> Unit = {},
     onCompare: () -> Unit = {},
     onManageTranslations: () -> Unit = {},
+    onReadingPlans: () -> Unit = {},
     listen: ListenController? = null,
     /** Whether Study is showing — the Study button's On/Off, as iOS's `accessibilityValue`. */
     studyOpen: Boolean = false,
@@ -236,6 +237,7 @@ fun ReaderScreen(
     // Listen and auto-scroll — ReaderView.swift's `listenButton`, `autoScrollControl` and the Now
     // Playing bar. Auto-scroll is on only while the reader looks at it, as `@State autoScrolling` is.
     val scope = rememberCoroutineScope()
+    val appContext = LocalContext.current.applicationContext
     val listenStart = listen?.let { rememberListenStart(it) }
     var autoScrolling by remember { mutableStateOf(false) }
     val listening = listen?.isPresented == true
@@ -323,6 +325,31 @@ fun ReaderScreen(
                 openNote = null
                 sheetGeneration++
                 sheet = ReaderSheet.NOTES
+            }
+            ReaderRequest.Kind.Plans -> {
+                sheet = null
+                openNote = null
+                onReadingPlans()
+            }
+            ReaderRequest.Kind.PlayTodaysReading -> {
+                // `StartTodaysReadingIntent`: open today's passage, then read it aloud; with no plan
+                // started, the plans screen instead.
+                sheet = null
+                openNote = null
+                val plans = com.blainemiller.scripturealone.data.plans.PlanServices.store(appContext)
+                val reading = plans.todaysReading()
+                if (reading == null || listen == null || listenStart == null) {
+                    onReadingPlans()
+                } else {
+                    reading.passages.firstOrNull()?.let { model.open(com.blainemiller.scripturealone.data.sabible.ChapterRef(it.book.number, it.startChapter)) }
+                    listenStart {
+                        scope.launch {
+                            if (!listen.playTodaysReading(plans, model.translationId)) {
+                                listen.notice = com.blainemiller.scripturealone.text.AppText.get(R.string.plans_unavailable)
+                            }
+                        }
+                    }
+                }
             }
             is ReaderRequest.Kind.Listen -> {
                 // The Listen shortcut / App Action: once the chapter is on screen, read it aloud.
@@ -521,7 +548,7 @@ fun ReaderScreen(
             TopBar(
                 model, palette, onGoTo = { sheet = ReaderSheet.GO_TO }, onNotes = { sheet = ReaderSheet.NOTES },
                 onStudy = onStudy, onCompare = onCompare, onManageTranslations = onManageTranslations,
-                onAppearance = { appearance = true }, studyOpen = studyOpen, fade = !pageLayout.paged,
+                onReadingPlans = onReadingPlans, onAppearance = { appearance = true }, studyOpen = studyOpen, fade = !pageLayout.paged,
             )
             if (keepsake == null) {
                 TranslationDownloadBanner(
@@ -1187,6 +1214,7 @@ private fun TopBar(
     onStudy: () -> Unit,
     onCompare: () -> Unit,
     onManageTranslations: () -> Unit,
+    onReadingPlans: () -> Unit,
     onAppearance: () -> Unit,
     studyOpen: Boolean,
     /** The fade the scrolling text passes under; columns never reach the bar, so they go without. */
@@ -1256,7 +1284,7 @@ private fun TopBar(
             }
             }
             Pill(palette) {
-                TranslationButton(model, palette, compact, onCompare, onManageTranslations)
+                TranslationButton(model, palette, compact, onCompare, onManageTranslations, onReadingPlans)
                 AppearanceButton(palette, onAppearance)
             }
         }
@@ -1362,7 +1390,7 @@ private fun PillIcon(
 }
 
 @Composable
-private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, compact: Boolean, onCompare: () -> Unit, onManageTranslations: () -> Unit) {
+private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, compact: Boolean, onCompare: () -> Unit, onManageTranslations: () -> Unit, onReadingPlans: () -> Unit) {
     var open by remember { mutableStateOf(false) }
     val translationLabel = stringResource(R.string.reader_translation_label, model.translationAbbreviation)
     Box {
@@ -1400,6 +1428,14 @@ private fun TranslationButton(model: ReaderViewModel, palette: ReaderPalette, co
                 onClick = {
                     open = false
                     onManageTranslations()
+                },
+            )
+            HorizontalDivider(color = palette.secondary.copy(alpha = 0.25f))
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.reader_reading_plans), color = palette.ink, fontSize = 15.sp) },
+                onClick = {
+                    open = false
+                    onReadingPlans()
                 },
             )
         }

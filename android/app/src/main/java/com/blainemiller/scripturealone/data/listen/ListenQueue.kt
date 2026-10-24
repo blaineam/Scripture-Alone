@@ -5,6 +5,7 @@ import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.ChapterVerse
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookID
+import com.blainemiller.scripturealone.data.plans.PlanPassage
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.text.AppText
 
@@ -49,6 +50,40 @@ object ListenQueue {
         if (first == 1) result += Item(0, announcement(ref))
         numbered.filter { it.ref.verse >= first }.mapTo(result) { Item(it.ref.key, it.text) }
         return result
+    }
+
+    /**
+     * A plan's passages, in order, each chapter announced — `ListenController.playReading`. [verses] gives
+     * a chapter's verses (empty when the translation has none of it, which skips that chapter). A plan
+     * names verses the way the reader types them: in the translation's own numbers.
+     */
+    fun readingItems(passages: List<PlanPassage>, verses: (ChapterRef) -> List<ChapterVerse>): List<Item> {
+        val out = mutableListOf<Item>()
+        for (plan in passages) {
+            val clamped = plan.passage.clamped
+            for ((book, chapter) in plan.chapters) {
+                val ref = ChapterRef(book.number, chapter)
+                val all = verses(ref)
+                val first = if (chapter == clamped.startChapter) clamped.startVerse else null
+                val last = if (chapter == clamped.endChapter) clamped.endVerse else null
+                if (first == null && last == null) {
+                    out += chapterItems(ref, all, 1)
+                    continue
+                }
+                val wanted = all.filter { it.ref.verse >= (first ?: 1) && it.ref.verse <= (last ?: Int.MAX_VALUE) && it.ref.verse >= 1 }
+                    .sortedBy { it.ref.verse }
+                if (wanted.isEmpty()) continue
+                if (first == null || first == 1) out += Item(0, announcement(ref))
+                wanted.mapTo(out) { Item(it.ref.key, it.text) }
+            }
+        }
+        return out
+    }
+
+    /** A plan's own writing — the weekly study — one paragraph per item, headed by [title]. Opt-in. */
+    fun proseItems(title: String, text: String): List<Item> {
+        val paragraphs = text.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
+        return if (paragraphs.isEmpty()) emptyList() else (listOf(title) + paragraphs).map { Item(0, it) }
     }
 
     /** The selected verses, in order, with no announcement — `playSelection`. */

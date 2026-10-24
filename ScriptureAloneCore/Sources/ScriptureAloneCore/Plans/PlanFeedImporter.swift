@@ -46,12 +46,20 @@ public struct FeedCategory: Equatable, Sendable, Identifiable {
     public let count: Int
 }
 
-/// A post's commentary, fetched on demand and shown with a link back. Never stored or bundled.
-public struct StudyPost: Equatable, Sendable {
+/// A post's commentary, fetched on demand and shown with a link back. Never bundled; the app may keep
+/// the last one it fetched on the device, for reading offline (`StudyCache`).
+public struct StudyPost: Codable, Equatable, Sendable {
     public let title: String
     public let date: String
     public let link: URL?
     public let text: String
+
+    public init(title: String, date: String, link: URL?, text: String) {
+        self.title = title
+        self.date = date
+        self.link = link
+        self.text = text
+    }
 }
 
 /// Reads a reading-plan schedule from a WordPress site or an RSS feed: the *schedule* only. Each

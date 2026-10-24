@@ -209,3 +209,18 @@ struct PlanProseListenTests {
     }
 }
 #endif
+
+@MainActor
+struct StudyCacheTests {
+    @Test func theLastStudyIsKeptPerSourceAndDiscardedWithIt() {
+        StudyCache.directory = FileManager.default.temporaryDirectory.appending(path: "studies-\(UUID().uuidString)")
+        let a = PlanSource(siteURL: URL(string: "https://a.org/bible")!, apiRoot: nil, studyCategory: 7, name: "A")
+        let b = PlanSource(siteURL: URL(string: "https://b.org")!, apiRoot: nil, studyCategory: 7, name: "B")
+        #expect(StudyCache.load(for: a) == nil)
+        let post = StudyPost(title: "Saturday Study", date: "2026-10-17", link: URL(string: "https://a.org/s/"), text: "Text")
+        StudyCache.save(post, for: a)
+        #expect(StudyCache.load(for: a) == post && StudyCache.load(for: b) == nil)
+        StudyCache.discard(a)
+        #expect(StudyCache.load(for: a) == nil)
+    }
+}

@@ -5,11 +5,12 @@
 - **Reading plans.** Read through the Bible in a year (in order, or in the order it happened), or one chapter
   a day through any book; or follow a church's plan — Disciples Church's daily reading is built in, and you can
   paste the address of any WordPress site or feed whose posts name the day's passage. Only the schedule comes
-  from the site: every passage is read in your own translation. Today shows what to read, with Read, Listen and
-  Mark as Read; missed days wait under Catch Up, and a streak counts the days in a row. Set a daily reminder,
-  and Listen reads the day's passages aloud. The Shortcuts app gains **Start Today's Reading**. A plan that
-  follows a church's weekly study can fetch it on demand, with a link back to the church, and can be read aloud. Reading Plans is in
-  the translation menu. On iPhone, iPad and Mac. (On Android the plan logic is in place; the screens follow.)
+  from the site, and it is kept on your device so it works offline: every passage is read in your own
+  translation. Today shows what to read, with Read, Listen and Mark as Read; missed days wait under Catch Up, and
+  a streak counts the days in a row. Set a daily reminder, and Listen reads the day's passages aloud. A church's
+  weekly study can be fetched on demand, read aloud, and kept for offline reading, with a link back to the
+  church. Reading Plans is in the translation menu. The Shortcuts app gains **Start Today's Reading** (it takes the
+  Siri phrase *Add to Favorites* had; that action stays in Shortcuts). On iPhone, iPad, Mac and Android.
 
 ## 1.1.7 (2026-10-18)
 

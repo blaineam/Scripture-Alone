@@ -49,6 +49,10 @@ object SettingsBackup {
     /** Keepsakes received (`.scripturelegacy` files), under `filesDir`. */
     const val KEEPSAKES = "Keepsakes"
 
+    /** Reading plans: the imported schedules and the reader's progress (`data/plans/PlanStore`), `plans/plans.json` under `filesDir`. The saved weekly study is a cache and stays out. */
+    const val PLANS = "plans"
+    const val PLANS_FILE = "$PLANS/plans.json"
+
     /** Imported Bibles (`TranslationLibrary.importedDirectory`), one `.sqlite` store each, under `filesDir`. */
     const val IMPORTS = "Translations"
 

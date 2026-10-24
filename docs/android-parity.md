@@ -212,18 +212,20 @@ Status: ✅ done · 🔧 in progress · ⬜ planned · ➖ not applicable on And
 | Ctrl+S in the verse-image designer | ✅ | Emulator-verified 2026-10-08 (`input keycombination KEYCODE_CTRL_LEFT KEYCODE_S` with the designer open on the Create Verse Image shortcut's Proverbs 16:3): "Proverbs 16.3 ASV.png" appeared in MediaStore. `MainActivity.dispatchKeyEvent`: with the designer open, Ctrl+S (no Alt/Shift, not repeated) is Save to Photos (`ReaderViewModel.designerSaves`, collected by `ShareDesigner`) — iPad/Mac's ⌘S |
 
 ### Reading plans
-Spec: `docs/reading-plans.md`. The logic is ported and tested; the screens are not.
+Spec: `docs/reading-plans.md`.
 
 | Feature | Status | Notes |
 |---|---|---|
-| Plan model, built-in catalog (Bible in a Year canonical and chronological, book by book) | ✅ | `data/plans/ReadingPlan.kt`; `ReadingPlanTest` carries the same cases as `ReadingPlanTests.swift` — 1,189 chapters exactly once in each year plan |
+| Plan model, built-in catalog (Bible in a Year canonical and chronological, book by book) | ✅ | `data/plans/ReadingPlan.kt`; `ReadingPlanTest` carries the same cases as `ReadingPlanTests.swift` — 1,189 chapters exactly once in each year plan. The devotional plans are not built (owner, 2026-10-23) |
 | Schedule, progress, catch-up, streak, rest weekdays, follow-the-source's-calendar | ✅ | `data/plans/PlanSchedule.kt` (`java.time.LocalDate`; weekdays numbered 1 = Sunday as on iOS, so the JSON is the same) |
-| Importer logic: pasted address, title → passage, posts → plan, WordPress REST JSON, categories, HTML → paragraphs | ✅ | `data/plans/PlanFeed.kt` on `ReferenceParser`; same plan ids as iOS for the same site and title |
-| Importer fetching (REST paging, RSS fallback, offline errors) and the weekly study fetch | ⬜ | `HttpURLConnection` on an IO dispatcher against `PlanFeed`; study shown with a link back, never stored (licensing flag in the spec) |
-| Plans store + Today / plan list / start / import / study screens | ⬜ | Compose, reached from the translation menu as on iOS; JSON file beside `no_backup`, or a table in `UserDatabase` |
-| Daily reminders | ⬜ | WorkManager topping up the next 14 days' notifications (`POST_NOTIFICATIONS` on API 33+), as iOS |
-| Read today's reading aloud | ⬜ | Through the existing `data/listen/` controller; a `playReading(passages)` mirroring `ListenController.playReading`, UI-free |
-| "Start today's reading" entry (App Intent on iOS) | ⬜ | An App Shortcut / Assistant deep link to the same call; a Quick Settings tile is the alternative |
+| Importer: pasted address, title → passage, posts → plan, WordPress REST paging, RSS fallback, categories, offline vs not-a-feed errors, refresh of a followed plan | ✅ | `data/plans/PlanFeed.kt` (pure) and `PlanImporter.kt` (`HttpURLConnection`, blocking, on `Dispatchers.IO`; tested with a fake fetcher). Same plan ids as iOS for the same site and title |
+| Plans store, progress and imported schedules kept on the device (offline) | ✅ | `data/plans/PlanStore.kt` → `filesDir/plans/plans.json`, the iOS shape; carried by Auto Backup (`SettingsBackup.PLANS_FILE`, `BackupRulesTest`) |
+| Today / plan list / start / book picker / import / plan detail / weekly study screens | ✅ | `ui/plans/PlansSheet.kt`, from the translation menu's **Reading Plans…**; Compose in the Study/Compare sheet style. **Emulator-verified** (`sa_guide_phone`, Chinese UI): list, start, Today, Read Aloud of Genesis 1–3 with the player and verse marked. An emulator pass found, and the fix covers, a duplicate `LazyColumn` key |
+| Weekly study: fetched on demand, link back, last one kept offline | ✅ | `StudyScreen`; `data/plans/StudyCache` (`plan-studies/`, not backed up) |
+| Daily reminders | ✅ | `data/plans/PlanReminders.kt`: one inexact alarm for the next reminder (no exact-alarm permission), re-armed at boot and when the app opens; the notification opens the plans screen. `PlanReminderRules` is pure and tested. `POST_NOTIFICATIONS` is asked when a reminder is turned on |
+| Read today's reading aloud, and the study's prose | ✅ | `ListenController.playReading` / `playTodaysReading` (UI-free) / `playProse`, over `ListenQueue.readingItems` / `proseItems` (tested) |
+| "Start today's reading" entry | ✅ | `AppCommand.TodaysReading` (`scripturealone://todays-reading`; OPEN_APP_FEATURE name `todays_reading`) and the Reading Plans screen's Listen row. A launcher shortcut and an Assistant phrase are not added (⬜) |
+| Interface strings in the big 8 | 🔧 | All `plans_*` strings are in the eight locales, **machine-drafted — Levi to review**. The built-in plans' own names and summaries are English |
 
 ### Android-only
 

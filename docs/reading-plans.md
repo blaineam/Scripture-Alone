@@ -6,8 +6,8 @@ Bible text, and it follows a change of translation at once.
 
 Code: `ScriptureAloneCore/Sources/ScriptureAloneCore/Plans/` (model, schedule, importer — tested in
 `ReadingPlanTests.swift`), `ScriptureAlone/Plans/` (store, reminders, screens),
-`android/app/.../data/plans/` (the same logic in Kotlin, `ReadingPlanTest.kt`). The two test files
-carry the same cases; add one to both or to neither.
+`android/app/.../data/plans/` + `ui/plans/` (the same logic and screens in Kotlin; `ReadingPlanTest.kt`, `PlanStoreTest.kt`). The
+Swift and Kotlin tests carry the same cases; add one to both or to neither.
 
 ## Built-in plans
 
@@ -28,8 +28,9 @@ Per plan: the start date, the days done, an optional daily reminder time. From t
 the **streak** (consecutive scheduled days read, ending today's — or yesterday's while today's is open, so
 a streak survives until a day is really missed) and the fraction done.
 
-iOS keeps plans and progress in `Application Support/Plans/plans.json`; it does not sync through iCloud
-(see *Not yet* below).
+iOS keeps plans and progress in `Application Support/Plans/plans.json`; Android in `filesDir/plans/plans.json`, the same
+shape, carried by Auto Backup to a new phone. Neither syncs live between a reader's devices (see *Not yet*). An imported
+plan's schedule is stored on the device, so it works offline; only the *refresh* needs a connection.
 
 ## Reminders
 
@@ -50,9 +51,12 @@ A plan's own writing — the weekly study — can be read aloud too: *Read Aloud
 under the text's own title. It is opt-in: it starts only when the reader taps the button.
 
 The **Start Today's Reading** App Intent (`ReadingIntents.swift`) opens today's passage and reads it. With
-no plan started it says so rather than opening the app to nothing. An app gets ten Siri phrases and all ten
-are taken, so it has no spoken phrase of its own yet — it is in the Shortcuts app's action list (owner
-decision: which phrase to give up, or whether to fold it into *Listen*).
+no plan started it says so rather than opening the app to nothing. An app gets ten Siri phrases; to make room,
+the phrase for *Add to Favorites* was given up (it needs a verse dictated, which *Open Passage* and *Get Verses* already do
+by voice, where *Today's Reading* is a hands-free daily use) — Add to Favorites stays in the Shortcuts action list.
+Nothing else among the ten was a double, an extra or mergeable: Find Notes/Create Note, Open Passage/Get Verses/Search and
+Continue/Listen each take different parameters, and an App Shortcut can't be folded into another intent's phrases.
+On Android the same call is `AppCommand.TodaysReading` (`scripturealone://todays-reading`, feature name `todays_reading`).
 
 ## Importing a church's plan
 
@@ -81,33 +85,40 @@ Saturday is the study) is the schedule; category 7 (*Saturday Study*, ~550 weekl
 The preset is `PlanFeedImporter.disciplesChurch`.
 
 **Saturday Study text** is the church's own writing. It is fetched on the device when the reader opens
-*This Week's Study*, shown as plain paragraphs with a **link back** to the post, and **never stored,
-cached on disk by the app, bundled or redistributed**. The importer takes the latest study published on or
-before today. Nothing in the app republishes it.
+*This Week's Study*, shown as plain paragraphs with a **link back** to the post, and the last one opened is
+**kept on the device** (`StudyCache` on iOS, `plan-studies/` on Android; one per source, replaced by the
+next, removed with the plan, excluded from backup) so it can be read offline. It is **never bundled,
+shared or redistributed**; the importer takes the latest study published on or before today.
 
-> **Licensing flag (owner).** We have not asked Disciples Church for permission. Reading a public feed on
-> a reader's own device, for that reader, with attribution and a link back, is the posture here; if they
-> object, or want it done differently, the study screen is one view (`StudyView`) and the preset one
-> constant. The same applies to any other site a reader pastes — nothing from it ships in the app. A
-> courtesy note to the church before this release would be wise.
+> **Licensing.** Disciples Church is the owner's own church, who expects them to be fine with it (2026-10-23);
+> if they are not, the preset (`PlanFeedImporter.disciplesChurch` / `PlanImporter.DISCIPLES_CHURCH`) is one
+> constant to drop. Reading a public feed on a reader's own device, with attribution and a link back, is the posture.
+> The same applies to any other site a reader pastes — nothing from it ships in the app.
 
 ## Devotional plans (men's, women's)
 
 **Not built, by the owner's decision.** The owner won't write them; they are added only if a good Reformed
-Baptist source can be found *and licensed*. No placeholder plans, schema fields or screens exist for them.
-Public-domain candidates to evaluate when that day comes: Spurgeon's *Morning and Evening* and *Faith's
-Checkbook*; Mrs. Cowman's *Streams in the Desert* (public domain in the US, 1925); Bonar's *Light and Truth*;
-the Bunyan and Spurgeon-era daily-reading compilations; and 1689 Federalism / Founders Ministries or
-Reformed Baptist church reading plans (each needs written permission). Their text would be *content* shipped
-with the app, which is a larger decision than the schedule-only plans here.
+Baptist source can be found *and licensed*, and its theology fits. No placeholder plans, schema fields or
+screens exist for them.
+
+Public-domain candidates, with the doctrinal caveat that matters for this audience:
+
+- Spurgeon, *Morning and Evening* and *Faith's Checkbook* — Particular Baptist, the obvious fit. Public domain.
+- Horatius Bonar, *Light and Truth* — a Scottish Free Church Presbyterian: Reformed and respected, expository
+  rather than devotional; paedobaptist, so fine for the text, not a "Baptist" source.
+- Mrs. Charles Cowman, *Streams in the Desert* — not a fit as a default: Holiness/Keswick-leaning, from a
+  missionary society outside the Reformed tradition. Public domain, but theologically mixed for this app.
+- Others worth a look: Spurgeon's *Daily Help*, Bunyan, Puritan daily-reading compilations (check each
+  edition's licence), and Reformed Baptist church or ministry plans (each needs written permission).
+
+Whatever is chosen is *content* shipped with the app, a larger decision than the schedule-only plans here.
 
 ## Not yet
 
-- iCloud sync of plan progress between a reader's devices (iOS) — progress is per device for now.
-- A notification tap does not yet deep-link into Today.
+- Live sync of plan progress between a reader's devices (iCloud on iOS; Android deliberately has none).
 - Marking a day read automatically when Listen finishes it.
-- Importing a second, separate *study* category from a pasted address (the preset knows Disciples'; a
-  pasted site gets its schedule only).
-- Android's screens, reminders and read-aloud: see `docs/android-parity.md` › Reading plans.
-- Plan names, summaries and the new interface strings are English only until Levi fills the eight
-  languages (`docs/localization.md`).
+- An iOS notification tap deep-linking into Today (Android's opens the plans screen).
+- Importing a separate *study* category from a pasted address (the preset knows Disciples'; a pasted site gets its schedule only).
+- A Siri phrase for Start Today's Reading on Android (App Actions) — the deep link and feature name exist.
+- Plan names and summaries (built-in catalogue text) are English only; the interface around them is translated on Android
+  (machine-drafted — Levi to review) and English-only on iOS until Levi fills `Localizable.xcstrings`.

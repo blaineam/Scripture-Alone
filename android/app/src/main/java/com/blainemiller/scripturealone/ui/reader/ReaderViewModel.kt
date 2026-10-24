@@ -836,6 +836,12 @@ class ReaderViewModel(application: Application) : AndroidViewModel(application) 
                 val native = numbering.native(first.start.key)?.let(VerseRef::fromKey) ?: first.start
                 post(ReaderRequest.Kind.Listen(native.verse))
             }
+            AppCommand.Plans -> post(ReaderRequest.Kind.Plans)
+            AppCommand.TodaysReading -> {
+                sharedPassage = null
+                clearSelection()
+                post(ReaderRequest.Kind.PlayTodaysReading)
+            }
             is AppCommand.VerseImage -> viewModelScope.launch {
                 // `CreateVerseImageIntent`: the designer on the passage, or on today's verse.
                 loading?.join()
@@ -1093,5 +1099,9 @@ data class ReaderRequest(val serial: Int, val kind: Kind) {
         data object Favorites : Kind()
         /** Read aloud the chapter on screen, from this verse (the translation's own number), or from the top when null. */
         data class Listen(val fromVerse: Int?) : Kind()
+        /** The Reading Plans screen. */
+        data object Plans : Kind()
+        /** Open today's reading in the reader's plan and read it aloud. */
+        data object PlayTodaysReading : Kind()
     }
 }

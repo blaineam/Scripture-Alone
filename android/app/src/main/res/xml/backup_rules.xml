@@ -10,5 +10,6 @@
     <include domain="file" path="userdata.sqlite" />
     <include domain="file" path="userdata.sqlite-wal" />
     <include domain="file" path="Keepsakes/" />
+    <include domain="file" path="plans/" />
     <include domain="file" path="Translations/" />
 </full-backup-content>

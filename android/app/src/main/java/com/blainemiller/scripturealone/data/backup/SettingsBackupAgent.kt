@@ -27,12 +27,13 @@ class SettingsBackupAgent : BackupAgent() {
         // (`BackupUtils.isFileSpecifiedInPathList`) — and on a fresh install nothing has made it yet.
         File(filesDir, SettingsBackup.KEEPSAKES).mkdirs()
         File(filesDir, SettingsBackup.IMPORTS).mkdirs()
+        File(filesDir, SettingsBackup.PLANS).mkdirs()
     }
 
     override fun onFullBackup(data: FullBackupDataOutput) {
         val prefsDir = File(dataDir, "shared_prefs")
         val settings = SettingsBackup.SHARED_PREFS.map { File(prefsDir, "$it.xml") } +
-            File(filesDir, SettingsBackup.READER_SETTINGS)
+            File(filesDir, SettingsBackup.READER_SETTINGS) + File(filesDir, SettingsBackup.PLANS_FILE)
         val keepsakes = File(filesDir, SettingsBackup.KEEPSAKES).listFiles { f -> f.isFile }.orEmpty().sortedBy { it.name }
         // Only finished stores: an import being written is a dotted or non-.sqlite file until it is moved into place.
         val imports = File(filesDir, SettingsBackup.IMPORTS)

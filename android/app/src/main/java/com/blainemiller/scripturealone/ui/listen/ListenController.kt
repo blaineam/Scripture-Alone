@@ -27,6 +27,8 @@ import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.Chapter
 import com.blainemiller.scripturealone.data.ChapterVerse
+import com.blainemiller.scripturealone.data.plans.PlanPassage
+import com.blainemiller.scripturealone.data.plans.PlanStore
 import com.blainemiller.scripturealone.data.listen.ListenKeys
 import com.blainemiller.scripturealone.data.listen.ListenPresentation
 import com.blainemiller.scripturealone.data.listen.ListenQueue
@@ -157,7 +159,7 @@ class ListenController private constructor(private val app: Context) {
 
     /** "John 3:16", or the chapter while nothing is marked — `nowPlayingTitle`. */
     val nowPlayingTitle: String
-        get() = ListenQueue.title(speakingVerse ?: items.firstOrNull { !it.isAnnouncement }?.key)
+        get() = proseTitle ?: ListenQueue.title(speakingVerse ?: items.firstOrNull { !it.isAnnouncement }?.key)
             ?: passChapter?.let(Canon::display).orEmpty()
 
     /** "John 3 · BSB" — the album line of the lock-screen entry. */
@@ -167,6 +169,9 @@ class ListenController private constructor(private val app: Context) {
     /** The voice's name for the bar's status line. */
     val voiceName: String
         get() = voices.firstOrNull { it.id == voiceId }?.name ?: AppText.get(R.string.listen_system_voice)
+
+    /** A heading for a session that reads prose rather than verses (a plan's weekly study). */
+    private var proseTitle: String? = null
 
     // The pass.
     private var scope: ListenQueue.Scope = ListenQueue.Scope.Selection
@@ -216,6 +221,40 @@ class ListenController private constructor(private val app: Context) {
         start(translation, rights, language, ListenQueue.Scope.Selection, ListenQueue.selectionItems(verses))
     }
 
+    /**
+     * Reads a plan's passages aloud in [translation], each chapter announced, then stops. Loads the
+     * chapters off the main thread. False when the translation can't supply any of them (not downloaded,
+     * an online key missing). UI-free: the reader's Listen, a notification and a launcher shortcut — and a
+     * later car entry — all start a reading through this.
+     */
+    suspend fun playReading(passages: List<PlanPassage>, translation: String): Boolean {
+        val loaded = withContext(Dispatchers.IO) {
+            val source = runCatching { BundledTranslations.source(app, translation) }.getOrNull() ?: return@withContext null
+            val cache = mutableMapOf<ChapterRef, Chapter?>()
+            fun chapter(ref: ChapterRef) = cache.getOrPut(ref) { runCatching { source.chapter(ref) }.getOrNull() }
+            val items = ListenQueue.readingItems(passages) { chapter(it)?.verses.orEmpty() }
+            val info = passages.firstNotNullOfOrNull { p -> p.chapters.firstNotNullOfOrNull { (b, c) -> chapter(ChapterRef(b.number, c))?.translation } }
+            if (items.isEmpty() || info == null) null else Triple(items, info.rights, info.language)
+        } ?: return false
+        start(translation, loaded.second, loaded.third, ListenQueue.Scope.Selection, loaded.first)
+        return true
+    }
+
+    /** Today's reading in the reader's plan, aloud: the whole of "play today's reading". False when no plan is started or the text can't be had. */
+    suspend fun playTodaysReading(store: PlanStore, translation: String): Boolean {
+        val reading = store.todaysReading() ?: return false
+        return playReading(reading.passages, translation)
+    }
+
+    /** Reads a plan's own writing aloud, one paragraph at a time under [title]. Opt-in: only a tap starts it. */
+    fun playProse(title: String, text: String, translation: String, rights: TranslationRights, language: String?): Boolean {
+        val items = ListenQueue.proseItems(title, text)
+        if (items.isEmpty()) return false
+        start(translation, rights, language, ListenQueue.Scope.Selection, items)
+        proseTitle = title
+        return true
+    }
+
     /** The toolbar button: start if nothing is up, otherwise play/pause. */
     fun toolbarAction(chapter: Chapter, fromVerse: Int) {
         if (phase != Phase.Idle && isPresented) togglePlayPause() else playChapter(chapter, fromVerse)
@@ -224,6 +263,7 @@ class ListenController private constructor(private val app: Context) {
     private fun start(translation: String, rights: TranslationRights, language: String?, scope: ListenQueue.Scope, items: List<Item>) {
         stopOutput()
         if (items.isEmpty()) return
+        proseTitle = null
         translationId = translation
         textLanguage = language
         this.rights = rights

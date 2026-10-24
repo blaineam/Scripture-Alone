@@ -146,6 +146,8 @@ object PlanFeed {
         } ?: m.value
     }
 
+    fun stableHash(s: String): Long = fnv(s)
+
     private fun fnv(s: String): Long {
         var h = -0x340d631b7bdddcdbL // 0xcbf29ce484222325
         for (b in s.toByteArray(Charsets.UTF_8)) h = (h xor (b.toLong() and 0xff)) * 0x100000001b3L

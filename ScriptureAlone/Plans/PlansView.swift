@@ -428,6 +428,8 @@ struct StudyView: View {
         case loading
         case loaded(StudyPost)
         case none
+        /// No connection: the last study fetched on this device, and when.
+        case saved(StudyPost)
         case offline
         case failed
     }
@@ -439,15 +441,11 @@ struct StudyView: View {
                 case .loading:
                     ProgressView()
                 case .loaded(let post):
-                    Text(post.title).font(.title3.weight(.semibold))
-                    Button { ListenController.shared.playProse(post.text, title: post.title, in: model) } label: {
-                        Label("Read Aloud", systemImage: "speaker.wave.2")
-                    }
-                    .accessibilityIdentifier("plans.study.listen")
-                    Text(post.text).textSelection(.enabled)
-                    if let link = post.link {
-                        Link("Read on \(source.name)", destination: link).font(.footnote)
-                    }
+                    body(of: post)
+                case .saved(let post):
+                    Text("You’re offline. This is the last study you opened.").font(.footnote).foregroundStyle(.secondary)
+                    body(of: post)
+                    retry
                 case .none:
                     Text("There’s no study to show yet.").foregroundStyle(.secondary)
                 case .offline:
@@ -457,7 +455,7 @@ struct StudyView: View {
                     Text("The study couldn’t be loaded.").foregroundStyle(.secondary)
                     retry
                 }
-                if case .loaded = state {} else {
+                if case .loaded = state {} else if case .saved = state {} else {
                     Link("Open \(source.name)", destination: source.siteURL).font(.footnote)
                 }
             }
@@ -469,6 +467,19 @@ struct StudyView: View {
         .accessibilityIdentifier("plans.study")
     }
 
+    @ViewBuilder
+    private func body(of post: StudyPost) -> some View {
+        Text(post.title).font(.title3.weight(.semibold))
+        Button { ListenController.shared.playProse(post.text, title: post.title, in: model) } label: {
+            Label("Read Aloud", systemImage: "speaker.wave.2")
+        }
+        .accessibilityIdentifier("plans.study.listen")
+        Text(post.text).textSelection(.enabled)
+        if let link = post.link {
+            Link("Read on \(source.name)", destination: link).font(.footnote)
+        }
+    }
+
     private var retry: some View {
         Button("Try Again") { Task { await load() } }
     }
@@ -478,14 +489,19 @@ struct StudyView: View {
         do {
             let today = PlanSchedule.isoDay(Date())
             if let post = try await PlanFeedImporter(fetcher: URLSession.shared).latestStudy(source: source, onOrBefore: today) {
+                StudyCache.save(post, for: source)
                 state = .loaded(post)
             } else {
                 state = .none
             }
-        } catch PlanFeedError.offline {
-            state = .offline
         } catch {
-            state = .failed
+            if let kept = StudyCache.load(for: source) {
+                state = .saved(kept)
+            } else if case PlanFeedError.offline = error {
+                state = .offline
+            } else {
+                state = .failed
+            }
         }
     }
 }

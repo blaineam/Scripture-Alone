@@ -98,6 +98,7 @@ final class PlanStore {
     }
 
     func stop(_ planID: String) {
+        if let source = imported.first(where: { $0.id == planID })?.source { StudyCache.discard(source) }
         progress.removeAll { $0.planID == planID }
         imported.removeAll { $0.id == planID }
         if primaryID == planID { primaryID = progress.first?.planID }

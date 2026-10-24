@@ -69,6 +69,7 @@ class MainActivity : ComponentActivity() {
                     onStudy = panels.toggleStudy,
                     onCompare = panels.openCompare,
                     onManageTranslations = panels.openTranslations,
+                    onReadingPlans = panels.openPlans,
                     // Listen: the toolbar button, the selection bar's Listen and the Now Playing bar.
                     listen = ListenController.get(this),
                     studyOpen = panels.studyOpen(),

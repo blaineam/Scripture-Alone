@@ -1,9 +1,8 @@
 import AppIntents
 
 /// Siri phrases that work with no setup. An app gets ten; the rest of the intents (Open Note, Open
-/// Favorite, Remove from Favorites, Is Favorite, New Note, Show Notes, Show Favorites, Start Today’s
-/// Reading) are in the
-/// Shortcuts app's action list without a phrase of their own.
+/// Favorite, Remove from Favorites, Is Favorite, Add to Favorites, New Note, Show Notes, Show Favorites)
+/// are in the Shortcuts app's action list without a phrase of their own.
 ///
 /// Phrases are localized in `Resources/AppShortcuts.xcstrings` — the one catalog the App Intents
 /// metadata step reads them from.
@@ -98,13 +97,14 @@ nonisolated struct ScriptureAloneShortcuts: AppShortcutsProvider {
             systemImageName: "note.text"
         )
         AppShortcut(
-            intent: AddToFavoritesIntent(),
+            intent: StartTodaysReadingIntent(),
             phrases: [
-                "Add a verse to my favorites in \(.applicationName)",
-                "Favorite a verse in \(.applicationName)",
+                "Start today's reading in \(.applicationName)",
+                "Read today's Bible reading in \(.applicationName)",
+                "Play my reading plan in \(.applicationName)",
             ],
-            shortTitle: LocalizedStringResource("Add to Favorites", comment: "App Shortcut tile title"),
-            systemImageName: "heart"
+            shortTitle: LocalizedStringResource("Today’s Reading", comment: "App Shortcut tile title"),
+            systemImageName: "calendar"
         )
     }
 }

@@ -55,6 +55,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.blainemiller.scripturealone.data.VerseRef
+import com.blainemiller.scripturealone.ui.plans.PlansSheet
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
 import com.blainemiller.scripturealone.ui.reader.SheetColors
 import com.blainemiller.scripturealone.ui.translations.CompareSheet
@@ -73,6 +74,7 @@ class ReaderPanels(
     val openOriginal: (verseKey: Int) -> Unit,
     val openTranslations: () -> Unit,
     val openCompare: () -> Unit,
+    val openPlans: () -> Unit,
     /** Whether the Study panel is up (state-backed: reading it recomposes on a change). */
     val studyOpen: () -> Boolean,
     /**
@@ -100,6 +102,7 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
     val study = remember { StudyModel(context) }
     var showTranslations by rememberSaveable { mutableStateOf(false) }
     var showCompare by rememberSaveable { mutableStateOf(false) }
+    var showPlans by rememberSaveable { mutableStateOf(false) }
     /** Study beside the text (a wide screen) rather than in a sheet over it. */
     var wideLayout by remember { mutableStateOf(false) }
     val palette = reader.theme.palette(isSystemInDarkTheme()).accented(reader.accent)
@@ -126,6 +129,7 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
             },
             openTranslations = { showTranslations = true },
             openCompare = { showCompare = true },
+            openPlans = { showPlans = true },
             studyOpen = { study.isOpen },
             studyCovers = { study.isOpen && !wideLayout },
             studyBack = { if (study.isOpen) study.back(reader) },
@@ -159,11 +163,12 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
         when (extras.getString("panel")) {
             "translations" -> showTranslations = true
             "compare" -> showCompare = true
+            "plans" -> showPlans = true
         }
     }
 
     // Translations and Compare cover everything: modal to TalkBack, so nothing behind takes focus.
-    val covered = showTranslations || showCompare
+    val covered = showTranslations || showCompare || showPlans
     val behind = if (covered) Modifier.clearAndSetSemantics {} else Modifier
     BoxWithConstraints(Modifier.fillMaxSize().background(Color.Black)) {
         val wide = maxWidth >= 700.dp
@@ -197,6 +202,9 @@ fun StudyHost(reader: ReaderViewModel, content: @Composable (ReaderPanels) -> Un
 
         FullSheet(showCompare, onDismiss = { showCompare = false }) {
             CompareSheet(reader, palette, onClose = { showCompare = false })
+        }
+        FullSheet(showPlans, onDismiss = { showPlans = false }) {
+            PlansSheet(reader, palette, onClose = { showPlans = false })
         }
         FullSheet(showTranslations, onDismiss = { showTranslations = false }) {
             TranslationsSheet(reader, palette, onClose = { showTranslations = false })

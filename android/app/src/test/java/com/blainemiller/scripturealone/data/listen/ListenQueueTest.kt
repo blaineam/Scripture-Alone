@@ -127,4 +127,33 @@ class ListenQueueTest {
         assertEquals(0.5, ListenSpeed.sanitize(0.1), 0.0)
         assertEquals(1.25, ListenSpeed.sanitize(1.25), 0.0)
     }
+
+    // ---- reading plans
+
+    @Test
+    fun aPlansPassagesAreReadInOrderWithEachChapterAnnounced() {
+        val passages = listOf(
+            com.blainemiller.scripturealone.data.plans.PlanPassage(com.blainemiller.scripturealone.data.canon.BookID.JUDE, 1, null, 1, null),
+            com.blainemiller.scripturealone.data.plans.PlanPassage(com.blainemiller.scripturealone.data.canon.BookID.JOHN, 3, 16, 3, 18),
+        )
+        val items = ListenQueue.readingItems(passages) { ref -> verses(ref.book, ref.chapter, 25) }
+        // Jude whole (announced), then John 3:16-18 from mid-chapter (not announced, as on iOS).
+        assertEquals(Item(0, "Jude"), items.first())
+        assertEquals(1 + 25 + 3, items.size)
+        assertEquals(listOf(43003016, 43003017, 43003018), items.filter { !it.isAnnouncement && it.key / 1_000_000 == 43 }.map { it.key })
+    }
+
+    @Test
+    fun aPartialPassageFromMidChapterIsNotAnnouncedAndMissingChaptersAreSkipped() {
+        val mid = com.blainemiller.scripturealone.data.plans.PlanPassage(com.blainemiller.scripturealone.data.canon.BookID.JOHN, 3, 5, 3, 6)
+        val items = ListenQueue.readingItems(listOf(mid)) { ref -> verses(ref.book, ref.chapter, 10) }
+        assertEquals(listOf(43003005, 43003006), items.map { it.key })
+        assertTrue(ListenQueue.readingItems(listOf(mid)) { emptyList() }.isEmpty())
+    }
+
+    @Test
+    fun proseIsOneItemPerParagraphUnderItsTitleAndNothingForBlankText() {
+        assertEquals(listOf("Study", "One.", "Two."), ListenQueue.proseItems("Study", "One.\n\nTwo.").map { it.text })
+        assertTrue(ListenQueue.proseItems("Study", "  \n ").isEmpty())
+    }
 }
