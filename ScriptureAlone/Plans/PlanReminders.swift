@@ -39,7 +39,7 @@ enum PlanReminders {
                       fire > now else { continue }
                 let day = schedule.plan.days[index]
                 let content = UNMutableNotificationContent()
-                content.title = schedule.plan.title
+                content.title = schedule.plan.displayTitle
                 content.body = String(localized: "Today’s reading: \(day.display)",
                                       comment: "Reading plan reminder. %@ is a passage like Romans 8.")
                 content.sound = .default

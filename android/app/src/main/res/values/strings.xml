@@ -1849,4 +1849,11 @@
     <string name="plans_unavailable">Today’s reading isn’t available in this translation yet.</string>
     <string name="plans_notif_channel">Reading plan reminders</string>
     <string name="plans_notif_body">Today’s reading: %1$s</string>
+    <string name="plans_name_canonical">Bible in a Year</string>
+    <string name="plans_name_chronological">Bible in a Year, Chronological</string>
+    <string name="plans_summary_canonical">Genesis to Revelation in order, about three chapters a day.</string>
+    <string name="plans_summary_chronological">The whole Bible in the order the events happened, about three chapters a day.</string>
+    <string name="plans_summary_book">One chapter a day through %1$s.</string>
+    <string name="plans_summary_import">Schedule from %1$s. The text is read in your translation.</string>
+    <string name="plans_disciples_note">Follows the church’s daily reading, updated automatically every day.</string>
 </resources>

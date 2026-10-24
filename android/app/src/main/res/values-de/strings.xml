@@ -1055,4 +1055,11 @@
     <string name="plans_unavailable">Die heutige Lesung ist in dieser Übersetzung noch nicht verfügbar.</string>
     <string name="plans_notif_channel">Erinnerungen an Lesepläne</string>
     <string name="plans_notif_body">Heutige Lesung: %1$s</string>
+    <string name="plans_name_canonical">Bibel in einem Jahr</string>
+    <string name="plans_name_chronological">Bibel in einem Jahr, chronologisch</string>
+    <string name="plans_summary_canonical">Von der Genesis bis zur Offenbarung der Reihe nach, etwa drei Kapitel am Tag.</string>
+    <string name="plans_summary_chronological">Die ganze Bibel in der Reihenfolge der Ereignisse, etwa drei Kapitel am Tag.</string>
+    <string name="plans_summary_book">Jeden Tag ein Kapitel durch %1$s.</string>
+    <string name="plans_summary_import">Zeitplan von %1$s. Der Text wird in deiner Übersetzung gelesen.</string>
+    <string name="plans_disciples_note">Folgt der täglichen Lesung der Gemeinde, jeden Tag automatisch aktualisiert.</string>
 </resources>

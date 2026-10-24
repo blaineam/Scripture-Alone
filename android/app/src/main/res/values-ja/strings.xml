@@ -1055,4 +1055,11 @@
     <string name="plans_unavailable">今日の箇所は、この翻訳ではまだ利用できません。</string>
     <string name="plans_notif_channel">読書プランのリマインダー</string>
     <string name="plans_notif_body">今日の箇所：%1$s</string>
+    <string name="plans_name_canonical">1年で聖書を読む</string>
+    <string name="plans_name_chronological">1年で聖書を読む（時系列順）</string>
+    <string name="plans_summary_canonical">創世記から黙示録まで順番に、1日約3章。</string>
+    <string name="plans_summary_chronological">出来事の起きた順に聖書全体を、1日約3章。</string>
+    <string name="plans_summary_book">1日1章ずつ%1$sを読みます。</string>
+    <string name="plans_summary_import">%1$sの日程。本文はあなたの翻訳で読みます。</string>
+    <string name="plans_disciples_note">教会の毎日の聖書箇所に沿って、毎日自動で更新されます。</string>
 </resources>

@@ -10,7 +10,14 @@ struct PlansView: View {
     var onListen: () -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @State private var adding = false
+    @State private var addMessage: String?
     private let store = PlanStore.shared
+
+    /// The church plan is offered until it is followed: one tap, no address to paste.
+    private var offersDisciples: Bool {
+        !store.imported.contains { $0.source?.siteURL == PlanFeedImporter.disciplesChurch.site }
+    }
 
     var body: some View {
         NavigationStack {
@@ -32,11 +39,35 @@ struct PlansView: View {
                     }
                 }
                 Section("Add a Plan") {
+                    if offersDisciples {
+                        Button {
+                            adding = true
+                            addMessage = nil
+                            Task {
+                                defer { adding = false }
+                                do {
+                                    try await store.importPlan(pasted: "", preset: PlanFeedImporter.disciplesChurch, mode: .followCalendar)
+                                } catch {
+                                    addMessage = PlanStore.message(for: error)
+                                }
+                            }
+                        } label: {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Disciples Church Bible Reading Plan")
+                                Text("Follows the church’s daily reading, updated automatically every day.")
+                                    .font(.footnote).foregroundStyle(.secondary)
+                            }
+                        }
+                        .disabled(adding)
+                        .accessibilityIdentifier("plans.add.disciples")
+                        if adding { HStack { ProgressView(); Text("Reading the schedule…") } }
+                        if let addMessage { Text(addMessage).font(.footnote).foregroundStyle(.secondary) }
+                    }
                     ForEach(PlanCatalog.builtIn) { plan in
                         NavigationLink(value: PlanRoute.start(plan.id)) {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(plan.title)
-                                Text(plan.summary).font(.footnote).foregroundStyle(.secondary)
+                                Text(plan.displayTitle)
+                                Text(plan.displaySummary).font(.footnote).foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -96,7 +127,7 @@ private struct PlanRow: View {
         let schedule = PlanStore.shared.schedule(for: plan.id)
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(plan.title)
+                Text(plan.displayTitle)
                 if isPrimary { Image(systemName: "star.fill").font(.caption).foregroundStyle(.tint).accessibilityLabel("Primary plan") }
             }
             if let schedule {
@@ -149,7 +180,7 @@ private struct TodaySection: View {
                 }
                 if !missed.isEmpty {
                     NavigationLink(value: reading.planID) {
-                        Label("\(missed.count) days to catch up on", systemImage: "arrow.uturn.backward")
+                        Label("Days to catch up on: \(missed.count)", systemImage: "arrow.uturn.backward")
                     }
                 }
                 if schedule.plan.source?.studyCategory != nil, let source = schedule.plan.source {
@@ -171,7 +202,7 @@ private struct RestSection: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Today").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 Text(headline).font(.title3.weight(.semibold))
-                Text(schedule.plan.title).font(.footnote).foregroundStyle(.secondary)
+                Text(schedule.plan.displayTitle).font(.footnote).foregroundStyle(.secondary)
             }
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("plans.today")
@@ -200,7 +231,7 @@ struct StartPlanView: View {
     var body: some View {
         Form {
             Section {
-                Text(plan.summary)
+                Text(plan.displaySummary)
                 DatePicker("Start", selection: $start, displayedComponents: .date)
             } footer: {
                 Text("The passages appear in the translation you’re reading. Change translation any time.")
@@ -213,7 +244,7 @@ struct StartPlanView: View {
                 .accessibilityIdentifier("plans.startButton")
             }
         }
-        .navigationTitle(plan.title)
+        .navigationTitle(plan.displayTitle)
     }
 }
 
@@ -304,7 +335,7 @@ struct PlanDetailView: View {
                     }
                 }
             }
-            .navigationTitle(schedule.plan.title)
+            .navigationTitle(schedule.plan.displayTitle)
             .onAppear {
                 if let time = schedule.progress.reminder {
                     reminderOn = true
@@ -400,16 +431,8 @@ struct ImportPlanView: View {
                     pasted: address, preset: preset, mode: followCalendar ? .followCalendar : .fromDayOne(since: since))
                 skipped = result.skipped.count
                 finished()
-            } catch PlanFeedError.offline {
-                message = String(localized: "You’re offline. Connect to the internet to import a plan.",
-                                 comment: "Reading plans import: shown when the request could not reach the site")
-            } catch PlanFeedError.noReadings {
-                message = String(localized: "That site has no posts titled with a Bible passage.",
-                                 comment: "Reading plans import: shown when no post title names a passage")
-            } catch PlanFeedError.badURL {
-                message = String(localized: "That doesn’t look like a web address.", comment: "Reading plans import")
             } catch {
-                message = String(localized: "Couldn’t read a plan from that address.", comment: "Reading plans import: generic failure")
+                message = PlanStore.message(for: error)
             }
         }
     }

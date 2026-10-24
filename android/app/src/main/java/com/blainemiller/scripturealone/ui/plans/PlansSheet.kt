@@ -69,6 +69,7 @@ import com.blainemiller.scripturealone.data.plans.PlanReminders
 import com.blainemiller.scripturealone.data.plans.PlanServices
 import com.blainemiller.scripturealone.data.plans.PlanSource
 import com.blainemiller.scripturealone.data.plans.PlanStore
+import com.blainemiller.scripturealone.data.plans.PlanText
 import com.blainemiller.scripturealone.data.plans.PlanToday
 import com.blainemiller.scripturealone.data.plans.ReadingPlan
 import com.blainemiller.scripturealone.data.plans.StudyPost
@@ -129,10 +130,10 @@ fun PlansSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: () -> U
     val route = stack.last()
     val title = when (route) {
         Route.Home -> stringResource(R.string.plans_title)
-        is Route.Start -> store.plan(route.planId)?.title.orEmpty()
+        is Route.Start -> store.plan(route.planId)?.let(PlanText::title).orEmpty()
         Route.Books -> stringResource(R.string.plans_choose_book)
         Route.Import -> stringResource(R.string.plans_import_title)
-        is Route.Detail -> store.plan(route.planId)?.title.orEmpty()
+        is Route.Detail -> store.plan(route.planId)?.let(PlanText::title).orEmpty()
         is Route.Study -> stringResource(R.string.plans_study_title)
     }
     fun openPassage(p: PlanPassage) {
@@ -168,6 +169,14 @@ fun PlansSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: () -> U
 }
 
 // MARK: Pieces
+
+/** What to tell the reader when an import fails. */
+private fun importMessage(e: Throwable): Int = when ((e as? PlanFeedException)?.kind) {
+    PlanFeedException.Kind.OFFLINE -> R.string.plans_offline
+    PlanFeedException.Kind.NO_READINGS -> R.string.plans_no_readings
+    PlanFeedException.Kind.BAD_URL -> R.string.plans_bad_url
+    else -> R.string.plans_failed
+}
 
 @Composable
 private fun SectionTitle(text: String, palette: ReaderPalette) {
@@ -220,19 +229,23 @@ private fun Home(
     push: (Route) -> Unit, openPassage: (PlanPassage) -> Unit,
 ) {
     val reading = store.todaysReading()
+    var adding by remember { mutableStateOf(false) }
+    var addMessage by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
     LazyColumn(Modifier.fillMaxSize()) {
         item {
             if (reading != null) {
                 val schedule = store.schedule(reading.planId)
                 val missed = schedule?.missedDays(store.today())?.size ?: 0
                 val streak = schedule?.streak(store.today()) ?: 0
-                val label = stringResource(R.string.plans_today_label, reading.display, reading.planTitle, reading.dayNumber, reading.totalDays)
+                val readingTitle = store.plan(reading.planId)?.let(PlanText::title) ?: reading.planTitle
+                val label = stringResource(R.string.plans_today_label, reading.display, readingTitle, reading.dayNumber, reading.totalDays)
                 Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp).semantics(mergeDescendants = true) { contentDescription = label }) {
                     Text(stringResource(if (reading.isCatchUp) R.string.plans_catching_up else R.string.plans_today), color = palette.secondary,
                         fontSize = StudyStyle.caption, fontWeight = FontWeight.SemiBold)
                     reading.day.label?.let { Text(it.uppercase(), color = palette.secondary, fontSize = StudyStyle.caption2) }
                     Text(reading.display, color = palette.ink, fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
-                    Text(stringResource(R.string.plans_day_of, reading.planTitle, reading.dayNumber, reading.totalDays),
+                    Text(stringResource(R.string.plans_day_of, readingTitle, reading.dayNumber, reading.totalDays),
                         color = palette.secondary, fontSize = StudyStyle.footnote)
                 }
                 Box(Modifier.fillMaxWidth().height(0.5.dp).background(StudyStyle.separator(palette)))
@@ -262,7 +275,7 @@ private fun Home(
                     Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp)) {
                         Text(stringResource(R.string.plans_today), color = palette.secondary, fontSize = StudyStyle.caption, fontWeight = FontWeight.SemiBold)
                         Text(headline, color = palette.ink, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-                        Text(schedule.plan.title, color = palette.secondary, fontSize = StudyStyle.footnote)
+                        Text(PlanText.title(schedule.plan), color = palette.secondary, fontSize = StudyStyle.footnote)
                     }
                     schedule.plan.source?.takeIf { it.studyCategory != null }?.let { source ->
                         NavRow(stringResource(R.string.plans_study), null, palette) { push(Route.Study(source)) }
@@ -277,7 +290,7 @@ private fun Home(
                 Column(
                     Modifier.fillMaxWidth().clickable(role = Role.Button) { push(Route.Detail(plan.id)) }.padding(horizontal = 20.dp, vertical = 12.dp),
                 ) {
-                    Text(plan.title + if (plan.id == store.primaryId) "  ★" else "", color = palette.ink, fontSize = StudyStyle.body)
+                    Text(PlanText.title(plan) + if (plan.id == store.primaryId) "  ★" else "", color = palette.ink, fontSize = StudyStyle.body)
                     if (schedule != null) {
                         Spacer(Modifier.height(6.dp))
                         LinearProgressIndicator(progress = { schedule.fraction.toFloat() }, color = palette.accent,
@@ -289,9 +302,34 @@ private fun Home(
                 Box(Modifier.fillMaxWidth().padding(start = 20.dp).height(0.5.dp).background(StudyStyle.separator(palette)))
             }
         }
-        item { SectionTitle(stringResource(R.string.plans_add), palette) }
+        item {
+            SectionTitle(stringResource(R.string.plans_add), palette)
+            if (store.imported.none { it.source?.siteUrl == PlanImporter.DISCIPLES_CHURCH.site }) {
+                NavRow(PlanImporter.DISCIPLES_CHURCH.name, stringResource(R.string.plans_disciples_note), palette) {
+                    if (!adding) {
+                        adding = true
+                        addMessage = null
+                        scope.launch {
+                            val today = store.today()
+                            val result = withContext(Dispatchers.IO) {
+                                runCatching { PlanImporter().import("", PlanImporter.DISCIPLES_CHURCH, PlanImporter.Mode.FollowCalendar, today) }
+                            }
+                            adding = false
+                            result.onSuccess { store.add(it.plan); store.start(it.plan, today, true) }
+                                .onFailure { addMessage = AppText.get(importMessage(it)) }
+                        }
+                    }
+                }
+            }
+            if (adding) Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(12.dp))
+                Text(stringResource(R.string.plans_reading_schedule), color = palette.secondary)
+            }
+            addMessage?.let { Note(it, palette) }
+        }
         items(PlanCatalog.builtIn, key = { "add-${it.id}" }) { plan ->
-            NavRow(plan.title, plan.summary, palette) { push(Route.Start(plan.id)) }
+            NavRow(PlanText.title(plan), PlanText.summary(plan), palette) { push(Route.Start(plan.id)) }
         }
         item {
             NavRow(stringResource(R.string.plans_book_by_book), stringResource(R.string.plans_book_by_book_note), palette) { push(Route.Books) }
@@ -319,7 +357,7 @@ private fun Stepper(label: String, value: String, palette: ReaderPalette, onMinu
 private fun Start(plan: ReadingPlan, store: PlanStore, palette: ReaderPalette, finished: () -> Unit) {
     var start by remember { mutableStateOf(store.today()) }
     Column(Modifier.fillMaxSize()) {
-        Text(plan.summary, color = palette.ink, fontSize = StudyStyle.body, modifier = Modifier.padding(20.dp))
+        Text(PlanText.summary(plan), color = palette.ink, fontSize = StudyStyle.body, modifier = Modifier.padding(20.dp))
         Stepper(stringResource(R.string.plans_start_date), shortDate(start), palette, { start = start.minusDays(1) }, { start = start.plusDays(1) })
         Note(stringResource(R.string.plans_translation_note), palette)
         Spacer(Modifier.height(12.dp))
@@ -456,12 +494,7 @@ private fun ImportScreen(store: PlanStore, palette: ReaderPalette, finished: () 
                 store.start(it.plan, today, follow)
                 finished()
             }.onFailure { e ->
-                message = AppText.get(when ((e as? PlanFeedException)?.kind) {
-                    PlanFeedException.Kind.OFFLINE -> R.string.plans_offline
-                    PlanFeedException.Kind.NO_READINGS -> R.string.plans_no_readings
-                    PlanFeedException.Kind.BAD_URL -> R.string.plans_bad_url
-                    else -> R.string.plans_failed
-                })
+                message = AppText.get(importMessage(e))
             }
         }
     }

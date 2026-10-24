@@ -1055,4 +1055,11 @@
     <string name="plans_unavailable">오늘의 말씀은 이 번역본에서 아직 사용할 수 없습니다.</string>
     <string name="plans_notif_channel">읽기 계획 알림</string>
     <string name="plans_notif_body">오늘의 말씀: %1$s</string>
+    <string name="plans_name_canonical">1년 성경 읽기</string>
+    <string name="plans_name_chronological">1년 성경 읽기 (연대순)</string>
+    <string name="plans_summary_canonical">창세기부터 요한계시록까지 순서대로, 하루 약 3장.</string>
+    <string name="plans_summary_chronological">사건이 일어난 순서대로 성경 전체를, 하루 약 3장.</string>
+    <string name="plans_summary_book">하루에 한 장씩 %1$s을(를) 읽습니다.</string>
+    <string name="plans_summary_import">%1$s의 일정. 본문은 내가 쓰는 번역본으로 읽습니다.</string>
+    <string name="plans_disciples_note">교회의 매일 말씀을 따라가며, 매일 자동으로 업데이트됩니다.</string>
 </resources>

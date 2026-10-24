@@ -1055,4 +1055,11 @@
     <string name="plans_unavailable">今天的经文在此译本中暂不可用。</string>
     <string name="plans_notif_channel">读经计划提醒</string>
     <string name="plans_notif_body">今天的经文：%1$s</string>
+    <string name="plans_name_canonical">一年读完圣经</string>
+    <string name="plans_name_chronological">一年读完圣经（按时间顺序）</string>
+    <string name="plans_summary_canonical">从创世记到启示录按顺序阅读，每天约三章。</string>
+    <string name="plans_summary_chronological">按事件发生的先后顺序阅读整本圣经，每天约三章。</string>
+    <string name="plans_summary_book">每天读一章%1$s。</string>
+    <string name="plans_summary_import">来自%1$s的日程。经文用你自己的译本阅读。</string>
+    <string name="plans_disciples_note">跟随教会的每日读经，每天自动更新。</string>
 </resources>

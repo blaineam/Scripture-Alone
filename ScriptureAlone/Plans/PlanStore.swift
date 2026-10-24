@@ -75,7 +75,7 @@ final class PlanStore {
             guard let schedule = schedule(for: id), let day = schedule.reading(now: now) else { continue }
             var isToday = false
             if case .reading(let today) = schedule.today(now: now), today.index == day.index { isToday = true }
-            return TodaysReading(planID: id, planTitle: schedule.plan.title, day: day, dayNumber: day.index + 1,
+            return TodaysReading(planID: id, planTitle: schedule.plan.displayTitle, day: day, dayNumber: day.index + 1,
                                  totalDays: schedule.plan.days.count, isCatchUp: !isToday,
                                  isDone: schedule.progress.completed.contains(day.index))
         }
@@ -250,6 +250,24 @@ extension PlanStore {
                   let result = try? PlanFeedImporter.plan(from: entries, title: plan.title, source: source),
                   result.plan.id == plan.id, result.plan.days.count >= plan.days.count else { continue }
             add(imported: result.plan)
+        }
+    }
+}
+
+extension PlanStore {
+    /// What to tell the reader when an import fails.
+    static func message(for error: any Error) -> String {
+        switch error as? PlanFeedError {
+        case .offline:
+            String(localized: "You’re offline. Connect to the internet to import a plan.",
+                   comment: "Reading plans import: shown when the request could not reach the site")
+        case .noReadings:
+            String(localized: "That site has no posts titled with a Bible passage.",
+                   comment: "Reading plans import: shown when no post title names a passage")
+        case .badURL:
+            String(localized: "That doesn’t look like a web address.", comment: "Reading plans import")
+        default:
+            String(localized: "Couldn’t read a plan from that address.", comment: "Reading plans import: generic failure")
         }
     }
 }

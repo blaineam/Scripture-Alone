@@ -1055,4 +1055,11 @@
     <string name="plans_unavailable">La lecture du jour n’est pas encore disponible dans cette traduction.</string>
     <string name="plans_notif_channel">Rappels des plans de lecture</string>
     <string name="plans_notif_body">Lecture du jour : %1$s</string>
+    <string name="plans_name_canonical">La Bible en un an</string>
+    <string name="plans_name_chronological">La Bible en un an, chronologique</string>
+    <string name="plans_summary_canonical">De la Genèse à l’Apocalypse dans l’ordre, environ trois chapitres par jour.</string>
+    <string name="plans_summary_chronological">Toute la Bible dans l’ordre des événements, environ trois chapitres par jour.</string>
+    <string name="plans_summary_book">Un chapitre par jour dans %1$s.</string>
+    <string name="plans_summary_import">Calendrier de %1$s. Le texte se lit dans votre traduction.</string>
+    <string name="plans_disciples_note">Suit la lecture quotidienne de l’église, mise à jour automatiquement chaque jour.</string>
 </resources>

@@ -116,7 +116,7 @@ object PlanReminders {
         for ((i, r) in reminders.withIndex()) {
             val n = NotificationCompat.Builder(app, CHANNEL)
                 .setSmallIcon(R.drawable.ic_listen_notification)
-                .setContentTitle(r.planTitle)
+                .setContentTitle(PlanServices.store(app).plan(r.planId)?.let(PlanText::title) ?: r.planTitle)
                 .setContentText(app.getString(R.string.plans_notif_body, r.display))
                 .setContentIntent(open)
                 .setAutoCancel(true)
