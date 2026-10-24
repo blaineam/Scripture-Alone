@@ -37,13 +37,11 @@ data class PlanDay(
     val date: String?,
     val label: String?,
     val passages: List<PlanPassage>,
-    /** A devotional plan's own writing; never set by the built-in or imported plans. */
-    val devotion: String? = null,
 ) {
     val display: String get() = passages.joinToString("; ") { it.display }
 }
 
-enum class PlanKind { CANONICAL, CHRONOLOGICAL, BOOK, DEVOTIONAL, IMPORTED }
+enum class PlanKind { CANONICAL, CHRONOLOGICAL, BOOK, IMPORTED }
 
 data class PlanSource(
     val siteUrl: String,
@@ -62,7 +60,6 @@ data class ReadingPlan(
     /** Weekdays a plan with no dates of its own skips, 1 = Sunday … 7 = Saturday, as on iOS. */
     val skipWeekdays: Set<Int> = emptySet(),
     val source: PlanSource? = null,
-    val isScaffold: Boolean = false,
 ) {
     val isDated: Boolean get() = days.isNotEmpty() && days.all { it.date != null }
 }
@@ -102,12 +99,6 @@ object PlanCatalog {
         id.startsWith(BOOK_PREFIX) -> id.removePrefix(BOOK_PREFIX).toIntOrNull()?.let { BookID.of(it) }?.let(::book)
         else -> null
     }
-
-    /** Structure only; no devotional writing ships until the owner decides (docs/reading-plans.md). */
-    val mensDevotional = scaffold("devotional-men", "Men’s Devotional")
-    val womensDevotional = scaffold("devotional-women", "Women’s Devotional")
-
-    private fun scaffold(id: String, title: String) = ReadingPlan(id, PlanKind.DEVOTIONAL, title, "", emptyList(), isScaffold = true)
 
     /** Cuts a run of passages into [count] days of nearly equal chapters, in order. */
     internal fun spread(passages: List<PlanPassage>, count: Int): List<PlanDay> {

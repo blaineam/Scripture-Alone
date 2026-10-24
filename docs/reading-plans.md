@@ -16,7 +16,6 @@ carry the same cases; add one to both or to neither.
 | Bible in a Year | Genesis → Revelation in canonical order, 365 days, chapters spread evenly (about 3.3 a day). A day that crosses a book boundary holds a passage for each book. |
 | Bible in a Year, Chronological | An editorial chronological order (`PlanCatalog.chronologicalOrder`), chapter-granular, 365 days. Every one of the 1,189 chapters appears exactly once (a test holds it). Psalms are placed in blocks with the events they belong to; the Gospels run Matthew → John rather than as a harmony. |
 | Book by Book | Pick any of the 66 books: one chapter a day. |
-| Men's / Women's Devotional | **Scaffolds only** — see below. |
 
 Days are *ordinal*: day 1 is the start date, and a plan that skips weekdays (an imported one whose source
 doesn't post Saturday and Sunday) moves on to the next eligible date. A plan whose source dated every day
@@ -46,8 +45,8 @@ permission is asked when the reader first turns a reminder on.
 involved**, so the CarPlay audio entry planned for a later release can call it as it stands. It returns
 false when no plan is started or the translation can't supply the text.
 
-A plan's own writing — a devotion, or the weekly study — can be read aloud too: *Read Aloud* on the study
-screen and *Read Devotion Aloud* on Today call `ListenController.playProse(_:title:in:)`, one paragraph at a time
+A plan's own writing — the weekly study — can be read aloud too: *Read Aloud* on the study screen calls
+`ListenController.playProse(_:title:in:)`, one paragraph at a time
 under the text's own title. It is opt-in: it starts only when the reader taps the button.
 
 The **Start Today's Reading** App Intent (`ReadingIntents.swift`) opens today's passage and reads it. With
@@ -94,12 +93,13 @@ before today. Nothing in the app republishes it.
 
 ## Devotional plans (men's, women's)
 
-`ReadingPlan` already has the schema a devotional needs — each `PlanDay` has an optional `devotion` text
-beside its passages — and `PlanCatalog.mensDevotional` / `womensDevotional` exist as empty, unlisted
-scaffolds, so the structure, Today view and reminders are proved without any content. **Nothing is
-written or licensed.** Decisions needed from the owner before content: who writes it (or whose public-
-domain/licensed material), how long (30/90/365 days), which passages, whether it is translated into the
-big 8 locales. Content would ship as JSON decoded with `ReadingPlan.decode`.
+**Not built, by the owner's decision.** The owner won't write them; they are added only if a good Reformed
+Baptist source can be found *and licensed*. No placeholder plans, schema fields or screens exist for them.
+Public-domain candidates to evaluate when that day comes: Spurgeon's *Morning and Evening* and *Faith's
+Checkbook*; Mrs. Cowman's *Streams in the Desert* (public domain in the US, 1925); Bonar's *Light and Truth*;
+the Bunyan and Spurgeon-era daily-reading compilations; and 1689 Federalism / Founders Ministries or
+Reformed Baptist church reading plans (each needs written permission). Their text would be *content* shipped
+with the app, which is a larger decision than the schedule-only plans here.
 
 ## Not yet
 

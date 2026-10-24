@@ -216,7 +216,7 @@ Spec: `docs/reading-plans.md`. The logic is ported and tested; the screens are n
 
 | Feature | Status | Notes |
 |---|---|---|
-| Plan model, built-in catalog (Bible in a Year canonical and chronological, book by book, devotional scaffolds) | ✅ | `data/plans/ReadingPlan.kt`; `ReadingPlanTest` carries the same cases as `ReadingPlanTests.swift` — 1,189 chapters exactly once in each year plan |
+| Plan model, built-in catalog (Bible in a Year canonical and chronological, book by book) | ✅ | `data/plans/ReadingPlan.kt`; `ReadingPlanTest` carries the same cases as `ReadingPlanTests.swift` — 1,189 chapters exactly once in each year plan |
 | Schedule, progress, catch-up, streak, rest weekdays, follow-the-source's-calendar | ✅ | `data/plans/PlanSchedule.kt` (`java.time.LocalDate`; weekdays numbered 1 = Sunday as on iOS, so the JSON is the same) |
 | Importer logic: pasted address, title → passage, posts → plan, WordPress REST JSON, categories, HTML → paragraphs | ✅ | `data/plans/PlanFeed.kt` on `ReferenceParser`; same plan ids as iOS for the same site and title |
 | Importer fetching (REST paging, RSS fallback, offline errors) and the weekly study fetch | ⬜ | `HttpURLConnection` on an IO dispatcher against `PlanFeed`; study shown with a link back, never stored (licensing flag in the spec) |

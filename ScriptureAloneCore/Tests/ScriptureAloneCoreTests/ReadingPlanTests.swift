@@ -50,22 +50,9 @@ private func day(_ iso: String) -> Date {
         #expect(PlanCatalog.plan(id: "nope") == nil)
     }
 
-    @Test func scaffoldsAreEmptyAndFlagged() {
-        for plan in [PlanCatalog.mensDevotional, PlanCatalog.womensDevotional] {
-            #expect(plan.isScaffold && plan.days.isEmpty && plan.kind == .devotional)
-        }
-        #expect(!PlanCatalog.builtIn.contains { $0.isScaffold })
-    }
-
     @Test func planRoundTripsThroughJSON() throws {
         let plan = PlanCatalog.book(.psalms)
         #expect(try ReadingPlan.decode(plan.encoded()) == plan)
-    }
-
-    @Test func devotionTextSurvivesTheSchema() throws {
-        let plan = ReadingPlan(id: "d", kind: .devotional, title: "D", summary: "",
-                               days: [PlanDay(index: 0, passages: [PlanPassage(book: .john, chapters: 1...1)], devotion: "Abide.")])
-        #expect(try ReadingPlan.decode(plan.encoded()).days[0].devotion == "Abide.")
     }
 }
 
@@ -133,8 +120,9 @@ private func day(_ iso: String) -> Date {
     }
 
     @Test func emptyPlanIsFinished() {
-        #expect(schedule(PlanCatalog.mensDevotional).today(now: day("2026-10-05")) == .finished)
-        #expect(schedule(PlanCatalog.mensDevotional).reading(now: day("2026-10-05")) == nil)
+        let empty = ReadingPlan(id: "e", kind: .book, title: "E", summary: "", days: [])
+        #expect(schedule(empty).today(now: day("2026-10-05")) == .finished)
+        #expect(schedule(empty).reading(now: day("2026-10-05")) == nil)
     }
 }
 

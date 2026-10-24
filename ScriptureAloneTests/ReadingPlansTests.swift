@@ -67,12 +67,6 @@ struct ReadingPlansTests {
         #expect(store.todaysReading() == nil && store.started.isEmpty)
     }
 
-    @Test func scaffoldsCannotBeStarted() {
-        let store = freshStore()
-        store.start(PlanCatalog.mensDevotional)
-        #expect(store.progress.isEmpty)
-    }
-
     private func posts(for date: Date) -> String {
         let today = PlanSchedule.isoDay(date)
         let tomorrow = PlanSchedule.isoDay(date.addingTimeInterval(86_400))

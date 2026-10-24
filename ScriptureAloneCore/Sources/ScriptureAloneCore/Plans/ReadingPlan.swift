@@ -34,7 +34,7 @@ public struct PlanPassage: Codable, Hashable, Sendable {
     }
 }
 
-/// One day of a plan: what to read, and (for a devotional plan) what to read alongside it.
+/// One day of a plan: what to read.
 public struct PlanDay: Codable, Hashable, Sendable, Identifiable {
     /// Position in the plan, from 0.
     public let index: Int
@@ -44,24 +44,21 @@ public struct PlanDay: Codable, Hashable, Sendable, Identifiable {
     /// A heading for the day: "Epistle", "Exile Era" — whatever the source calls this stretch.
     public let label: String?
     public let passages: [PlanPassage]
-    /// A devotional plan's own writing for the day. Never set by the built-in or imported plans.
-    public let devotion: String?
 
     public var id: Int { index }
 
-    public init(index: Int, date: String? = nil, label: String? = nil, passages: [PlanPassage], devotion: String? = nil) {
+    public init(index: Int, date: String? = nil, label: String? = nil, passages: [PlanPassage]) {
         self.index = index
         self.date = date
         self.label = label
         self.passages = passages
-        self.devotion = devotion
     }
 
     public var display: String { passages.map(\.display).joined(separator: "; ") }
 }
 
 public enum PlanKind: String, Codable, Sendable {
-    case canonical, chronological, book, devotional, imported
+    case canonical, chronological, book, imported
 }
 
 /// Where an imported plan came from, so its weekly study can be fetched on demand and credited.
@@ -97,11 +94,9 @@ public struct ReadingPlan: Codable, Hashable, Sendable, Identifiable {
     /// Calendar weekdays (1 = Sunday … 7 = Saturday) a plan with no dates of its own skips.
     public let skipWeekdays: Set<Int>
     public let source: PlanSource?
-    /// A plan whose structure exists and whose content does not (yet): shown nowhere in the app.
-    public let isScaffold: Bool
 
     public init(id: String, kind: PlanKind, title: String, summary: String, days: [PlanDay],
-                skipWeekdays: Set<Int> = [], source: PlanSource? = nil, isScaffold: Bool = false) {
+                skipWeekdays: Set<Int> = [], source: PlanSource? = nil) {
         self.id = id
         self.kind = kind
         self.title = title
@@ -109,7 +104,6 @@ public struct ReadingPlan: Codable, Hashable, Sendable, Identifiable {
         self.days = days
         self.skipWeekdays = skipWeekdays
         self.source = source
-        self.isScaffold = isScaffold
     }
 
     /// True when every day carries the date its source gave it, so the plan can follow that calendar.

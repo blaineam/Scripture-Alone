@@ -130,10 +130,6 @@ private struct TodaySection: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("plans.today")
-            if let devotion = reading.day.devotion, !devotion.isEmpty {
-                Text(devotion).textSelection(.enabled)
-                Button { ListenController.shared.playProse(devotion, title: reading.planTitle, in: model) } label: { Label("Read Devotion Aloud", systemImage: "speaker.wave.2") }
-            }
             ForEach(reading.passages, id: \.self) { passage in
                 Button { onOpen(passage.passage) } label: { Label("Read \(passage.display)", systemImage: "book") }
             }

@@ -41,18 +41,6 @@ public enum PlanCatalog {
             days: (1...book.chapterCount).enumerated().map { PlanDay(index: $0.offset, passages: [PlanPassage(book: book, chapters: $0.element...$0.element)]) })
     }
 
-    // MARK: Devotional scaffolds
-
-    /// Structure only: the plans exist so the schema, the Today view and the reminders are proved with
-    /// them, but no devotional writing ships until the owner decides who writes it and under what
-    /// licence (docs/reading-plans.md). A scaffold has no days and is listed nowhere.
-    public static let mensDevotional = scaffold(id: "devotional-men", title: "Men’s Devotional")
-    public static let womensDevotional = scaffold(id: "devotional-women", title: "Women’s Devotional")
-
-    private static func scaffold(id: String, title: String) -> ReadingPlan {
-        ReadingPlan(id: id, kind: .devotional, title: title, summary: "", days: [], isScaffold: true)
-    }
-
     // MARK: Spreading chapters over days
 
     /// Cuts a run of passages into `count` days of nearly equal chapters, in order. A day that crosses

@@ -158,7 +158,7 @@ final class ListenController {
 
     var isPlaying: Bool { phase == .playing }
 
-    /// A heading for a session that reads prose rather than verses (a plan's study or devotion).
+    /// A heading for a session that reads prose rather than verses (a plan's weekly study).
     private var proseTitle: String?
 
     var nowPlayingTitle: String {
@@ -226,7 +226,7 @@ final class ListenController {
         return true
     }
 
-    /// Reads a plan's own writing aloud — a devotion, or a weekly study fetched on demand — one paragraph
+    /// Reads a plan's own writing aloud — a weekly study fetched on demand — one paragraph
     /// at a time. Opt-in: only a reader's tap on "Read Aloud" starts it. False when there is nothing to say.
     @discardableResult
     func playProse(_ text: String, title: String, in model: ReaderModel) -> Bool {

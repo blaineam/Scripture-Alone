@@ -32,14 +32,12 @@ class ReadingPlanTest {
         assertTrue(order.indexOf(BookID.DANIEL) < order.indexOf(BookID.MATTHEW))
     }
 
-    @Test fun bookPlanIsOneChapterADayAndScaffoldsAreEmpty() {
+    @Test fun bookPlanIsOneChapterADay() {
         val romans = PlanCatalog.plan(PlanCatalog.book(BookID.ROMANS).id)!!
         assertEquals(16, romans.days.size)
         assertEquals("Romans 8", romans.days[7].display)
         assertEquals(1, PlanCatalog.book(BookID.JUDE).days.size)
         assertNull(PlanCatalog.plan("nope"))
-        for (p in listOf(PlanCatalog.mensDevotional, PlanCatalog.womensDevotional)) assertTrue(p.isScaffold && p.days.isEmpty())
-        assertFalse(PlanCatalog.builtIn.any { it.isScaffold })
     }
 
     private fun schedule(plan: ReadingPlan = PlanCatalog.book(BookID.ROMANS), start: String = "2026-10-05",
