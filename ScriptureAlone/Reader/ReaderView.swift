@@ -221,6 +221,7 @@ struct ReaderView: View {
         .onChange(of: scenePhase, initial: true) {
             guard scenePhase == .active, !UITestMode.isOn else { return }
             Task {
+                PlanStore.shared.rollOverAnnualPlans()
                 await PlanStore.shared.refreshImported()
                 PlanReminders.refresh(PlanStore.shared)
             }

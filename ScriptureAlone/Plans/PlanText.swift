@@ -12,7 +12,7 @@ extension ReadingPlan {
             String(localized: "Bible in a Year, Chronological", comment: "Reading plan name: the whole Bible in the order the events happened")
         case .book:
             days.first?.passages.first?.book.name ?? title
-        case .imported:
+        case .imported, .devotional:
             title
         }
     }
@@ -25,6 +25,8 @@ extension ReadingPlan {
             String(localized: "The whole Bible in the order the events happened, about three chapters a day.", comment: "Reading plan summary")
         case .book:
             String(localized: "One chapter a day through \(displayTitle).", comment: "Reading plan summary. %@ is a book name.")
+        case .devotional:
+            summary // a shipped plan's own words, English like its text
         case .imported:
             String(localized: "Schedule from \(source?.name ?? title). The text is read in your translation.",
                    comment: "Reading plan summary for an imported plan. %@ is the source's name, like a church.")

@@ -194,11 +194,35 @@ final class ListenController {
         start(in: model, scope: .selection, items: verses.map { Item(key: $0.ref.key, text: $0.text) })
     }
 
-    /// Reads a plan's passages aloud in order, each chapter announced, then stops. False when the
-    /// translation has none of them to read (not downloaded, an online key missing).
+    /// Reads a plan's passages aloud in order, each chapter announced, then stops. When the day carries the
+    /// plan's own writing (`devotions`, one per passage — Spurgeon's morning and evening), each is read as
+    /// its heading, then the verse in the reader's translation, then the meditation. False when the
+    /// translation has none of the passages to read (not downloaded, an online key missing).
     @discardableResult
-    func playReading(_ passages: [PlanPassage], in model: ReaderModel) -> Bool {
-        guard let store = model.source else { return false }
+    func playReading(_ passages: [PlanPassage], devotions: [PlanDevotion] = [], in model: ReaderModel) -> Bool {
+        guard model.source != nil else { return false }
+        var items: [Item] = []
+        if devotions.isEmpty || devotions.count != passages.count {
+            items = readingItems(passages, model: model)
+        } else {
+            for (passage, devotion) in zip(passages, devotions) {
+                let verse = readingItems([passage], model: model)
+                guard !verse.isEmpty else { continue }
+                items.append(Item(key: 0, text: devotion.heading + "."))
+                items += verse
+                let paragraphs = devotion.text.components(separatedBy: "\n").map { $0.trimmingCharacters(in: .whitespaces) }
+                items += paragraphs.filter { !$0.isEmpty }.map { Item(key: 0, text: $0) }
+            }
+        }
+        guard !items.isEmpty else { return false }
+        start(in: model, scope: .selection, items: items)
+        return true
+    }
+
+    /// The verses of `passages` in order, each chapter announced; a plan names verses the way the reader types
+    /// them: in the translation's own numbers.
+    private func readingItems(_ passages: [PlanPassage], model: ReaderModel) -> [Item] {
+        guard let store = model.source else { return [] }
         var items: [Item] = []
         for plan in passages {
             let passage = plan.passage.clamped
@@ -211,7 +235,6 @@ final class ListenController {
                 }
                 let count = store.verseCount(chapter)
                 guard count > 0 else { continue }
-                // A plan names verses the way the reader types them: in the translation's own numbers.
                 let range = VerseRange(VerseRef(chapter.book, chapter.chapter, first ?? 1),
                                        VerseRef(chapter.book, chapter.chapter, min(last ?? count, count)))
                 let verses = (try? store.nativeVerses(in: range)) ?? []
@@ -221,9 +244,7 @@ final class ListenController {
                 items += verses.map { Item(key: $0.ref.key, text: $0.text) }
             }
         }
-        guard !items.isEmpty else { return false }
-        start(in: model, scope: .selection, items: items)
-        return true
+        return items
     }
 
     /// Reads a plan's own writing aloud — a weekly study fetched on demand — one paragraph

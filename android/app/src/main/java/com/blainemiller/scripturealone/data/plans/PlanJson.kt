@@ -53,6 +53,15 @@ object PlanJson {
                     put("index", d.index)
                     d.date?.let { put("date", it) }
                     d.label?.let { put("label", it) }
+                    if (d.devotions.isNotEmpty()) put("devotions", buildJsonArray {
+                        d.devotions.forEach { v ->
+                            add(buildJsonObject {
+                                put("heading", v.heading)
+                                v.quote?.let { put("quote", it) }
+                                put("text", v.text)
+                            })
+                        }
+                    })
                     put("passages", buildJsonArray {
                         d.passages.forEach { q ->
                             add(buildJsonObject {
@@ -67,6 +76,7 @@ object PlanJson {
                 })
             }
         })
+        if (p.annual) put("annual", true)
         put("skipWeekdays", buildJsonArray { p.skipWeekdays.sorted().forEach { add(JsonPrimitive(it)) } })
         p.source?.let { s ->
             put("source", buildJsonObject {
@@ -78,6 +88,9 @@ object PlanJson {
             })
         }
     }
+
+    /** A plan from its JSON text — the form the apps store and Spurgeon's plan ships in. */
+    fun decodePlan(text: String): ReadingPlan = plan(Json.parseToJsonElement(text).jsonObject)
 
     fun plan(o: JsonObject): ReadingPlan = ReadingPlan(
         id = o.str("id")!!,
@@ -93,12 +106,17 @@ object PlanJson {
                     PlanPassage(BookID.of(pass.int("book")!!)!!, pass.int("startChapter")!!, pass.int("startVerse"),
                         pass.int("endChapter")!!, pass.int("endVerse"))
                 },
+                day["devotions"]?.jsonArray.orEmpty().map { v ->
+                    val o = v.jsonObject
+                    PlanDevotion(o.str("heading").orEmpty(), o.str("quote"), o.str("text").orEmpty())
+                },
             )
         },
         skipWeekdays = o["skipWeekdays"]?.jsonArray.orEmpty().mapNotNull { it.jsonPrimitive.intOrNull }.toSet(),
         source = (o["source"] as? JsonObject)?.let { s ->
             PlanSource(s.str("siteURL")!!, s.str("apiRoot"), s.int("studyCategory"), s.str("name").orEmpty(), s.int("scheduleCategory"))
         },
+        annual = o["annual"]?.jsonPrimitive?.booleanOrNull ?: false,
     )
 
     fun progress(p: PlanProgress): JsonObject = buildJsonObject {

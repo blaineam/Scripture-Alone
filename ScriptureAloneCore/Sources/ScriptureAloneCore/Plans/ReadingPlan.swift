@@ -34,6 +34,20 @@ public struct PlanPassage: Codable, Hashable, Sendable {
     }
 }
 
+/// A short piece of a devotional plan's own writing for a day: "Morning", the verse it opens with, and the
+/// meditation (paragraphs separated by a blank line). Shipped plans only; an imported plan has none.
+public struct PlanDevotion: Codable, Hashable, Sendable {
+    public let heading: String
+    public let quote: String?
+    public let text: String
+
+    public init(heading: String, quote: String? = nil, text: String) {
+        self.heading = heading
+        self.quote = quote
+        self.text = text
+    }
+}
+
 /// One day of a plan: what to read.
 public struct PlanDay: Codable, Hashable, Sendable, Identifiable {
     /// Position in the plan, from 0.
@@ -44,14 +58,26 @@ public struct PlanDay: Codable, Hashable, Sendable, Identifiable {
     /// A heading for the day: "Epistle", "Exile Era" — whatever the source calls this stretch.
     public let label: String?
     public let passages: [PlanPassage]
+    /// The plan's own writing for the day, when it has any (a devotional plan).
+    public let devotions: [PlanDevotion]
 
     public var id: Int { index }
 
-    public init(index: Int, date: String? = nil, label: String? = nil, passages: [PlanPassage]) {
+    public init(index: Int, date: String? = nil, label: String? = nil, passages: [PlanPassage], devotions: [PlanDevotion] = []) {
         self.index = index
         self.date = date
         self.label = label
         self.passages = passages
+        self.devotions = devotions
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        index = try c.decode(Int.self, forKey: .index)
+        date = try c.decodeIfPresent(String.self, forKey: .date)
+        label = try c.decodeIfPresent(String.self, forKey: .label)
+        passages = try c.decode([PlanPassage].self, forKey: .passages)
+        devotions = try c.decodeIfPresent([PlanDevotion].self, forKey: .devotions) ?? []
     }
 
     public var display: String { passages.map(\.display).joined(separator: "; ") }
@@ -59,6 +85,8 @@ public struct PlanDay: Codable, Hashable, Sendable, Identifiable {
 
 public enum PlanKind: String, Codable, Sendable {
     case canonical, chronological, book, imported
+    /// A plan that ships its own writing (`PlanDay.devotions`), like Spurgeon's *Morning and Evening*.
+    case devotional
 }
 
 /// Where an imported plan came from, so its weekly study can be fetched on demand and credited.
@@ -94,9 +122,12 @@ public struct ReadingPlan: Codable, Hashable, Sendable, Identifiable {
     /// Calendar weekdays (1 = Sunday … 7 = Saturday) a plan with no dates of its own skips.
     public let skipWeekdays: Set<Int>
     public let source: PlanSource?
+    /// Days are a month and a day (`PlanDay.date` is "MM-DD"), not a count from a start date: today's reading
+    /// is the one for today's date, and the plan starts over each January. 366 days, so February 29 has its own.
+    public let annual: Bool
 
     public init(id: String, kind: PlanKind, title: String, summary: String, days: [PlanDay],
-                skipWeekdays: Set<Int> = [], source: PlanSource? = nil) {
+                skipWeekdays: Set<Int> = [], source: PlanSource? = nil, annual: Bool = false) {
         self.id = id
         self.kind = kind
         self.title = title
@@ -104,10 +135,23 @@ public struct ReadingPlan: Codable, Hashable, Sendable, Identifiable {
         self.days = days
         self.skipWeekdays = skipWeekdays
         self.source = source
+        self.annual = annual
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        kind = try c.decode(PlanKind.self, forKey: .kind)
+        title = try c.decode(String.self, forKey: .title)
+        summary = try c.decode(String.self, forKey: .summary)
+        days = try c.decode([PlanDay].self, forKey: .days)
+        skipWeekdays = try c.decodeIfPresent(Set<Int>.self, forKey: .skipWeekdays) ?? []
+        source = try c.decodeIfPresent(PlanSource.self, forKey: .source)
+        annual = try c.decodeIfPresent(Bool.self, forKey: .annual) ?? false
     }
 
     /// True when every day carries the date its source gave it, so the plan can follow that calendar.
-    public var isDated: Bool { !days.isEmpty && days.allSatisfy { $0.date != nil } }
+    public var isDated: Bool { !annual && !days.isEmpty && days.allSatisfy { $0.date != nil } }
 
     public static func decode(_ data: Data) throws -> ReadingPlan {
         try JSONDecoder().decode(ReadingPlan.self, from: data)

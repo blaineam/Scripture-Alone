@@ -275,3 +275,64 @@ private struct Table: PlanFetching {
         #expect(PlanFeedImporter.decodeEntities("a &amp; b &#8211; c &#x2019; &bogus; &") == "a & b – c ’ &bogus; &")
     }
 }
+
+@Suite struct SpurgeonPlanTests {
+    /// The plan both apps ship: `ScriptureAlone/Resources/Plans/SpurgeonMorningEvening.json`, read from the repository.
+    static let plan: ReadingPlan = {
+        let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .appending(path: "ScriptureAlone/Resources/Plans/SpurgeonMorningEvening.json")
+        return try! ReadingPlan.decode(Data(contentsOf: url))
+    }()
+
+    private func schedule(start: String = "2026-10-24", done: Set<Int> = []) -> PlanSchedule {
+        PlanSchedule(plan: Self.plan, progress: PlanProgress(planID: Self.plan.id, startDate: start, completed: done), calendar: utc())
+    }
+
+    @Test func hasAMorningAndAnEveningForEveryDayOfALeapYear() {
+        let plan = Self.plan
+        #expect(plan.annual && plan.kind == .devotional && !plan.isDated)
+        #expect(plan.days.count == 366)
+        #expect(Set(plan.days.compactMap(\.date)).count == 366)
+        #expect(plan.days[59].date == "02-29")
+        for day in plan.days {
+            #expect(day.devotions.map(\.heading) == ["Morning", "Evening"])
+            #expect(day.passages.count == 2)
+            #expect(day.devotions.allSatisfy { $0.text.count > 400 && $0.quote?.isEmpty == false })
+            for p in day.passages { #expect(p.passage.startChapter <= p.book.chapterCount) }
+        }
+        #expect(plan.days[0].passages.first?.display == "Joshua 5:12")
+    }
+
+    @Test func todaysReadingIsTheOneForTodaysDate() {
+        let s = schedule()
+        guard case .reading(let found) = s.today(now: day("2026-10-24")) else {
+            Issue.record("expected a reading")
+            return
+        }
+        #expect(found.date == "10-24")
+        #expect(s.dayIndex(on: day("2026-03-01")) == nil, "before the start")
+        #expect(s.missedDays(now: day("2026-12-01")).isEmpty)
+        // February 29 has no date in a common year, so it is never scheduled there.
+        let early = schedule(start: "2026-01-01")
+        #expect(early.dayIndex(on: day("2026-02-28")) == 58)
+        #expect(early.dayIndex(on: day("2026-03-01")) == 60)
+        #expect(early.date(forDay: 59) == nil)
+        #expect(schedule(start: "2028-01-01").dayIndex(on: day("2028-02-29")) == 59)
+    }
+
+    @Test func startsOverEachJanuary() {
+        let progress = PlanProgress(planID: Self.plan.id, startDate: "2026-10-24", completed: [297, 298])
+        #expect(progress.rolledOver(for: Self.plan, now: day("2026-12-31"), calendar: utc()) == nil)
+        let next = progress.rolledOver(for: Self.plan, now: day("2027-01-01"), calendar: utc())
+        #expect(next?.startDate == "2027-01-01" && next?.completed.isEmpty == true)
+        #expect(progress.rolledOver(for: PlanCatalog.canonical, now: day("2027-01-01"), calendar: utc()) == nil)
+    }
+
+    @Test func aPlanWithWritingRoundTripsAndOldJSONStillDecodes() throws {
+        #expect(try ReadingPlan.decode(Self.plan.encoded()) == Self.plan)
+        let old = #"{"id":"x","kind":"book","title":"T","summary":"","days":[{"index":0,"passages":[]}]}"#
+        let decoded = try ReadingPlan.decode(Data(old.utf8))
+        #expect(!decoded.annual && decoded.days[0].devotions.isEmpty && decoded.skipWeekdays.isEmpty)
+    }
+}

@@ -63,7 +63,7 @@ struct PlansView: View {
                         if adding { HStack { ProgressView(); Text("Reading the schedule…") } }
                         if let addMessage { Text(addMessage).font(.footnote).foregroundStyle(.secondary) }
                     }
-                    ForEach(PlanCatalog.builtIn) { plan in
+                    ForEach(store.offeredBundled + PlanCatalog.builtIn) { plan in
                         NavigationLink(value: PlanRoute.start(plan.id)) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(plan.displayTitle)
@@ -100,12 +100,15 @@ struct PlansView: View {
             }
             .navigationDestination(for: PlanRoute.self) { route in
                 switch route {
-                case .start(let id): if let plan = PlanCatalog.plan(id: id) { StartPlanView(plan: plan, finished: dismissToRoot) }
+                case .start(let id): if let plan = store.plan(id: id) { StartPlanView(plan: plan, finished: dismissToRoot) }
                 case .books: BookPlanPicker(finished: dismissToRoot)
                 case .importer: ImportPlanView(finished: dismissToRoot)
                 }
             }
-            .task { await store.refreshImported() }
+            .task {
+                store.rollOverAnnualPlans()
+                await store.refreshImported()
+            }
         }
         .accessibilityIdentifier("plans.sheet")
     }
@@ -164,6 +167,12 @@ private struct TodaySection: View {
             ForEach(reading.passages, id: \.self) { passage in
                 Button { onOpen(passage.passage) } label: { Label("Read \(passage.display)", systemImage: "book") }
             }
+            if !reading.devotions.isEmpty {
+                NavigationLink {
+                    DevotionView(reading: reading, onListen: onListen)
+                } label: { Label("Read Today’s Devotion", systemImage: "text.book.closed") }
+                    .accessibilityIdentifier("plans.devotion")
+            }
             Button(action: onListen) { Label("Listen to Today’s Reading", systemImage: "headphones") }
                 .accessibilityIdentifier("plans.listen")
             Button {
@@ -218,6 +227,38 @@ private struct RestSection: View {
         case .notStarted(let starts): String(localized: "Starts \(starts)", comment: "Reading plans: Today before the start date. %@ is a date like 2026-10-26.")
         default: String(localized: "No reading today.", comment: "Reading plans: Today on a rest day")
         }
+    }
+}
+
+/// A devotional day's own writing: each entry's heading, the verse it opens with, and the meditation — in the
+/// plan's words, set beside the passage the reader can open in their own translation.
+struct DevotionView: View {
+    let reading: TodaysReading
+    var onListen: () -> Void
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                ForEach(Array(reading.devotions.enumerated()), id: \.offset) { index, devotion in
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(devotion.heading.uppercased()).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                        if index < reading.passages.count {
+                            Text(reading.passages[index].display).font(.title3.weight(.semibold))
+                        }
+                        if let quote = devotion.quote { Text(quote).italic().foregroundStyle(.secondary) }
+                        Text(devotion.text).textSelection(.enabled)
+                    }
+                    if index < reading.devotions.count - 1 { Divider() }
+                }
+                if let source = PlanStore.shared.plan(id: reading.planID)?.source {
+                    Link(source.name, destination: source.siteURL).font(.footnote)
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .navigationTitle(reading.day.label ?? reading.display)
+        .toolbar { ToolbarItem(placement: .primaryAction) { Button(action: onListen) { Label("Read Aloud", systemImage: "headphones") } } }
     }
 }
 

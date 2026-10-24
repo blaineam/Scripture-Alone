@@ -224,3 +224,36 @@ struct StudyCacheTests {
         #expect(StudyCache.load(for: a) == nil)
     }
 }
+
+@MainActor
+struct BundledPlanTests {
+    @Test func spurgeonShipsInTheAppAndPlaysItsDevotion() throws {
+        let plan = try #require(PlanStore().bundled.first, "the app bundle carries SpurgeonMorningEvening.json")
+        #expect(plan.annual && plan.days.count == 366)
+        let store = PlanStore(directory: FileManager.default.temporaryDirectory.appending(path: "plans-\(UUID().uuidString)"), bundled: [plan])
+        store.schedulesReminders = false
+        #expect(store.plan(id: plan.id) == plan)
+        store.start(plan)
+        let reading = try #require(store.todaysReading())
+        #expect(reading.devotions.count == 2 && reading.passages.count == 2 && !reading.isCatchUp)
+        #expect(store.offeredBundled.isEmpty, "a plan being followed isn't offered again")
+    }
+}
+
+#if os(iOS)
+@MainActor
+@Suite(.serialized)
+struct DevotionListenTests {
+    @Test func aDevotionIsReadAsHeadingVerseAndMeditation() throws {
+        let listen = ListenController.shared
+        listen.stop()
+        listen.speaksSilentlyForTesting = true
+        defer { listen.stop(); listen.speaksSilentlyForTesting = false }
+        let model = ViewHost.readerModel()
+        let plan = try #require(PlanStore().bundled.first)
+        let day = plan.days[0]
+        #expect(listen.playReading(day.passages, devotions: day.devotions, in: model))
+        #expect(listen.isListening(in: model))
+    }
+}
+#endif

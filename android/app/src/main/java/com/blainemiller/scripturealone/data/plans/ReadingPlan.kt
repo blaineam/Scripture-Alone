@@ -31,17 +31,22 @@ data class PlanPassage(
     }
 }
 
+/** A piece of a devotional plan's own writing for a day — `PlanDevotion` in the core. Paragraphs are separated by a blank line. */
+data class PlanDevotion(val heading: String, val quote: String?, val text: String)
+
 data class PlanDay(
     val index: Int,
     /** "yyyy-MM-dd", present for an imported plan whose source dated its days. */
     val date: String?,
     val label: String?,
     val passages: List<PlanPassage>,
+    /** The plan's own writing for the day, when it has any (a devotional plan). */
+    val devotions: List<PlanDevotion> = emptyList(),
 ) {
     val display: String get() = passages.joinToString("; ") { it.display }
 }
 
-enum class PlanKind { CANONICAL, CHRONOLOGICAL, BOOK, IMPORTED }
+enum class PlanKind { CANONICAL, CHRONOLOGICAL, BOOK, IMPORTED, DEVOTIONAL }
 
 data class PlanSource(
     val siteUrl: String,
@@ -60,8 +65,10 @@ data class ReadingPlan(
     /** Weekdays a plan with no dates of its own skips, 1 = Sunday … 7 = Saturday, as on iOS. */
     val skipWeekdays: Set<Int> = emptySet(),
     val source: PlanSource? = null,
+    /** Days are a month and a day (`date` is "MM-DD"), and the plan starts over each January. 366 days. */
+    val annual: Boolean = false,
 ) {
-    val isDated: Boolean get() = days.isNotEmpty() && days.all { it.date != null }
+    val isDated: Boolean get() = !annual && days.isNotEmpty() && days.all { it.date != null }
 }
 
 /** The plans that ship with the app, generated from the canon: nothing to bundle or license. */

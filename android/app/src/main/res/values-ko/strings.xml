@@ -1062,4 +1062,5 @@
     <string name="plans_summary_book">하루에 한 장씩 %1$s을(를) 읽습니다.</string>
     <string name="plans_summary_import">%1$s의 일정. 본문은 내가 쓰는 번역본으로 읽습니다.</string>
     <string name="plans_disciples_note">교회의 매일 말씀을 따라가며, 매일 자동으로 업데이트됩니다.</string>
+    <string name="plans_read_devotion">오늘의 묵상 읽기</string>
 </resources>

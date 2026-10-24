@@ -1062,4 +1062,5 @@
     <string name="plans_summary_book">每天读一章%1$s。</string>
     <string name="plans_summary_import">来自%1$s的日程。经文用你自己的译本阅读。</string>
     <string name="plans_disciples_note">跟随教会的每日读经，每天自动更新。</string>
+    <string name="plans_read_devotion">阅读今天的灵修</string>
 </resources>

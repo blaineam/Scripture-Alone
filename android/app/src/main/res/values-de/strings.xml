@@ -1062,4 +1062,5 @@
     <string name="plans_summary_book">Jeden Tag ein Kapitel durch %1$s.</string>
     <string name="plans_summary_import">Zeitplan von %1$s. Der Text wird in deiner Übersetzung gelesen.</string>
     <string name="plans_disciples_note">Folgt der täglichen Lesung der Gemeinde, jeden Tag automatisch aktualisiert.</string>
+    <string name="plans_read_devotion">Heutige Andacht lesen</string>
 </resources>

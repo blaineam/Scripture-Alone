@@ -1856,4 +1856,5 @@
     <string name="plans_summary_book">One chapter a day through %1$s.</string>
     <string name="plans_summary_import">Schedule from %1$s. The text is read in your translation.</string>
     <string name="plans_disciples_note">Follows the church’s daily reading, updated automatically every day.</string>
+    <string name="plans_read_devotion">Read Today’s Devotion</string>
 </resources>

@@ -16,6 +16,8 @@ struct TodaysReading: Equatable {
     let isDone: Bool
 
     var passages: [PlanPassage] { day.passages }
+    /// The plan's own writing for the day (Spurgeon's morning and evening), when it has any.
+    var devotions: [PlanDevotion] { day.devotions }
     var display: String { day.display }
 }
 
@@ -32,6 +34,8 @@ final class PlanStore {
     }()
 
     private(set) var imported: [ReadingPlan] = []
+    /// Plans that ship in the app (Spurgeon's *Morning and Evening*), read from the bundle.
+    let bundled: [ReadingPlan]
     private(set) var progress: [PlanProgress] = []
     /// The plan Today shows and "start today's reading" plays.
     private(set) var primaryID: String?
@@ -43,16 +47,41 @@ final class PlanStore {
     private let directory: URL
     private let calendar: Calendar
 
-    init(directory: URL? = nil, calendar: Calendar = .current) {
+    init(directory: URL? = nil, calendar: Calendar = .current, bundled: [ReadingPlan]? = nil) {
+        self.bundled = bundled ?? Self.loadBundled()
         self.directory = directory ?? URL.applicationSupportDirectory.appending(path: "Plans", directoryHint: .isDirectory)
         self.calendar = calendar
         load()
+        rollOverAnnualPlans()
+    }
+
+    private static func loadBundled() -> [ReadingPlan] {
+        guard let url = Bundle.main.url(forResource: "SpurgeonMorningEvening", withExtension: "json") else { return [] }
+        return (try? ReadingPlan.decode(Data(contentsOf: url))).map { [$0] } ?? []
+    }
+
+    /// The shipped plans offered to this reader. Their text is English, so a device set to another language
+    /// isn't offered them (docs/localization.md: English-only commentary is hidden outside English).
+    var offeredBundled: [ReadingPlan] {
+        guard Locale.preferredLanguages.first?.hasPrefix("en") ?? true else { return [] }
+        return bundled.filter { plan in !progress.contains { $0.planID == plan.id } }
+    }
+
+    /// An annual plan starts over each January: the year's progress is forgotten on the first open of a new year.
+    func rollOverAnnualPlans(now: Date = Date()) {
+        var changed = false
+        for (i, p) in progress.enumerated() {
+            guard let plan = plan(id: p.planID), let next = p.rolledOver(for: plan, now: now, calendar: calendar) else { continue }
+            progress[i] = next
+            changed = true
+        }
+        if changed { save() }
     }
 
     // MARK: Lookup
 
     func plan(id: String) -> ReadingPlan? {
-        imported.first { $0.id == id } ?? PlanCatalog.plan(id: id)
+        imported.first { $0.id == id } ?? bundled.first { $0.id == id } ?? PlanCatalog.plan(id: id)
     }
 
     func progress(for planID: String) -> PlanProgress? { progress.first { $0.planID == planID } }
@@ -170,7 +199,7 @@ extension ListenController {
     @discardableResult
     func playTodaysReading(in model: ReaderModel, store: PlanStore = .shared) -> Bool {
         guard let reading = store.todaysReading() else { return false }
-        return playReading(reading.passages, in: model)
+        return playReading(reading.passages, devotions: reading.devotions, in: model)
     }
 }
 

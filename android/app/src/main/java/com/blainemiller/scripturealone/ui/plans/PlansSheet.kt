@@ -98,6 +98,7 @@ private sealed interface Route {
     data object Import : Route
     data class Detail(val planId: String) : Route
     data class Study(val source: PlanSource) : Route
+    data class Devotion(val planId: String) : Route
 }
 
 /**
@@ -135,6 +136,7 @@ fun PlansSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: () -> U
         Route.Import -> stringResource(R.string.plans_import_title)
         is Route.Detail -> store.plan(route.planId)?.let(PlanText::title).orEmpty()
         is Route.Study -> stringResource(R.string.plans_study_title)
+        is Route.Devotion -> store.todaysReading()?.day?.label ?: stringResource(R.string.plans_title)
     }
     fun openPassage(p: PlanPassage) {
         onClose()
@@ -163,6 +165,7 @@ fun PlansSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: () -> U
                 Route.Import -> ImportScreen(store, palette) { stack = listOf(Route.Home) }
                 is Route.Detail -> Detail(route.planId, store, palette, ::push, ::openPassage) { stack = listOf(Route.Home) }
                 is Route.Study -> StudyScreen(route.source, reader, palette)
+                is Route.Devotion -> DevotionScreen(store, palette) { onClose(); reader.perform(AppCommand.TodaysReading) }
             }
         }
     }
@@ -258,6 +261,7 @@ private fun Home(
                     stringResource(if (reading.isDone) R.string.plans_mark_read_undo else R.string.plans_mark_read), palette,
                     if (reading.isDone) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked,
                 ) { store.setDone(!reading.isDone, reading.day.index, reading.planId) }
+                if (reading.devotions.isNotEmpty()) NavRow(stringResource(R.string.plans_read_devotion), null, palette) { push(Route.Devotion(reading.planId)) }
                 if (streak > 0) Note(stringResource(R.string.plans_streak, streak), palette)
                 if (missed > 0) NavRow(stringResource(R.string.plans_catch_up, missed), null, palette) { push(Route.Detail(reading.planId)) }
                 schedule?.plan?.source?.takeIf { it.studyCategory != null }?.let { source ->
@@ -304,6 +308,9 @@ private fun Home(
         }
         item {
             SectionTitle(stringResource(R.string.plans_add), palette)
+            for (plan in store.offeredBundled()) {
+                NavRow(PlanText.title(plan), PlanText.summary(plan), palette) { push(Route.Start(plan.id)) }
+            }
             if (store.imported.none { it.source?.siteUrl == PlanImporter.DISCIPLES_CHURCH.site }) {
                 NavRow(PlanImporter.DISCIPLES_CHURCH.name, stringResource(R.string.plans_disciples_note), palette) {
                     if (!adding) {
@@ -335,6 +342,41 @@ private fun Home(
             NavRow(stringResource(R.string.plans_book_by_book), stringResource(R.string.plans_book_by_book_note), palette) { push(Route.Books) }
             NavRow(stringResource(R.string.plans_import), stringResource(R.string.plans_import_note), palette) { push(Route.Import) }
             Spacer(Modifier.height(48.dp))
+        }
+    }
+}
+
+// MARK: Devotion
+
+/** A devotional day's own writing: each entry's heading, the verse it opens with and the meditation — `DevotionView`. */
+@Composable
+private fun DevotionScreen(store: PlanStore, palette: ReaderPalette, onListen: () -> Unit) {
+    val reading = store.todaysReading()
+    val context = LocalContext.current
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp)) {
+        if (reading == null) return@LazyColumn
+        item {
+            ActionRow(stringResource(R.string.plans_read_aloud), palette) { onListen() }
+        }
+        items(reading.devotions.size) { i ->
+            val devotion = reading.devotions[i]
+            Column(Modifier.padding(vertical = 10.dp)) {
+                Text(devotion.heading.uppercase(), color = palette.secondary, fontSize = StudyStyle.caption, fontWeight = FontWeight.SemiBold)
+                reading.passages.getOrNull(i)?.let { Text(it.display, color = palette.ink, fontSize = 20.sp, fontWeight = FontWeight.SemiBold) }
+                devotion.quote?.let { Text(it, color = palette.secondary, fontSize = StudyStyle.body, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic) }
+                Spacer(Modifier.height(8.dp))
+                SelectionContainer { Text(devotion.text, color = palette.ink, fontSize = StudyStyle.body, lineHeight = 24.sp) }
+            }
+            if (i < reading.devotions.size - 1) Box(Modifier.fillMaxWidth().height(0.5.dp).background(StudyStyle.separator(palette)))
+        }
+        item {
+            store.plan(reading.planId)?.source?.let { source ->
+                Text(source.name, color = palette.accent, fontSize = StudyStyle.footnote,
+                    modifier = Modifier.clickable(role = Role.Button) {
+                        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(source.siteUrl)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                    }.padding(vertical = 16.dp))
+            }
+            Spacer(Modifier.height(32.dp))
         }
     }
 }

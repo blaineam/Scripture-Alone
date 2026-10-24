@@ -20,9 +20,28 @@ sealed interface PlanToday {
     data object Finished : PlanToday
 }
 
+/**
+ * An annual plan starts over each January: this progress begun on January 1 of [now]'s year with nothing read, when
+ * it was begun in an earlier year. Null when there is nothing to roll over.
+ */
+fun PlanProgress.rolledOver(plan: ReadingPlan, now: LocalDate): PlanProgress? {
+    if (!plan.annual) return null
+    val started = startDate.take(4).toIntOrNull() ?: return null
+    return if (started < now.year) copy(startDate = "%04d-01-01".format(now.year), completed = emptySet()) else null
+}
+
 /** Dates and tallies for a plan, pure: the clock is an argument so every rule is testable on a fixed date. */
 class PlanSchedule(val plan: ReadingPlan, val progress: PlanProgress) {
     private val follows get() = progress.followsCalendar && plan.isDated
+
+    private fun monthDay(date: LocalDate) = "%02d-%02d".format(date.monthValue, date.dayOfMonth)
+
+    // An annual plan's days are "MM-DD" in the year of the start date; February 29 has no date in a common year.
+    private fun annualDate(monthDay: String): LocalDate? {
+        val year = start?.year ?: return null
+        val (m, d) = monthDay.split("-").mapNotNull { it.toIntOrNull() }.takeIf { it.size == 2 } ?: return null
+        return runCatching { LocalDate.of(year, m, d) }.getOrNull()
+    }
     private val start: LocalDate? get() = runCatching { LocalDate.parse(progress.startDate) }.getOrNull()
 
     /** 1 = Sunday … 7 = Saturday, as `Calendar.weekday` numbers them on iOS. */
@@ -31,6 +50,7 @@ class PlanSchedule(val plan: ReadingPlan, val progress: PlanProgress) {
 
     fun dateForDay(index: Int): LocalDate? {
         val day = plan.days.getOrNull(index) ?: return null
+        if (plan.annual) return day.date?.let(::annualDate)
         if (follows) return day.date?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
         var cursor = start ?: return null
         var remaining = index
@@ -47,6 +67,7 @@ class PlanSchedule(val plan: ReadingPlan, val progress: PlanProgress) {
     fun dayIndex(on: LocalDate): Int? {
         val from = start ?: return null
         if (on < from) return null
+        if (plan.annual) return plan.days.firstOrNull { it.date == monthDay(on) }?.index
         if (follows) return plan.days.firstOrNull { it.date == on.toString() }?.index
         if (isRest(on)) return null
         var count = 0
@@ -70,7 +91,7 @@ class PlanSchedule(val plan: ReadingPlan, val progress: PlanProgress) {
     }
 
     /** Days whose date has passed without being read, oldest first. */
-    fun missedDays(now: LocalDate): List<PlanDay> = plan.days.filter { d ->
+    fun missedDays(now: LocalDate): List<PlanDay> = if (plan.annual) emptyList() else plan.days.filter { d ->
         val when_ = dateForDay(d.index)
         d.index !in progress.completed && when_ != null && when_ < now && (start?.let { when_ >= it } ?: true)
     }

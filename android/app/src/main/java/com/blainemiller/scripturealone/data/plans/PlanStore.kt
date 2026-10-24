@@ -15,6 +15,8 @@ data class TodaysReading(
     val isDone: Boolean,
 ) {
     val passages: List<PlanPassage> get() = day.passages
+    /** The plan's own writing for the day (Spurgeon's morning and evening), when it has any. */
+    val devotions: List<PlanDevotion> get() = day.devotions
     val display: String get() = day.display
 }
 
@@ -23,7 +25,12 @@ data class TodaysReading(
  * lists in one JSON file (`PlanStore.swift`'s `plans.json`); a plan holds only references and progress
  * only day numbers. Not synced between devices: Android keeps nothing in a cloud (docs/android-parity.md).
  */
-class PlanStore(private val dir: File, private val clock: () -> LocalDate = { LocalDate.now() }) {
+class PlanStore(
+    private val dir: File,
+    /** Plans that ship in the app (Spurgeon's *Morning and Evening*), read from assets. */
+    val bundled: List<ReadingPlan> = emptyList(),
+    private val clock: () -> LocalDate = { LocalDate.now() },
+) {
     var imported: List<ReadingPlan> = emptyList(); private set
     var progress: List<PlanProgress> = emptyList(); private set
     var primaryId: String? = null; private set
@@ -40,9 +47,28 @@ class PlanStore(private val dir: File, private val clock: () -> LocalDate = { Lo
             progress = it.progress
             primaryId = it.primaryId ?: it.progress.firstOrNull()?.planId
         }
+        rollOverAnnualPlans()
     }
 
-    fun plan(id: String): ReadingPlan? = imported.firstOrNull { it.id == id } ?: PlanCatalog.plan(id)
+    /**
+     * The shipped plans this reader is offered. Their text is English, so a device set to another language
+     * isn't offered them (docs/localization.md: English-only commentary is hidden outside English).
+     */
+    fun offeredBundled(language: String = java.util.Locale.getDefault().language): List<ReadingPlan> =
+        if (language != "en") emptyList() else bundled.filter { plan -> progress.none { it.planId == plan.id } }
+
+    /** An annual plan starts over each January: the year's progress is forgotten on the first open of a new year. */
+    fun rollOverAnnualPlans(now: LocalDate = clock()) {
+        var changed = false
+        progress = progress.map { p ->
+            val next = plan(p.planId)?.let { p.rolledOver(it, now) }
+            if (next != null) changed = true
+            next ?: p
+        }
+        if (changed) save()
+    }
+
+    fun plan(id: String): ReadingPlan? = imported.firstOrNull { it.id == id } ?: bundled.firstOrNull { it.id == id } ?: PlanCatalog.plan(id)
     fun progress(planId: String): PlanProgress? = progress.firstOrNull { it.planId == planId }
     fun schedule(planId: String): PlanSchedule? {
         val plan = plan(planId) ?: return null

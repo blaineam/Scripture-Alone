@@ -24,7 +24,7 @@ object PlanServices {
     @Volatile private var cache: StudyCache? = null
 
     fun store(context: Context): PlanStore = store ?: synchronized(this) {
-        store ?: PlanStore(File(context.applicationContext.filesDir, "plans")).also { store = it }
+        store ?: PlanStore(File(context.applicationContext.filesDir, "plans"), BundledPlans.load(context.applicationContext)).also { store = it }
     }
 
     fun studyCache(context: Context): StudyCache = cache ?: synchronized(this) {

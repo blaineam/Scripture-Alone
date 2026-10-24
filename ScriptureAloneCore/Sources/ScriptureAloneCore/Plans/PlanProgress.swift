@@ -76,12 +76,27 @@ public struct PlanSchedule: Sendable {
 
     private var start: Date? { date(iso: progress.startDate) }
 
+    // An annual plan's days are "MM-DD" in the year of the start date.
+    private func monthDay(_ date: Date) -> String {
+        let c = calendar.dateComponents([.month, .day], from: date)
+        return String(format: "%02d-%02d", c.month ?? 0, c.day ?? 0)
+    }
+
+    private func annualDate(_ monthDay: String) -> Date? {
+        let parts = monthDay.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 2, let year = start.map({ calendar.component(.year, from: $0) }),
+              let date = calendar.date(from: DateComponents(year: year, month: parts[0], day: parts[1])),
+              calendar.component(.month, from: date) == parts[0] else { return nil } // February 29 in a common year
+        return date
+    }
+
     // MARK: Which day falls when
 
     /// The calendar date of `day`, counting from the start date and skipping rest weekdays; or, when
     /// following the source's calendar, the date the source gave it.
     public func date(forDay index: Int) -> Date? {
         guard plan.days.indices.contains(index) else { return nil }
+        if plan.annual { return plan.days[index].date.flatMap(annualDate) }
         if follows { return plan.days[index].date.flatMap(date(iso:)) }
         guard var cursor = start else { return nil }
         var remaining = index
@@ -100,6 +115,10 @@ public struct PlanSchedule: Sendable {
     public func dayIndex(on date: Date) -> Int? {
         let day = calendar.startOfDay(for: date)
         guard let start = self.start, day >= start else { return nil }
+        if plan.annual {
+            let key = monthDay(day)
+            return plan.days.first { $0.date == key }?.index
+        }
         if follows {
             let iso = isoDay(day)
             return plan.days.first { $0.date == iso }?.index
@@ -131,6 +150,8 @@ public struct PlanSchedule: Sendable {
 
     /// Days whose date has passed without being read, oldest first.
     public func missedDays(now: Date = Date()) -> [PlanDay] {
+        // A devotional for each date of the year is read on its day or not at all: nothing to catch up on.
+        if plan.annual { return [] }
         let day = calendar.startOfDay(for: now)
         return plan.days.filter { d in
             guard !progress.completed.contains(d.index), let when = date(forDay: d.index) else { return false }
@@ -174,5 +195,19 @@ public struct PlanSchedule: Sendable {
         case .notStarted: return plan.days.first
         case .finished: return missedDays(now: now).first
         }
+    }
+}
+
+extension PlanProgress {
+    /// An annual plan starts over each January: the same progress begun on January 1 of `now`'s year with
+    /// nothing read yet, when it was begun in an earlier year. Nil when there is nothing to roll over.
+    public func rolledOver(for plan: ReadingPlan, now: Date, calendar: Calendar = .current) -> PlanProgress? {
+        guard plan.annual else { return nil }
+        let year = calendar.component(.year, from: now)
+        guard let started = Int(startDate.prefix(4)), started < year else { return nil }
+        var next = self
+        next.startDate = String(format: "%04d-01-01", year)
+        next.completed = []
+        return next
     }
 }

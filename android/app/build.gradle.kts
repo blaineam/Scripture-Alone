@@ -256,6 +256,8 @@ val syncBundledData by tasks.registering(Sync::class) {
         include(
             "Study/CrossReferences.sqlite", "Study/Context.sqlite", "Study/Basemap.bin", "Study/Topics.sqlite",
             "Packages/bundled-signing.pub",
+            // Spurgeon's Morning and Evening as a reading plan (Tools/build_spurgeon.py): the same file iOS bundles.
+            "Plans/SpurgeonMorningEvening.json",
             // The licensed NASB 2020 and the key it was signed with, when this build carries them
             // (`licensedTranslations`): in the base module, as on iOS, because it is the default
             // translation. The NASB 1995's package is its own on-demand pack; only its key is here.

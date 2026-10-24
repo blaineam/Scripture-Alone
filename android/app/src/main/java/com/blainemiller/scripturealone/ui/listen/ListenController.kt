@@ -27,6 +27,7 @@ import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.Chapter
 import com.blainemiller.scripturealone.data.ChapterVerse
+import com.blainemiller.scripturealone.data.plans.PlanDevotion
 import com.blainemiller.scripturealone.data.plans.PlanPassage
 import com.blainemiller.scripturealone.data.plans.PlanStore
 import com.blainemiller.scripturealone.data.listen.ListenKeys
@@ -227,12 +228,12 @@ class ListenController private constructor(private val app: Context) {
      * an online key missing). UI-free: the reader's Listen, a notification and a launcher shortcut — and a
      * later car entry — all start a reading through this.
      */
-    suspend fun playReading(passages: List<PlanPassage>, translation: String): Boolean {
+    suspend fun playReading(passages: List<PlanPassage>, translation: String, devotions: List<PlanDevotion> = emptyList()): Boolean {
         val loaded = withContext(Dispatchers.IO) {
             val source = runCatching { BundledTranslations.source(app, translation) }.getOrNull() ?: return@withContext null
             val cache = mutableMapOf<ChapterRef, Chapter?>()
             fun chapter(ref: ChapterRef) = cache.getOrPut(ref) { runCatching { source.chapter(ref) }.getOrNull() }
-            val items = ListenQueue.readingItems(passages) { chapter(it)?.verses.orEmpty() }
+            val items = ListenQueue.devotionItems(passages, devotions) { chapter(it)?.verses.orEmpty() }
             val info = passages.firstNotNullOfOrNull { p -> p.chapters.firstNotNullOfOrNull { (b, c) -> chapter(ChapterRef(b.number, c))?.translation } }
             if (items.isEmpty() || info == null) null else Triple(items, info.rights, info.language)
         } ?: return false
@@ -243,7 +244,7 @@ class ListenController private constructor(private val app: Context) {
     /** Today's reading in the reader's plan, aloud: the whole of "play today's reading". False when no plan is started or the text can't be had. */
     suspend fun playTodaysReading(store: PlanStore, translation: String): Boolean {
         val reading = store.todaysReading() ?: return false
-        return playReading(reading.passages, translation)
+        return playReading(reading.passages, translation, reading.devotions)
     }
 
     /** Reads a plan's own writing aloud, one paragraph at a time under [title]. Opt-in: only a tap starts it. */

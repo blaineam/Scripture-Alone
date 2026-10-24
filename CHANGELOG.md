@@ -9,7 +9,7 @@
   translation. Today shows what to read, with Read, Listen and Mark as Read; missed days wait under Catch Up, and
   a streak counts the days in a row. Set a daily reminder, and Listen reads the day's passages aloud. A church's
   weekly study can be fetched on demand, read aloud, and kept for offline reading, with a link back to the
-  church. Reading Plans is in the translation menu. The Shortcuts app gains **Start Today's Reading** (it takes the
+  church. Spurgeon's *Morning and Evening* — a morning and an evening meditation for every day, in his own words, with the verse in your translation and read-aloud — is included for English devices, and the Disciples Church plan is one tap away in Add a Plan. Reading Plans is in the translation menu. The Shortcuts app gains **Start Today's Reading** (it takes the
   Siri phrase *Add to Favorites* had; that action stays in Shortcuts). On iPhone, iPad, Mac and Android.
 
 ## 1.1.7 (2026-10-18)

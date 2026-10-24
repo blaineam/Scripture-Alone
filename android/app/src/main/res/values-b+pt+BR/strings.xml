@@ -1062,4 +1062,5 @@
     <string name="plans_summary_book">Um capítulo por dia em %1$s.</string>
     <string name="plans_summary_import">Cronograma de %1$s. O texto é lido na sua tradução.</string>
     <string name="plans_disciples_note">Acompanha a leitura diária da igreja, atualizada automaticamente todos os dias.</string>
+    <string name="plans_read_devotion">Ler a meditação de hoje</string>
 </resources>

@@ -5,6 +5,7 @@ import com.blainemiller.scripturealone.R
 import com.blainemiller.scripturealone.data.ChapterVerse
 import com.blainemiller.scripturealone.data.VerseRef
 import com.blainemiller.scripturealone.data.canon.BookID
+import com.blainemiller.scripturealone.data.plans.PlanDevotion
 import com.blainemiller.scripturealone.data.plans.PlanPassage
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.text.AppText
@@ -76,6 +77,23 @@ object ListenQueue {
                 if (first == null || first == 1) out += Item(0, announcement(ref))
                 wanted.mapTo(out) { Item(it.ref.key, it.text) }
             }
+        }
+        return out
+    }
+
+    /**
+     * A devotional day — `ListenController.playReading(devotions:)`: each entry's heading, then its key verse in the
+     * reader's translation, then the meditation a paragraph at a time. [passages] and [devotions] pair up by position.
+     */
+    fun devotionItems(passages: List<PlanPassage>, devotions: List<PlanDevotion>, verses: (ChapterRef) -> List<ChapterVerse>): List<Item> {
+        if (devotions.isEmpty() || devotions.size != passages.size) return readingItems(passages, verses)
+        val out = mutableListOf<Item>()
+        for ((passage, devotion) in passages.zip(devotions)) {
+            val verse = readingItems(listOf(passage), verses)
+            if (verse.isEmpty()) continue
+            out += Item(0, devotion.heading + ".")
+            out += verse
+            devotion.text.split("\n").map { it.trim() }.filter { it.isNotEmpty() }.mapTo(out) { Item(0, it) }
         }
         return out
     }

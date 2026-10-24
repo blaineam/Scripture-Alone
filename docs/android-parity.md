@@ -216,7 +216,7 @@ Spec: `docs/reading-plans.md`.
 
 | Feature | Status | Notes |
 |---|---|---|
-| Plan model, built-in catalog (Bible in a Year canonical and chronological, book by book) | ✅ | `data/plans/ReadingPlan.kt`; `ReadingPlanTest` carries the same cases as `ReadingPlanTests.swift` — 1,189 chapters exactly once in each year plan. The devotional plans are not built (owner, 2026-10-23) |
+| Plan model, built-in catalog (Bible in a Year canonical and chronological, book by book), Disciples Church one tap from Add a Plan | ✅ | `data/plans/ReadingPlan.kt`; `ReadingPlanTest` carries the same cases as `ReadingPlanTests.swift` — 1,189 chapters exactly once in each year plan. The devotional plans are not built (owner, 2026-10-23) |
 | Schedule, progress, catch-up, streak, rest weekdays, follow-the-source's-calendar | ✅ | `data/plans/PlanSchedule.kt` (`java.time.LocalDate`; weekdays numbered 1 = Sunday as on iOS, so the JSON is the same) |
 | Importer: pasted address, title → passage, posts → plan, WordPress REST paging, RSS fallback, categories, offline vs not-a-feed errors, refresh of a followed plan | ✅ | `data/plans/PlanFeed.kt` (pure) and `PlanImporter.kt` (`HttpURLConnection`, blocking, on `Dispatchers.IO`; tested with a fake fetcher). Same plan ids as iOS for the same site and title |
 | Plans store, progress and imported schedules kept on the device (offline) | ✅ | `data/plans/PlanStore.kt` → `filesDir/plans/plans.json`, the iOS shape; carried by Auto Backup (`SettingsBackup.PLANS_FILE`, `BackupRulesTest`) |
@@ -225,7 +225,8 @@ Spec: `docs/reading-plans.md`.
 | Daily reminders | ✅ | `data/plans/PlanReminders.kt`: one inexact alarm for the next reminder (no exact-alarm permission), re-armed at boot and when the app opens; the notification opens the plans screen. `PlanReminderRules` is pure and tested. `POST_NOTIFICATIONS` is asked when a reminder is turned on |
 | Read today's reading aloud, and the study's prose | ✅ | `ListenController.playReading` / `playTodaysReading` (UI-free) / `playProse`, over `ListenQueue.readingItems` / `proseItems` (tested) |
 | "Start today's reading" entry | ✅ | `AppCommand.TodaysReading` (`scripturealone://todays-reading`; OPEN_APP_FEATURE name `todays_reading`) and the Reading Plans screen's Listen row. A launcher shortcut and an Assistant phrase are not added (⬜) |
-| Interface strings in the big 8 | 🔧 | All `plans_*` strings are in the eight locales, **machine-drafted — Levi to review**. The built-in plans' own names and summaries are English |
+| Spurgeon's *Morning and Evening* (bundled devotional, annual by date, read aloud as heading + verse + meditation) | ✅ | `assets/SpurgeonMorningEvening.json` — the same file iOS bundles (`syncBundledData`, `Tools/build_spurgeon.py`); `BundledPlans`, `PlanStore.offeredBundled` (English devices only), `DevotionScreen`, `ListenQueue.devotionItems`. `SpurgeonPlanTest` mirrors `SpurgeonPlanTests`. Emulator-verified: offered, started, Today, the devotion screen |
+| Interface strings in the big 8 | 🔧 | All `plans_*` strings are in the eight locales, **machine-drafted — Levi to review**. Plan names and summaries are localized (a book plan by its book's name); Spurgeon's text and name are English |
 
 ### Android-only
 

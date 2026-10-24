@@ -68,6 +68,7 @@
 		4AA2A511CBD4F3B94FFE9656 /* OnlineKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516CA9EE0C2D72ED9057AC6E /* OnlineKeysView.swift */; };
 		4AB012AE8C3B7C9A3FCCE461 /* FamilySharingSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E1114FBD372117B3796076 /* FamilySharingSupport.swift */; };
 		4D220640C3B4DEA23DF4F17E /* Entities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93FAE7B8C1A17A1BAD1F94B7 /* Entities.swift */; };
+		4D722DFA2B6FF41F37110A32 /* SpurgeonMorningEvening.json in Resources */ = {isa = PBXBuildFile; fileRef = EDFBBC85BB455B17C3EF343F /* SpurgeonMorningEvening.json */; };
 		500A4B69E8265A37D35F3D68 /* ReadingPlansTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34F36A0093A3ECC4A967D092 /* ReadingPlansTests.swift */; };
 		51067F02DBFC89BBCD92F9F8 /* InterlinearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F435AEBC1B470F11ED9904CE /* InterlinearView.swift */; };
 		51D68CD92231B55439DC6D26 /* UserGuideBlocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F17789E8D9C97B83E3A661 /* UserGuideBlocks.swift */; };
@@ -499,6 +500,7 @@
 		E79D61A66336156A65FD29F3 /* ReaderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderModel.swift; sourceTree = "<group>"; };
 		EB6A1A0C6A57B6779BD9E5D1 /* KeepsakeCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeepsakeCreateView.swift; sourceTree = "<group>"; };
 		EDFB8603886458A9C59AFF53 /* FavoritesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesSection.swift; sourceTree = "<group>"; };
+		EDFBBC85BB455B17C3EF343F /* SpurgeonMorningEvening.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SpurgeonMorningEvening.json; sourceTree = "<group>"; };
 		EE1F38BC882254E5BC67B0BF /* ViewHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewHost.swift; sourceTree = "<group>"; };
 		EE510A41385BD38538A93FBF /* LifeBibleImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifeBibleImportView.swift; sourceTree = "<group>"; };
 		F034B1687BB5E424127C24ED /* PlanReminders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanReminders.swift; sourceTree = "<group>"; };
@@ -657,6 +659,14 @@
 				1874DB30855498F9A08136DB /* UITestSupport.swift */,
 			);
 			path = ScriptureAloneUITests;
+			sourceTree = "<group>";
+		};
+		1E7A3334DF888CEADA05980F /* Plans */ = {
+			isa = PBXGroup;
+			children = (
+				EDFBBC85BB455B17C3EF343F /* SpurgeonMorningEvening.json */,
+			);
+			path = Plans;
 			sourceTree = "<group>";
 		};
 		285B6C41F316603664679429 /* Plans */ = {
@@ -934,6 +944,7 @@
 			isa = PBXGroup;
 			children = (
 				8906FE93054F3E855802A471 /* Packages */,
+				1E7A3334DF888CEADA05980F /* Plans */,
 				69099AF2A475A0F4D2A32247 /* Study */,
 				83FA6232CC192A9E359F659F /* AppIcon.icon */,
 				F2782EC501EE1E4CC4BCE601 /* AppShortcuts.xcstrings */,
@@ -1384,6 +1395,7 @@
 				421F1D504BC55173091F44DE /* CrossReferences.sqlite in Resources */,
 				0CF01B3F1ADEB43A40A34C2F /* DailyVerses.json in Resources */,
 				487EFEAB1AB68A3B0EE0659B /* Localizable.xcstrings in Resources */,
+				4D722DFA2B6FF41F37110A32 /* SpurgeonMorningEvening.json in Resources */,
 				871C67E0CE22AB0CC5DC791A /* Topics.sqlite in Resources */,
 				AEC5E4BE40E074C767038607 /* bundled-signing.pub in Resources */,
 			);

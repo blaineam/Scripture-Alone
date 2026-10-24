@@ -16,6 +16,8 @@ Swift and Kotlin tests carry the same cases; add one to both or to neither.
 | Bible in a Year | Genesis → Revelation in canonical order, 365 days, chapters spread evenly (about 3.3 a day). A day that crosses a book boundary holds a passage for each book. |
 | Bible in a Year, Chronological | An editorial chronological order (`PlanCatalog.chronologicalOrder`), chapter-granular, 365 days. Every one of the 1,189 chapters appears exactly once (a test holds it). Psalms are placed in blocks with the events they belong to; the Gospels run Matthew → John rather than as a harmony. |
 | Book by Book | Pick any of the 66 books: one chapter a day. |
+| Spurgeon's Morning and Evening | A shipped devotional, by calendar date — see below. |
+| Disciples Church | One tap from Add a Plan: follows the church's daily reading from its feed, refreshed each time the app opens. |
 
 Days are *ordinal*: day 1 is the start date, and a plan that skips weekdays (an imported one whose source
 doesn't post Saturday and Sunday) moves on to the next eligible date. A plan whose source dated every day
@@ -95,23 +97,32 @@ shared or redistributed**; the importer takes the latest study published on or b
 > constant to drop. Reading a public feed on a reader's own device, with attribution and a link back, is the posture.
 > The same applies to any other site a reader pastes — nothing from it ships in the app.
 
-## Devotional plans (men's, women's)
+## Spurgeon's *Morning and Evening*
 
-**Not built, by the owner's decision.** The owner won't write them; they are added only if a good Reformed
-Baptist source can be found *and licensed*, and its theology fits. No placeholder plans, schema fields or
-screens exist for them.
+The first plan that ships its own writing: a morning and an evening meditation for every day of the year (366
+days, so February 29 has its own), by C. H. Spurgeon (1866). It is **public domain** (Spurgeon died in 1892) and the
+text is the original, from the Christian Classics Ethereal Library's edition (rights "Public Domain"), **not** the
+modernised Alistair Begg edition, which is copyrighted. `Tools/build_spurgeon.py` turns the CCEL XML into
+`ScriptureAlone/Resources/Plans/SpurgeonMorningEvening.json` (1.5 MB): a `ReadingPlan` whose days are
+`MM-DD`, each with the two key verses as `passages` and the two meditations as `devotions`. iOS bundles the file;
+Android's `syncBundledData` copies the same file into its assets. Both show the source and a link to CCEL.
 
-Public-domain candidates, with the doctrinal caveat that matters for this audience:
+- **Annual:** today's reading is the entry for today's date, and the plan starts over each January (progress is
+  forgotten on the first open of the new year). There is no catch-up. In a common year February 29's entry is
+  never reached.
+- **Read aloud** reads each entry as its heading, the key verse in the reader's own translation, then the
+  meditation. The meditation itself is Spurgeon's words (his KJV-style quotation is shown with it).
+- **English only:** the text is English, so the plan is offered only when the device language is English
+  (docs/localization.md: English-only commentary is hidden outside English).
+- Spurgeon was a Particular Baptist; the owner asked for it by name (2026-10-24).
 
-- Spurgeon, *Morning and Evening* and *Faith's Checkbook* — Particular Baptist, the obvious fit. Public domain.
-- Horatius Bonar, *Light and Truth* — a Scottish Free Church Presbyterian: Reformed and respected, expository
-  rather than devotional; paedobaptist, so fine for the text, not a "Baptist" source.
-- Mrs. Charles Cowman, *Streams in the Desert* — not a fit as a default: Holiness/Keswick-leaning, from a
-  missionary society outside the Reformed tradition. Public domain, but theologically mixed for this app.
-- Others worth a look: Spurgeon's *Daily Help*, Bunyan, Puritan daily-reading compilations (check each
-  edition's licence), and Reformed Baptist church or ministry plans (each needs written permission).
+## Other devotional plans (men's, women's)
 
-Whatever is chosen is *content* shipped with the app, a larger decision than the schedule-only plans here.
+**Not built.** The owner won't write them; they are added only if a good Reformed Baptist source can be found and
+licensed and its theology fits. Candidates: Spurgeon's *Faith's Checkbook* and *Daily Help* (public domain); Horatius
+Bonar's *Light and Truth* (Reformed and respected, expository, but a paedobaptist Presbyterian); Mrs. Cowman's
+*Streams in the Desert* is **not** a good default (Holiness/Keswick, outside the Reformed tradition); Bunyan and Puritan
+daily-reading compilations (check each edition's licence); Reformed Baptist church plans (written permission needed).
 
 ## Not yet
 
