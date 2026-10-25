@@ -27,6 +27,9 @@ object PlanServices {
         store ?: PlanStore(File(context.applicationContext.filesDir, "plans"), BundledPlans.load(context.applicationContext)).also { store = it }
     }
 
+    /** The importer with PDFBox reading a church's yearly plan PDF. */
+    fun importer(context: Context): PlanImporter = PlanImporter(HttpUrlFetcher(), PlanPdfText.extractor(context))
+
     fun studyCache(context: Context): StudyCache = cache ?: synchronized(this) {
         cache ?: StudyCache(File(context.applicationContext.filesDir, "plan-studies")).also { cache = it }
     }

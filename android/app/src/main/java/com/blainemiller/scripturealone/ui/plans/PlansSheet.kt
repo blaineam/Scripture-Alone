@@ -55,6 +55,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -126,7 +129,7 @@ fun PlansSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: () -> U
 
     // A followed plan picks up the days published since it was last open — quietly, offline or not.
     LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO) { PlanImporter().refresh(store, LocalDate.now()) }
+        withContext(Dispatchers.IO) { PlanServices.importer(context).refresh(store, LocalDate.now()) }
     }
 
     val surface = SheetColors.surface(palette)
@@ -234,6 +237,7 @@ private fun Home(
     push: (Route) -> Unit, openPassage: (PlanPassage) -> Unit,
 ) {
     val reading = store.todaysReading()
+    val context = LocalContext.current
     var adding by remember { mutableStateOf(false) }
     var addMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
@@ -321,7 +325,7 @@ private fun Home(
                         scope.launch {
                             val today = store.today()
                             val result = withContext(Dispatchers.IO) {
-                                runCatching { PlanImporter().import("", PlanImporter.DISCIPLES_CHURCH, PlanImporter.Mode.FollowCalendar, today) }
+                                runCatching { PlanServices.importer(context).import("", PlanImporter.DISCIPLES_CHURCH, PlanImporter.Mode.FollowCalendar, today) }
                             }
                             adding = false
                             result.onSuccess { store.add(it.plan); store.start(it.plan, today, true) }
@@ -399,7 +403,7 @@ private fun DevotionScreen(store: PlanStore, reader: ReaderViewModel, palette: R
                 }
                 items(paragraphsOf(devotion.text)) { paragraph ->
                     Spoken(paragraph, listen, palette) {
-                        SelectionContainer { Text(paragraph, color = palette.ink, fontSize = StudyStyle.body, lineHeight = 24.sp) }
+                        SelectionContainer { Text(marked(paragraph, listen, palette), color = palette.ink, fontSize = StudyStyle.body, lineHeight = 24.sp) }
                     }
                 }
                 if (i < reading.devotions.size - 1) item {
@@ -422,6 +426,19 @@ private fun DevotionScreen(store: PlanStore, reader: ReaderViewModel, palette: R
 
 /** The paragraphs `ListenController.playProse` and the devotion reading say, so the one being read can be marked. */
 private fun paragraphsOf(text: String): List<String> = text.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
+
+/** [text] with the word being spoken tinted, when [text] is the paragraph being read and the voice reports its words. */
+@Composable
+private fun marked(text: String, listen: ListenController, palette: ReaderPalette): AnnotatedString {
+    val word = listen.spokenWord
+    val active = listen.spokenParagraph == text.trim()
+    return buildAnnotatedString {
+        append(text)
+        if (active && word != null && word.first >= 0 && word.last < text.length) {
+            addStyle(SpanStyle(background = palette.accent.copy(alpha = 0.3f)), word.first, word.last + 1)
+        }
+    }
+}
 
 /** [content] with a rounded wash behind it while [said] is the paragraph being read aloud. */
 @Composable
@@ -578,6 +595,7 @@ private fun Detail(
 
 @Composable
 private fun ImportScreen(store: PlanStore, palette: ReaderPalette, finished: () -> Unit) {
+    val context = LocalContext.current
     var address by remember { mutableStateOf("") }
     var follow by remember { mutableStateOf(true) }
     var since by remember { mutableStateOf(LocalDate.now().minusYears(1)) }
@@ -591,7 +609,7 @@ private fun ImportScreen(store: PlanStore, palette: ReaderPalette, finished: () 
         scope.launch {
             val today = store.today()
             val mode = if (follow) PlanImporter.Mode.FollowCalendar else PlanImporter.Mode.FromDayOne(since)
-            val result = withContext(Dispatchers.IO) { runCatching { PlanImporter().import(address, preset, mode, today) } }
+            val result = withContext(Dispatchers.IO) { runCatching { PlanServices.importer(context).import(address, preset, mode, today) } }
             working = false
             result.onSuccess {
                 store.add(it.plan)
@@ -714,7 +732,7 @@ private fun StudyScreen(source: PlanSource, reader: ReaderViewModel, palette: Re
             shown?.let { post ->
                 items(paragraphsOf(post.text)) { paragraph ->
                     Spoken(paragraph, listen, palette) {
-                        SelectionContainer { Text(paragraph, color = palette.ink, fontSize = StudyStyle.body, lineHeight = 24.sp) }
+                        SelectionContainer { Text(marked(paragraph, listen, palette), color = palette.ink, fontSize = StudyStyle.body, lineHeight = 24.sp) }
                     }
                 }
             }

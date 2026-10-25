@@ -197,6 +197,55 @@ class ReadingPlanTest {
         assertEquals(listOf("John 1", "John 2", "John 3", "John 4"), plan.days.map { it.display })
     }
 
+    private val planText = """
+        D I S C I P L E S C H U R C H -- 2026 -- BIBLE READING PLAN
+        TITLE             WEEK OF MONDAY         TUESDAY      WEDNESDAY    THURSDAY      FRIDAY
+
+        JANUARY
+        Creation Era       29-Dec   Genesis 1    Genesis 2    Genesis 3    Genesis 4     Genesis 5
+        Creation Era        5-Jan   Genesis 6    Genesis 7    Genesis 8    Genesis 9     Genesis 10
+
+        SEPTEMBER
+        Gospel of Mark     30-Mar   Mark 16      Exodus 1     Exodus 2     Exodus 3      Exodus 4
+        Kingdom Era       28-Sep   1 Samuel 29        1 Samuel 30        1 Samuel 31        Daniel 1           Daniel 2
+    """.trimIndent()
+
+    @Test fun readsADatedScheduleFromAYearlyPlanPdf() {
+        for (text in listOf(planText, planText.replace("\n", " "))) {
+            val days = PlanFeed.parseScheduleText(text, null)
+            assertEquals(20, days.size)
+            assertEquals("2025-12-29", days.first().date)
+            assertEquals("Genesis 1", days.first().display)
+            // The week of 5-Jan is in 2026: the year turns over when the months wrap.
+            assertEquals("2026-01-05", days[5].date)
+            assertEquals("Genesis 10", days[9].display)
+            assertEquals("2026-01-09", days[9].date)
+            assertEquals("Gospel of Mark", days[10].label)
+            assertEquals("2026-03-30", days[10].date)
+            assertEquals("Mark 16", days[10].display)
+            assertEquals("Exodus 1", days[11].display)
+            assertEquals("Kingdom Era", days[15].label)
+            assertEquals("1 Samuel 29", days[15].display)
+            assertEquals("1 Samuel 31", days[17].display)
+            assertEquals("Daniel 1", days[18].display)
+            assertEquals("2026-10-02", days[19].date)
+        }
+        assertTrue(PlanFeed.parseScheduleText("nothing here", 2026).isEmpty())
+    }
+
+    @Test fun publishedDaysReplaceTheProjection() {
+        val source = PlanSource("https://s.org", null, null, "S")
+        val posted = chapterPosts("Romans", 1..3, "2026-10-19")
+        val ahead = PlanFeed.parseScheduleText(
+            "TITLE Epistle 19-Oct Romans 1 Romans 2 Romans 3 Romans 4 Romans 5 Epistle 26-Oct Romans 6 Romans 7 Romans 8 Romans 9 Romans 10", 2026)
+        assertEquals(10, ahead.size)
+        val plan = PlanFeed.plan(posted, "S", source, projecting = true, scheduled = ahead).plan
+        assertEquals((1..10).map { "Romans $it" }, plan.days.map { it.display })
+        assertEquals(List(3) { false } + List(7) { true }, plan.days.map { it.projected })
+        assertEquals("2026-10-22", plan.days[3].date)
+        assertEquals("2026-10-30", plan.days[9].date)
+    }
+
     @Test fun textHelpers() {
         assertEquals("a & b – c ’ &bogus; &", PlanFeed.decodeEntities("a &amp; b &#8211; c &#x2019; &bogus; &"))
         assertEquals("Daniel 8-12\n\nIt’s here.", PlanFeed.paragraphs("<p>Daniel 8-12</p>\n<p>It&#8217;s <em>here</em>.</p><script>x()</script>"))

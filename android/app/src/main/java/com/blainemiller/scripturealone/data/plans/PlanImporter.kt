@@ -19,10 +19,26 @@ fun interface PlanFetcher {
     @Throws(IOException::class)
     fun fetch(url: String): Response
 
+    /** A response body as bytes (a PDF); an [IOException] when it can't be had. */
+    @Throws(IOException::class)
+    fun fetchBytes(url: String): ByteArray = throw IOException("binary download not supported")
+
     data class Response(val code: Int, val body: String, val headers: Map<String, String> = emptyMap())
 }
 
 class HttpUrlFetcher : PlanFetcher {
+    override fun fetchBytes(url: String): ByteArray {
+        val c = URL(url).openConnection() as HttpURLConnection
+        try {
+            c.connectTimeout = 20_000
+            c.readTimeout = 60_000
+            if (c.responseCode !in 200..299) throw IOException("HTTP ${c.responseCode}")
+            return c.inputStream.use { it.readBytes() }
+        } finally {
+            c.disconnect()
+        }
+    }
+
     override fun fetch(url: String): PlanFetcher.Response {
         val c = URL(url).openConnection() as HttpURLConnection
         try {
@@ -45,9 +61,17 @@ class HttpUrlFetcher : PlanFetcher {
  * `PlanFeedImporter.swift`, over [PlanFeed]'s pure logic. Blocking: call from `Dispatchers.IO`.
  * Only the schedule is kept; what a site republishes of the passage text is never fetched.
  */
-class PlanImporter(private val fetcher: PlanFetcher = HttpUrlFetcher()) {
+class PlanImporter(
+    private val fetcher: PlanFetcher = HttpUrlFetcher(),
+    /** A PDF's text, for a church's yearly plan; null when it can't be read (the app hands in PDFBox, tests nothing). */
+    private val pdfText: (ByteArray) -> String? = { null },
+) {
     /** A known church plan: category 2 is the daily reading, 7 the Saturday Study. */
-    data class Preset(val name: String, val site: String, val scheduleCategory: Int, val studyCategory: Int?)
+    data class Preset(
+        val name: String, val site: String, val scheduleCategory: Int, val studyCategory: Int?,
+        /** A page that links the site's yearly plan as a PDF: the whole year's schedule, ahead of the posts. */
+        val planPage: String? = null,
+    )
 
     sealed interface Mode {
         /** Follow the dates the site gave its days, from today on. */
@@ -124,11 +148,13 @@ class PlanImporter(private val fetcher: PlanFetcher = HttpUrlFetcher()) {
         // A site posts each day's reading on the day, so nothing is published ahead. It repeats its reading
         // order every few years, though: read that far back to find the last pass and project the days still
         // to come from it (PlanFeed.projection).
+        // The church's own yearly plan, when it publishes one: the whole year's schedule, not a guess.
+        val published = if (following) publishedSchedule(preset?.planPage) else emptyList()
         val after = when (mode) {
-            Mode.FollowCalendar -> today.minusYears(5)
+            Mode.FollowCalendar -> if (published.isEmpty()) today.minusYears(5) else recent
             is Mode.FromDayOne -> mode.since
         }
-        val limit = if (following) 2_500 else 400
+        val limit = if (following && published.isEmpty()) 2_500 else 400
         val endpoints = preset?.let { listOf(PlanFeed.Endpoint.WordPress(it.site, it.scheduleCategory)) } ?: PlanFeed.endpoints(pasted)
         if (endpoints.isEmpty()) throw PlanFeedException(PlanFeedException.Kind.BAD_URL)
         var found: Pair<PlanFeed.Endpoint, List<FeedEntry>>? = null
@@ -149,7 +175,7 @@ class PlanImporter(private val fetcher: PlanFetcher = HttpUrlFetcher()) {
         }
         val name = preset?.name ?: runCatching { java.net.URI(site).host }.getOrNull() ?: site
         return PlanFeed.plan(entries, name, PlanSource(site, api, preset?.studyCategory, name, category),
-            keepingFrom = if (following) recent.toString() else null, projecting = following)
+            keepingFrom = if (following) recent.toString() else null, projecting = following, scheduled = published)
     }
 
     /** Fetches the days a followed site has published since the plan was imported; quiet on failure. */
@@ -166,17 +192,51 @@ class PlanImporter(private val fetcher: PlanFetcher = HttpUrlFetcher()) {
             // look for the earlier pass (a site with none isn't asked again every time the app opens).
             val lookBack = plan.days.none { it.projected } &&
                 (store.projectionTried(plan.id)?.let { java.time.temporal.ChronoUnit.DAYS.between(it, today) > 7 } ?: true)
+            val published = if (lookBack) publishedSchedule(presetFor(source.siteUrl)?.planPage) else emptyList()
             val result = runCatching {
-                val from = if (lookBack) today.minusYears(5) else LocalDate.parse(first).minusDays(1)
-                val entries = entries(PlanFeed.Endpoint.WordPress(site, source.scheduleCategory), from, if (lookBack) 2_500 else 400)
+                val wide = lookBack && published.isEmpty()
+                val from = if (wide) today.minusYears(5) else LocalDate.parse(first).minusDays(1)
+                val entries = entries(PlanFeed.Endpoint.WordPress(site, source.scheduleCategory), from, if (wide) 2_500 else 400)
                 if (lookBack) store.markProjectionTried(plan.id, today)
-                PlanFeed.plan(entries, plan.title, source, keepingFrom = if (lookBack) first else null, projecting = lookBack)
+                PlanFeed.plan(entries, plan.title, source, keepingFrom = if (lookBack) first else null, projecting = lookBack, scheduled = published)
             }.getOrNull() ?: continue
             if (result.plan.id != plan.id || result.plan.days.count { !it.projected } < posted.size) continue
             // What the site hadn't posted yet when the plan was made carries on from where it now stands.
             val ahead = if (lookBack) emptyList() else PlanFeed.projection(result.plan.days, plan.days)
             store.add(result.plan.copy(days = result.plan.days + ahead))
         }
+    }
+
+    /** The newest yearly plan PDF linked from [page], with the year in its file name. Null when the page links none. */
+    fun latestPlanPdf(page: String): Pair<ByteArray, Int?>? {
+        val html = get(page).body
+        var best: Pair<String, Int?>? = null
+        for (m in Regex("""href\s*=\s*["']([^"']+\.pdf)["']""", RegexOption.IGNORE_CASE).findAll(html)) {
+            val url = runCatching { java.net.URI(page).resolve(m.groupValues[1]).toString() }.getOrNull() ?: continue
+            val year = Regex("""20\d\d""").find(url.substringAfterLast('/'))?.value?.toIntOrNull()
+            val top = best
+            if (top == null || (year ?: 0) > (top.second ?: 0)) best = url to year
+        }
+        val (url, year) = best ?: return null
+        val bytes = try {
+            fetcher.fetchBytes(url)
+        } catch (e: IOException) {
+            throw PlanFeedException(PlanFeedException.Kind.OFFLINE)
+        }
+        return bytes to year
+    }
+
+    /**
+     * The days of the yearly plan a site links as a PDF — empty when it has none, or it can't be read as a
+     * whole year's rows (the projection from earlier passes stands in).
+     */
+    fun publishedSchedule(page: String?): List<PlanDay> {
+        if (page == null) return emptyList()
+        return runCatching {
+            val (bytes, year) = latestPlanPdf(page) ?: return@runCatching emptyList<PlanDay>()
+            val text = pdfText(bytes) ?: return@runCatching emptyList<PlanDay>()
+            PlanFeed.parseScheduleText(text, year).takeIf { it.size >= 100 }.orEmpty()
+        }.getOrDefault(emptyList())
     }
 
     /** The most recent commentary post published on or before [date], as plain paragraphs. Fetched each time it is wanted. */
@@ -196,7 +256,11 @@ class PlanImporter(private val fetcher: PlanFetcher = HttpUrlFetcher()) {
     }
 
     companion object {
-        val DISCIPLES_CHURCH = Preset("Disciples Church Bible Reading Plan", "https://discipleschurch.com/bible", 2, 7)
+        val DISCIPLES_CHURCH = Preset("Disciples Church Bible Reading Plan", "https://discipleschurch.com/bible", 2, 7,
+            "https://discipleschurch.com/bible/download/")
+
+        /** The built-in source whose site this is, so a plan made earlier finds its plan page again. */
+        fun presetFor(site: String): Preset? = DISCIPLES_CHURCH.takeIf { it.site == site }
 
         /** RSS items → entries, dated by `pubDate` in UTC. */
         fun parseRss(xml: String): List<FeedEntry> {

@@ -182,6 +182,9 @@ class ListenController private constructor(private val app: Context) {
      * The paragraph of prose being read — a plan's study or meditation — while a session is up, so the screen
      * showing that text can mark it. Verses are marked in the reader; this is null while one is read.
      */
+    /** The word being spoken in [spokenParagraph], as character offsets into it, when the voice reports one. */
+    var spokenWord by mutableStateOf<IntRange?>(null)
+        private set
     val spokenParagraph: String?
         get() = if (isPresented && phase != Phase.Idle) items.getOrNull(current)?.takeIf { it.isAnnouncement }?.text?.trim() else null
     private var rights: TranslationRights = TranslationRights.PUBLIC_DOMAIN
@@ -390,6 +393,7 @@ class ListenController private constructor(private val app: Context) {
         present { sessionEnded() }
         stopOutput()
         speakingVerse = null
+        spokenWord = null
         items = emptyList()
         notice = null
         chooseSleepTimer(SleepTimer.OFF)
@@ -539,6 +543,7 @@ class ListenController private constructor(private val app: Context) {
         current = ListenQueue.restartIndex(items).coerceAtMost(items.lastIndex.coerceAtLeast(0))
         phase = if (items.isEmpty()) Phase.Idle else Phase.Paused
         speakingVerse = null
+        spokenWord = null
         this.notice = notice
         publish()
     }
@@ -649,6 +654,8 @@ class ListenController private constructor(private val app: Context) {
         @Deprecated("Superseded by onError(String, Int); still abstract, so still implemented.")
         override fun onError(utteranceId: String?) = post(utteranceId) { index -> utteranceFinished(index) }
         override fun onError(utteranceId: String?, errorCode: Int) = post(utteranceId) { index -> utteranceFailed(index) }
+        override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) =
+            post(utteranceId) { index -> if (index == current) spokenWord = start until end }
 
         /** Callbacks arrive on a binder thread; the queue lives on the main one. */
         private fun post(id: String?, block: (Int) -> Unit) {
@@ -661,6 +668,7 @@ class ListenController private constructor(private val app: Context) {
         if (index !in items.indices) return
         spokeThisPass = true
         current = index
+        spokenWord = null
         if (!items[index].isAnnouncement) speakingVerse = items[index].key
         acquireWake()
         publish()

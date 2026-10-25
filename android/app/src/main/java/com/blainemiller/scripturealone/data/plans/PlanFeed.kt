@@ -80,7 +80,8 @@ object PlanFeed {
      * from years back to find its last pass through the same readings, but the plan keeps the recent days);
      * [projecting] adds the days the site hasn't posted yet ([projection]).
      */
-    fun plan(entries: List<FeedEntry>, title: String, source: PlanSource, keepingFrom: String? = null, projecting: Boolean = false): PlanImport {
+    fun plan(entries: List<FeedEntry>, title: String, source: PlanSource, keepingFrom: String? = null, projecting: Boolean = false,
+        scheduled: List<PlanDay> = emptyList()): PlanImport {
         val byDate = sortedMapOf<String, Pair<String?, MutableList<PlanPassage>>>()
         val skipped = mutableListOf<String>()
         for (entry in entries.sortedBy { it.date }) {
@@ -91,7 +92,10 @@ object PlanFeed {
         }
         if (byDate.isEmpty()) throw PlanFeedException(PlanFeedException.Kind.NO_READINGS)
         var days = byDate.entries.mapIndexed { i, (date, v) -> PlanDay(i, date, v.first, v.second.toList()) }
-        val ahead = if (projecting) projection(days, days, sharesHistory = true) else emptyList()
+        // Days the site published ahead of its posts (parseScheduleText) win over a guess.
+        val lastPosted = days.lastOrNull()?.date ?: ""
+        val published = scheduled.filter { (it.date ?: "") > lastPosted }.map { it.copy(projected = true) }
+        val ahead = if (published.isNotEmpty()) published else if (projecting) projection(days, days, sharesHistory = true) else emptyList()
         if (keepingFrom != null) {
             days = days.filter { (it.date ?: "") >= keepingFrom }
             if (days.isEmpty()) throw PlanFeedException(PlanFeedException.Kind.NO_READINGS)
@@ -105,6 +109,43 @@ object PlanFeed {
                 days, skip, source),
             skipped,
         )
+    }
+
+    private val MONTHS = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    private const val READING = """(?:[1-3] )?[A-Z][a-z]+(?: of [A-Z][a-z]+)? \d+"""
+
+    /**
+     * A yearly plan's text — rows of "Title, Week of 5-Jan, five readings Monday to Friday" — as dated days
+     * (`PlanFeedImporter.parseScheduleText`). The text may come out of a PDF laid out or run together; only the
+     * order of the words is used. The year is [year] (the file name's) or the "-- 2026 --" in the page header;
+     * a first week that starts in December belongs to the year before, and the year turns over when the
+     * months wrap. Rows that don't hold five readings are left out.
+     */
+    fun parseScheduleText(raw: String, year: Int?): List<PlanDay> {
+        val flat = raw.trim().split(Regex("\\s+")).joinToString(" ")
+        var current = year ?: Regex("""--\s*(20\d\d)\s*--""").find(flat)?.groupValues?.get(1)?.toIntOrNull() ?: return emptyList()
+        val one = Regex(READING)
+        val row = Regex("""(\d{1,2})-(${MONTHS.joinToString("|")})((?: $READING){5})""")
+        val out = mutableListOf<PlanDay>()
+        var previousMonth = 0
+        var cursor = 0
+        for (m in row.findAll(flat)) {
+            val before = flat.substring(cursor, m.range.first)
+            cursor = m.range.last + 1
+            val label = before.split(" ").filter { word -> word.any { it.isLowerCase() } }.joinToString(" ")
+            val dayOfMonth = m.groupValues[1].toInt()
+            val month = MONTHS.indexOf(m.groupValues[2]) + 1
+            if (out.isEmpty() && month == 12) current-- else if (month < previousMonth) current++
+            previousMonth = month
+            val monday = runCatching { LocalDate.of(current, month, dayOfMonth) }.getOrNull() ?: continue
+            val refs = one.findAll(m.groupValues[3]).map { it.value }.toList()
+            if (refs.size != 5) continue
+            refs.forEachIndexed { offset, text ->
+                val passage = ReferenceParser.parseAnyLanguage(text.trim()) ?: return@forEachIndexed
+                out += PlanDay(out.size, monday.plusDays(offset.toLong()).toString(), label.ifEmpty { null }, listOf(PlanPassage.of(passage)))
+            }
+        }
+        return out
     }
 
     /** Calendar weekdays (1 = Sunday … 7 = Saturday, as on iOS) that carry a reading. */
