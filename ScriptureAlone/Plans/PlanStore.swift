@@ -224,9 +224,16 @@ extension PlanStore {
                     fetcher: any PlanFetching = URLSession.shared, now: Date = Date()) async throws -> PlanFeedImporter.Import {
         let importer = PlanFeedImporter(fetcher: fetcher)
         let after: Date
-        switch mode {
+        var limit = 400
         // A month back, so a weekend or a holiday still finds posts; the plan starts today all the same.
-        case .followCalendar: after = calendar.startOfDay(for: now).addingTimeInterval(-30 * 86_400)
+        let recent = calendar.startOfDay(for: now).addingTimeInterval(-30 * 86_400)
+        switch mode {
+        case .followCalendar:
+            // A site posts each day's reading on the day, so nothing is published ahead. It runs the same
+            // reading order every few years, though: read that far back to find the last pass and
+            // project the days still to come from it (`PlanFeedImporter.projection`).
+            after = calendar.startOfDay(for: now).addingTimeInterval(-5 * 366 * 86_400)
+            limit = 2_500
         case .fromDayOne(let since): after = since
         }
         let endpoints: [PlanFeedImporter.Endpoint] = preset.map {
@@ -237,7 +244,7 @@ extension PlanStore {
         var failure: Error = PlanFeedError.notAFeed
         for endpoint in endpoints {
             do {
-                let entries = try await importer.entries(endpoint, after: after)
+                let entries = try await importer.entries(endpoint, after: after, limit: limit)
                 if !entries.isEmpty { found = (endpoint, entries); break }
             } catch PlanFeedError.offline {
                 throw PlanFeedError.offline
@@ -259,7 +266,11 @@ extension PlanStore {
         }
         let name = preset?.name ?? site.host() ?? site.absoluteString
         let source = PlanSource(siteURL: site, apiRoot: apiRoot, studyCategory: preset?.studyCategory, name: name, scheduleCategory: category)
-        let result = try PlanFeedImporter.plan(from: entries, title: name, source: source)
+        let following: Bool
+        if case .followCalendar = mode { following = true } else { following = false }
+        let result = try PlanFeedImporter.plan(
+            from: entries, title: name, source: source,
+            keepingFrom: following ? PlanSchedule.isoDay(recent, calendar: calendar) : nil, projecting: following)
         add(imported: result.plan)
         switch mode {
         case .followCalendar: start(result.plan, on: now, followsCalendar: true)
@@ -272,17 +283,31 @@ extension PlanStore {
     /// the reader keeps the days already on the device, which is all an offline phone needs.
     func refreshImported(fetcher: any PlanFetching = URLSession.shared, now: Date = Date()) async {
         for plan in imported {
+            // The days up to the last one the site really posted; whatever follows is a projection.
+            let posted = plan.days.filter { !$0.projected }
             guard progress(for: plan.id)?.followsCalendar == true, let source = plan.source, let first = plan.days.first?.date,
-                  plan.days.last?.date.map({ $0 < isoToday(now) }) ?? true,
+                  posted.last?.date.map({ $0 < isoToday(now) }) ?? true,
                   let root = source.apiRoot else { continue }
             let site = root.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             let parts = first.split(separator: "-").compactMap { Int($0) }
             guard parts.count == 3, let since = calendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2])) else { continue }
             let importer = PlanFeedImporter(fetcher: fetcher)
-            guard let entries = try? await importer.entries(.wordPress(site: site, category: source.scheduleCategory), after: since.addingTimeInterval(-1)),
-                  let result = try? PlanFeedImporter.plan(from: entries, title: plan.title, source: source),
-                  result.plan.id == plan.id, result.plan.days.count >= plan.days.count else { continue }
-            add(imported: result.plan)
+            // A plan made before days could be projected has none: read the site's history once a week
+            // to look for the earlier pass (a site with none is not asked again every time the app opens).
+            let triedKey = "planProjectionTried." + plan.id
+            let lookBack = !plan.days.contains { $0.projected }
+                && (UserDefaults.standard.object(forKey: triedKey) as? Date).map { now.timeIntervalSince($0) > 7 * 86_400 } ?? true
+            let from = lookBack ? calendar.startOfDay(for: now).addingTimeInterval(-5 * 366 * 86_400) : since
+            guard let entries = try? await importer.entries(.wordPress(site: site, category: source.scheduleCategory),
+                                                            after: from.addingTimeInterval(-1), limit: lookBack ? 2_500 : 400) else { continue }
+            if lookBack { UserDefaults.standard.set(now, forKey: triedKey) }
+            guard let result = try? PlanFeedImporter.plan(from: entries, title: plan.title, source: source,
+                                                          keepingFrom: lookBack ? first : nil, projecting: lookBack),
+                  result.plan.id == plan.id, result.plan.days.filter({ !$0.projected }).count >= posted.count else { continue }
+            // What the site had not posted yet when the plan was made carries on from where it now stands.
+            let ahead = lookBack ? [] : PlanFeedImporter.projection(after: result.plan.days, pool: plan.days)
+            add(imported: ReadingPlan(id: plan.id, kind: plan.kind, title: plan.title, summary: plan.summary,
+                                      days: result.plan.days + ahead, skipWeekdays: result.plan.skipWeekdays, source: source))
         }
     }
 }

@@ -92,7 +92,10 @@ final class ListenController {
     /// The text being read, so the Studio hand-off can check its licence.
     @ObservationIgnored private var translationInfo: TranslationInfo?
     @ObservationIgnored private var items: [Item] = []
-    @ObservationIgnored private var current = 0
+    /// The item being read. Observed, so a screen that shows the text being read (a plan's study) can mark it.
+    private var current = 0
+    /// The word being spoken in the current item, by a system voice (Studio clips only report whole verses).
+    private(set) var spokenWord: NSRange?
     @ObservationIgnored private let defaults = UserDefaults.standard
 
     // System voice
@@ -149,6 +152,16 @@ final class ListenController {
     func speakingVerse(in model: ReaderModel) -> Int? {
         let verse = speakingVerse
         return reader === model ? verse : nil
+    }
+
+    /// The paragraph of prose being read (a plan's study or meditation), and the word inside it when the voice
+    /// reports one, if this window is the one listening. Verses are marked in the reader, not here.
+    func spokenParagraph(in model: ReaderModel) -> (text: String, word: NSRange?)? {
+        let index = current
+        let word = spokenWord
+        let presented = isPresented
+        guard presented, reader === model, phase != .idle, items.indices.contains(index), items[index].key == 0 else { return nil }
+        return (items[index].text, word)
     }
 
     func isListening(in model: ReaderModel) -> Bool {
@@ -376,6 +389,7 @@ final class ListenController {
 
     private func begin(at index: Int) {
         stopOutput()
+        spokenWord = nil
         current = max(0, min(index, items.count - 1))
         speakingVerse = items[current].key > 0 ? items[current].key : items.first(where: { $0.key > 0 })?.key
         #if os(iOS)
@@ -493,6 +507,7 @@ final class ListenController {
         setRemoteCommandsEnabled(false)
         stopOutput()
         speakingVerse = nil
+        spokenWord = nil
         items = []
         notice = nil
         setSleepTimer(.off)
@@ -586,6 +601,7 @@ final class ListenController {
         current = items.first?.key == 0 ? 1 : 0
         phase = items.isEmpty ? .idle : .paused
         speakingVerse = nil
+        spokenWord = nil
         self.notice = notice
         updateNowPlaying()
     }
@@ -677,9 +693,13 @@ final class ListenController {
 
     private func handle(_ event: SpeechDelegate.Event) {
         switch event {
+        case .word(let token, let range):
+            guard let index = tokens[token], index == current else { return }
+            spokenWord = range
         case .started(let token):
             guard let index = tokens[token] else { return }
             current = index
+            spokenWord = nil
             if items[index].key > 0 { speakingVerse = items[index].key }
             updateNowPlaying()
         case .finished(let token):
@@ -918,6 +938,7 @@ private nonisolated final class SpeechDelegate: NSObject, AVSpeechSynthesizerDel
     enum Event: Sendable {
         case started(Int)
         case finished(Int)
+        case word(Int, NSRange)
     }
 
     /// Set once, before the synthesizer speaks.
@@ -926,6 +947,11 @@ private nonisolated final class SpeechDelegate: NSObject, AVSpeechSynthesizerDel
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
         guard let token = (utterance as? TokenUtterance)?.token else { return }
         onEvent?(.started(token))
+    }
+
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, willSpeakRangeOfSpeechString characterRange: NSRange, utterance: AVSpeechUtterance) {
+        guard let token = (utterance as? TokenUtterance)?.token else { return }
+        onEvent?(.word(token, characterRange))
     }
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {

@@ -208,6 +208,68 @@ private struct Table: PlanFetching {
         #expect(try PlanFeedImporter.plan(from: entries, title: "P", source: source).plan.skipWeekdays == [1, 7])
     }
 
+    /// Weekday posts "Romans n", from `start`, one chapter each.
+    private func chapterPosts(book: String, chapters: ClosedRange<Int>, from start: String) -> [FeedEntry] {
+        let cal = utc()
+        var date = day(start)
+        var result: [FeedEntry] = []
+        for chapter in chapters {
+            while [1, 7].contains(cal.component(.weekday, from: date)) { date = cal.date(byAdding: .day, value: 1, to: date)! }
+            result.append(FeedEntry(title: "Epistle- \(book) \(chapter)", date: PlanSchedule.isoDay(date, calendar: cal), link: nil))
+            date = cal.date(byAdding: .day, value: 1, to: date)!
+        }
+        return result
+    }
+
+    @Test func projectsDaysNotPostedYetFromTheLastPass() throws {
+        // The site read Romans 1-12 in 2022 and is at Romans 4 now (only that is posted for 2026).
+        let source = PlanSource(siteURL: URL(string: "https://s.org")!, apiRoot: nil, studyCategory: nil, name: "S")
+        let entries = chapterPosts(book: "Romans", chapters: 1...12, from: "2022-10-03")
+            + chapterPosts(book: "Romans", chapters: 1...4, from: "2026-10-19")
+        let plan = try PlanFeedImporter.plan(from: entries, title: "S", source: source, keepingFrom: "2026-10-01", projecting: true).plan
+        #expect(plan.days.map(\.display) == ["Romans 1", "Romans 2", "Romans 3", "Romans 4"]
+            + (5...12).map { "Romans \($0)" })
+        #expect(plan.days.map(\.projected) == Array(repeating: false, count: 4) + Array(repeating: true, count: 8))
+        // Laid on the weekdays the site posts on: Romans 5 is that Friday, Romans 6 the Monday, and nothing falls on a weekend.
+        #expect(plan.days[4].date == "2026-10-23" && plan.days[5].date == "2026-10-26")
+        #expect(plan.days.map(\.index) == Array(0..<12))
+        #expect(plan.days.compactMap(\.date).allSatisfy { !["2026-10-24", "2026-10-25", "2026-10-31"].contains($0) })
+        #expect(plan.skipWeekdays == [])
+        // Kept from the cutoff on: the 2022 pass is only the source of the guess.
+        #expect(plan.days.allSatisfy { ($0.date ?? "") >= "2026-10-01" })
+        // No earlier pass, no guess; and nothing is projected unless asked for.
+        let fresh = chapterPosts(book: "Romans", chapters: 1...4, from: "2026-10-19")
+        #expect(try PlanFeedImporter.plan(from: fresh, title: "S", source: source, projecting: true).plan.days.count == 4)
+        #expect(try PlanFeedImporter.plan(from: entries, title: "S", source: source).plan.days.allSatisfy { !$0.projected })
+    }
+
+    @Test func projectionSkipsAWeeklyStudyAndKeepsGoingAfterIt() throws {
+        let source = PlanSource(siteURL: URL(string: "https://s.org")!, apiRoot: nil, studyCategory: nil, name: "S")
+        // 2022 had no passage on Saturdays; 2026 has a study that names the week's range. Today is that Saturday.
+        let entries = chapterPosts(book: "Romans", chapters: 1...12, from: "2022-10-03")
+            + chapterPosts(book: "Romans", chapters: 1...5, from: "2026-10-19")
+            + [FeedEntry(title: "Saturday Study – Romans 1-5", date: "2026-10-24", link: nil)]
+        let plan = try PlanFeedImporter.plan(from: entries, title: "S", source: source, keepingFrom: "2026-10-01", projecting: true).plan
+        #expect(plan.days.map(\.display).prefix(6).last == "Romans 1-5")
+        #expect(plan.days.filter(\.projected).map(\.display) == (6...12).map { "Romans \($0)" })
+        #expect(plan.days.first { $0.projected }?.date == "2026-10-26")
+        // The projection is carried on as the site posts: the next refresh re-anchors on the newest real day.
+        let later = chapterPosts(book: "Romans", chapters: 1...7, from: "2026-10-19")
+        let refreshed = try PlanFeedImporter.plan(from: later, title: "S", source: source).plan
+        let carried = PlanFeedImporter.projection(after: refreshed.days, pool: plan.days)
+        #expect(carried.map(\.display) == (8...12).map { "Romans \($0)" })
+        #expect(carried.first?.date == "2026-10-28")
+    }
+
+    @Test func projectionStopsWhereTheEarlierPassChangedYear() throws {
+        let source = PlanSource(siteURL: URL(string: "https://s.org")!, apiRoot: nil, studyCategory: nil, name: "S")
+        // The earlier pass read John 1-8 across New Year's Eve; only what shared the matched day's year is guessed.
+        let entries = chapterPosts(book: "John", chapters: 1...8, from: "2022-12-27")
+            + chapterPosts(book: "John", chapters: 1...2, from: "2026-10-19")
+        let plan = try PlanFeedImporter.plan(from: entries, title: "S", source: source, keepingFrom: "2026-10-01", projecting: true).plan
+        #expect(plan.days.map(\.display) == ["John 1", "John 2", "John 3", "John 4"])
+    }
+
     @Test func pagesThroughLongFeeds() async throws {
         let page = "[{\"id\":1,\"date\":\"2026-01-01T00:00:00\",\"title\":{\"rendered\":\"Psalms 1\"}}]"
         let table = Table(responses: ["https://s.org/wp-json/wp/v2/posts": (200, ["X-WP-TotalPages": "3"], page)])

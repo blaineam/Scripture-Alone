@@ -77,7 +77,11 @@ Posts whose title names no passage (an "About" page) are skipped and counted. Tw
 into one day. The weekdays with no reading anywhere become the plan's rest days. Re-importing the same
 site and title gives the same plan id, so it replaces the days and keeps the reader's progress. A plan
 followed by calendar picks up newly published days each time the app opens (quietly: offline, the days
-already on the device are all it needs). Failures are told apart — *offline*, *not a feed*, *no readings* —
+already on the device are all it needs). A followed plan also **projects** the days the site hasn't posted yet: a church posts each day's reading on the day, but runs the same reading order every few years, so
+the import reads five years back, finds where the last reading sat in the earlier pass, and lays what followed it then on the weekdays that pass read on, stopping where it
+changed year (`PlanFeedImporter.projection`, `PlanDay.projected`, shown as “Expected”). Real posts replace the guess as they appear (the refresh keeps the plan's own projection and
+re-anchors it on the newest real day), and nothing is projected when the last reading is found in no earlier pass. Swift only so far; Android still imports the last month.
+Failures are told apart — *offline*, *not a feed*, *no readings* —
 and leave nothing half-imported.
 
 ### Disciples Church — <https://discipleschurch.com/bible>

@@ -60,19 +60,25 @@ public struct PlanDay: Codable, Hashable, Sendable, Identifiable {
     public let passages: [PlanPassage]
     /// The plan's own writing for the day, when it has any (a devotional plan).
     public let devotions: [PlanDevotion]
+    /// A guess for a day its source has not posted yet, taken from the last time the source ran the same
+    /// reading order (`PlanFeedImporter.projection`). The real post replaces it when it appears.
+    public let projected: Bool
 
     public var id: Int { index }
 
-    public init(index: Int, date: String? = nil, label: String? = nil, passages: [PlanPassage], devotions: [PlanDevotion] = []) {
+    public init(index: Int, date: String? = nil, label: String? = nil, passages: [PlanPassage],
+                devotions: [PlanDevotion] = [], projected: Bool = false) {
         self.index = index
         self.date = date
         self.label = label
         self.passages = passages
         self.devotions = devotions
+        self.projected = projected
     }
 
     public init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
+        projected = try c.decodeIfPresent(Bool.self, forKey: .projected) ?? false
         index = try c.decode(Int.self, forKey: .index)
         date = try c.decodeIfPresent(String.self, forKey: .date)
         label = try c.decodeIfPresent(String.self, forKey: .label)

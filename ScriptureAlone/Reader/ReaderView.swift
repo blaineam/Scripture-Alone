@@ -264,6 +264,7 @@ struct ReaderView: View {
             Spacer()
             autoScrollControl
             listenButton
+            plansButton
             Spacer()
             nextButton
         }
@@ -527,6 +528,15 @@ struct ReaderView: View {
         .keyboardShortcut(minimized ? KeyboardShortcut("l", modifiers: [.command, .option]) : nil)
         .accessibilityHint(minimized ? Text(verbatim: "") : Text("Reads the chapter aloud from the top of the screen."))
         .accessibilityIdentifier("reader.listen")
+    }
+
+    /// Reading plans: today's reading, catch-up and the plans to start. It sits in the bottom bar beside
+    /// Listen; it was only a line in the translation menu, which is where nobody looked.
+    private var plansButton: some View {
+        Button { showPlans = true } label: {
+            Label("Reading Plans…", systemImage: "calendar")
+        }
+        .accessibilityIdentifier("reader.readingPlansButton")
     }
 
     private func minimizedListenLabel(playing: Bool, muted: Bool, reference: String) -> String {
@@ -980,7 +990,7 @@ private struct ReaderPopoverView: View {
     }
 }
 
-private extension View {
+extension View {
     /// A bar floating over the page keeps every tap inside its outline: a tap between its controls
     /// (or in a symbol's transparent middle) would otherwise fall through and select a verse.
     func takesTaps(cornerRadius: CGFloat) -> some View {

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.1 (unreleased)
+
+- **Reading plans, further ahead.** A church's plan that you follow now shows the days still to come, not just
+  today's: the app finds where the church last read the same passages and lays what followed on the days ahead,
+  marked *Expected* until the real post appears. Reading Plans has its own button in the bottom bar, beside
+  Listen. Read Aloud on a weekly study or a meditation now opens the player on the page and marks the paragraph
+  (and, with a system voice, the word) being read. On iPhone, iPad and Mac.
+
 ## 1.2.0 (2026-10-24)
 
 - **Reading plans.** Read through the Bible in a year (in order, or in the order it happened), or one chapter

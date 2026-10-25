@@ -221,7 +221,14 @@ public struct PlanFeedImporter: Sendable {
     }
 
     /// Turns posts into a plan: one day per date, each holding the passages its titles name.
-    public static func plan(from entries: [FeedEntry], title: String, source: PlanSource) throws -> Import {
+    ///
+    /// - Parameters:
+    ///   - keepingFrom: drop days dated before this ("yyyy-MM-dd") once the projection has used them. A
+    ///     followed site is read from years back so its last pass through the same reading order can
+    ///     be found, but the plan only keeps the recent days.
+    ///   - projecting: add the days the site has not posted yet (`projection`).
+    public static func plan(from entries: [FeedEntry], title: String, source: PlanSource,
+                            keepingFrom: String? = nil, projecting: Bool = false) throws -> Import {
         var byDate: [String: (label: String?, passages: [PlanPassage])] = [:]
         var skipped: [String] = []
         for entry in entries.sorted(by: { $0.date < $1.date }) {
@@ -234,29 +241,98 @@ public struct PlanFeedImporter: Sendable {
             byDate[entry.date] = day
         }
         guard !byDate.isEmpty else { throw PlanFeedError.noReadings }
-        let dates = byDate.keys.sorted()
-        let days = dates.enumerated().map { offset, date in
+        var days = byDate.keys.sorted().enumerated().map { offset, date in
             PlanDay(index: offset, date: date, label: byDate[date]?.label, passages: byDate[date]?.passages ?? [])
+        }
+        let ahead = projecting ? projection(after: days, pool: days, sharesHistory: true) : []
+        if let keepingFrom {
+            days = days.filter { ($0.date ?? "") >= keepingFrom }
+            guard !days.isEmpty else { throw PlanFeedError.noReadings }
         }
         // Weekdays with no reading anywhere are the source's rest days (needs a few weeks to tell).
         var skip: Set<Int> = []
-        if days.count >= 14 {
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.timeZone = TimeZone(identifier: "UTC") ?? .current
-            var seen: Set<Int> = []
-            for date in dates {
-                let parts = date.split(separator: "-").compactMap { Int($0) }
-                if parts.count == 3, let d = calendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2])) {
-                    seen.insert(calendar.component(.weekday, from: d))
-                }
-            }
-            skip = Set(1...7).subtracting(seen)
+        if days.count >= 14 { skip = Set(1...7).subtracting(weekdays(of: days)) }
+        days = (days + ahead).enumerated().map { offset, day in
+            PlanDay(index: offset, date: day.date, label: day.label, passages: day.passages, projected: day.projected)
         }
         let id = "import-" + String(stableHash(source.siteURL.absoluteString + title), radix: 36)
         let plan = ReadingPlan(id: id, kind: .imported, title: title,
                                summary: "Schedule from \(source.name). The text is read in your translation.",
                                days: days, skipWeekdays: skip, source: source)
         return Import(plan: plan, skipped: skipped)
+    }
+
+    // MARK: Days not posted yet
+
+    private static var utc: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .current
+        return calendar
+    }
+
+    private static func parts(_ iso: String) -> [Int] { iso.split(separator: "-").compactMap { Int($0) } }
+
+    /// Calendar weekdays (1 = Sunday … 7 = Saturday) that carry a reading.
+    private static func weekdays(of days: [PlanDay]) -> Set<Int> {
+        let calendar = utc
+        var seen: Set<Int> = []
+        for case let date? in days.map(\.date) {
+            let p = parts(date)
+            if p.count == 3, let d = calendar.date(from: DateComponents(year: p[0], month: p[1], day: p[2])) {
+                seen.insert(calendar.component(.weekday, from: d))
+            }
+        }
+        return seen
+    }
+
+    /// The days after `days` a site has not posted yet, guessed from the last time it ran the same reading
+    /// order. A church that reads a book a chapter a day posts each day's reading on the day, so the
+    /// feed has nothing ahead of today — but it runs the same order every few years, so where the last
+    /// reading sat in an earlier pass, what followed it then is what comes next. The days that follow
+    /// are laid on the weekdays that earlier pass read on, and stop where it changed year (the order
+    /// past that point is not known to repeat). Empty when none of the last few days is found in an
+    /// earlier pass — the real posts take over as they appear, so a wrong guess is short-lived.
+    ///
+    /// - Parameters:
+    ///   - pool: the days to look for the earlier pass in.
+    ///   - sharesHistory: `pool` is `days` itself, so only the days before the one being matched count.
+    public static func projection(after days: [PlanDay], pool: [PlanDay], sharesHistory: Bool = false) -> [PlanDay] {
+        guard let lastDate = days.last?.date else { return [] }
+        // The last day may have no twin (a weekly study the earlier pass didn't post), so try a week back.
+        for k in days.indices.reversed().prefix(8) {
+            let anchor = days[k]
+            guard !anchor.passages.isEmpty else { continue }
+            let previous = k >= 1 ? days[k - 1].passages : nil
+            let end = sharesHistory ? k : pool.count
+            guard let match = (0..<end).reversed().first(where: { j in
+                pool[j].passages == anchor.passages && (previous == nil || j == 0 || pool[j - 1].passages == previous)
+            }), let matchDate = pool[match].date else { continue }
+            let year = parts(matchDate).first
+            let tail = Array(pool[(match + 1)...].prefix { $0.date.flatMap(parts)?.first == year && !$0.passages.isEmpty }.prefix(400))
+            // The days it read on then — a pass found in the plan itself reads on today's days, a Saturday
+            // study among them, which the days to come don't repeat.
+            let posting = weekdays(of: tail.count >= 5 ? tail : Array(pool[max(0, match - 14)...match]) + tail)
+            return lay(tail, after: lastDate, on: posting, from: days.count)
+        }
+        return []
+    }
+
+    /// `source`'s readings on the weekdays in `posting`, one day each, from the day after `date`.
+    private static func lay(_ source: [PlanDay], after date: String, on posting: Set<Int>, from index: Int) -> [PlanDay] {
+        let calendar = utc
+        let p = parts(date)
+        guard !posting.isEmpty, p.count == 3, var cursor = calendar.date(from: DateComponents(year: p[0], month: p[1], day: p[2])) else { return [] }
+        var result: [PlanDay] = []
+        for day in source {
+            repeat {
+                guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { return result }
+                cursor = next
+            } while !posting.contains(calendar.component(.weekday, from: cursor))
+            let c = calendar.dateComponents([.year, .month, .day], from: cursor)
+            result.append(PlanDay(index: index + result.count, date: String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0),
+                                  label: day.label, passages: day.passages, projected: true))
+        }
+        return result
     }
 
     /// "Epistle- 1 Corinthians 5" → label "Epistle", passage 1 Corinthians 5. A title that is itself a

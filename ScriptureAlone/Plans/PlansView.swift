@@ -235,18 +235,28 @@ private struct RestSection: View {
 struct DevotionView: View {
     let reading: TodaysReading
     var onListen: () -> Void
+    @Environment(ReaderModel.self) private var model
+
+    /// Reads the day here, where its words can be followed; the reader takes over only when the day's
+    /// verses can't be read in the chosen translation (it says why).
+    private func listen() {
+        if !ListenController.shared.playReading(reading.passages, devotions: reading.devotions, in: model) { onListen() }
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 ForEach(Array(reading.devotions.enumerated()), id: \.offset) { index, devotion in
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(devotion.heading.uppercased()).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                        SpokenText(text: devotion.heading.uppercased(), spoken: devotion.heading + ".", font: .caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
                         if index < reading.passages.count {
                             Text(reading.passages[index].display).font(.title3.weight(.semibold))
                         }
                         if let quote = devotion.quote { Text(quote).italic().foregroundStyle(.secondary) }
-                        Text(devotion.text).textSelection(.enabled)
+                        ForEach(Array(StudyView.paragraphs(of: devotion.text).enumerated()), id: \.offset) { _, paragraph in
+                            SpokenText(text: paragraph)
+                        }
                     }
                     if index < reading.devotions.count - 1 { Divider() }
                 }
@@ -257,8 +267,10 @@ struct DevotionView: View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .followsSpokenText(model)
+        .listeningBar()
         .navigationTitle(reading.day.label ?? reading.display)
-        .toolbar { ToolbarItem(placement: .primaryAction) { Button(action: onListen) { Label("Read Aloud", systemImage: "headphones") } } }
+        .toolbar { ToolbarItem(placement: .primaryAction) { Button(action: listen) { Label("Read Aloud", systemImage: "headphones") } } }
     }
 }
 
@@ -388,7 +400,10 @@ struct PlanDetailView: View {
 
     private func dayCaption(_ day: PlanDay, _ schedule: PlanSchedule) -> String {
         let when = schedule.date(forDay: day.index).map { $0.formatted(date: .abbreviated, time: .omitted) } ?? ""
-        return [day.label, when].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+        let expected = day.projected
+            ? String(localized: "Expected", comment: "Reading plans: a day the site hasn’t posted yet, guessed from its last pass through the same readings")
+            : nil
+        return [day.label, when, expected].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
     }
 
     private func applyReminder() {
@@ -526,6 +541,8 @@ struct StudyView: View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .followsSpokenText(model)
+        .listeningBar()
         .navigationTitle("Weekly Study")
         .task { await load() }
         .accessibilityIdentifier("plans.study")
@@ -533,12 +550,15 @@ struct StudyView: View {
 
     @ViewBuilder
     private func body(of post: StudyPost) -> some View {
-        Text(post.title).font(.title3.weight(.semibold))
+        SpokenText(text: post.title, font: .title3.weight(.semibold))
         Button { ListenController.shared.playProse(post.text, title: post.title, in: model) } label: {
             Label("Read Aloud", systemImage: "speaker.wave.2")
         }
         .accessibilityIdentifier("plans.study.listen")
-        Text(post.text).textSelection(.enabled)
+        // The same paragraphs `playProse` reads, so the one being spoken can be marked.
+        ForEach(Array(Self.paragraphs(of: post.text).enumerated()), id: \.offset) { _, paragraph in
+            SpokenText(text: paragraph)
+        }
         if let link = post.link {
             Link("Read on \(source.name)", destination: link).font(.footnote)
         }
@@ -546,6 +566,10 @@ struct StudyView: View {
 
     private var retry: some View {
         Button("Try Again") { Task { await load() } }
+    }
+
+    static func paragraphs(of text: String) -> [String] {
+        text.components(separatedBy: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
     }
 
     private func load() async {
@@ -567,5 +591,77 @@ struct StudyView: View {
                 state = .failed
             }
         }
+    }
+}
+
+// MARK: Reading aloud
+
+/// A paragraph of a plan's own writing — a weekly study, a meditation — marked while it is read aloud: a
+/// rounded wash behind the paragraph being spoken and, when the voice reports it, a tint on the word.
+/// The verses of a passage are marked in the reader; this is the same mark for the prose beside them.
+struct SpokenText: View {
+    let text: String
+    /// What is said for this text when it differs from what is shown ("MORNING" is read "Morning.").
+    var spoken: String?
+    var font: Font?
+    @Environment(ReaderModel.self) private var model
+
+    private var said: String { (spoken ?? text).trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    var body: some View {
+        let now = ListenController.shared.spokenParagraph(in: model)
+        let active = now?.text == said
+        Text(marked(word: active ? now?.word : nil))
+            .font(font)
+            .textSelection(.enabled)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.accentColor.opacity(active ? 0.14 : 0)))
+            .padding(.horizontal, -8)
+            .animation(.easeInOut(duration: 0.2), value: active)
+            .id(said)
+    }
+
+    private func marked(word: NSRange?) -> AttributedString {
+        var string = AttributedString(text)
+        // The range is in what was said; it lines up with what is shown only when they are the same text.
+        guard spoken == nil, let word, let range = Range<AttributedString.Index>(word, in: string) else { return string }
+        string[range].backgroundColor = Color.accentColor.opacity(0.3)
+        return string
+    }
+}
+
+extension View {
+    /// Keeps the paragraph being read in view as the reading moves on.
+    func followsSpokenText(_ model: ReaderModel) -> some View {
+        ScrollViewReader { proxy in
+            self.onChange(of: ListenController.shared.spokenParagraph(in: model)?.text) { _, paragraph in
+                guard let paragraph else { return }
+                withAnimation { proxy.scrollTo(paragraph, anchor: .center) }
+            }
+        }
+    }
+
+    /// The Now Playing bar along the bottom while this screen's text is being read, so the reading can
+    /// be paused, sped up or stopped without leaving the page.
+    func listeningBar() -> some View { modifier(ListeningBar()) }
+}
+
+private struct ListeningBar: ViewModifier {
+    @Environment(ReaderModel.self) private var model
+
+    func body(content: Content) -> some View {
+        content
+            .safeAreaInset(edge: .bottom) {
+                if ListenController.shared.isListening(in: model), !ListenController.shared.isMinimized {
+                    NowPlayingBar()
+                        .takesTaps(cornerRadius: 24)
+                        .padding(.horizontal)
+                        .padding(.bottom, 8)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.snappy, value: ListenController.shared.isListening(in: model))
     }
 }
