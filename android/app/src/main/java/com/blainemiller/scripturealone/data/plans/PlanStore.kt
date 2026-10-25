@@ -136,6 +136,20 @@ class PlanStore(
         save()
     }
 
+    /** When the history of a followed site was last read for a projection, so a site with no earlier pass isn't asked at every launch. */
+    fun projectionTried(planId: String): LocalDate? = runCatching {
+        File(dir, "projection-tried.txt").takeIf { it.isFile }?.readLines().orEmpty()
+            .map { it.split(" ") }.firstOrNull { it[0] == planId }?.get(1)?.let(LocalDate::parse)
+    }.getOrNull()
+
+    fun markProjectionTried(planId: String, on: LocalDate) {
+        runCatching {
+            dir.mkdirs()
+            val others = File(dir, "projection-tried.txt").takeIf { it.isFile }?.readLines().orEmpty().filter { !it.startsWith("$planId ") }
+            File(dir, "projection-tried.txt").writeText((others + "$planId $on").joinToString("\n"))
+        }
+    }
+
     private fun save() {
         runCatching {
             dir.mkdirs()

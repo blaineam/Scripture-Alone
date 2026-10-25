@@ -42,6 +42,8 @@ data class PlanDay(
     val passages: List<PlanPassage>,
     /** The plan's own writing for the day, when it has any (a devotional plan). */
     val devotions: List<PlanDevotion> = emptyList(),
+    /** A guess for a day its source hasn't posted yet, from the last pass through the same readings ([PlanFeed.projection]). */
+    val projected: Boolean = false,
 ) {
     val display: String get() = passages.joinToString("; ") { it.display }
 }

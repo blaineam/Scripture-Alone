@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.2.1 — Stability and reliability improvements.
+1.2.1 — Reading plans, further ahead. A church plan you follow now shows the days still to come, and Reading Plans has its own button beside Listen. Read Aloud on a study or meditation keeps you on the page and marks the paragraph being read.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

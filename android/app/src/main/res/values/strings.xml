@@ -1794,6 +1794,7 @@
     <string name="plans_mark_read">Mark as Read</string>
     <string name="plans_mark_read_undo">Read — Tap to Undo</string>
     <string name="plans_streak">%1$d-day streak</string>
+    <string name="plans_expected">Expected</string>
     <string name="plans_catch_up">Days to catch up on: %1$d</string>
     <string name="plans_study">This Week’s Study</string>
     <string name="plans_your_plans">Your Plans</string>

@@ -1000,6 +1000,7 @@
     <string name="plans_mark_read">标记为已读</string>
     <string name="plans_mark_read_undo">已读 — 点按撤销</string>
     <string name="plans_streak">连续%1$d天</string>
+    <string name="plans_expected">预计</string>
     <string name="plans_catch_up">待补读天数：%1$d</string>
     <string name="plans_study">本周研读</string>
     <string name="plans_your_plans">我的计划</string>

@@ -1000,6 +1000,7 @@
     <string name="plans_mark_read">읽음으로 표시</string>
     <string name="plans_mark_read_undo">읽음 — 눌러서 취소</string>
     <string name="plans_streak">%1$d일 연속</string>
+    <string name="plans_expected">예정</string>
     <string name="plans_catch_up">따라잡을 날: %1$d일</string>
     <string name="plans_study">이번 주 공부</string>
     <string name="plans_your_plans">내 계획</string>

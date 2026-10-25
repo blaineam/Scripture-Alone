@@ -83,7 +83,7 @@ class PlanStoreTest {
         val table = Table(mapOf("https://s.org/bible/wp-json/wp/v2/posts" to PlanFetcher.Response(200, POSTS, mapOf("x-wp-totalpages" to "1"))))
         val result = PlanImporter(table).import("https://s.org/bible", null, PlanImporter.Mode.FollowCalendar, today)
         assertEquals(3, result.plan.days.size)
-        assertTrue(table.requested.single().contains("after=2026-09-23T00%3A00%3A00"))
+        assertTrue(table.requested.single().contains("after=2021-10-23T00%3A00%3A00"))
         val s = store()
         s.add(result.plan)
         s.start(result.plan, LocalDate.parse("2026-10-19"), true)

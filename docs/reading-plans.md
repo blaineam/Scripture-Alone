@@ -80,7 +80,7 @@ followed by calendar picks up newly published days each time the app opens (quie
 already on the device are all it needs). A followed plan also **projects** the days the site hasn't posted yet: a church posts each day's reading on the day, but runs the same reading order every few years, so
 the import reads five years back, finds where the last reading sat in the earlier pass, and lays what followed it then on the weekdays that pass read on, stopping where it
 changed year (`PlanFeedImporter.projection`, `PlanDay.projected`, shown as “Expected”). Real posts replace the guess as they appear (the refresh keeps the plan's own projection and
-re-anchors it on the newest real day), and nothing is projected when the last reading is found in no earlier pass. Swift only so far; Android still imports the last month.
+re-anchors it on the newest real day), and nothing is projected when the last reading is found in no earlier pass. Android has the same projection (`PlanFeed.projection`, `PlanDay.projected`); it has no PDF import, which would need a PDF-text library for a schedule the projection already reproduces exactly.
 
 Where the source links its **yearly plan as a PDF** (Disciples Church: <https://discipleschurch.com/bible/download/>, `Preset.planPage`), the import uses that instead of
 guessing: `latestPlanPDF` picks the newest year's PDF from the page, the app reads its text with PDFKit and `parseScheduleText` turns the "Title · Week of 5-Jan · five readings" rows

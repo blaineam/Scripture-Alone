@@ -53,5 +53,5 @@ Evidenziazioni, note e preferiti restano sul tuo dispositivo. Nessun server, nes
 Nata per aiutare le persone a studiare la Parola di Dio e a crescere nella vicinanza a Cristo.
 
 ## release_notes
-1.2.1 — Miglioramenti di stabilità e affidabilità.
+1.2.1 — Piani di lettura, più avanti nel tempo. Un piano di chiesa che segui ora mostra anche i giorni a venire, e Piani di lettura ha un pulsante tutto suo accanto ad Ascolta. La lettura ad alta voce di uno studio o di una meditazione resta sulla pagina ed evidenzia il paragrafo letto.
 

@@ -1000,6 +1000,7 @@
     <string name="plans_mark_read">Segna come letto</string>
     <string name="plans_mark_read_undo">Letto — tocca per annullare</string>
     <string name="plans_streak">%1$d giorni di fila</string>
+    <string name="plans_expected">Previsto</string>
     <string name="plans_catch_up">Giorni da recuperare: %1$d</string>
     <string name="plans_study">Studio di questa settimana</string>
     <string name="plans_your_plans">I tuoi piani</string>

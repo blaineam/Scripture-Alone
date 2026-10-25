@@ -177,7 +177,13 @@ class ListenController private constructor(private val app: Context) {
     // The pass.
     private var scope: ListenQueue.Scope = ListenQueue.Scope.Selection
     private var items: List<Item> = emptyList()
-    private var current = 0
+    private var current by mutableIntStateOf(0)
+    /**
+     * The paragraph of prose being read — a plan's study or meditation — while a session is up, so the screen
+     * showing that text can mark it. Verses are marked in the reader; this is null while one is read.
+     */
+    val spokenParagraph: String?
+        get() = if (isPresented && phase != Phase.Idle) items.getOrNull(current)?.takeIf { it.isAnnouncement }?.text?.trim() else null
     private var rights: TranslationRights = TranslationRights.PUBLIC_DOMAIN
     private val passChapter: ChapterRef?
         get() = (scope as? ListenQueue.Scope.Chapter)?.ref

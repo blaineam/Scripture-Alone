@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
@@ -77,6 +78,7 @@ import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.share.AppCommand
 import com.blainemiller.scripturealone.text.AppText
 import com.blainemiller.scripturealone.ui.listen.ListenController
+import com.blainemiller.scripturealone.ui.listen.NowPlayingBar
 import com.blainemiller.scripturealone.ui.listen.rememberListenStart
 import com.blainemiller.scripturealone.ui.reader.ReaderPalette
 import com.blainemiller.scripturealone.ui.reader.ReaderViewModel
@@ -165,7 +167,7 @@ fun PlansSheet(reader: ReaderViewModel, palette: ReaderPalette, onClose: () -> U
                 Route.Import -> ImportScreen(store, palette) { stack = listOf(Route.Home) }
                 is Route.Detail -> Detail(route.planId, store, palette, ::push, ::openPassage) { stack = listOf(Route.Home) }
                 is Route.Study -> StudyScreen(route.source, reader, palette)
-                is Route.Devotion -> DevotionScreen(store, palette) { onClose(); reader.perform(AppCommand.TodaysReading) }
+                is Route.Devotion -> DevotionScreen(store, reader, palette) { onClose(); reader.perform(AppCommand.TodaysReading) }
             }
         }
     }
@@ -348,36 +350,95 @@ private fun Home(
 
 // MARK: Devotion
 
-/** A devotional day's own writing: each entry's heading, the verse it opens with and the meditation — `DevotionView`. */
+/**
+ * A devotional day's own writing: each entry's heading, the verse it opens with and the meditation — `DevotionView`.
+ * Read Aloud reads it here, with the Now Playing bar below and the paragraph being read marked.
+ */
 @Composable
-private fun DevotionScreen(store: PlanStore, palette: ReaderPalette, onListen: () -> Unit) {
+private fun DevotionScreen(store: PlanStore, reader: ReaderViewModel, palette: ReaderPalette, onListen: () -> Unit) {
     val reading = store.todaysReading()
     val context = LocalContext.current
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp)) {
-        if (reading == null) return@LazyColumn
-        item {
-            ActionRow(stringResource(R.string.plans_read_aloud), palette) { onListen() }
+    val listen = remember { ListenController.get(context) }
+    val listenStart = rememberListenStart(listen)
+    val scope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+    // What each row of the list says (null for the rest), so the paragraph being read can be kept in view.
+    val devotions = reading?.devotions.orEmpty()
+    val layout = buildList<String?> {
+        add(null)
+        devotions.forEachIndexed { i, d ->
+            add(d.heading + ".")
+            addAll(paragraphsOf(d.text))
+            if (i < devotions.lastIndex) add(null)
         }
-        items(reading.devotions.size) { i ->
-            val devotion = reading.devotions[i]
-            Column(Modifier.padding(vertical = 10.dp)) {
-                Text(devotion.heading.uppercase(), color = palette.secondary, fontSize = StudyStyle.caption, fontWeight = FontWeight.SemiBold)
-                reading.passages.getOrNull(i)?.let { Text(it.display, color = palette.ink, fontSize = 20.sp, fontWeight = FontWeight.SemiBold) }
-                devotion.quote?.let { Text(it, color = palette.secondary, fontSize = StudyStyle.body, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic) }
-                Spacer(Modifier.height(8.dp))
-                SelectionContainer { Text(devotion.text, color = palette.ink, fontSize = StudyStyle.body, lineHeight = 24.sp) }
+    }
+    LaunchedEffect(listen.spokenParagraph) {
+        val at = layout.indexOf(listen.spokenParagraph ?: return@LaunchedEffect)
+        if (at >= 0) listState.animateScrollToItem(at)
+    }
+    Box(Modifier.fillMaxSize()) {
+        LazyColumn(Modifier.fillMaxSize(), state = listState, contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp)) {
+            if (reading == null) return@LazyColumn
+            item {
+                ActionRow(stringResource(R.string.plans_read_aloud), palette) {
+                    val info = reader.chapter?.translation
+                    if (info == null) onListen() else listenStart {
+                        scope.launch { if (!listen.playReading(reading.passages, info.id, reading.devotions)) onListen() }
+                    }
+                }
             }
-            if (i < reading.devotions.size - 1) Box(Modifier.fillMaxWidth().height(0.5.dp).background(StudyStyle.separator(palette)))
-        }
-        item {
-            store.plan(reading.planId)?.source?.let { source ->
-                Text(source.name, color = palette.accent, fontSize = StudyStyle.footnote,
-                    modifier = Modifier.clickable(role = Role.Button) {
-                        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(source.siteUrl)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
-                    }.padding(vertical = 16.dp))
+            reading.devotions.forEachIndexed { i, devotion ->
+                item {
+                    Column(Modifier.padding(top = 10.dp)) {
+                        Spoken(devotion.heading + ".", listen, palette) {
+                            Text(devotion.heading.uppercase(), color = palette.secondary, fontSize = StudyStyle.caption, fontWeight = FontWeight.SemiBold)
+                        }
+                        reading.passages.getOrNull(i)?.let { Text(it.display, color = palette.ink, fontSize = 20.sp, fontWeight = FontWeight.SemiBold) }
+                        devotion.quote?.let { Text(it, color = palette.secondary, fontSize = StudyStyle.body, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic) }
+                    }
+                }
+                items(paragraphsOf(devotion.text)) { paragraph ->
+                    Spoken(paragraph, listen, palette) {
+                        SelectionContainer { Text(paragraph, color = palette.ink, fontSize = StudyStyle.body, lineHeight = 24.sp) }
+                    }
+                }
+                if (i < reading.devotions.size - 1) item {
+                    Box(Modifier.padding(top = 10.dp).fillMaxWidth().height(0.5.dp).background(StudyStyle.separator(palette)))
+                }
             }
-            Spacer(Modifier.height(32.dp))
+            item {
+                store.plan(reading.planId)?.source?.let { source ->
+                    Text(source.name, color = palette.accent, fontSize = StudyStyle.footnote,
+                        modifier = Modifier.clickable(role = Role.Button) {
+                            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(source.siteUrl)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                        }.padding(vertical = 16.dp))
+                }
+                Spacer(Modifier.height(96.dp))
+            }
         }
+        ListeningBar(listen, palette, Modifier.align(Alignment.BottomCenter))
+    }
+}
+
+/** The paragraphs `ListenController.playProse` and the devotion reading say, so the one being read can be marked. */
+private fun paragraphsOf(text: String): List<String> = text.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
+
+/** [content] with a rounded wash behind it while [said] is the paragraph being read aloud. */
+@Composable
+private fun Spoken(said: String, listen: ListenController, palette: ReaderPalette, content: @Composable () -> Unit) {
+    val active = listen.spokenParagraph == said.trim()
+    Box(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp))
+            .background(if (active) palette.accent.copy(alpha = 0.14f) else Color.Transparent)
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+    ) { content() }
+}
+
+/** The Now Playing bar along the bottom while this screen's text is being read, so it can be paused, sped up or stopped here. */
+@Composable
+private fun ListeningBar(listen: ListenController, palette: ReaderPalette, modifier: Modifier) {
+    if (listen.isPresented && !listen.isMinimized) {
+        Box(modifier.padding(horizontal = 16.dp, vertical = 8.dp)) { NowPlayingBar(listen, palette) }
     }
 }
 
@@ -482,7 +543,8 @@ private fun Detail(
         }
         items(schedule.plan.days, key = { it.index }) { day ->
             val done = day.index in progress.completed
-            val caption = listOfNotNull(day.label, schedule.dateForDay(day.index)?.let(::shortDate)).joinToString(" · ")
+            val expected = stringResource(R.string.plans_expected).takeIf { day.projected }
+            val caption = listOfNotNull(day.label, schedule.dateForDay(day.index)?.let(::shortDate), expected).joinToString(" · ")
             val description = stringResource(if (done) R.string.plans_day_read else R.string.plans_day_not_read)
             Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -604,8 +666,17 @@ private fun StudyScreen(source: PlanSource, reader: ReaderViewModel, palette: Re
             }
         }
     }
-    @Composable fun Body(post: StudyPost) {
-        Text(post.title, color = palette.ink, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+    val listState = rememberLazyListState()
+    val shown = (state as? Load.Loaded)?.post ?: (state as? Load.Saved)?.post
+    val spoken = shown?.let { listOf(it.title) + paragraphsOf(it.text) }.orEmpty()
+    LaunchedEffect(listen.spokenParagraph) {
+        val at = spoken.indexOf(listen.spokenParagraph ?: return@LaunchedEffect)
+        if (at >= 0) listState.animateScrollToItem(at)
+    }
+    @Composable fun Head(post: StudyPost) {
+        Spoken(post.title, listen, palette) {
+            Text(post.title, color = palette.ink, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+        }
         Spacer(Modifier.height(8.dp))
         Row(
             Modifier.clickable(role = Role.Button) {
@@ -613,7 +684,8 @@ private fun StudyScreen(source: PlanSource, reader: ReaderViewModel, palette: Re
                 if (info != null) listenStart { listen.playProse(post.title, post.text, info.id, info.rights, info.language) }
             }.padding(vertical = 8.dp),
         ) { Text(stringResource(R.string.plans_read_aloud), color = palette.accent, fontSize = StudyStyle.body) }
-        SelectionContainer { Text(post.text, color = palette.ink, fontSize = StudyStyle.body, lineHeight = 24.sp) }
+    }
+    @Composable fun Foot(post: StudyPost) {
         post.link?.let { link ->
             Text(stringResource(R.string.plans_read_on, source.name), color = palette.accent, fontSize = StudyStyle.footnote,
                 modifier = Modifier.clickable(role = Role.Button) {
@@ -621,29 +693,43 @@ private fun StudyScreen(source: PlanSource, reader: ReaderViewModel, palette: Re
                 }.padding(vertical = 12.dp))
         }
     }
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp)) {
-        item {
-            when (val s = state) {
-                Load.Loading -> CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(26.dp))
-                is Load.Loaded -> Body(s.post)
-                is Load.Saved -> {
-                    Text(stringResource(R.string.plans_study_saved), color = palette.secondary, fontSize = StudyStyle.footnote)
-                    Spacer(Modifier.height(8.dp))
-                    Body(s.post)
-                    ActionRow(stringResource(R.string.plans_try_again), palette) { attempt++ }
-                }
-                Load.None -> Text(stringResource(R.string.plans_study_none), color = palette.secondary)
-                Load.Offline, Load.Failed -> {
-                    Text(stringResource(if (s == Load.Offline) R.string.plans_study_offline else R.string.plans_study_failed), color = palette.secondary)
-                    ActionRow(stringResource(R.string.plans_try_again), palette) { attempt++ }
+    Box(Modifier.fillMaxSize()) {
+        LazyColumn(Modifier.fillMaxSize(), state = listState, contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp)) {
+            item {
+                when (val s = state) {
+                    Load.Loading -> CircularProgressIndicator(color = palette.secondary, strokeWidth = 2.dp, modifier = Modifier.size(26.dp))
+                    is Load.Loaded -> Head(s.post)
+                    is Load.Saved -> {
+                        Text(stringResource(R.string.plans_study_saved), color = palette.secondary, fontSize = StudyStyle.footnote)
+                        Spacer(Modifier.height(8.dp))
+                        Head(s.post)
+                    }
+                    Load.None -> Text(stringResource(R.string.plans_study_none), color = palette.secondary)
+                    Load.Offline, Load.Failed -> {
+                        Text(stringResource(if (s == Load.Offline) R.string.plans_study_offline else R.string.plans_study_failed), color = palette.secondary)
+                        ActionRow(stringResource(R.string.plans_try_again), palette) { attempt++ }
+                    }
                 }
             }
-            if (state !is Load.Loaded && state !is Load.Saved) {
-                Text(stringResource(R.string.plans_open_source, source.name), color = palette.accent, fontSize = StudyStyle.footnote,
-                    modifier = Modifier.clickable(role = Role.Button) {
-                        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(source.siteUrl)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
-                    }.padding(vertical = 12.dp))
+            shown?.let { post ->
+                items(paragraphsOf(post.text)) { paragraph ->
+                    Spoken(paragraph, listen, palette) {
+                        SelectionContainer { Text(paragraph, color = palette.ink, fontSize = StudyStyle.body, lineHeight = 24.sp) }
+                    }
+                }
+            }
+            item {
+                shown?.let { Foot(it) }
+                if (state is Load.Saved) ActionRow(stringResource(R.string.plans_try_again), palette) { attempt++ }
+                if (state !is Load.Loaded && state !is Load.Saved) {
+                    Text(stringResource(R.string.plans_open_source, source.name), color = palette.accent, fontSize = StudyStyle.footnote,
+                        modifier = Modifier.clickable(role = Role.Button) {
+                            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(source.siteUrl)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                        }.padding(vertical = 12.dp))
+                }
+                Spacer(Modifier.height(96.dp))
             }
         }
+        ListeningBar(listen, palette, Modifier.align(Alignment.BottomCenter))
     }
 }

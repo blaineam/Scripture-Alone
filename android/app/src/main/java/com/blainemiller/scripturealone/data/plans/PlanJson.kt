@@ -53,6 +53,7 @@ object PlanJson {
                     put("index", d.index)
                     d.date?.let { put("date", it) }
                     d.label?.let { put("label", it) }
+                    if (d.projected) put("projected", true)
                     if (d.devotions.isNotEmpty()) put("devotions", buildJsonArray {
                         d.devotions.forEach { v ->
                             add(buildJsonObject {
@@ -110,6 +111,7 @@ object PlanJson {
                     val o = v.jsonObject
                     PlanDevotion(o.str("heading").orEmpty(), o.str("quote"), o.str("text").orEmpty())
                 },
+                projected = day["projected"]?.jsonPrimitive?.booleanOrNull ?: false,
             )
         },
         skipWeekdays = o["skipWeekdays"]?.jsonArray.orEmpty().mapNotNull { it.jsonPrimitive.intOrNull }.toSet(),

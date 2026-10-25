@@ -1000,6 +1000,7 @@
     <string name="plans_mark_read">Marquer comme lu</string>
     <string name="plans_mark_read_undo">Lu — touchez pour annuler</string>
     <string name="plans_streak">Série de %1$d jours</string>
+    <string name="plans_expected">Prévu</string>
     <string name="plans_catch_up">Jours à rattraper : %1$d</string>
     <string name="plans_study">Étude de cette semaine</string>
     <string name="plans_your_plans">Vos plans</string>

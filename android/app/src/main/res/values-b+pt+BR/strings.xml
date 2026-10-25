@@ -1000,6 +1000,7 @@
     <string name="plans_mark_read">Marcar como lido</string>
     <string name="plans_mark_read_undo">Lido — toque para desfazer</string>
     <string name="plans_streak">Sequência de %1$d dias</string>
+    <string name="plans_expected">Previsto</string>
     <string name="plans_catch_up">Dias para recuperar: %1$d</string>
     <string name="plans_study">Estudo desta semana</string>
     <string name="plans_your_plans">Seus planos</string>

@@ -118,18 +118,24 @@ class PlanImporter(private val fetcher: PlanFetcher = HttpUrlFetcher()) {
 
     /** Reads the schedule at [pasted] (or [preset]) into a plan. The caller adds and starts it. */
     fun import(pasted: String, preset: Preset?, mode: Mode, today: LocalDate): PlanImport {
+        // A month back, so a weekend or a holiday still finds posts; the plan starts today all the same.
+        val recent = today.minusDays(30)
+        val following = mode == Mode.FollowCalendar
+        // A site posts each day's reading on the day, so nothing is published ahead. It repeats its reading
+        // order every few years, though: read that far back to find the last pass and project the days still
+        // to come from it (PlanFeed.projection).
         val after = when (mode) {
-            // A month back, so a weekend or a holiday still finds posts; the plan starts today all the same.
-            Mode.FollowCalendar -> today.minusDays(30)
+            Mode.FollowCalendar -> today.minusYears(5)
             is Mode.FromDayOne -> mode.since
         }
+        val limit = if (following) 2_500 else 400
         val endpoints = preset?.let { listOf(PlanFeed.Endpoint.WordPress(it.site, it.scheduleCategory)) } ?: PlanFeed.endpoints(pasted)
         if (endpoints.isEmpty()) throw PlanFeedException(PlanFeedException.Kind.BAD_URL)
         var found: Pair<PlanFeed.Endpoint, List<FeedEntry>>? = null
         var failure = PlanFeedException(PlanFeedException.Kind.NOT_A_FEED)
         for (endpoint in endpoints) {
             try {
-                val entries = entries(endpoint, after)
+                val entries = entries(endpoint, after, limit)
                 if (entries.isNotEmpty()) { found = endpoint to entries; break }
             } catch (e: PlanFeedException) {
                 if (e.kind == PlanFeedException.Kind.OFFLINE) throw e
@@ -142,7 +148,8 @@ class PlanImporter(private val fetcher: PlanFetcher = HttpUrlFetcher()) {
             is PlanFeed.Endpoint.Rss -> Triple(endpoint.url, null, null)
         }
         val name = preset?.name ?: runCatching { java.net.URI(site).host }.getOrNull() ?: site
-        return PlanFeed.plan(entries, name, PlanSource(site, api, preset?.studyCategory, name, category))
+        return PlanFeed.plan(entries, name, PlanSource(site, api, preset?.studyCategory, name, category),
+            keepingFrom = if (following) recent.toString() else null, projecting = following)
     }
 
     /** Fetches the days a followed site has published since the plan was imported; quiet on failure. */
@@ -151,13 +158,24 @@ class PlanImporter(private val fetcher: PlanFetcher = HttpUrlFetcher()) {
             val source = plan.source ?: continue
             val first = plan.days.firstOrNull()?.date ?: continue
             if (store.progress(plan.id)?.followsCalendar != true) continue
-            if ((plan.days.lastOrNull()?.date ?: "") >= today.toString()) continue
+            // The days up to the last one the site really posted; whatever follows is a projection.
+            val posted = plan.days.filter { !it.projected }
+            if ((posted.lastOrNull()?.date ?: "") >= today.toString()) continue
             val site = source.apiRoot?.removeSuffix("/wp-json/wp/v2") ?: continue
+            // A plan made before days could be projected has none: read the site's history once a week to
+            // look for the earlier pass (a site with none isn't asked again every time the app opens).
+            val lookBack = plan.days.none { it.projected } &&
+                (store.projectionTried(plan.id)?.let { java.time.temporal.ChronoUnit.DAYS.between(it, today) > 7 } ?: true)
             val result = runCatching {
-                val entries = entries(PlanFeed.Endpoint.WordPress(site, source.scheduleCategory), LocalDate.parse(first).minusDays(1))
-                PlanFeed.plan(entries, plan.title, source)
+                val from = if (lookBack) today.minusYears(5) else LocalDate.parse(first).minusDays(1)
+                val entries = entries(PlanFeed.Endpoint.WordPress(site, source.scheduleCategory), from, if (lookBack) 2_500 else 400)
+                if (lookBack) store.markProjectionTried(plan.id, today)
+                PlanFeed.plan(entries, plan.title, source, keepingFrom = if (lookBack) first else null, projecting = lookBack)
             }.getOrNull() ?: continue
-            if (result.plan.id == plan.id && result.plan.days.size >= plan.days.size) store.add(result.plan)
+            if (result.plan.id != plan.id || result.plan.days.count { !it.projected } < posted.size) continue
+            // What the site hadn't posted yet when the plan was made carries on from where it now stands.
+            val ahead = if (lookBack) emptyList() else PlanFeed.projection(result.plan.days, plan.days)
+            store.add(result.plan.copy(days = result.plan.days + ahead))
         }
     }
 

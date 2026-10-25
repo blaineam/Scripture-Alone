@@ -1000,6 +1000,7 @@
     <string name="plans_mark_read">読了にする</string>
     <string name="plans_mark_read_undo">読了 — タップで取り消し</string>
     <string name="plans_streak">%1$d日連続</string>
+    <string name="plans_expected">予定</string>
     <string name="plans_catch_up">取り戻す日数：%1$d</string>
     <string name="plans_study">今週の学び</string>
     <string name="plans_your_plans">あなたのプラン</string>

@@ -1000,6 +1000,7 @@
     <string name="plans_mark_read">Als gelesen markieren</string>
     <string name="plans_mark_read_undo">Gelesen – zum Rückgängigmachen tippen</string>
     <string name="plans_streak">%1$d Tage in Folge</string>
+    <string name="plans_expected">Erwartet</string>
     <string name="plans_catch_up">Nachzuholende Tage: %1$d</string>
     <string name="plans_study">Studie dieser Woche</string>
     <string name="plans_your_plans">Deine Pläne</string>

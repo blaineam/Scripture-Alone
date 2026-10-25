@@ -82,6 +82,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.ChevronLeft
 import androidx.compose.material.icons.rounded.ChevronRight
@@ -580,6 +581,8 @@ fun ReaderScreen(
                     reference = listen?.nowPlayingTitle.orEmpty(),
                     onListen = ::listenFromTop,
                 )
+                // Reading plans, beside Listen: it was only a line in the translation menu.
+                PillIcon(Icons.Rounded.CalendarMonth, stringResource(R.string.plans_title), palette, enabled = true, onClick = onReadingPlans)
             }
             // The Now Playing bar above the selection bar, both above the toolbar — iOS's bottom inset.
             Column(

@@ -74,8 +74,13 @@ object PlanFeed {
 
     private val SEPARATOR = Regex("""\s*[-–—:|]\s+""")
 
-    /** Turns posts into a plan: one day per date, each holding the passages its titles name. */
-    fun plan(entries: List<FeedEntry>, title: String, source: PlanSource): PlanImport {
+    /**
+     * Turns posts into a plan: one day per date, each holding the passages its titles name.
+     * [keepingFrom] drops days dated before it once the projection has used them (a followed site is read
+     * from years back to find its last pass through the same readings, but the plan keeps the recent days);
+     * [projecting] adds the days the site hasn't posted yet ([projection]).
+     */
+    fun plan(entries: List<FeedEntry>, title: String, source: PlanSource, keepingFrom: String? = null, projecting: Boolean = false): PlanImport {
         val byDate = sortedMapOf<String, Pair<String?, MutableList<PlanPassage>>>()
         val skipped = mutableListOf<String>()
         for (entry in entries.sortedBy { it.date }) {
@@ -85,18 +90,66 @@ object PlanFeed {
             for (p in parsed.second) if (p !in day.second) day.second += p
         }
         if (byDate.isEmpty()) throw PlanFeedException(PlanFeedException.Kind.NO_READINGS)
-        val days = byDate.entries.mapIndexed { i, (date, v) -> PlanDay(i, date, v.first, v.second.toList()) }
-        var skip = emptySet<Int>()
-        if (days.size >= 14) {
-            val seen = byDate.keys.map { (LocalDate.parse(it).dayOfWeek.value % 7) + 1 }.toSet()
-            skip = (1..7).toSet() - seen
+        var days = byDate.entries.mapIndexed { i, (date, v) -> PlanDay(i, date, v.first, v.second.toList()) }
+        val ahead = if (projecting) projection(days, days, sharesHistory = true) else emptyList()
+        if (keepingFrom != null) {
+            days = days.filter { (it.date ?: "") >= keepingFrom }
+            if (days.isEmpty()) throw PlanFeedException(PlanFeedException.Kind.NO_READINGS)
         }
+        var skip = emptySet<Int>()
+        if (days.size >= 14) skip = (1..7).toSet() - weekdaysOf(days)
+        days = (days + ahead).mapIndexed { i, d -> d.copy(index = i) }
         val id = "import-" + java.lang.Long.toUnsignedString(fnv(source.siteUrl + title), 36)
         return PlanImport(
             ReadingPlan(id, PlanKind.IMPORTED, title, "Schedule from ${source.name}. The text is read in your translation.",
                 days, skip, source),
             skipped,
         )
+    }
+
+    /** Calendar weekdays (1 = Sunday … 7 = Saturday, as on iOS) that carry a reading. */
+    private fun weekdaysOf(days: List<PlanDay>): Set<Int> =
+        days.mapNotNull { it.date }.mapNotNull { runCatching { LocalDate.parse(it) }.getOrNull() }.map { (it.dayOfWeek.value % 7) + 1 }.toSet()
+
+    /**
+     * The days after [days] a site hasn't posted yet, guessed from the last time it ran the same reading
+     * order (`PlanFeedImporter.projection`): a church that reads a book a chapter a day posts each day's
+     * reading on the day, but repeats the order every few years, so where the last reading sat in an
+     * earlier pass, what followed it then comes next. They are laid on the weekdays that earlier pass read
+     * on and stop where it changed year. Empty when none of the last few days is found in an earlier pass.
+     * [pool] is where to look; [sharesHistory] says it is [days] itself, so only earlier days count.
+     */
+    fun projection(days: List<PlanDay>, pool: List<PlanDay>, sharesHistory: Boolean = false): List<PlanDay> {
+        val lastDate = days.lastOrNull()?.date ?: return emptyList()
+        // The last day may have no twin (a weekly study the earlier pass didn't post), so try a week back.
+        for (k in days.indices.reversed().take(8)) {
+            val anchor = days[k]
+            if (anchor.passages.isEmpty()) continue
+            val previous = if (k >= 1) days[k - 1].passages else null
+            val end = if (sharesHistory) k else pool.size
+            val match = (end - 1 downTo 0).firstOrNull { j ->
+                pool[j].passages == anchor.passages && (previous == null || j == 0 || pool[j - 1].passages == previous)
+            } ?: continue
+            val matchDate = pool[match].date ?: continue
+            val year = matchDate.take(4)
+            val tail = pool.drop(match + 1).takeWhile { it.date?.take(4) == year && it.passages.isNotEmpty() }.take(400)
+            // The days it read on then; a pass found in the plan itself reads on today's days, a Saturday
+            // study among them, which the days to come don't repeat.
+            val basis = if (tail.size >= 5) tail else pool.subList(maxOf(0, match - 14), match + 1) + tail
+            return lay(tail, lastDate, weekdaysOf(basis), days.size)
+        }
+        return emptyList()
+    }
+
+    private fun lay(source: List<PlanDay>, after: String, posting: Set<Int>, from: Int): List<PlanDay> {
+        var cursor = runCatching { LocalDate.parse(after) }.getOrNull() ?: return emptyList()
+        if (posting.isEmpty()) return emptyList()
+        val out = mutableListOf<PlanDay>()
+        for (day in source) {
+            do { cursor = cursor.plusDays(1) } while ((cursor.dayOfWeek.value % 7) + 1 !in posting)
+            out += PlanDay(from + out.size, cursor.toString(), day.label, day.passages, projected = true)
+        }
+        return out
     }
 
     /** Posts from a WordPress REST `posts` response (`_fields=id,date,title,link`). */

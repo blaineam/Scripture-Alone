@@ -55,5 +55,5 @@
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.2.1 — 提升了稳定性和可靠性。
+1.2.1 — 阅读计划，提前看到后面的日子。你跟随的教会计划现在会显示接下来的日期；“阅读计划”在“收听”旁有了专属按钮。朗读学习或默想时无需离开页面，并会标出正在朗读的段落。
 

@@ -151,6 +151,52 @@ class ReadingPlanTest {
         }
     }
 
+    /** Weekday posts "Epistle- <book> n", from [start], one chapter each. */
+    private fun chapterPosts(book: String, chapters: IntRange, start: String): List<FeedEntry> {
+        var date = d(start)
+        return chapters.map { chapter ->
+            while (date.dayOfWeek.value > 5) date = date.plusDays(1)
+            FeedEntry("Epistle- $book $chapter", date.toString(), null).also { date = date.plusDays(1) }
+        }
+    }
+
+    @Test fun projectsDaysNotPostedYetFromTheLastPass() {
+        val source = PlanSource("https://s.org", null, null, "S")
+        val entries = chapterPosts("Romans", 1..12, "2022-10-03") + chapterPosts("Romans", 1..4, "2026-10-19")
+        val plan = PlanFeed.plan(entries, "S", source, keepingFrom = "2026-10-01", projecting = true).plan
+        assertEquals((1..12).map { "Romans $it" }, plan.days.map { it.display })
+        assertEquals(List(4) { false } + List(8) { true }, plan.days.map { it.projected })
+        // Romans 5 is that Friday, Romans 6 the Monday, and nothing falls on a weekend.
+        assertEquals("2026-10-23", plan.days[4].date)
+        assertEquals("2026-10-26", plan.days[5].date)
+        assertEquals((0 until 12).toList(), plan.days.map { it.index })
+        assertTrue(plan.days.all { it.date!! >= "2026-10-01" && d(it.date!!).dayOfWeek.value <= 5 })
+        // No earlier pass, no guess; and nothing is projected unless asked for.
+        assertEquals(4, PlanFeed.plan(chapterPosts("Romans", 1..4, "2026-10-19"), "S", source, projecting = true).plan.days.size)
+        assertTrue(PlanFeed.plan(entries, "S", source).plan.days.none { it.projected })
+    }
+
+    @Test fun projectionSkipsAWeeklyStudyAndCarriesOnAsThePlanGrows() {
+        val source = PlanSource("https://s.org", null, null, "S")
+        val entries = chapterPosts("Romans", 1..12, "2022-10-03") + chapterPosts("Romans", 1..5, "2026-10-19") +
+            FeedEntry("Saturday Study – Romans 1-5", "2026-10-24", null)
+        val plan = PlanFeed.plan(entries, "S", source, keepingFrom = "2026-10-01", projecting = true).plan
+        assertEquals("Romans 1–5", plan.days[5].display)
+        assertEquals((6..12).map { "Romans $it" }, plan.days.filter { it.projected }.map { it.display })
+        assertEquals("2026-10-26", plan.days.first { it.projected }.date)
+        val later = PlanFeed.plan(chapterPosts("Romans", 1..7, "2026-10-19"), "S", source).plan
+        val carried = PlanFeed.projection(later.days, plan.days)
+        assertEquals((8..12).map { "Romans $it" }, carried.map { it.display })
+        assertEquals("2026-10-28", carried.first().date)
+    }
+
+    @Test fun projectionStopsWhereTheEarlierPassChangedYear() {
+        val source = PlanSource("https://s.org", null, null, "S")
+        val entries = chapterPosts("John", 1..8, "2022-12-27") + chapterPosts("John", 1..2, "2026-10-19")
+        val plan = PlanFeed.plan(entries, "S", source, keepingFrom = "2026-10-01", projecting = true).plan
+        assertEquals(listOf("John 1", "John 2", "John 3", "John 4"), plan.days.map { it.display })
+    }
+
     @Test fun textHelpers() {
         assertEquals("a & b – c ’ &bogus; &", PlanFeed.decodeEntities("a &amp; b &#8211; c &#x2019; &bogus; &"))
         assertEquals("Daniel 8-12\n\nIt’s here.", PlanFeed.paragraphs("<p>Daniel 8-12</p>\n<p>It&#8217;s <em>here</em>.</p><script>x()</script>"))

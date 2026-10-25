@@ -55,5 +55,5 @@ DRM フリーの ePub、テキストレイヤーのある聖書 PDF、USFM フ�
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.2.1 — 安定性と信頼性を向上しました。
+1.2.1 — 読書プラン、先の日まで表示。フォローしている教会のプランに今後の日程も表示されるようになり、「読書プラン」は「聴く」の横に専用ボタンができました。学びや黙想の読み上げはページを離れずに行え、読んでいる段落がハイライトされます。
 

@@ -250,7 +250,7 @@ private struct Table: PlanFetching {
             + chapterPosts(book: "Romans", chapters: 1...5, from: "2026-10-19")
             + [FeedEntry(title: "Saturday Study – Romans 1-5", date: "2026-10-24", link: nil)]
         let plan = try PlanFeedImporter.plan(from: entries, title: "S", source: source, keepingFrom: "2026-10-01", projecting: true).plan
-        #expect(plan.days.map(\.display).prefix(6).last == "Romans 1-5")
+        #expect(plan.days.map(\.display).prefix(6).last == "Romans 1–5")
         #expect(plan.days.filter(\.projected).map(\.display) == (6...12).map { "Romans \($0)" })
         #expect(plan.days.first { $0.projected }?.date == "2026-10-26")
         // The projection is carried on as the site posts: the next refresh re-anchors on the newest real day.

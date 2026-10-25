@@ -55,5 +55,5 @@ DRM이 없는 ePub, 텍스트 레이어가 있는 성경 PDF, USFM 파일처럼 
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.2.1 — 안정성과 신뢰성을 개선했습니다.
+1.2.1 — 앞날까지 보이는 읽기 계획. 따라가는 교회 계획에 앞으로의 날짜가 표시되고, 읽기 계획은 듣기 옆에 전용 버튼이 생겼습니다. 공부나 묵상 읽어 주기는 페이지를 벗어나지 않고 읽는 문단을 표시합니다.
 

@@ -53,5 +53,5 @@ Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 
 ## release_notes
-1.2.1 — Verbesserungen bei Stabilität und Zuverlässigkeit.
+1.2.1 — Lesepläne, weiter vorausgeschaut. Ein Gemeindeplan, dem du folgst, zeigt jetzt auch die kommenden Tage, und die Lesepläne haben neben dem Anhören-Knopf eine eigene Schaltfläche. Vorlesen bei einer Studie oder Betrachtung bleibt auf der Seite und markiert den gerade gelesenen Absatz.
 

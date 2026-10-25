@@ -53,5 +53,5 @@ As suas marcações, notas e favoritos ficam no seu aparelho. Não há servidor 
 Feito para ajudar as pessoas a estudar a Palavra de Deus e a se aproximar de Cristo.
 
 ## release_notes
-1.2.1 — Melhorias de estabilidade e confiabilidade.
+1.2.1 — Planos de leitura, com mais dias à frente. Um plano de igreja que você acompanha agora mostra os dias que ainda virão, e Planos de leitura tem um botão próprio ao lado de Ouvir. Ler em voz alta um estudo ou meditação mantém você na página e marca o parágrafo que está sendo lido.
 
