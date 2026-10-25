@@ -81,6 +81,12 @@ already on the device are all it needs). A followed plan also **projects** the d
 the import reads five years back, finds where the last reading sat in the earlier pass, and lays what followed it then on the weekdays that pass read on, stopping where it
 changed year (`PlanFeedImporter.projection`, `PlanDay.projected`, shown as “Expected”). Real posts replace the guess as they appear (the refresh keeps the plan's own projection and
 re-anchors it on the newest real day), and nothing is projected when the last reading is found in no earlier pass. Swift only so far; Android still imports the last month.
+
+Where the source links its **yearly plan as a PDF** (Disciples Church: <https://discipleschurch.com/bible/download/>, `Preset.planPage`), the import uses that instead of
+guessing: `latestPlanPDF` picks the newest year's PDF from the page, the app reads its text with PDFKit and `parseScheduleText` turns the "Title · Week of 5-Jan · five readings" rows
+into dated days (the first week may start in December of the year before; the year turns over when the months wrap). Days after the last post come from the PDF (shown as
+*Expected* until the real post replaces them), and the projection above is the fallback when there is no PDF or it doesn't read as a year (fewer than 100 days). The 2026 PDF
+agrees with every post so far and with the projection for the rest of the year. Only the references are read, never stored beyond the schedule.
 Failures are told apart — *offline*, *not a feed*, *no readings* —
 and leave nothing half-imported.
 

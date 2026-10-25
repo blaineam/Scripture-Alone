@@ -261,6 +261,53 @@ private struct Table: PlanFetching {
         #expect(carried.first?.date == "2026-10-28")
     }
 
+    private let planText = """
+    D I S C I P L E S C H U R C H -- 2026 -- BIBLE READING PLAN
+    TITLE             WEEK OF MONDAY         TUESDAY      WEDNESDAY    THURSDAY      FRIDAY
+
+    JANUARY
+    Creation Era       29-Dec   Genesis 1    Genesis 2    Genesis 3    Genesis 4     Genesis 5
+    Creation Era        5-Jan   Genesis 6    Genesis 7    Genesis 8    Genesis 9     Genesis 10
+
+    SEPTEMBER
+    Gospel of Mark     30-Mar   Mark 16      Exodus 1     Exodus 2     Exodus 3      Exodus 4
+    Kingdom Era       28-Sep   1 Samuel 29        1 Samuel 30        1 Samuel 31        Daniel 1           Daniel 2
+    """
+
+    @Test func readsADatedScheduleFromAYearlyPlanPDF() throws {
+        for text in [planText, planText.replacingOccurrences(of: "\n", with: " ")] {
+            let days = PlanFeedImporter.parseScheduleText(text, year: nil)
+            #expect(days.count == 20)
+            #expect(days.first?.date == "2025-12-29" && days.first?.display == "Genesis 1")
+            // The week of 5-Jan is in 2026: the year turns over when the months wrap.
+            #expect(days[5].date == "2026-01-05" && days[9].display == "Genesis 10" && days[9].date == "2026-01-09")
+            #expect(days[10].label == "Gospel of Mark" && days[10].date == "2026-03-30" && days[10].display == "Mark 16")
+            #expect(days[11].display == "Exodus 1")
+            #expect(days[15].label == "Kingdom Era" && days[15].display == "1 Samuel 29" && days[17].display == "1 Samuel 31")
+            #expect(days[18].display == "Daniel 1" && days[19].date == "2026-10-02")
+        }
+        #expect(PlanFeedImporter.parseScheduleText("nothing here", year: 2026).isEmpty)
+    }
+
+    @Test func publishedDaysReplaceTheProjection() throws {
+        let source = PlanSource(siteURL: URL(string: "https://s.org")!, apiRoot: nil, studyCategory: nil, name: "S")
+        let posted = chapterPosts(book: "Romans", chapters: 1...3, from: "2026-10-19")
+        let ahead = PlanFeedImporter.parseScheduleText(
+            "TITLE Epistle 19-Oct Romans 1 Romans 2 Romans 3 Romans 4 Romans 5 Epistle 26-Oct Romans 6 Romans 7 Romans 8 Romans 9 Romans 10", year: 2026)
+        #expect(ahead.count == 10)
+        let plan = try PlanFeedImporter.plan(from: posted, title: "S", source: source, projecting: true, scheduled: ahead).plan
+        #expect(plan.days.map(\.display) == (1...10).map { "Romans \($0)" })
+        #expect(plan.days.map(\.projected) == Array(repeating: false, count: 3) + Array(repeating: true, count: 7))
+        #expect(plan.days[3].date == "2026-10-22" && plan.days[9].date == "2026-10-30")
+    }
+
+    @Test func findsTheNewestYearlyPlanPDF() async throws {
+        let page = #"<a href="/uploads/Plan-2025.pdf">2025</a> <a href="https://s.org/uploads/Plan-2026.pdf">2026</a> <a href="/uploads/Plan-2024.pdf">2024</a>"#
+        let table = Table(responses: ["https://s.org/download/": (200, [:], page), "https://s.org/uploads/Plan-2026.pdf": (200, [:], "PDF")])
+        let found = try await PlanFeedImporter(fetcher: table).latestPlanPDF(page: URL(string: "https://s.org/download/")!)
+        #expect(found?.year == 2026 && found?.data == Data("PDF".utf8))
+    }
+
     @Test func projectionStopsWhereTheEarlierPassChangedYear() throws {
         let source = PlanSource(siteURL: URL(string: "https://s.org")!, apiRoot: nil, studyCategory: nil, name: "S")
         // The earlier pass read John 1-8 across New Year's Eve; only what shared the matched day's year is guessed.

@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import PDFKit
 import ScriptureAloneCore
 
 /// What to read today in the reader's plan. UI-free, so anything that can start audio — the reader's
@@ -225,6 +226,9 @@ extension PlanStore {
         let importer = PlanFeedImporter(fetcher: fetcher)
         let after: Date
         var limit = 400
+        // The church's own yearly plan, when it publishes one: the whole year's schedule, not a guess.
+        var published: [PlanDay] = []
+        if case .followCalendar = mode { published = await publishedSchedule(importer, page: preset?.planPage) }
         // A month back, so a weekend or a holiday still finds posts; the plan starts today all the same.
         let recent = calendar.startOfDay(for: now).addingTimeInterval(-30 * 86_400)
         switch mode {
@@ -232,8 +236,12 @@ extension PlanStore {
             // A site posts each day's reading on the day, so nothing is published ahead. It runs the same
             // reading order every few years, though: read that far back to find the last pass and
             // project the days still to come from it (`PlanFeedImporter.projection`).
-            after = calendar.startOfDay(for: now).addingTimeInterval(-5 * 366 * 86_400)
-            limit = 2_500
+            if published.isEmpty {
+                after = calendar.startOfDay(for: now).addingTimeInterval(-5 * 366 * 86_400)
+                limit = 2_500
+            } else {
+                after = recent
+            }
         case .fromDayOne(let since): after = since
         }
         let endpoints: [PlanFeedImporter.Endpoint] = preset.map {
@@ -270,13 +278,23 @@ extension PlanStore {
         if case .followCalendar = mode { following = true } else { following = false }
         let result = try PlanFeedImporter.plan(
             from: entries, title: name, source: source,
-            keepingFrom: following ? PlanSchedule.isoDay(recent, calendar: calendar) : nil, projecting: following)
+            keepingFrom: following ? PlanSchedule.isoDay(recent, calendar: calendar) : nil, projecting: following,
+            scheduled: published)
         add(imported: result.plan)
         switch mode {
         case .followCalendar: start(result.plan, on: now, followsCalendar: true)
         case .fromDayOne: start(result.plan, on: now, followsCalendar: false)
         }
         return result
+    }
+
+    /// The days of the yearly plan a site links as a PDF (empty when it has none, or it can't be read as a
+    /// whole year's rows — the projection from earlier passes stands in).
+    private func publishedSchedule(_ importer: PlanFeedImporter, page: URL?) async -> [PlanDay] {
+        guard let page, let pdf = try? await importer.latestPlanPDF(page: page),
+              let text = PDFDocument(data: pdf.data)?.string else { return [] }
+        let days = PlanFeedImporter.parseScheduleText(text, year: pdf.year)
+        return days.count >= 100 ? days : []
     }
 
     /// Fetches the days a followed site has published since the plan was imported. Quiet on failure:
@@ -297,12 +315,13 @@ extension PlanStore {
             let triedKey = "planProjectionTried." + plan.id
             let lookBack = !plan.days.contains { $0.projected }
                 && (UserDefaults.standard.object(forKey: triedKey) as? Date).map { now.timeIntervalSince($0) > 7 * 86_400 } ?? true
-            let from = lookBack ? calendar.startOfDay(for: now).addingTimeInterval(-5 * 366 * 86_400) : since
+            let published = lookBack ? await publishedSchedule(importer, page: PlanFeedImporter.preset(for: source.siteURL)?.planPage) : []
+            let from = lookBack && published.isEmpty ? calendar.startOfDay(for: now).addingTimeInterval(-5 * 366 * 86_400) : since
             guard let entries = try? await importer.entries(.wordPress(site: site, category: source.scheduleCategory),
-                                                            after: from.addingTimeInterval(-1), limit: lookBack ? 2_500 : 400) else { continue }
+                                                            after: from.addingTimeInterval(-1), limit: lookBack && published.isEmpty ? 2_500 : 400) else { continue }
             if lookBack { UserDefaults.standard.set(now, forKey: triedKey) }
             guard let result = try? PlanFeedImporter.plan(from: entries, title: plan.title, source: source,
-                                                          keepingFrom: lookBack ? first : nil, projecting: lookBack),
+                                                          keepingFrom: lookBack ? first : nil, projecting: lookBack, scheduled: published),
                   result.plan.id == plan.id, result.plan.days.filter({ !$0.projected }).count >= posted.count else { continue }
             // What the site had not posted yet when the plan was made carries on from where it now stands.
             let ahead = lookBack ? [] : PlanFeedImporter.projection(after: result.plan.days, pool: plan.days)

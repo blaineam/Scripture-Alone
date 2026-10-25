@@ -77,13 +77,21 @@ public struct PlanFeedImporter: Sendable {
     public static let disciplesChurch = Preset(
         name: "Disciples Church Bible Reading Plan",
         site: URL(string: "https://discipleschurch.com/bible")!,
-        scheduleCategory: 2, studyCategory: 7)
+        scheduleCategory: 2, studyCategory: 7,
+        planPage: URL(string: "https://discipleschurch.com/bible/download/"))
 
     public struct Preset: Sendable {
         public let name: String
         public let site: URL
         public let scheduleCategory: Int
         public let studyCategory: Int?
+        /// A page that links the site's yearly plan as a PDF — the whole year's schedule, ahead of the posts.
+        public let planPage: URL?
+    }
+
+    /// The built-in source whose site this is, so a plan made earlier finds its plan page again.
+    public static func preset(for site: URL) -> Preset? {
+        site == disciplesChurch.site ? disciplesChurch : nil
     }
 
     // MARK: Pasted addresses
@@ -227,8 +235,10 @@ public struct PlanFeedImporter: Sendable {
     ///     followed site is read from years back so its last pass through the same reading order can
     ///     be found, but the plan only keeps the recent days.
     ///   - projecting: add the days the site has not posted yet (`projection`).
+    ///   - scheduled: days the site has published ahead of its posts (`parseScheduleText`); the ones after the
+    ///     last post are used as they are, and `projecting` is only the fallback when there are none.
     public static func plan(from entries: [FeedEntry], title: String, source: PlanSource,
-                            keepingFrom: String? = nil, projecting: Bool = false) throws -> Import {
+                            keepingFrom: String? = nil, projecting: Bool = false, scheduled: [PlanDay] = []) throws -> Import {
         var byDate: [String: (label: String?, passages: [PlanPassage])] = [:]
         var skipped: [String] = []
         for entry in entries.sorted(by: { $0.date < $1.date }) {
@@ -244,7 +254,11 @@ public struct PlanFeedImporter: Sendable {
         var days = byDate.keys.sorted().enumerated().map { offset, date in
             PlanDay(index: offset, date: date, label: byDate[date]?.label, passages: byDate[date]?.passages ?? [])
         }
-        let ahead = projecting ? projection(after: days, pool: days, sharesHistory: true) : []
+        let lastPosted = days.last?.date ?? ""
+        let published = scheduled.filter { ($0.date ?? "") > lastPosted }.map {
+            PlanDay(index: 0, date: $0.date, label: $0.label, passages: $0.passages, projected: true)
+        }
+        let ahead = !published.isEmpty ? published : projecting ? projection(after: days, pool: days, sharesHistory: true) : []
         if let keepingFrom {
             days = days.filter { ($0.date ?? "") >= keepingFrom }
             guard !days.isEmpty else { throw PlanFeedError.noReadings }
@@ -315,6 +329,71 @@ public struct PlanFeedImporter: Sendable {
             return lay(tail, after: lastDate, on: posting, from: days.count)
         }
         return []
+    }
+
+    // MARK: Published yearly plan (PDF)
+
+    /// The newest yearly plan PDF linked from `page`, with the year in its file name. Nil when the page links none.
+    public func latestPlanPDF(page: URL) async throws -> (data: Data, year: Int?)? {
+        let (html, _) = try await get(page)
+        let text = String(decoding: html, as: UTF8.self)
+        guard let links = try? NSRegularExpression(pattern: #"href\s*=\s*["']([^"']+\.pdf)["']"#, options: .caseInsensitive) else { return nil }
+        let ns = text as NSString
+        var best: (url: URL, year: Int?)?
+        for match in links.matches(in: text, range: NSRange(location: 0, length: ns.length)) {
+            guard let url = URL(string: ns.substring(with: match.range(at: 1)), relativeTo: page)?.absoluteURL else { continue }
+            let year = url.lastPathComponent.range(of: #"20\d\d"#, options: .regularExpression).flatMap { Int(url.lastPathComponent[$0]) }
+            if best == nil || (year ?? 0) > (best?.year ?? 0) { best = (url, year) }
+        }
+        guard let best else { return nil }
+        let (data, _) = try await get(best.url)
+        return (data, best.year)
+    }
+
+    /// A yearly plan's text — rows of "Title, Week of 5-Jan, five readings Monday to Friday" — as dated days.
+    /// The text may come out of a PDF laid out or run together; only the order of the words is used. The
+    /// year is the one in the file name (or the "-- 2026 --" in the page header); a first week that starts in
+    /// December belongs to the year before, and the year turns over when the months wrap. Rows that don't
+    /// hold five readings are left out.
+    public static func parseScheduleText(_ raw: String, year: Int?) -> [PlanDay] {
+        let flat = raw.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+        let ns = flat as NSString
+        let full = NSRange(location: 0, length: ns.length)
+        var year = year
+        if year == nil, let header = try? NSRegularExpression(pattern: #"--\s*(20\d\d)\s*--"#).firstMatch(in: flat, range: full) {
+            year = Int(ns.substring(with: header.range(at: 1)))
+        }
+        guard var current = year else { return [] }
+        let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        let reading = #"(?:[1-3] )?[A-Z][a-z]+(?: of [A-Z][a-z]+)? \d+"#
+        guard let one = try? NSRegularExpression(pattern: reading), let row = try? NSRegularExpression(
+            pattern: "(\\d{1,2})-(\(months.joined(separator: "|")))((?: \(reading)){5})") else { return [] }
+        let calendar = utc
+        var result: [PlanDay] = []
+        var previousMonth = 0
+        var cursor = 0
+        for match in row.matches(in: flat, range: full) {
+            let before = ns.substring(with: NSRange(location: cursor, length: match.range.location - cursor))
+            cursor = match.range.location + match.range.length
+            let label = before.split(separator: " ").filter { $0.contains { $0.isLowercase } }.joined(separator: " ")
+            guard let day = Int(ns.substring(with: match.range(at: 1))),
+                  let month = months.firstIndex(of: ns.substring(with: match.range(at: 2))).map({ $0 + 1 }) else { continue }
+            if result.isEmpty, month == 12 { current -= 1 } else if month < previousMonth { current += 1 }
+            previousMonth = month
+            guard let monday = calendar.date(from: DateComponents(year: current, month: month, day: day)) else { continue }
+            let cells = ns.substring(with: match.range(at: 3)) as NSString
+            let refs = one.matches(in: cells as String, range: NSRange(location: 0, length: cells.length)).map { cells.substring(with: $0.range) }
+            guard refs.count == 5 else { continue }
+            for (offset, text) in refs.enumerated() {
+                guard let passage = ReferenceParser.parseAnyLanguage(text.trimmingCharacters(in: .whitespaces)),
+                      let date = calendar.date(byAdding: .day, value: offset, to: monday) else { continue }
+                let c = calendar.dateComponents([.year, .month, .day], from: date)
+                result.append(PlanDay(index: result.count,
+                                      date: String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0),
+                                      label: label.isEmpty ? nil : label, passages: [PlanPassage(passage)]))
+            }
+        }
+        return result
     }
 
     /// `source`'s readings on the weekdays in `posting`, one day each, from the day after `date`.
