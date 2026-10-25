@@ -53,4 +53,5 @@ Evidenziazioni, note e preferiti restano sul tuo dispositivo. Nessun server, nes
 Nata per aiutare le persone a studiare la Parola di Dio e a crescere nella vicinanza a Cristo.
 
 ## release_notes
-1.2.0 — Piani di lettura. Leggi la Bibbia in un anno (in ordine o come accaddero i fatti), un capitolo al giorno di un libro a scelta, oppure segui il piano della tua chiesa: Disciples Church è incluso e puoi aggiungere qualsiasi sito o feed che indichi il passo del giorno. Include Morning and Evening di Spurgeon (in inglese). Ogni passo appare nella tua traduzione, con avanzamento, recupero, serie, promemoria giornalieri e lettura ad alta voce.
+1.2.1 — Miglioramenti di stabilità e affidabilità.
+

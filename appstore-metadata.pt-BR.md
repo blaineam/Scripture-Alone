@@ -64,7 +64,7 @@ almeida,acf,nvi,arc,ara,kjv,temas,ansiedade,luto,consolo,comentário,devocional,
 Agora com a NASB 2020. Descubra o que a Bíblia diz sobre o que você está vivendo e estude offline com comentários, mapas e linhas do tempo. Sem anúncios, sem contas.
 
 ## whats_new
-1.2.0 — Planos de leitura. Leia a Bíblia em um ano (em ordem ou como os fatos aconteceram), um capítulo por dia de qualquer livro, ou siga o plano da sua igreja: a Disciples Church já vem incluída, e você pode adicionar qualquer site ou feed que indique a passagem do dia. Inclui Morning and Evening, de Spurgeon (em inglês). Cada passagem aparece na sua tradução, com progresso, recuperação, sequência, lembretes diários e leitura em voz alta.
+1.2.1 — Planos de leitura, com mais dias à frente. Um plano de igreja que você acompanha agora mostra os dias que ainda virão, tirados do plano anual publicado pela igreja, e Planos de leitura tem um botão próprio ao lado de Ouvir. Ler em voz alta um estudo ou meditação mantém você na página e marca o parágrafo que está sendo lido.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

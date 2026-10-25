@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.1 (unreleased)
+## 1.2.1 (2026-10-25)
 
 - **Reading plans, further ahead.** A church's plan that you follow now shows the days still to come, not just
   today's: the app finds where the church last read the same passages and lays what followed on the days ahead,

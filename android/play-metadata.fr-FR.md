@@ -53,4 +53,5 @@ Vos surlignages, notes et favoris restent sur votre appareil : ni serveur, ni co
 Conçue pour aider à étudier la Parole de Dieu et à se rapprocher du Christ.
 
 ## release_notes
-1.2.0 — Plans de lecture. Lisez la Bible en un an (dans l’ordre ou selon la chronologie), un chapitre par jour dans le livre de votre choix, ou suivez le plan de votre église : Disciples Church est intégré, et vous pouvez ajouter tout site ou flux qui nomme le passage du jour. Morning and Evening de Spurgeon est inclus (en anglais). Chaque passage s’affiche dans votre traduction, avec progression, rattrapage, série, rappels quotidiens et lecture à voix haute.
+1.2.1 — Améliorations de la stabilité et de la fiabilité.
+

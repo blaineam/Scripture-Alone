@@ -66,7 +66,7 @@ bible,louis segond,darby,kjv,commentaire,méditation,thèmes,anxiété,deuil,ré
 Désormais avec la NASB 2020. Trouvez ce que la Bible dit de ce que vous traversez et étudiez hors ligne avec commentaires, cartes et chronologies. Sans pub, sans compte.
 
 ## whats_new
-1.2.0 — Plans de lecture. Lisez la Bible en un an (dans l’ordre ou selon la chronologie), un chapitre par jour dans le livre de votre choix, ou suivez le plan de votre église : Disciples Church est intégré, et vous pouvez ajouter tout site ou flux qui nomme le passage du jour. Morning and Evening de Spurgeon est inclus (en anglais). Chaque passage s’affiche dans votre traduction, avec progression, rattrapage, série, rappels quotidiens et lecture à voix haute.
+1.2.1 — Plans de lecture, plus loin devant vous. Un plan d’église que vous suivez affiche désormais les jours à venir, tirés du plan annuel publié par l’église, et Plans de lecture a son propre bouton à côté d’Écouter. La lecture à voix haute d’une étude ou d’une méditation reste sur la page et marque le paragraphe lu.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

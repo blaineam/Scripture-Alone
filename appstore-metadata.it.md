@@ -66,7 +66,7 @@ bibbia,riveduta,diodati,cei,argomenti,ansia,lutto,conforto,devozionale,sermone,r
 Ora con la NASB 2020. Scopri che cosa dice la Bibbia di ciò che stai vivendo e studia offline con commentari, mappe e cronologie. Senza pubblicità né account.
 
 ## whats_new
-1.2.0 — Piani di lettura. Leggi la Bibbia in un anno (in ordine o come accaddero i fatti), un capitolo al giorno di un libro a scelta, oppure segui il piano della tua chiesa: Disciples Church è incluso e puoi aggiungere qualsiasi sito o feed che indichi il passo del giorno. Include Morning and Evening di Spurgeon (in inglese). Ogni passo appare nella tua traduzione, con avanzamento, recupero, serie, promemoria giornalieri e lettura ad alta voce.
+1.2.1 — Piani di lettura, più avanti nel tempo. Un piano di chiesa che segui ora mostra anche i giorni a venire, presi dal piano annuale pubblicato dalla chiesa, e Piani di lettura ha un pulsante tutto suo accanto ad Ascolta. La lettura ad alta voce di uno studio o di una meditazione resta sulla pagina ed evidenzia il paragrafo letto.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/
