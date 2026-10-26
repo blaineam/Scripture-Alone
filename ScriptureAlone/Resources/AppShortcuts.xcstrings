@@ -1,68 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Add a verse to my favorites in ${applicationName}" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einen Vers zu meinen Favoriten in ${applicationName} hinzufügen"
-          }
-        },
-        "en" : {
-          "stringSet" : {
-            "state" : "new",
-            "values" : [
-              "Add a verse to my favorites in ${applicationName}",
-              "Favorite a verse in ${applicationName}"
-            ]
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir un versículo a mis favoritos en ${applicationName}"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajouter un verset à mes favoris dans ${applicationName}"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aggiungi un versetto ai preferiti in ${applicationName}"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "${applicationName}でお気に入りに聖句を追加"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "${applicationName}에서 즐겨찾기에 구절 추가"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicionar um versículo aos favoritos no ${applicationName}"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在 ${applicationName} 中将经文加入收藏"
-          }
-        }
-      }
-    },
     "Continue reading in ${applicationName}" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {

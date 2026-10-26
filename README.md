@@ -55,6 +55,7 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 - **Reading plans** — Bible in a year (canonical or chronological), book by book, or a church's plan imported
   from its feed (schedule only; the text is your own translation), with progress, catch-up, a streak, daily
   reminders and a read-aloud path (`docs/reading-plans.md`).
+- **In the car** — CarPlay Audio and Android Auto read today's plan reading, where you left off, any chapter or a favorite from the car's screen (`docs/car.md`).
 - **Listen** — read aloud from the top of the screen or a selection with any installed system voice
   (Premium, Enhanced and Personal Voice included), the spoken verse marked and kept in view, on
   into the next chapter, with speed, sleep timer, lock-screen controls and background audio. On

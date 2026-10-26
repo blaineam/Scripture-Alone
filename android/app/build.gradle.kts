@@ -375,6 +375,8 @@ dependencies {
     testImplementation("org.apache.pdfbox:pdfbox:2.0.27")
     androidTestImplementation(composeBom)
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    // The car's side of the media library: a MediaBrowser (ui/listen/CarLibraryServiceTest).
+    androidTestImplementation("androidx.media3:media3-session:1.5.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     // The host activity createComposeRule needs (VerseNodesTest); debug builds only.
     debugImplementation("androidx.compose.ui:ui-test-manifest")

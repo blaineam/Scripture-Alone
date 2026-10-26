@@ -1064,4 +1064,14 @@
     <string name="plans_summary_import">来自%1$s的日程。经文用你自己的译本阅读。</string>
     <string name="plans_disciples_note">跟随教会的每日读经，每天自动更新。</string>
     <string name="plans_read_devotion">阅读今天的灵修</string>
+
+    <!-- Android Auto (the car screens: docs/car.md). -->
+    <string name="car_listen">收听</string>
+    <string name="car_today">今天的经文</string>
+    <string name="car_continue">继续</string>
+    <string name="car_start_plan">请在 Scripture Alone 中开始一个计划</string>
+    <string name="car_books">书卷</string>
+    <string name="car_old_testament">旧约</string>
+    <string name="car_new_testament">新约</string>
+    <string name="car_favorites">收藏</string>
 </resources>

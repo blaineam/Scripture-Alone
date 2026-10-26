@@ -228,6 +228,15 @@ Spec: `docs/reading-plans.md`.
 | Spurgeon's *Morning and Evening* (bundled devotional, annual by date, read aloud as heading + verse + meditation) | ✅ | `assets/SpurgeonMorningEvening.json` — the same file iOS bundles (`syncBundledData`, `Tools/build_spurgeon.py`); `BundledPlans`, `PlanStore.offeredBundled` (English devices only), `DevotionScreen`, `ListenQueue.devotionItems`. `SpurgeonPlanTest` mirrors `SpurgeonPlanTests`. Emulator-verified: offered, started, Today, the devotion screen |
 | Interface strings in the big 8 | 🔧 | All `plans_*` strings are in the eight locales, **machine-drafted — Levi to review**. Plan names and summaries are localized (a book plan by its book's name); Spurgeon's text and name are English |
 
+### In the car
+Spec: `docs/car.md`.
+
+| Feature | Status | Notes |
+|---|---|---|
+| CarPlay Audio (Listen: today's reading + continue; Books → chapters; Favorites; Now Playing with a speed button) | ➖ → Android Auto | The Apple-only surface; Android's is below |
+| Android Auto: the same four screens | ✅ | `ListenPlaybackService` is a `MediaLibraryService`; `data/listen/CarCatalog.kt` (the tree, with its row limit: runs of runs for Psalms) and `ui/listen/CarLibrary.kt` (labels, the reader's translation, place and favorites; starts what a row names). `CarCatalogTest` mirrors `CarPlayCatalogTests`; **`CarLibraryServiceTest`** (instrumented) connects a real `MediaBrowser`, browses root → Books → Old Testament and chooses a chapter — verified on `sa_guide_phone`. Not yet seen on a head unit or the Desktop Head Unit |
+| Silent mode does not mute Listen in a car | ➖ | Android has no Silent switch that mutes media |
+
 ### Android-only
 
 | Feature | Status | Notes |

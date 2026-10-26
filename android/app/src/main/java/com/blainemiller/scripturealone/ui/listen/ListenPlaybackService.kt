@@ -15,8 +15,21 @@ import androidx.media3.common.Player
 import androidx.media3.common.SimpleBasePlayer
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.DefaultMediaNotificationProvider
+import androidx.media3.session.LibraryResult
+import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSessionService
+import com.blainemiller.scripturealone.data.listen.CarCatalog
+import com.blainemiller.scripturealone.data.listen.CarEntry
+import com.google.common.collect.ImmutableList
+import com.google.common.util.concurrent.ListeningExecutorService
+import com.google.common.util.concurrent.MoreExecutors
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 import com.blainemiller.scripturealone.MainActivity
 import com.blainemiller.scripturealone.R
 import com.google.common.util.concurrent.Futures
@@ -28,11 +41,60 @@ import java.io.ByteArrayOutputStream
  * session over [ListenPlayer]: it draws the media notification and the lock-screen controls, takes
  * headset and car buttons, and holds the service in the foreground (`mediaPlayback`) while reading, so
  * reading carries on with the screen off.
+ *
+ * It is also the app's **media library** — what Android Auto browses (`CarLibrary`, the counterpart of iOS's CarPlay
+ * screens): today's reading, continue, the books and chapters, favorites. Choosing a row asks [ListenPlayer] to start
+ * reading it.
  */
 @androidx.annotation.OptIn(UnstableApi::class)
-class ListenPlaybackService : MediaSessionService() {
+class ListenPlaybackService : MediaLibraryService() {
 
-    private var session: MediaSession? = null
+    private var session: MediaLibrarySession? = null
+    private val worker: ListeningExecutorService = MoreExecutors.listeningDecorator(Executors.newSingleThreadExecutor())
+
+    private fun item(e: CarEntry): MediaItem = MediaItem.Builder()
+        .setMediaId(e.id)
+        .setMediaMetadata(
+            MediaMetadata.Builder().setTitle(e.title).setSubtitle(e.subtitle).setDisplayTitle(e.title)
+                .setIsBrowsable(e.isFolder).setIsPlayable(!e.isFolder)
+                .setMediaType(if (e.isFolder) MediaMetadata.MEDIA_TYPE_FOLDER_MIXED else MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
+                .build(),
+        )
+        .build()
+
+    private val library = object : MediaLibrarySession.Callback {
+        override fun onGetLibraryRoot(
+            session: MediaLibrarySession, browser: MediaSession.ControllerInfo, params: MediaLibraryService.LibraryParams?,
+        ): ListenableFuture<LibraryResult<MediaItem>> = Futures.immediateFuture(
+            LibraryResult.ofItem(
+                MediaItem.Builder().setMediaId(CarCatalog.ROOT)
+                    .setMediaMetadata(MediaMetadata.Builder().setTitle("Scripture Alone").setIsBrowsable(true).setIsPlayable(false).build()).build(),
+                params,
+            ),
+        )
+
+        override fun onGetChildren(
+            session: MediaLibrarySession, browser: MediaSession.ControllerInfo, parentId: String, page: Int, pageSize: Int,
+            params: MediaLibraryService.LibraryParams?,
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = worker.submit<LibraryResult<ImmutableList<MediaItem>>> {
+            val entry = CarCatalog.index(CarLibrary.tree(this@ListenPlaybackService))[parentId]
+            val rows = entry?.children
+            if (rows == null) LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
+            else LibraryResult.ofItemList(ImmutableList.copyOf(rows.drop(page * pageSize).take(pageSize).map(::item)), params)
+        }
+
+        override fun onGetItem(
+            session: MediaLibrarySession, browser: MediaSession.ControllerInfo, mediaId: String,
+        ): ListenableFuture<LibraryResult<MediaItem>> = worker.submit<LibraryResult<MediaItem>> {
+            val entry = CarCatalog.index(CarLibrary.tree(this@ListenPlaybackService))[mediaId]
+            if (entry == null) LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE) else LibraryResult.ofItem(item(entry), null)
+        }
+
+        /** A row chosen in a car: the ids pass through to [ListenPlayer.handleSetMediaItems], which starts the reading. */
+        override fun onAddMediaItems(
+            mediaSession: MediaSession, controller: MediaSession.ControllerInfo, mediaItems: MutableList<MediaItem>,
+        ): ListenableFuture<MutableList<MediaItem>> = Futures.immediateFuture(mediaItems)
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -42,7 +104,7 @@ class ListenPlaybackService : MediaSessionService() {
             Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
-        session = MediaSession.Builder(this, player).setSessionActivity(open).build()
+        session = MediaLibrarySession.Builder(this, player, library).setSessionActivity(open).build()
         setMediaNotificationProvider(
             DefaultMediaNotificationProvider.Builder(this)
                 .setChannelName(R.string.listen_channel_name)
@@ -51,7 +113,7 @@ class ListenPlaybackService : MediaSessionService() {
         )
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = session
 
     /** Swiped away from Recents while paused: nothing is reading, so nothing stays behind. */
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -65,6 +127,7 @@ class ListenPlaybackService : MediaSessionService() {
             release()
         }
         session = null
+        worker.shutdown()
         super.onDestroy()
     }
 }
@@ -78,7 +141,9 @@ class ListenPlaybackService : MediaSessionService() {
  * reading verse by verse, as the iOS now-playing entry does.
  */
 @androidx.annotation.OptIn(UnstableApi::class)
-class ListenPlayer(context: Context, private val listen: ListenController) : SimpleBasePlayer(Looper.getMainLooper()) {
+class ListenPlayer(private val context: Context, private val listen: ListenController) : SimpleBasePlayer(Looper.getMainLooper()) {
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     private val onChange: () -> Unit = { invalidateState() }
     private val artwork: ByteArray? = runCatching {
@@ -97,7 +162,11 @@ class ListenPlayer(context: Context, private val listen: ListenController) : Sim
     override fun getState(): State {
         if (!listen.isPresented) {
             return State.Builder()
-                .setAvailableCommands(Player.Commands.Builder().addAll(Player.COMMAND_PLAY_PAUSE, Player.COMMAND_STOP).build())
+                // A browser (Android Auto) picks what to read while nothing is: setting an item starts it.
+                .setAvailableCommands(Player.Commands.Builder().addAll(
+                    Player.COMMAND_PLAY_PAUSE, Player.COMMAND_STOP, Player.COMMAND_PREPARE,
+                    Player.COMMAND_SET_MEDIA_ITEM, Player.COMMAND_CHANGE_MEDIA_ITEMS,
+                ).build())
                 .setPlaybackState(Player.STATE_IDLE)
                 .build()
         }
@@ -123,7 +192,8 @@ class ListenPlayer(context: Context, private val listen: ListenController) : Sim
         return State.Builder()
             .setAvailableCommands(
                 Player.Commands.Builder().addAll(
-                    Player.COMMAND_PLAY_PAUSE, Player.COMMAND_STOP,
+                    Player.COMMAND_PLAY_PAUSE, Player.COMMAND_STOP, Player.COMMAND_PREPARE,
+                    Player.COMMAND_SET_MEDIA_ITEM, Player.COMMAND_CHANGE_MEDIA_ITEMS,
                     Player.COMMAND_SEEK_TO_NEXT, Player.COMMAND_SEEK_TO_PREVIOUS,
                     Player.COMMAND_GET_CURRENT_MEDIA_ITEM, Player.COMMAND_GET_TIMELINE, Player.COMMAND_GET_METADATA,
                     Player.COMMAND_GET_AUDIO_ATTRIBUTES,
@@ -154,12 +224,26 @@ class ListenPlayer(context: Context, private val listen: ListenController) : Sim
         return Futures.immediateVoidFuture()
     }
 
+    /** A row chosen in a car: read what its id names (today's reading, a chapter, a favorite). */
+    override fun handleSetMediaItems(mediaItems: MutableList<MediaItem>, startIndex: Int, startPositionMs: Long): ListenableFuture<*> {
+        val id = mediaItems.getOrNull(startIndex.coerceAtLeast(0))?.mediaId
+        if (id != null && id != "listen") {
+            scope.launch {
+                if (!CarLibrary.play(context, id)) listen.notice = context.getString(R.string.plans_unavailable)
+            }
+        }
+        return Futures.immediateVoidFuture()
+    }
+
+    override fun handlePrepare(): ListenableFuture<*> = Futures.immediateVoidFuture()
+
     override fun handleStop(): ListenableFuture<*> {
         if (listen.isPresented) listen.stop()
         return Futures.immediateVoidFuture()
     }
 
     override fun handleRelease(): ListenableFuture<*> {
+        scope.cancel()
         listen.removeListener(onChange)
         return Futures.immediateVoidFuture()
     }

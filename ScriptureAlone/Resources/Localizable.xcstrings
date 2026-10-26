@@ -10220,6 +10220,59 @@
         }
       }
     },
+    "Continue" : {
+      "comment" : "CarPlay",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fortsetzen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continua"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "続きから"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이어서"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续"
+          }
+        }
+      }
+    },
     "Continue Reading" : {
       "comment" : "App Intent title\nApp Shortcut tile title",
       "localizations" : {
@@ -25710,6 +25763,59 @@
         }
       }
     },
+    "Nothing here yet" : {
+      "comment" : "CarPlay",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noch nichts vorhanden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todavía no hay nada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rien pour l’instant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancora niente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まだ何もありません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 아무것도 없습니다"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nada aqui ainda"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂时没有内容"
+          }
+        }
+      }
+    },
     "Nothing is linked to %@ yet." : {
       "localizations" : {
         "de" : {
@@ -38458,6 +38564,59 @@
         }
       }
     },
+    "Start a plan in Scripture Alone" : {
+      "comment" : "CarPlay",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starte einen Plan in Scripture Alone"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empieza un plan en Scripture Alone"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commencez un plan dans Scripture Alone"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvia un piano in Scripture Alone"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scripture Alone でプランを開始してください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scripture Alone에서 계획을 시작하세요"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comece um plano no Scripture Alone"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请在 Scripture Alone 中开始一个计划"
+          }
+        }
+      }
+    },
     "Start the note with" : {
       "localizations" : {
         "de" : {
@@ -43310,6 +43469,59 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "此译本"
+          }
+        }
+      }
+    },
+    "This translation can’t be read aloud right now. Open Scripture Alone to download it." : {
+      "comment" : "CarPlay",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Übersetzung kann gerade nicht vorgelesen werden. Öffne Scripture Alone, um sie zu laden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta traducción no se puede leer en voz alta ahora. Abre Scripture Alone para descargarla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette traduction ne peut pas être lue à voix haute pour le moment. Ouvrez Scripture Alone pour la télécharger."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa traduzione non può essere letta ad alta voce ora. Apri Scripture Alone per scaricarla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この翻訳は今は読み上げできません。Scripture Alone を開いてダウンロードしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지금은 이 번역본을 소리 내어 읽을 수 없습니다. Scripture Alone를 열어 다운로드하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta tradução não pode ser lida em voz alta agora. Abra o Scripture Alone para baixá-la."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此译本目前无法朗读。请打开 Scripture Alone 下载。"
           }
         }
       }

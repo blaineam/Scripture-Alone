@@ -1064,4 +1064,14 @@
     <string name="plans_summary_import">%1$s의 일정. 본문은 내가 쓰는 번역본으로 읽습니다.</string>
     <string name="plans_disciples_note">교회의 매일 말씀을 따라가며, 매일 자동으로 업데이트됩니다.</string>
     <string name="plans_read_devotion">오늘의 묵상 읽기</string>
+
+    <!-- Android Auto (the car screens: docs/car.md). -->
+    <string name="car_listen">듣기</string>
+    <string name="car_today">오늘의 말씀</string>
+    <string name="car_continue">이어서</string>
+    <string name="car_start_plan">Scripture Alone에서 계획을 시작하세요</string>
+    <string name="car_books">성경</string>
+    <string name="car_old_testament">구약</string>
+    <string name="car_new_testament">신약</string>
+    <string name="car_favorites">즐겨찾기</string>
 </resources>

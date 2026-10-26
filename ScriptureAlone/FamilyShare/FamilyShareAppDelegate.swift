@@ -2,6 +2,7 @@ import Foundation
 import CloudKit
 #if os(iOS)
 import UIKit
+import CarPlay
 #else
 import AppKit
 #endif
@@ -36,8 +37,17 @@ final class FamilyShareAppDelegate: NSObject, UIApplicationDelegate {
         // Cold launch from an invitation: the metadata arrives with the connection options.
         if let metadata = options.cloudKitShareMetadata { accept(metadata) }
         let configuration = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
-        configuration.delegateClass = FamilyShareSceneDelegate.self
+        // The car's screen is not a window of the app: it gets the CarPlay audio scene (`CarPlay/`).
+        configuration.delegateClass = Self.sceneDelegateClass(for: connectingSceneSession.role)
         return configuration
+    }
+
+    static func sceneDelegateClass(for role: UISceneSession.Role) -> AnyClass {
+        isCarPlay(role) ? CarPlaySceneDelegate.self : FamilyShareSceneDelegate.self
+    }
+
+    static func isCarPlay(_ role: UISceneSession.Role) -> Bool {
+        role == .carTemplateApplication
     }
 
     func application(_ application: UIApplication, userDidAcceptCloudKitShareWith cloudKitShareMetadata: CKShare.Metadata) {

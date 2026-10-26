@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.2 (in development)
+
+- **Scripture Alone in the car.** On CarPlay and Android Auto the app reads aloud from the car's own screen: today's reading
+  from your plan (Spurgeon's meditation included), where you left off, any book and chapter, or a favorite — with the car's
+  play, pause and skip, and a speed button on CarPlay. In a car the Silent switch no longer mutes Listen. On iPhone and Android.
+
 ## 1.2.1 (2026-10-25)
 
 - **Reading plans, further ahead.** A church's plan that you follow now shows the days still to come, not just

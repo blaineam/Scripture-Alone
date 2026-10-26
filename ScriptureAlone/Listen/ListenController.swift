@@ -200,6 +200,12 @@ final class ListenController {
         start(in: model, scope: .chapter(chapter), items: chapterItems(model: model, chapter: chapter, from: top))
     }
 
+    /// Plays `chapter` from `verse` to its end, then on into the next — the same as the toolbar's Listen,
+    /// for a place that has no screen of its own to read the position from (CarPlay).
+    func playChapter(_ chapter: ChapterRef, from verse: Int = 1, in model: ReaderModel) {
+        start(in: model, scope: .chapter(chapter), items: chapterItems(model: model, chapter: chapter, from: verse))
+    }
+
     /// Plays the selected verses, then stops.
     func playSelection(in model: ReaderModel) {
         guard let store = model.source else { return }
@@ -1058,7 +1064,8 @@ struct ListenMute: Equatable {
 nonisolated enum SilentSwitch {
     /// Phones only: an iPad has no switch, and an iPhone app running on a Mac has none either.
     @MainActor static var applies: Bool {
-        UIDevice.current.userInterfaceIdiom == .phone && !ProcessInfo.processInfo.isiOSAppOnMac
+        // In a car the audio goes to the car, whatever the switch says: it is not read aloud to the room.
+        UIDevice.current.userInterfaceIdiom == .phone && !ProcessInfo.processInfo.isiOSAppOnMac && !CarAudio.isConnected
     }
 
     /// Length of the silent probe sound. A suppressed sound returns in well under half of this.

@@ -1064,4 +1064,14 @@
     <string name="plans_summary_import">Calendrier de %1$s. Le texte se lit dans votre traduction.</string>
     <string name="plans_disciples_note">Suit la lecture quotidienne de l’église, mise à jour automatiquement chaque jour.</string>
     <string name="plans_read_devotion">Lire la méditation du jour</string>
+
+    <!-- Android Auto (the car screens: docs/car.md). -->
+    <string name="car_listen">Écouter</string>
+    <string name="car_today">Lecture du jour</string>
+    <string name="car_continue">Continuer</string>
+    <string name="car_start_plan">Commencez un plan dans Scripture Alone</string>
+    <string name="car_books">Livres</string>
+    <string name="car_old_testament">Ancien Testament</string>
+    <string name="car_new_testament">Nouveau Testament</string>
+    <string name="car_favorites">Favoris</string>
 </resources>

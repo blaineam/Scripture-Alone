@@ -177,9 +177,16 @@
             android:exported="true"
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
+                <action android:name="androidx.media3.session.MediaLibraryService" />
                 <action android:name="androidx.media3.session.MediaSessionService" />
+                <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
+
+        <!-- Android Auto: a media app, browsed through the service above (docs/reading-plans.md, docs/car.md). -->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
 
         <!-- The watch's requests (ui/widget/WatchRequestsService.kt): a heart tapped on a verse there,
              written into the library here. Started by Play services for a matching data item. -->
