@@ -100,6 +100,52 @@ struct CarPlayWiringTests {
 
 @MainActor
 @Suite(.serialized)
+struct CarPlayImportedBibleTests {
+    private static let usfm = """
+    \\id JHN Imported fixture
+    \\h John
+    \\toc1 The Gospel of John
+    \\mt1 John
+    \\c 3
+    \\p
+    \\v 16 For God so loved the world, that he gave his only begotten Son, that whosoever believeth on him should not perish, but have eternal life.
+    \\v 17 For God sent not the Son into the world to judge the world; but that the world should be saved through him.
+    \\c 4
+    \\p
+    \\v 1 When therefore the Lord knew how that the Pharisees had heard that Jesus was making and baptizing more disciples than John.
+    """
+
+    @Test func aBibleTheReaderImportedIsReadInTheCar() throws {
+        let directory = FileManager.default.temporaryDirectory.appending(path: "car-imports-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let source = directory.appending(path: "fixture.zip")
+        try ZipArchive.write([ZipArchive.Entry(name: "44-JHNfix.usfm", data: Data(Self.usfm.utf8))]).write(to: source)
+        let identity = ImportedTranslationIdentity(id: "IMPORT-CAR", name: "Car Fixture", abbreviation: "CAR", copyright: "Public domain (test)")
+        _ = try BibleFileImporter().importBible(at: source, as: identity, into: directory)
+        let library = ImportedLibrary(directory: directory)
+        #expect(library.entries.map(\.info.id) == ["IMPORT-CAR"])
+
+        // The reader chose it last time: the car's reader comes up on it, not on the default.
+        let defaults = UserDefaults.standard
+        let saved = defaults.string(forKey: "translation")
+        defaults.set("IMPORT-CAR", forKey: "translation")
+        defer { if let saved { defaults.set(saved, forKey: "translation") } else { defaults.removeObject(forKey: "translation") } }
+        let listen = ListenController.shared
+        listen.stop()
+        listen.speaksSilentlyForTesting = true
+        defer { listen.stop(); listen.speaksSilentlyForTesting = false }
+        let plans = PlanStore(directory: directory.appending(path: "plans"), bundled: [])
+        plans.schedulesReminders = false
+        let player = CarPlayPlayer(plans: plans, library: library)
+        #expect(player.model.translations.contains { $0.id == "IMPORT-CAR" })
+        #expect(player.model.translationID == "IMPORT-CAR")
+        #expect(player.perform(.playChapter(ChapterRef(.john, 3))) == .started)
+        #expect(listen.isListening(in: player.model))
+    }
+}
+
+@MainActor
+@Suite(.serialized)
 struct CarPlayTemplateTests {
     private func store() -> PlanStore {
         let s = PlanStore(directory: FileManager.default.temporaryDirectory.appending(path: "plans-\(UUID().uuidString)"), bundled: [])

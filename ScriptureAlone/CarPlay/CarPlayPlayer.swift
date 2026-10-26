@@ -3,9 +3,9 @@ import Foundation
 import ScriptureAloneCore
 
 /// Starts reading from a CarPlay row. CarPlay can connect with no phone window open, so it keeps a reader of its
-/// own — the same one every window starts from: the translation and the place the reader left off.
-/// (Translations imported or fetched online arrive after launch and aren't in it, so CarPlay reads the
-/// bundled translation the reader chose, or the app's default.)
+/// own — the same one every window starts from: the translation and the place the reader left off. The Bibles the
+/// reader imported are offered to it as they are to every window (`RootView`), so an imported translation is read in
+/// the car too. (A translation fetched online with a key is not: it needs the network and a loader a car has no use for.)
 @MainActor
 final class CarPlayPlayer {
     static let shared = CarPlayPlayer()
@@ -19,11 +19,20 @@ final class CarPlayPlayer {
     /// Slower to faster, for the Now Playing speed button.
     static let speeds: [Double] = [0.75, 1, 1.25, 1.5, 2]
 
-    private(set) lazy var model = ReaderModel()
+    private(set) lazy var model: ReaderModel = {
+        let model = ReaderModel()
+        // The reader's imports, then: registering them also restores the reader's choice when it is one of them.
+        model.refreshTranslations(imported: library.entries.map { ($0.info, $0.url) })
+        return model
+    }()
     private let listen = ListenController.shared
     private let plans: PlanStore
+    private let library: ImportedLibrary
 
-    init(plans: PlanStore = .shared) { self.plans = plans }
+    init(plans: PlanStore = .shared, library: ImportedLibrary = ImportedLibrary()) {
+        self.plans = plans
+        self.library = library
+    }
 
     var todaysReading: TodaysReading? { plans.todaysReading() }
     var location: ChapterRef { model.location }

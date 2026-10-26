@@ -28,8 +28,9 @@ custom, and nothing to read while driving.
 
 ## Limits, on purpose
 
-- CarPlay reads the **bundled** translation the reader chose, or the app's default: translations imported or fetched with
-  an API key arrive after launch and are not in the car's reader. (Android reads any translation the app lists as installed.)
+- CarPlay reads the translation the reader chose when it is on the phone — bundled or **imported** (the car's reader is given the
+  reader's imports, as every window is) — else the app's default. A translation fetched online with an API key (ESV, API.Bible)
+  is not read in the car: it needs the network and a loader. Android reads any translation the app lists as installed, imports included.
 - The Favorites list is read when CarPlay connects; a favorite added while the car is connected shows on the next connection.
 - No voice commands, no search, no text on screen beyond titles: that is what the audio templates allow.
 
