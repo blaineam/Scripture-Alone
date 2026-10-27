@@ -40,7 +40,7 @@ CarPlay's Siri asks an audio app to play through SiriKit's media request (`INPla
 `application(_:handlerFor:)` in `FamilyShareAppDelegate` returns `PlayPassageHandler` (`Intents/`), no Intents extension — and what
 Siri heard goes through the search box's reference parser, in the app's language, into the same player the CarPlay rows use
 (`CarPlayPlayer.play`). A verse, a range, a chapter or a list all work; words that aren't a reference are refused. Needs the
-Siri capability on the App ID (entitlement `com.apple.developer.siri`) and `INPlayMediaIntent` / `INSupportedMediaCategories`
+Siri capability on the App ID (entitlement `com.apple.developer.siri`) and `INPlayMediaIntent` / `INSupportedMediaCategories` (Audiobooks only; App Store Connect refuses `INMediaCategoryOther`)
 in Info.plist. Not yet tried in a car: say "Play Psalm 23 in Scripture Alone", "Read Romans 8:28 through 30 with Scripture Alone".
 Android Auto's Google Assistant is the same idea: a voice request reaches `ListenPlaybackService.onAddMediaItems` with the words as
 the item's search query, becomes a `play:spoken:<words>` id (`CarAction.Spoken`) and is read through `ReferenceParser` into
