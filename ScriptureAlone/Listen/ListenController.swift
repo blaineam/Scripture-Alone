@@ -907,6 +907,9 @@ final class ListenController {
             MPNowPlayingInfoPropertyPlaybackRate: phase == .playing ? speed : 0.0,
         ]
         if let artwork = Self.artwork { info[MPMediaItemPropertyArtwork] = artwork }
+        // Each reading is its own item to the system, which fetches an item's artwork once: without an identity a
+        // reading started right after another (a favorite from the car) could keep, or never get, its cover.
+        info[MPNowPlayingInfoPropertyExternalContentIdentifier] = "reading-\(session)"
         if let player {
             info[MPMediaItemPropertyPlaybackDuration] = player.duration
             info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime
