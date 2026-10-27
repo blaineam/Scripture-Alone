@@ -163,6 +163,8 @@ internal fun voiceItem(item: MediaItem): MediaItem {
     val request = item.requestMetadata
     val extras = request.extras
     val phrases = VoiceQuery.candidates(request.searchQuery, VoiceQuery.extraKeys.associateWith { extras?.getString(it) })
+    // What the assistant actually said, for when a request isn't understood (adb logcat -s SAVoice).
+    android.util.Log.i("SAVoice", "heard query=${request.searchQuery} extraKeys=${extras?.keySet()?.toList()} phrases=$phrases")
     return item.buildUpon().setMediaId(CarAction.spokenId(phrases)).build()
 }
 
