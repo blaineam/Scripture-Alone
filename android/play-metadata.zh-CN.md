@@ -55,5 +55,5 @@
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.2.3 — Android Auto：可以让 Google 助理朗读经文——“在 Scripture Alone 中朗读约翰福音第 1 章”。从车里开始的朗读不再因手机处于振动模式而无声。
+1.2.3 — Android Auto：可以选择你的读经计划，并聆听教会的每周查经。从车里开始的朗读不再因手机处于振动模式而无声。
 

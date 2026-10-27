@@ -66,7 +66,7 @@ NASB 2020 与 NASB 1995 © The Lockman Foundation。经许可使用。www.Lockma
 现已支持 NASB 2020。找到圣经对你正在经历之事的话语，并借助注释、地图与时间线离线研读。无广告，无需账户。
 
 ## whats_new
-1.2.3 — 优化了车内朗读的细节。
+1.2.3 — 在车里可以选择你的读经计划，并聆听教会的每周查经，同时改进了行车途中朗读的一些细节。
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

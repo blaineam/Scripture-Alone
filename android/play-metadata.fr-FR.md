@@ -53,5 +53,5 @@ Vos surlignages, notes et favoris restent sur votre appareil : ni serveur, ni co
 Conçue pour aider à étudier la Parole de Dieu et à se rapprocher du Christ.
 
 ## release_notes
-1.2.3 — Android Auto : demandez à l’Assistant Google de lire un passage — « Lis Jean chapitre 1 dans Scripture Alone ». Les lectures lancées depuis la voiture ne sont plus coupées par un téléphone en mode vibreur.
+1.2.3 — Android Auto : choisissez parmi vos plans de lecture et écoutez l’étude hebdomadaire de votre église. Les lectures lancées depuis la voiture ne sont plus coupées par un téléphone en mode vibreur.
 

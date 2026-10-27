@@ -53,5 +53,5 @@ Evidenziazioni, note e preferiti restano sul tuo dispositivo. Nessun server, nes
 Nata per aiutare le persone a studiare la Parola di Dio e a crescere nella vicinanza a Cristo.
 
 ## release_notes
-1.2.3 — Android Auto: chiedi all’Assistente Google di leggere un passo — «Leggi Giovanni capitolo 1 in Scripture Alone». Le letture avviate dall’auto non vengono più silenziate da un telefono in modalità vibrazione.
+1.2.3 — Android Auto: scegli tra i tuoi piani di lettura e ascolta lo studio settimanale della tua chiesa. Le letture avviate dall’auto non vengono più silenziate da un telefono in modalità vibrazione.
 

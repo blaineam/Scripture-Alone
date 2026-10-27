@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.2.3 — Android Auto: ask Google Assistant to read a passage — “Read John chapter 1 in Scripture Alone.” Readings you start from the car are no longer silenced by a phone set to vibrate.
+1.2.3 — Android Auto: choose among your reading plans and hear your church’s weekly study read aloud. Readings you start from the car are no longer silenced by a phone set to vibrate.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

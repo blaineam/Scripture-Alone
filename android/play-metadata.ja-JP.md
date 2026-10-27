@@ -55,5 +55,5 @@ DRM フリーの ePub、テキストレイヤーのある聖書 PDF、USFM フ�
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.2.3 — Android Auto：Googleアシスタントに箇所を読み上げてもらえます。「Scripture Aloneでヨハネ1章を読んで」。車から始めた読み上げが、マナーモード（バイブ）のスマホで無音になることはなくなりました。
+1.2.3 — Android Auto：読書プランを選んだり、教会の週ごとの学びを聞いたりできます。車から始めた読み上げが、マナーモード（バイブ）のスマホで無音になることはなくなりました。
 

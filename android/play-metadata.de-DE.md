@@ -53,5 +53,5 @@ Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 
 ## release_notes
-1.2.3 — Android Auto: Bitte den Google Assistant, eine Stelle vorzulesen – „Lies Johannes Kapitel 1 in Scripture Alone.“ Im Auto gestartete Lesungen werden nicht mehr von einem Telefon im Vibrationsmodus stummgeschaltet.
+1.2.3 — Android Auto: Wähle zwischen deinen Leseplänen und höre die wöchentliche Studie deiner Gemeinde. Im Auto gestartete Lesungen werden nicht mehr von einem Telefon im Vibrationsmodus stummgeschaltet.
 

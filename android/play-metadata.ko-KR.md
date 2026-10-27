@@ -55,5 +55,5 @@ DRM이 없는 ePub, 텍스트 레이어가 있는 성경 PDF, USFM 파일처럼 
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.2.3 — Android Auto: Google 어시스턴트에게 구절을 읽어 달라고 할 수 있습니다. “Scripture Alone에서 요한복음 1장 읽어 줘.” 차에서 시작한 읽기가 진동 모드 휴대전화 때문에 무음이 되지 않습니다.
+1.2.3 — Android Auto: 읽기 계획을 골라 듣고, 교회의 주간 스터디도 들을 수 있습니다. 차에서 시작한 읽기가 진동 모드 휴대전화 때문에 무음이 되지 않습니다.
 

@@ -53,5 +53,5 @@ As suas marcações, notas e favoritos ficam no seu aparelho. Não há servidor 
 Feito para ajudar as pessoas a estudar a Palavra de Deus e a se aproximar de Cristo.
 
 ## release_notes
-1.2.3 — Android Auto: peça ao Google Assistente para ler um trecho — “Leia João capítulo 1 no Scripture Alone”. Leituras iniciadas no carro não são mais silenciadas por um celular no modo vibrar.
+1.2.3 — Android Auto: escolha entre seus planos de leitura e ouça o estudo semanal da sua igreja. Leituras iniciadas no carro não são mais silenciadas por um celular no modo vibrar.
 

@@ -9,8 +9,9 @@
 - **Android Auto: a reading you start from the car is no longer silenced by a phone set to vibrate.** Listen mutes itself when
   the phone is silenced (the verses are followed on screen); in a car the phone is in a cupholder and the car's volume decides,
   as on CarPlay. The system's announcement of the ringer when Listen starts no longer re-mutes it either.
-- **"Play John 3:16 on Scripture Alone"** now also works where an assistant asks the app directly (the app answers
-  `MEDIA_PLAY_FROM_SEARCH`), on the phone as well as in the car.
+- **An assistant can ask the app for a passage directly** (the app answers `MEDIA_PLAY_FROM_SEARCH`), on the phone as well
+  as in the car. The Android Auto voice route is tested on a device with the assistant's own call, but not end to end: Google's
+  assistant on the test phone never recognised speech in the head unit emulator, so it wants a try in a real car.
 
 - **Android Auto: "Read John chapter 1 in Scripture Alone" works.** Google Assistant hands the app its words with the verb
   and the app's name still on them, and the app only understood a bare reference — so "read John chapter 1 in Scripture

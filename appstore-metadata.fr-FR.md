@@ -66,7 +66,7 @@ bible,louis segond,darby,kjv,commentaire,méditation,thèmes,anxiété,deuil,ré
 Désormais avec la NASB 2020. Trouvez ce que la Bible dit de ce que vous traversez et étudiez hors ligne avec commentaires, cartes et chronologies. Sans pub, sans compte.
 
 ## whats_new
-1.2.3 — Petites améliorations pour la lecture à voix haute en voiture.
+1.2.3 — En voiture, choisissez parmi vos plans de lecture et écoutez l’étude hebdomadaire de votre église, avec quelques améliorations de la lecture à voix haute sur la route.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/
