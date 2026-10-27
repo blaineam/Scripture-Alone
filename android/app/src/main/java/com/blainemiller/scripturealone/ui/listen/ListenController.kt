@@ -285,6 +285,9 @@ class ListenController private constructor(private val app: Context) {
         if (phase != Phase.Idle && isPresented) togglePlayPause() else playChapter(chapter, fromVerse)
     }
 
+    /** Set by a car's request (Android Auto, Assistant) just before it starts a reading: that reading is not muted by the phone's ringer. */
+    @Volatile var startedFromCar = false
+
     private fun start(translation: String, rights: TranslationRights, language: String?, scope: ListenQueue.Scope, items: List<Item>) {
         stopOutput()
         if (items.isEmpty()) return
@@ -297,7 +300,9 @@ class ListenController private constructor(private val app: Context) {
         current = 0
         notice = null
         present { sessionStarted() }
-        mute.begin(ListenMute.deviceSilenced(app))
+        // In a car the phone's ringer is beside the point (it's in a cupholder on vibrate): the car's volume decides.
+        mute.begin(!startedFromCar && ListenMute.deviceSilenced(app))
+        startedFromCar = false
         isMuted = mute.muted
         registerRinger()
         connectSession()

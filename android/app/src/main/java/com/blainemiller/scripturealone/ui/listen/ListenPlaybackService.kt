@@ -243,6 +243,7 @@ class ListenPlayer(private val context: Context, private val listen: ListenContr
         if (id != null && id != "listen") {
             scope.launch {
                 if (!CarLibrary.play(context, id)) listen.notice = context.getString(R.string.plans_unavailable)
+                listen.startedFromCar = false
             }
         }
         return Futures.immediateVoidFuture()

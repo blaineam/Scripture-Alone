@@ -63,6 +63,7 @@ object CarLibrary {
     /** Starts reading what [id] names. False when there is nothing to read (no plan, a translation that isn't here). */
     suspend fun play(context: Context, id: String): Boolean {
         val listen = ListenController.get(context)
+        listen.startedFromCar = true
         val translation = translation(context)
         return when (val action = CarAction.parse(id) ?: return false) {
             CarAction.Today -> listen.playTodaysReading(PlanServices.store(context), translation)
