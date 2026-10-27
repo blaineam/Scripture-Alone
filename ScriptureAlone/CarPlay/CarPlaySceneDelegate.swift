@@ -97,19 +97,22 @@ final class CarPlayTemplates {
         CPNowPlayingTemplate.shared.updateNowPlayingButtons([button])
     }
 
-    /// The speed as a template image, which CarPlay tints to match the other buttons. CarPlay scales the image to its
-    /// button, so every speed is drawn on the same canvas (the widest label's) at the same size: the letters stay as
-    /// large as that allows, and one speed doesn't look smaller than the next.
+    /// The speed as a template image, which CarPlay tints to match the other buttons. CarPlay draws the image small,
+    /// at its own button size, so the canvas is exactly that size and every label is set as large as the widest ("1¼")
+    /// allows: the same size for each speed, filling the button.
     static func speedImage(_ label: String) -> UIImage {
-        func text(_ string: String) -> NSAttributedString {
-            NSAttributedString(string: string, attributes: [.font: UIFont.systemFont(ofSize: 60, weight: .bold), .foregroundColor: UIColor.black])
+        let canvas = CPNowPlayingButtonMaximumImageSize
+        func text(_ string: String, _ size: CGFloat) -> NSAttributedString {
+            NSAttributedString(string: string, attributes: [.font: UIFont.systemFont(ofSize: size, weight: .heavy), .foregroundColor: UIColor.black])
         }
-        let widest = text("1¼×").size()
-        let size = CGSize(width: ceil(widest.width) + 4, height: ceil(widest.height))
-        let drawn = text(label)
+        let probe = text("1¼", 100).size()
+        let fontSize = min(100 * (canvas.width * 0.96) / probe.width, 100 * canvas.height * 0.96 / probe.height)
+        let drawn = text(label, fontSize)
         let box = drawn.size()
-        let image = UIGraphicsImageRenderer(size: size).image { _ in
-            drawn.draw(at: CGPoint(x: (size.width - box.width) / 2, y: (size.height - box.height) / 2))
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 3
+        let image = UIGraphicsImageRenderer(size: canvas, format: format).image { _ in
+            drawn.draw(at: CGPoint(x: (canvas.width - box.width) / 2, y: (canvas.height - box.height) / 2))
         }
         return image.withRenderingMode(.alwaysTemplate)
     }

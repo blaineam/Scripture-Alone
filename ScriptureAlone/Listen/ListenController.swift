@@ -176,7 +176,11 @@ final class ListenController {
 
     var nowPlayingTitle: String {
         if let proseTitle { return proseTitle }
-        guard let key = speakingVerse ?? items.first(where: { $0.key > 0 })?.key, let ref = VerseRef(key: key) else {
+        // While a heading or announcement is read ("Ephesians 2:8." between favorites) the verse that follows is the one
+        // to name, not the last one read.
+        let upcoming = items.indices.contains(current) && items[current].key == 0
+            ? items[current...].first(where: { $0.key > 0 })?.key : nil
+        guard let key = upcoming ?? speakingVerse ?? items.first(where: { $0.key > 0 })?.key, let ref = VerseRef(key: key) else {
             return reader?.location.display ?? ""
         }
         return ref.display
@@ -325,7 +329,6 @@ final class ListenController {
         notice = nil
         presentation.sessionStarted()
         session += 1
-        artwork = nil
         #if os(iOS)
         if SilentSwitch.applies {
             // Read the ring/silent switch before a word is spoken, so Silent mode never lets the first
@@ -915,11 +918,12 @@ final class ListenController {
             MPNowPlayingInfoPropertyDefaultPlaybackRate: speed,
             MPNowPlayingInfoPropertyPlaybackRate: phase == .playing ? speed : 0.0,
         ]
-        if artwork == nil { artwork = Self.makeArtwork() }
-        if let artwork { info[MPMediaItemPropertyArtwork] = artwork }
+        // A new artwork object with every update, so the system asks for the cover again whenever it changes what it
+        // shows: a cover set once could go missing and stay missing.
+        if let artwork = Self.makeArtwork() { info[MPMediaItemPropertyArtwork] = artwork }
         // Each reading is its own item to the system, which fetches an item's artwork once: without an identity a
         // reading started right after another (a favorite from the car) could keep, or never get, its cover.
-        info[MPNowPlayingInfoPropertyExternalContentIdentifier] = "reading-\(session)"
+        info[MPNowPlayingInfoPropertyExternalContentIdentifier] = "reading-\(session)-\(speakingVerse ?? 0)"
         if let player {
             info[MPMediaItemPropertyPlaybackDuration] = player.duration
             info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime
@@ -937,16 +941,19 @@ final class ListenController {
     /// it was set), and made anew for each reading so the system asks for it again.
     private static func makeArtwork() -> MPMediaItemArtwork? {
         #if canImport(UIKit)
-        guard let source = UIImage(named: "NowPlayingArt") else { return nil }
-        let format = UIGraphicsImageRendererFormat.preferred()
-        format.scale = 1
-        let bitmap = UIGraphicsImageRenderer(size: source.size, format: format).image { _ in source.draw(at: .zero) }
+        guard let bitmap = coverBitmap else { return nil }
         return MPMediaItemArtwork(boundsSize: bitmap.size) { @Sendable _ in bitmap }
         #else
         return nil
         #endif
     }
-    @ObservationIgnored private var artwork: MPMediaItemArtwork?
+    /// The cover, drawn once into memory.
+    private static let coverBitmap: UIImage? = {
+        guard let source = UIImage(named: "NowPlayingArt") else { return nil }
+        let format = UIGraphicsImageRendererFormat.preferred()
+        format.scale = 1
+        return UIGraphicsImageRenderer(size: source.size, format: format).image { _ in source.draw(at: .zero) }
+    }()
 
     private func clearNowPlaying() {
         let center = MPNowPlayingInfoCenter.default()

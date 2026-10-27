@@ -90,13 +90,13 @@ final class CarPlayPlayer {
     }
 
     var speedLabel: String {
-        // Fractions are the shortest way to write these, and a short label is a large one: CarPlay scales the
-        // button's image to fit, so every extra character shrinks the letters.
+        // The shortest writing of each speed, no unit: CarPlay draws the button's image small, and a short label
+        // is a large one. The button is the speed, and a tap steps it.
         let s = listen.speed
         let whole = Int(s.rounded(.down))
         let fraction = ["0.25": "¼", "0.5": "½", "0.75": "¾"][String(format: "%g", s - Double(whole))] ?? ""
-        if !fraction.isEmpty { return (whole == 0 ? "" : String(whole)) + fraction + "×" }
-        return (s == s.rounded() ? String(Int(s)) : String(format: "%g", s)) + "×"
+        if !fraction.isEmpty { return (whole == 0 ? "" : String(whole)) + fraction }
+        return s == s.rounded() ? String(Int(s)) : String(format: "%g", s)
     }
 }
 #endif
