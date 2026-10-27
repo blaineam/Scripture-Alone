@@ -1074,4 +1074,5 @@
     <string name="car_old_testament">旧约</string>
     <string name="car_new_testament">新约</string>
     <string name="car_favorites">收藏</string>
+    <string name="car_not_found">找不到该经文。</string>
 </resources>

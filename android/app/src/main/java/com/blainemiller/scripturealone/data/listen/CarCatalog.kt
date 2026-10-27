@@ -31,7 +31,7 @@ sealed interface CarAction {
     data class Range(val range: VerseRange) : CarAction
     /** A favorite, read on through the others: this range first, then those after it, then those before it. */
     data class Favorites(val from: VerseRange) : CarAction
-    /** What the assistant heard: "play John 3:16-21". A reference, in the app's language; blank means "play something". */
+    /** What the assistant heard: "play John 3:16-21" — a reference, in the app's language, as one or more phrases ([VoiceQuery.decode]); blank means "play something". */
     data class Spoken(val query: String) : CarAction
 
     companion object {
@@ -41,6 +41,8 @@ sealed interface CarAction {
         fun rangeId(range: VerseRange) = "play:range:${range.storageString}"
         fun favoritesId(from: VerseRange) = "play:favorites:${from.storageString}"
         fun spokenId(query: String) = "play:spoken:$query"
+        /** A voice request with every phrase the assistant gave for it ([VoiceQuery]). */
+        fun spokenId(phrases: List<String>) = spokenId(VoiceQuery.encode(phrases))
 
         /** The action a media id stands for; null for a folder or anything unknown. */
         fun parse(id: String): CarAction? {

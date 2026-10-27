@@ -11,6 +11,7 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.SimpleBasePlayer
@@ -23,6 +24,7 @@ import androidx.media3.session.MediaSession
 import com.blainemiller.scripturealone.data.listen.CarAction
 import com.blainemiller.scripturealone.data.listen.CarCatalog
 import com.blainemiller.scripturealone.data.listen.CarEntry
+import com.blainemiller.scripturealone.data.listen.VoiceQuery
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
@@ -94,16 +96,23 @@ class ListenPlaybackService : MediaLibraryService() {
 
         /**
          * A row chosen in a car: the ids pass through to [ListenPlayer.handleSetMediaItems], which starts the reading.
-         * A voice request ("Hey Google, play John 3:16–21 on Scripture Alone") arrives with no id, only the words it
-         * heard as the item's search query; they become a "spoken" id the same way.
+         * A voice request ("Hey Google, read John chapter 1 in Scripture Alone") arrives with no id, only the words it
+         * heard — as the item's search query and in the structured extras — which become a "spoken" id ([voiceItem]).
          */
         override fun onAddMediaItems(
             mediaSession: MediaSession, controller: MediaSession.ControllerInfo, mediaItems: MutableList<MediaItem>,
-        ): ListenableFuture<MutableList<MediaItem>> = Futures.immediateFuture(
-            mediaItems.map { item ->
-                val query = item.requestMetadata.searchQuery
-                if (item.mediaId.isEmpty() && query != null) item.buildUpon().setMediaId(CarAction.spokenId(query)).build() else item
-            }.toMutableList(),
+        ): ListenableFuture<MutableList<MediaItem>> = Futures.immediateFuture(mediaItems.map(::voiceItem).toMutableList())
+
+        /**
+         * A bare "play" (a car's play button, a headset's, Assistant's "resume") when the service is not reading: carry on where the
+         * reader left off, as the Continue row does.
+         */
+        override fun onPlaybackResumption(
+            mediaSession: MediaSession, controller: MediaSession.ControllerInfo,
+        ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> = Futures.immediateFuture(
+            MediaSession.MediaItemsWithStartPosition(
+                listOf(MediaItem.Builder().setMediaId(CarAction.CONTINUE).build()), 0, C.TIME_UNSET,
+            ),
         )
     }
 
@@ -144,6 +153,20 @@ class ListenPlaybackService : MediaLibraryService() {
 }
 
 /**
+ * What a request with no id is, as an item the player can start: a voice request's words (the search query and the structured
+ * extras, [VoiceQuery]) as a "spoken" id, and an empty one — a bare "play" — as "play something", which carries on where the
+ * reader left off. An item that has an id (a row chosen in the car) is left alone.
+ */
+@androidx.annotation.OptIn(UnstableApi::class)
+internal fun voiceItem(item: MediaItem): MediaItem {
+    if (item.mediaId.isNotEmpty()) return item
+    val request = item.requestMetadata
+    val extras = request.extras
+    val phrases = VoiceQuery.candidates(request.searchQuery, VoiceQuery.extraKeys.associateWith { extras?.getString(it) })
+    return item.buildUpon().setMediaId(CarAction.spokenId(phrases)).build()
+}
+
+/**
  * [ListenController] presented as a media3 `Player`. It owns nothing: every state it reports is read
  * from the controller, and every command is handed back to it — play/pause, next and previous verse
  * (the headset's double and triple press, the notification's skip buttons), and stop.
@@ -157,6 +180,13 @@ class ListenPlayer(private val context: Context, private val listen: ListenContr
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     private val onChange: () -> Unit = { invalidateState() }
+
+    /** What a car was told when it asked for something that could not be read — shown as the session's error, where Android Auto puts it. */
+    private var failure: String? = null
+    private fun setFailure(message: String?) {
+        failure = message
+        invalidateState()
+    }
     private val artwork: ByteArray? = runCatching {
         ContextCompat.getDrawable(context, R.mipmap.ic_launcher)?.toBitmap(256, 256)?.let { bitmap ->
             ByteArrayOutputStream().use { out ->
@@ -173,6 +203,7 @@ class ListenPlayer(private val context: Context, private val listen: ListenContr
     override fun getState(): State {
         if (!listen.isPresented) {
             return State.Builder()
+                .apply { failure?.let { setPlayerError(PlaybackException(it, null, PlaybackException.ERROR_CODE_UNSPECIFIED)) } }
                 // A browser (Android Auto) picks what to read while nothing is: setting an item starts it.
                 .setAvailableCommands(Player.Commands.Builder().addAll(
                     Player.COMMAND_PLAY_PAUSE, Player.COMMAND_STOP, Player.COMMAND_PREPARE,
@@ -225,6 +256,7 @@ class ListenPlayer(private val context: Context, private val listen: ListenContr
     }
 
     override fun handleSetPlayWhenReady(playWhenReady: Boolean): ListenableFuture<*> {
+        if (failure != null) setFailure(null)
         if (playWhenReady) listen.resume() else listen.pause()
         return Futures.immediateVoidFuture()
     }
@@ -241,8 +273,13 @@ class ListenPlayer(private val context: Context, private val listen: ListenContr
     override fun handleSetMediaItems(mediaItems: MutableList<MediaItem>, startIndex: Int, startPositionMs: Long): ListenableFuture<*> {
         val id = mediaItems.getOrNull(startIndex.coerceAtLeast(0))?.mediaId
         if (id != null && id != "listen") {
+            failure = null
             scope.launch {
-                if (!CarLibrary.play(context, id)) listen.notice = context.getString(R.string.plans_unavailable)
+                if (!CarLibrary.play(context, id)) {
+                    // On the phone's screen, and in the car — where the driver is not looking at the phone.
+                    listen.notice = context.getString(R.string.plans_unavailable)
+                    setFailure(context.getString(R.string.car_not_found))
+                }
             }
         }
         return Futures.immediateVoidFuture()

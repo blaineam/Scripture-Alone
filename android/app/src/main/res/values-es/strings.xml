@@ -1074,4 +1074,5 @@
     <string name="car_old_testament">Antiguo Testamento</string>
     <string name="car_new_testament">Nuevo Testamento</string>
     <string name="car_favorites">Favoritas</string>
+    <string name="car_not_found">No se encontró ese pasaje.</string>
 </resources>
