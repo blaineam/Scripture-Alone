@@ -18,9 +18,13 @@ class ListenMute {
         private set
     private var lastSilenced: Boolean? = null
 
-    /** A session starts with the phone read as [silenced]. */
-    fun begin(silenced: Boolean) {
-        muted = silenced
+    /**
+     * A session starts with the phone read as [silenced]. In a car ([inCar]) the reading plays anyway — the car's volume
+     * decides — but the ringer is still remembered as it is, so the ringer broadcast that follows (it is sticky, and
+     * arrives the moment the receiver is registered) isn't read as a change and doesn't mute the reading.
+     */
+    fun begin(silenced: Boolean, inCar: Boolean = false) {
+        muted = silenced && !inCar
         lastSilenced = silenced
     }
 

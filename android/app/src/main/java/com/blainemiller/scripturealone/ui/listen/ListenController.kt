@@ -301,7 +301,7 @@ class ListenController private constructor(private val app: Context) {
         notice = null
         present { sessionStarted() }
         // In a car the phone's ringer is beside the point (it's in a cupholder on vibrate): the car's volume decides.
-        mute.begin(!startedFromCar && ListenMute.deviceSilenced(app))
+        mute.begin(ListenMute.deviceSilenced(app), inCar = startedFromCar)
         startedFromCar = false
         isMuted = mute.muted
         registerRinger()

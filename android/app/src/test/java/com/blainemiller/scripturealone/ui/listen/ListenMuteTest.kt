@@ -60,4 +60,13 @@ class ListenMuteTest {
         assertEquals(0f, plan.volume)
         assertEquals(1f, plan.copy(volume = 1f).volume)
     }
+
+    @Test fun aCarsReadingIsNotMutedByTheRingerNorByItsStickyBroadcast() {
+        val mute = ListenMute()
+        mute.begin(silenced = true, inCar = true)
+        assertFalse(mute.muted)
+        // The sticky ringer broadcast that arrives on registering reports the same silenced phone: no change.
+        assertFalse(mute.ringerRead(true))
+        assertFalse(mute.muted)
+    }
 }
