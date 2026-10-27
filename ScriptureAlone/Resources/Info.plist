@@ -97,7 +97,6 @@
 	<key>INSupportedMediaCategories</key>
 	<array>
 		<string>INMediaCategoryAudiobooks</string>
-		<string>INMediaCategoryOther</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
