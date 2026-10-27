@@ -871,13 +871,6 @@ final class ListenController {
             Task { @MainActor in ListenController.shared.remote { $0.togglePlayPause() } }
             return .success
         }
-        // The speeds the car's rate button steps through: its label reads the rate from here and from Now Playing.
-        center.changePlaybackRateCommand.supportedPlaybackRates = [0.75, 1, 1.25, 1.5, 2]
-        center.changePlaybackRateCommand.addTarget { @Sendable event in
-            guard let rate = (event as? MPChangePlaybackRateCommandEvent)?.playbackRate else { return .commandFailed }
-            Task { @MainActor in ListenController.shared.remote { $0.speed = Double(rate) } }
-            return .success
-        }
         center.nextTrackCommand.addTarget { @Sendable _ in
             Task { @MainActor in ListenController.shared.remote { $0.nextVerse() } }
             return .success
@@ -897,7 +890,7 @@ final class ListenController {
     private func setRemoteCommandsEnabled(_ enabled: Bool) {
         let center = MPRemoteCommandCenter.shared()
         for command in [center.playCommand, center.pauseCommand, center.togglePlayPauseCommand,
-                        center.nextTrackCommand, center.previousTrackCommand, center.changePlaybackRateCommand] {
+                        center.nextTrackCommand, center.previousTrackCommand] {
             command.isEnabled = enabled
         }
     }
@@ -921,8 +914,9 @@ final class ListenController {
         }
         let center = MPNowPlayingInfoCenter.default()
         center.nowPlayingInfo = info
-        // Speech has no player for the system to read a rate from, so it is told the state outright.
+        #if os(macOS)
         center.playbackState = phase == .playing ? .playing : .paused
+        #endif
     }
 
     /// The app icon, shown on the lock screen, in Control Center and on the car's screen.
@@ -938,7 +932,9 @@ final class ListenController {
     private func clearNowPlaying() {
         let center = MPNowPlayingInfoCenter.default()
         center.nowPlayingInfo = nil
+        #if os(macOS)
         center.playbackState = .stopped
+        #endif
     }
 }
 

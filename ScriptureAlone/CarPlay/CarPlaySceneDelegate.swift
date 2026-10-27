@@ -80,10 +80,33 @@ final class CarPlayTemplates {
 
     func showNowPlaying() {
         let now = CPNowPlayingTemplate.shared
-        now.updateNowPlayingButtons([CPNowPlayingPlaybackRateButton { [weak self] _ in
-            MainActor.assumeIsolated { self?.player.cycleSpeed() }
-        }])
+        installNowPlayingButtons()
         if interface.topTemplate !== now { interface.pushTemplate(now, animated: true, completion: nil) }
+    }
+
+    /// The speed button. The system's own rate button reads its label from a media player's rate, and a spoken
+    /// reading has none (it showed "0×"), so this is an image button the app draws: it says the speed and steps it.
+    /// Installed when the car connects too, since Siri can start a reading without any row being chosen.
+    func installNowPlayingButtons() {
+        let button = CPNowPlayingImageButton(image: Self.speedImage(player.speedLabel)) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.player.cycleSpeed()
+                self?.installNowPlayingButtons()
+            }
+        }
+        CPNowPlayingTemplate.shared.updateNowPlayingButtons([button])
+    }
+
+    /// "1.25×" as a template image, which CarPlay tints to match the other buttons.
+    static func speedImage(_ label: String) -> UIImage {
+        let size = CGSize(width: 64, height: 40)
+        let image = UIGraphicsImageRenderer(size: size).image { _ in
+            let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 26, weight: .semibold), .foregroundColor: UIColor.black]
+            let text = NSAttributedString(string: label, attributes: attributes)
+            let box = text.size()
+            text.draw(at: CGPoint(x: (size.width - box.width) / 2, y: (size.height - box.height) / 2))
+        }
+        return image.withRenderingMode(.alwaysTemplate)
     }
 }
 
@@ -98,6 +121,7 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
         let templates = CarPlayTemplates(interface: interfaceController)
         self.templates = templates
         interfaceController.setRootTemplate(templates.root(), animated: false, completion: nil)
+        templates.installNowPlayingButtons()
     }
 
     func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene,
