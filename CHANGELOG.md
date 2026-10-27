@@ -9,11 +9,12 @@
 - **Android Auto: a reading you start from the car is no longer silenced by a phone set to vibrate.** Listen mutes itself when
   the phone is silenced (the verses are followed on screen); in a car the phone is in a cupholder and the car's volume decides,
   as on CarPlay. The system's announcement of the ringer when Listen starts no longer re-mutes it either.
-- **Voice in the car, as far as it goes.** The app answers an assistant's "play from search" request with the passage it names
-  (the phone's own assistant, a headset, anything that makes the call), and Siri does it on CarPlay. Google's assistant in Android
-  Auto does not make that call for this app: tried with a recorded phrase played into the Desktop Head Unit, Gemini answers that
-  it needs "Spotify or a supported media app". Third-party media apps get voice play only through Google's Media Actions
-  partner programme, so on Android Auto the car's screen is how a passage is chosen.
+- **Android Auto: choosing something in the car no longer starts John 1.** A row chosen on the car's screen arrives as
+  set-item, prepare, play, and the play's resume came back as "continue", replacing the choice a moment later; it always read where
+  the reader left off. The car's **search box** (typed or spoken) is now answered: it offers the passage, today's reading or
+  "continue" it understood as a row to play. Google's assistant on the car's home screen ("Hey Google, play John 3 on Scripture Alone")
+  does not hand the app a passage — Gemini answers that it needs "Spotify or a supported media app" (Google's Media Actions
+  partner programme) — so spoken passages go through the car's search box, whose microphone sends the words straight to the app.
 
 - **Android Auto: "Read John chapter 1 in Scripture Alone" works.** Google Assistant hands the app its words with the verb
   and the app's name still on them, and the app only understood a bare reference — so "read John chapter 1 in Scripture

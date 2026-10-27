@@ -53,5 +53,5 @@ Vos surlignages, notes et favoris restent sur votre appareil : ni serveur, ni co
 Conçue pour aider à étudier la Parole de Dieu et à se rapprocher du Christ.
 
 ## release_notes
-1.2.3 — Android Auto : choisissez parmi vos plans de lecture et écoutez l’étude hebdomadaire de votre église. Les lectures lancées depuis la voiture ne sont plus coupées par un téléphone en mode vibreur.
+1.2.3 — Android Auto : correction d’un défaut où choisir un chapitre ou un favori pouvait démarrer à Jean 1. Cherchez un passage en le saisissant ou en le dictant dans la recherche de la voiture, choisissez parmi vos plans de lecture et écoutez l’étude hebdomadaire de votre église. Les lectures lancées depuis la voiture ne sont plus coupées par un téléphone en mode vibreur.
 

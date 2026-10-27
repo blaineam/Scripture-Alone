@@ -53,5 +53,5 @@ Subrayados, notas y favoritos se quedan en tu dispositivo. Sin servidor ni cuent
 Hecha para ayudar a estudiar la Palabra de Dios y acercarse más a Cristo.
 
 ## release_notes
-1.2.3 — Android Auto: elige entre tus planes de lectura y escucha el estudio semanal de tu iglesia. Las lecturas que inicias desde el coche ya no se silencian si el teléfono está en vibración.
+1.2.3 — Android Auto: corregido que al elegir un capítulo o un favorito a veces empezara en Juan 1. Busca un pasaje escribiéndolo o diciéndolo en el buscador del coche, elige entre tus planes de lectura y escucha el estudio semanal de tu iglesia. Las lecturas que inicias desde el coche ya no se silencian si el teléfono está en vibración.
 

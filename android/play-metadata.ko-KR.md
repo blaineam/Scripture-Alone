@@ -55,5 +55,5 @@ DRM이 없는 ePub, 텍스트 레이어가 있는 성경 PDF, USFM 파일처럼 
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.2.3 — Android Auto: 읽기 계획을 골라 듣고, 교회의 주간 스터디도 들을 수 있습니다. 차에서 시작한 읽기가 진동 모드 휴대전화 때문에 무음이 되지 않습니다.
+1.2.3 — Android Auto: 장이나 즐겨찾기를 고르면 가끔 요한복음 1장부터 시작되던 문제를 고쳤습니다. 차량 검색창에 입력하거나 말로 구절을 찾고, 읽기 계획을 고르고, 교회의 주간 스터디를 들을 수 있습니다. 차에서 시작한 읽기가 진동 모드 휴대전화 때문에 무음이 되지 않습니다.
 

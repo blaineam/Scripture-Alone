@@ -56,12 +56,13 @@ Siri heard goes through the search box's reference parser, in the app's language
 (`CarPlayPlayer.play`). A verse, a range, a chapter or a list all work; words that aren't a reference are refused. Needs the
 Siri capability on the App ID (entitlement `com.apple.developer.siri`) and `INPlayMediaIntent` / `INSupportedMediaCategories` (Audiobooks only; App Store Connect refuses `INMediaCategoryOther`)
 in Info.plist. Not yet tried in a car: say "Play Psalm 23 in Scripture Alone", "Read Romans 8:28 through 30 with Scripture Alone".
-Android Auto's Google assistant (Gemini) does not hand this app a spoken passage. The app answers the call correctly when it is made — a
-device test (`CarVoiceServiceTest`) calls `playFromSearch` the way the assistant does, and `VoiceQuery` / `SpokenReference` read what
-arrives — but a phrase injected into the Desktop Head Unit ("play John chapter 3 on Scripture Alone", recorded with `say`, sent with
-`mic begin` then `mic play <file>.wav`) is answered by Gemini itself: it needs "Spotify or a supported media app". Third-party
-media apps are recognised for voice play through Google's Media Actions programme (a partner integration). Until then, a passage is
-chosen on the car's screen in Android Auto, and by voice on CarPlay.
+Android Auto's Google assistant (Gemini), asked on the car's home screen, does not hand this app a spoken passage: a phrase injected
+into the Desktop Head Unit ("play John chapter 3 on Scripture Alone", recorded with `say`, sent with `mic begin` then
+`mic play <file>.wav`) is answered by Gemini itself — it needs "Spotify or a supported media app" (Google's Media Actions programme).
+The route that works is the **car's own search box** (the magnifier on the media screen): `onSearch` / `onGetSearchResult` in
+`ListenPlaybackService` read what is typed or spoken there as a passage, today's reading or "continue" and offer it as a row.
+Tested end to end in the Desktop Head Unit: a spoken "John chapter five" into the search box's microphone produced the row
+"John 5", and choosing it read John 5:1. (`CarLibraryServiceTest` covers the service half on a device.)
 
 ## Testing in a car
 

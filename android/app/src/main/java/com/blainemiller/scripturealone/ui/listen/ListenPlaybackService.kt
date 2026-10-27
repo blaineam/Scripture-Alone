@@ -113,7 +113,7 @@ class ListenPlaybackService : MediaLibraryService() {
         override fun onSearch(
             session: MediaLibrarySession, browser: MediaSession.ControllerInfo, query: String, params: MediaLibraryService.LibraryParams?,
         ): ListenableFuture<LibraryResult<Void>> {
-            android.util.Log.i("SAVoice", "car search query=$query")
+            android.util.Log.d("SAVoice", "car search query=$query")
             session.notifySearchResultChanged(browser, query, searchItems(query).size, params)
             return Futures.immediateFuture(LibraryResult.ofVoid())
         }
@@ -197,7 +197,7 @@ internal fun voiceItem(item: MediaItem): MediaItem {
     val extras = request.extras
     val phrases = VoiceQuery.candidates(request.searchQuery, VoiceQuery.extraKeys.associateWith { extras?.getString(it) })
     // What the assistant actually said, for when a request isn't understood (adb logcat -s SAVoice).
-    android.util.Log.i("SAVoice", "heard query=${request.searchQuery} extraKeys=${extras?.keySet()?.toList()} phrases=$phrases")
+    android.util.Log.d("SAVoice", "heard query=${request.searchQuery} extraKeys=${extras?.keySet()?.toList()} phrases=$phrases")
     return item.buildUpon().setMediaId(CarAction.spokenId(phrases)).build()
 }
 
