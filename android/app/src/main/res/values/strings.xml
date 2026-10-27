@@ -1869,4 +1869,7 @@
     <string name="car_new_testament">New Testament</string>
     <string name="car_favorites">Favorites</string>
     <string name="car_not_found">Couldn’t find that passage.</string>
+    <string name="car_weekly_study">Weekly Study</string>
+    <string name="car_latest_message">The latest message</string>
+    <string name="car_nothing_today">Nothing today</string>
 </resources>

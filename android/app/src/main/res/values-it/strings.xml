@@ -1075,4 +1075,7 @@
     <string name="car_new_testament">Nuovo Testamento</string>
     <string name="car_favorites">Preferiti</string>
     <string name="car_not_found">Passo non trovato.</string>
+    <string name="car_weekly_study">Studio settimanale</string>
+    <string name="car_latest_message">Il messaggio più recente</string>
+    <string name="car_nothing_today">Niente oggi</string>
 </resources>

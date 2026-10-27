@@ -20,7 +20,15 @@ data class CarEntry(val id: String, val title: String, val subtitle: String? = n
 data class CarLabels(
     val listen: String, val today: String, val continueReading: String, val startAPlan: String,
     val books: String, val oldTestament: String, val newTestament: String, val favorites: String,
-)
+    val readingPlans: String = "Reading Plans", val weeklyStudy: String = "Weekly Study", val latestMessage: String = "The latest message",
+    val nothingToday: String = "Nothing today",
+) {
+    /** "Bible in a Year Study" when several plans have one. */
+    fun studyOf(plan: String) = "$plan — $weeklyStudy"
+}
+
+/** One of the reader's started plans, with today's passage in it; [hasStudy] when its church publishes a weekly study. */
+data class CarPlanRow(val id: String, val title: String, val today: String?, val hasStudy: Boolean = false)
 
 /** What a playable row does. */
 sealed interface CarAction {
@@ -29,6 +37,10 @@ sealed interface CarAction {
     data class Chapter(val ref: ChapterRef) : CarAction
     /** A favorite: stored (KJV) verse keys. */
     data class Range(val range: VerseRange) : CarAction
+    /** Today's reading in one of several plans. */
+    data class Plan(val planId: String) : CarAction
+    /** The weekly study of a church's plan, read aloud. */
+    data class Study(val planId: String) : CarAction
     /** A favorite, read on through the others: this range first, then those after it, then those before it. */
     data class Favorites(val from: VerseRange) : CarAction
     /** What the assistant heard: "play John 3:16-21" — a reference, in the app's language, as one or more phrases ([VoiceQuery.decode]); blank means "play something". */
@@ -38,6 +50,8 @@ sealed interface CarAction {
         const val TODAY = "play:today"
         const val CONTINUE = "play:continue"
         fun chapterId(ref: ChapterRef) = "play:chapter:${ref.book}:${ref.chapter}"
+        fun planId(id: String) = "play:plan:$id"
+        fun studyId(id: String) = "play:study:$id"
         fun rangeId(range: VerseRange) = "play:range:${range.storageString}"
         fun favoritesId(from: VerseRange) = "play:favorites:${from.storageString}"
         fun spokenId(query: String) = "play:spoken:$query"
@@ -59,6 +73,9 @@ sealed interface CarAction {
                 // The query may hold colons ("John 3:16"), so it is everything after the third separator.
                 "spoken" -> Spoken(id.split(":", limit = 3).getOrNull(2).orEmpty())
                 "favorites" -> parts.getOrNull(2)?.let { VerseRange.parse(it) }?.let(::Favorites)
+                // Plan ids can hold colons, so each is everything after the third separator.
+                "plan" -> id.split(":", limit = 3).getOrNull(2)?.takeIf { it.isNotEmpty() }?.let(::Plan)
+                "study" -> id.split(":", limit = 3).getOrNull(2)?.takeIf { it.isNotEmpty() }?.let(::Study)
                 "range" -> parts.getOrNull(2)?.let { VerseRange.parse(it) }?.let(::Range)
                 else -> null
             }
@@ -78,12 +95,22 @@ object CarCatalog {
      */
     fun tree(
         labels: CarLabels, todayDisplay: String?, location: ChapterRef, favorites: List<VerseRange>,
-        display: (VerseRange) -> String = { it.display }, limit: Int = DEFAULT_LIMIT,
+        display: (VerseRange) -> String = { it.display }, limit: Int = DEFAULT_LIMIT, plans: List<CarPlanRow> = emptyList(),
     ): CarEntry {
-        val listen = CarEntry("listen", labels.listen, null, listOf(
+        val listenRows = mutableListOf(
             CarEntry(CarAction.TODAY, labels.today, todayDisplay ?: labels.startAPlan),
             CarEntry(CarAction.CONTINUE, labels.continueReading, Canon.display(location)),
-        ))
+        )
+        // With two or more plans started there is a choice to offer; with one, "Today's Reading" already is it.
+        if (plans.size >= 2) {
+            listenRows += CarEntry("plans", labels.readingPlans, null, grouped("plans",
+                plans.map { CarEntry(CarAction.planId(it.id), it.title, it.today ?: labels.nothingToday) }, limit))
+        }
+        for (plan in plans.filter { it.hasStudy }) {
+            val several = plans.count { it.hasStudy } > 1
+            listenRows += CarEntry(CarAction.studyId(plan.id), if (several) labels.studyOf(plan.title) else labels.weeklyStudy, labels.latestMessage)
+        }
+        val listen = CarEntry("listen", labels.listen, null, listenRows)
         val old = BookID.entries.filter { !it.isNewTestament }
         val new = BookID.entries.filter { it.isNewTestament }
         val books = CarEntry("books", labels.books, null, listOf(

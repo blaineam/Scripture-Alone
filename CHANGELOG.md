@@ -2,6 +2,10 @@
 
 ## 1.2.3 (2026-10-27)
 
+- **Your reading plans in the car.** With two or more plans started, Listen has a "Reading Plans" list: choose a plan and
+  today's reading in it plays. A church plan with a weekly study (Disciples Church's Saturday study) adds a "Weekly Study"
+  row that reads the latest message aloud — fetched when the phone is online, else the last one it kept. CarPlay and Android Auto.
+
 - **Android Auto: a reading you start from the car is no longer silenced by a phone set to vibrate.** Listen mutes itself when
   the phone is silenced (the verses are followed on screen); in a car the phone is in a cupholder and the car's volume decides,
   as on CarPlay. The system's announcement of the ringer when Listen starts no longer re-mutes it either.

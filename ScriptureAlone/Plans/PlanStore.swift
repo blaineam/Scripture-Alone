@@ -106,14 +106,19 @@ final class PlanStore {
     func todaysReading(now: Date = Date()) -> TodaysReading? {
         let ids = [primaryID].compactMap { $0 } + progress.map(\.planID).filter { $0 != primaryID }
         for id in ids {
-            guard let schedule = schedule(for: id), let day = schedule.reading(now: now) else { continue }
-            var isToday = false
-            if case .reading(let today) = schedule.today(now: now), today.index == day.index { isToday = true }
-            return TodaysReading(planID: id, planTitle: schedule.plan.displayTitle, day: day, dayNumber: day.index + 1,
-                                 totalDays: schedule.plan.days.count, isCatchUp: !isToday,
-                                 isDone: schedule.progress.completed.contains(day.index))
+            if let reading = todaysReading(in: id, now: now) { return reading }
         }
         return nil
+    }
+
+    /// Today's reading in one particular plan the reader started — a car's list of plans.
+    func todaysReading(in planID: String, now: Date = Date()) -> TodaysReading? {
+        guard let schedule = schedule(for: planID), let day = schedule.reading(now: now) else { return nil }
+        var isToday = false
+        if case .reading(let today) = schedule.today(now: now), today.index == day.index { isToday = true }
+        return TodaysReading(planID: planID, planTitle: schedule.plan.displayTitle, day: day, dayNumber: day.index + 1,
+                             totalDays: schedule.plan.days.count, isCatchUp: !isToday,
+                             isDone: schedule.progress.completed.contains(day.index))
     }
 
     // MARK: Changing progress
@@ -204,6 +209,13 @@ extension ListenController {
     @discardableResult
     func playTodaysReading(in model: ReaderModel, store: PlanStore = .shared) -> Bool {
         guard let reading = store.todaysReading() else { return false }
+        return playReading(reading.passages, devotions: reading.devotions, in: model)
+    }
+
+    /// Today's passage in one of the reader's plans, aloud — the car's list of plans.
+    @discardableResult
+    func playTodaysReading(inPlan planID: String, in model: ReaderModel, store: PlanStore = .shared) -> Bool {
+        guard let reading = store.todaysReading(in: planID) else { return false }
         return playReading(reading.passages, devotions: reading.devotions, in: model)
     }
 }

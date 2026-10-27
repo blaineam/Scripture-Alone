@@ -255,3 +255,23 @@ struct SpokenReferenceTests {
     }
 }
 #endif
+
+#if os(iOS)
+struct CarPlayPlansTests {
+    private let two = [CarPlayCatalog.PlanRow(id: "a", title: "Bible in a Year", today: "Genesis 1"),
+                       CarPlayCatalog.PlanRow(id: "b", title: "Disciples", today: nil, hasStudy: true)]
+
+    @Test func oneStartedPlanNeedsNoList() {
+        let rows = CarPlayCatalog.listen(today: nil, location: ChapterRef(.john, 3), plans: [two[0]])
+        #expect(rows.map(\.action) == [.playToday, .playContinue])
+    }
+
+    @Test func severalPlansAreAFolderOfRows() {
+        let rows = CarPlayCatalog.listen(today: nil, location: ChapterRef(.john, 3), plans: two)
+        guard case .open(_, let entries) = rows[2].action else { Issue.record("a Reading Plans folder"); return }
+        #expect(entries.map(\.action) == [.playPlan("a"), .playPlan("b")])
+        #expect(entries[0].detail == "Genesis 1")
+        #expect(rows.last?.action == .playStudy("b"), "the church's weekly study is offered")
+    }
+}
+#endif

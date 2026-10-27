@@ -26,6 +26,13 @@ custom, and nothing to read while driving.
   `res/xml/automotive_app_desc.xml` declares a media app. `CarLibraryServiceTest` (instrumented) connects a `MediaBrowser`,
   browses and chooses a chapter, as Android Auto does.
 
+## Reading plans and the weekly study
+
+`Today's Reading` plays the primary plan. With two or more plans started there is also a **Reading Plans** folder (a row per
+plan, with today's passage in it; `playPlan` / `CarAction.Plan`), and a church plan that publishes a weekly study adds a
+**Weekly Study** row (`playStudy` / `CarAction.Study`): the latest message is fetched when the phone is online, else the last
+one kept on the device (`StudyCache`) is read.
+
 ## Favorites play as a playlist
 
 Choosing a favorite reads it and then goes on through the rest of the list — the ones after it, then the ones before it — each

@@ -11,6 +11,10 @@ struct CarPlayEntry: Equatable {
         /// Read on from where the reader left off.
         case playContinue
         case playChapter(ChapterRef)
+        /// Today's reading in one of several plans the reader started.
+        case playPlan(String)
+        /// The weekly study of a church's plan (the Saturday study), read aloud — fetched when the phone is online, else the last one kept.
+        case playStudy(String)
         /// A favorite: stored (KJV) verse keys.
         case playRange(VerseRange)
         /// A favorite, read on through the others: the chosen range, and all of them in the order listed.
@@ -30,8 +34,19 @@ enum CarPlayCatalog {
 
     // MARK: Listen
 
-    static func listen(today: TodaysReading?, location: ChapterRef) -> [CarPlayEntry] {
-        [
+    /// One of the reader's started plans, with today's passage in it.
+    struct PlanRow: Equatable {
+        let id: String
+        let title: String
+        let today: String?
+        /// The plan's church publishes a weekly study.
+        var hasStudy = false
+    }
+
+    /// With two or more plans started there is a choice to offer: a "Reading Plans" folder, a row for each, the primary one
+    /// first. With one, "Today's Reading" already is it.
+    static func listen(today: TodaysReading?, location: ChapterRef, plans: [PlanRow] = [], limit: Int = defaultLimit) -> [CarPlayEntry] {
+        var rows = [
             CarPlayEntry(
                 title: String(localized: "Today’s Reading", comment: "CarPlay list row: reads the day's reading in the reader's plan"),
                 detail: today?.display ?? String(localized: "Start a plan in Scripture Alone", comment: "CarPlay row detail when no reading plan is started"),
@@ -40,6 +55,23 @@ enum CarPlayCatalog {
                 title: String(localized: "Continue", comment: "CarPlay list row: reads on from where the reader left off"),
                 detail: location.display, action: .playContinue),
         ]
+        if plans.count >= 2 {
+            let entries = plans.map { plan in
+                CarPlayEntry(title: plan.title, detail: plan.today ?? String(localized: "Nothing today", comment: "CarPlay row detail: a plan with no reading for today"),
+                             action: .playPlan(plan.id))
+            }
+            rows.append(CarPlayEntry(title: String(localized: "Reading Plans", comment: "CarPlay list row: opens the plans the reader started, to choose one to read from"),
+                                     detail: nil, action: .open(title: String(localized: "Reading Plans", comment: "CarPlay list title"),
+                                                                entries: grouped(entries, limit: limit))))
+        }
+        for plan in plans where plan.hasStudy {
+            rows.append(CarPlayEntry(
+                title: plans.filter(\.hasStudy).count > 1
+                    ? String(localized: "\(plan.title) Study", comment: "CarPlay list row: a plan's weekly study. %@ is the plan's name")
+                    : String(localized: "Weekly Study", comment: "CarPlay list row: reads the church's latest weekly study aloud"),
+                detail: String(localized: "The latest message", comment: "CarPlay row detail under the weekly study"), action: .playStudy(plan.id)))
+        }
+        return rows
     }
 
     // MARK: Books

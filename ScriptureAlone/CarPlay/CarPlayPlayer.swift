@@ -35,6 +35,14 @@ final class CarPlayPlayer {
     }
 
     var todaysReading: TodaysReading? { plans.todaysReading() }
+
+    /// The plans the reader started, the primary first, each with today's passage.
+    var planRows: [CarPlayCatalog.PlanRow] {
+        plans.started.map {
+            CarPlayCatalog.PlanRow(id: $0.id, title: $0.displayTitle, today: plans.todaysReading(in: $0.id)?.display,
+                                   hasStudy: $0.source?.studyCategory != nil)
+        }
+    }
     var location: ChapterRef { model.location }
 
     func perform(_ action: CarPlayEntry.Action) -> Outcome {
@@ -45,6 +53,14 @@ final class CarPlayPlayer {
                                            comment: "Shown on the CarPlay screen when there is no reading plan to read from"))
             }
             return listen.playTodaysReading(in: model, store: plans) ? .started : unavailable
+        case .playPlan(let id):
+            guard plans.todaysReading(in: id) != nil else {
+                return .unavailable(String(localized: "There is no reading for today in that plan.", comment: "Shown on the CarPlay screen when a plan has nothing to read today"))
+            }
+            return listen.playTodaysReading(inPlan: id, in: model, store: plans) ? .started : unavailable
+        case .playStudy:
+            // Needs the network, so it is `playStudy(_:)`, which the car's list awaits.
+            return .unavailable(String(localized: "The study can’t be read right now.", comment: "Shown on the CarPlay screen when the weekly study can't be read"))
         case .playContinue:
             listen.playChapter(model.location, in: model)
             return listen.isListening(in: model) ? .started : unavailable
@@ -71,6 +87,24 @@ final class CarPlayPlayer {
         case .open:
             return .started
         }
+    }
+
+    /// The church's latest weekly study, read aloud: fetched when the phone is online, else the last one it kept.
+    func playStudy(_ planID: String, fetcher: any PlanFetching = URLSession.shared) async -> Outcome {
+        guard let source = plans.plan(id: planID)?.source, source.studyCategory != nil else {
+            return .unavailable(String(localized: "That plan has no weekly study.", comment: "Shown on the CarPlay screen when a plan has no weekly study"))
+        }
+        var post: StudyPost?
+        if let latest = try? await PlanFeedImporter(fetcher: fetcher).latestStudy(source: source, onOrBefore: PlanSchedule.isoDay(Date())) {
+            StudyCache.save(latest, for: source)
+            post = latest
+        } else {
+            post = StudyCache.load(for: source)
+        }
+        guard let post else {
+            return .unavailable(String(localized: "There’s no study to read yet. Connect the phone to the internet and try again.", comment: "Shown on the CarPlay screen when no weekly study could be had"))
+        }
+        return listen.playProse(post.text, title: post.title, in: model) ? .started : unavailable
     }
 
     /// Reads passages the driver asked Siri for ("play John 3:16-21").

@@ -9,6 +9,7 @@ import com.blainemiller.scripturealone.data.listen.CarAction
 import com.blainemiller.scripturealone.data.listen.CarCatalog
 import com.blainemiller.scripturealone.data.listen.CarEntry
 import com.blainemiller.scripturealone.data.listen.CarLabels
+import com.blainemiller.scripturealone.data.listen.CarPlanRow
 import com.blainemiller.scripturealone.data.listen.SpokenReference
 import com.blainemiller.scripturealone.data.listen.VoiceQuery
 import com.blainemiller.scripturealone.data.plans.PlanPassage
@@ -34,6 +35,8 @@ object CarLibrary {
         continueReading = context.getString(R.string.car_continue), startAPlan = context.getString(R.string.car_start_plan),
         books = context.getString(R.string.car_books), oldTestament = context.getString(R.string.car_old_testament),
         newTestament = context.getString(R.string.car_new_testament), favorites = context.getString(R.string.car_favorites),
+        readingPlans = context.getString(R.string.plans_title), weeklyStudy = context.getString(R.string.car_weekly_study),
+        latestMessage = context.getString(R.string.car_latest_message), nothingToday = context.getString(R.string.car_nothing_today),
     )
 
     /** The translation the reader chose, if it is one this app can read here; else the default. */
@@ -56,8 +59,9 @@ object CarLibrary {
     }
 
     fun tree(context: Context, limit: Int = CarCatalog.DEFAULT_LIMIT): CarEntry {
-        val today = PlanServices.store(context).todaysReading()?.display
-        return CarCatalog.tree(labels(context), today, location(context), favorites(context), limit = limit)
+        val store = PlanServices.store(context)
+        val plans = store.started.map { CarPlanRow(it.id, it.title, store.todaysReading(it.id)?.display, it.source?.studyCategory != null) }
+        return CarCatalog.tree(labels(context), store.todaysReading()?.display, location(context), favorites(context), limit = limit, plans = plans)
     }
 
     /** Starts reading what [id] names. False when there is nothing to read (no plan, a translation that isn't here). */
@@ -75,6 +79,11 @@ object CarLibrary {
                 is SpokenReference.Request.Read -> listen.playReading(request.passages.map(PlanPassage::of), translation)
                 SpokenReference.Request.Unknown -> false
             }
+            is CarAction.Plan -> {
+                val reading = PlanServices.store(context).todaysReading(action.planId) ?: return false
+                listen.playReading(reading.passages, translation, reading.devotions)
+            }
+            is CarAction.Study -> playStudy(context, listen, translation, action.planId)
             is CarAction.Favorites -> {
                 // A playlist: the one chosen, those after it, then those before it, each named before it is read.
                 val all = favorites(context)
@@ -93,6 +102,24 @@ object CarLibrary {
                 listen.playReading(listOf(PlanPassage.of(passage)), translation)
             }
         }
+    }
+
+    /** The church's latest weekly study, aloud: fetched when the phone is online, else the last one kept. */
+    private suspend fun playStudy(context: Context, listen: ListenController, translation: String, planId: String): Boolean {
+        val source = PlanServices.store(context).plan(planId)?.source?.takeIf { it.studyCategory != null } ?: return false
+        val cache = PlanServices.studyCache(context)
+        val post = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                com.blainemiller.scripturealone.data.plans.PlanImporter().latestStudy(source, java.time.LocalDate.now())
+                    ?.also { cache.save(it, source) }
+            } catch (e: com.blainemiller.scripturealone.data.plans.PlanFeedException) {
+                cache.load(source)
+            }
+        } ?: return false
+        val info = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            runCatching { BundledTranslations.source(context, translation).chapter(ChapterRef(43, 1))?.translation }.getOrNull()
+        } ?: return false
+        return listen.playProse(post.title, post.text, info.id, info.rights, info.language)
     }
 
     private suspend fun playChapter(context: Context, listen: ListenController, translation: String, ref: ChapterRef): Boolean {

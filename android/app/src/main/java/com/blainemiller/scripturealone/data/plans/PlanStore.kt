@@ -84,14 +84,17 @@ class PlanStore(
     /** Today's reading in the primary plan; failing that, in any plan the reader started. */
     fun todaysReading(now: LocalDate = clock()): TodaysReading? {
         val ids = listOfNotNull(primaryId) + progress.map { it.planId }.filter { it != primaryId }
-        for (id in ids) {
-            val schedule = schedule(id) ?: continue
-            val day = schedule.reading(now) ?: continue
-            val isToday = (schedule.today(now) as? PlanToday.Reading)?.day?.index == day.index
-            return TodaysReading(id, schedule.plan.title, day, day.index + 1, schedule.plan.days.size, !isToday,
-                day.index in schedule.progress.completed)
-        }
+        for (id in ids) todaysReading(id, now)?.let { return it }
         return null
+    }
+
+    /** Today's reading in one particular plan the reader started — a car's list of plans. */
+    fun todaysReading(planId: String, now: LocalDate = clock()): TodaysReading? {
+        val schedule = schedule(planId) ?: return null
+        val day = schedule.reading(now) ?: return null
+        val isToday = (schedule.today(now) as? PlanToday.Reading)?.day?.index == day.index
+        return TodaysReading(planId, schedule.plan.title, day, day.index + 1, schedule.plan.days.size, !isToday,
+            day.index in schedule.progress.completed)
     }
 
     /** Starts a plan (or restarts it, forgetting what was done) and makes it the primary one. */

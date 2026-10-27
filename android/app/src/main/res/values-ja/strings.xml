@@ -1075,4 +1075,7 @@
     <string name="car_new_testament">新約聖書</string>
     <string name="car_favorites">お気に入り</string>
     <string name="car_not_found">その箇所が見つかりませんでした。</string>
+    <string name="car_weekly_study">週ごとの学び</string>
+    <string name="car_latest_message">最新のメッセージ</string>
+    <string name="car_nothing_today">今日はありません</string>
 </resources>

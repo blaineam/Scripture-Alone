@@ -1075,4 +1075,7 @@
     <string name="car_new_testament">신약</string>
     <string name="car_favorites">즐겨찾기</string>
     <string name="car_not_found">해당 구절을 찾을 수 없습니다.</string>
+    <string name="car_weekly_study">주간 스터디</string>
+    <string name="car_latest_message">최신 메시지</string>
+    <string name="car_nothing_today">오늘은 없음</string>
 </resources>

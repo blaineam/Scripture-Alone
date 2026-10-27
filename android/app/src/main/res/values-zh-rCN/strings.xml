@@ -1075,4 +1075,7 @@
     <string name="car_new_testament">新约</string>
     <string name="car_favorites">收藏</string>
     <string name="car_not_found">找不到该经文。</string>
+    <string name="car_weekly_study">每周查经</string>
+    <string name="car_latest_message">最新讲道</string>
+    <string name="car_nothing_today">今天没有</string>
 </resources>

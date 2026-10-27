@@ -25,7 +25,7 @@ final class CarPlayTemplates {
 
     func root() -> CPTabBarTemplate {
         let listen = list(title: String(localized: "Listen", comment: "CarPlay tab: what to read aloud now"),
-                          entries: CarPlayCatalog.listen(today: player.todaysReading, location: player.location),
+                          entries: CarPlayCatalog.listen(today: player.todaysReading, location: player.location, plans: player.planRows, limit: limit),
                           image: "headphones")
         let books = list(title: String(localized: "Books", comment: "CarPlay tab: the Bible's books"),
                          entries: CarPlayCatalog.testaments(limit: limit), image: "books.vertical")
@@ -63,18 +63,24 @@ final class CarPlayTemplates {
         switch entry.action {
         case .open(let title, let entries):
             interface.pushTemplate(list(title: title, entries: entries), animated: true, completion: nil)
+        case .playStudy(let planID):
+            Task { show(await player.playStudy(planID)) }
         default:
-            switch player.perform(entry.action) {
-            case .started:
-                showNowPlaying()
-            case .unavailable(let message):
-                interface.presentTemplate(
-                    CPAlertTemplate(titleVariants: [message],
-                                    actions: [CPAlertAction(title: String(localized: "OK", comment: "CarPlay alert button"), style: .default) { [weak self] _ in
-                                        self?.interface.dismissTemplate(animated: true, completion: nil)
-                                    }]),
-                    animated: true, completion: nil)
-            }
+            show(player.perform(entry.action))
+        }
+    }
+
+    private func show(_ outcome: CarPlayPlayer.Outcome) {
+        switch outcome {
+        case .started:
+            showNowPlaying()
+        case .unavailable(let message):
+            interface.presentTemplate(
+                CPAlertTemplate(titleVariants: [message],
+                                actions: [CPAlertAction(title: String(localized: "OK", comment: "CarPlay alert button"), style: .default) { [weak self] _ in
+                                    self?.interface.dismissTemplate(animated: true, completion: nil)
+                                }]),
+                animated: true, completion: nil)
         }
     }
 

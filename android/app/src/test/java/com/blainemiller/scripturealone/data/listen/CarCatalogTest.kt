@@ -74,4 +74,17 @@ class CarCatalogTest {
         assertEquals(CarAction.Spoken("John 3:16-21"), CarAction.parse(CarAction.spokenId("John 3:16-21")))
         assertEquals(CarAction.Spoken(""), CarAction.parse(CarAction.spokenId("")))
     }
+
+    @Test fun severalPlansAreAFolderAndAStudyIsOffered() {
+        val labels = CarLabels("Listen", "Today", "Continue", "Start", "Books", "OT", "NT", "Favorites")
+        val one = listOf(CarPlanRow("a", "Bible in a Year", "Genesis 1"))
+        val oneListen = CarCatalog.tree(labels, null, ChapterRef(43, 3), emptyList(), plans = one).children!![0].children!!
+        assertEquals("one plan needs no list", 2, oneListen.size)
+        val two = one + CarPlanRow("imported:disciples", "Disciples", null, hasStudy = true)
+        val listen = CarCatalog.tree(labels, null, ChapterRef(43, 3), emptyList(), plans = two).children!![0].children!!
+        val plans = listen.first { it.id == "plans" }.children!!
+        assertEquals(listOf(CarAction.Plan("a"), CarAction.Plan("imported:disciples")), plans.map { CarAction.parse(it.id) })
+        assertEquals("Nothing today", plans[1].subtitle)
+        assertEquals(CarAction.Study("imported:disciples"), CarAction.parse(listen.last().id))
+    }
 }
