@@ -186,3 +186,37 @@ struct CarPlayTemplateTests {
     }
 }
 #endif
+
+#if os(iOS)
+import Intents
+
+/// What Siri heard becomes passages: "Play John 3:16–21 in Scripture Alone" in the car.
+struct PlayPassageHandlerTests {
+    private func intent(_ heard: String) -> INPlayMediaIntent {
+        INPlayMediaIntent(
+            mediaItems: nil, mediaContainer: nil, playShuffled: nil, playbackRepeatMode: .none,
+            resumePlayback: nil, playbackQueueLocation: .now, playbackSpeed: nil,
+            mediaSearch: INMediaSearch(mediaType: .audioBook, sortOrder: .unknown, mediaName: heard, artistName: nil,
+                                       albumName: nil, genreNames: nil, moodNames: nil, releaseDate: nil,
+                                       reference: .unknown, mediaIdentifier: nil))
+    }
+
+    @Test func aVerseRangeIsOnePassage() {
+        let passages = PlayPassageHandler.passages(in: intent("John 3:16-21"))
+        #expect(passages.count == 1)
+        #expect(passages.first?.startVerse == 16)
+        #expect(passages.first?.endVerse == 21)
+    }
+
+    @Test func aChapterHasNoVerses() {
+        let passage = PlayPassageHandler.passages(in: intent("Psalm 23")).first
+        #expect(passage?.startChapter == 23)
+        #expect(passage?.startVerse == nil)
+    }
+
+    @Test func wordsThatAreNotAReferenceAreRefused() {
+        #expect(PlayPassageHandler.passages(in: intent("Bohemian Rhapsody")).isEmpty)
+        #expect(PlayPassageHandler.passages(in: intent("")).isEmpty)
+    }
+}
+#endif

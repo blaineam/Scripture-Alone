@@ -90,6 +90,15 @@
 			</array>
 		</dict>
 	</dict>
+	<key>INIntentsSupported</key>
+	<array>
+		<string>INPlayMediaIntent</string>
+	</array>
+	<key>INSupportedMediaCategories</key>
+	<array>
+		<string>INMediaCategoryAudiobooks</string>
+		<string>INMediaCategoryOther</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

@@ -32,7 +32,17 @@ custom, and nothing to read while driving.
   reader's imports, as every window is) — else the app's default. A translation fetched online with an API key (ESV, API.Bible)
   is not read in the car: it needs the network and a loader. Android reads any translation the app lists as installed, imports included.
 - The Favorites list is read when CarPlay connects; a favorite added while the car is connected shows on the next connection.
-- No voice commands, no search, no text on screen beyond titles: that is what the audio templates allow.
+- No search and no text on screen beyond titles: that is what the audio templates allow. Voice is Siri's (below).
+
+## Siri: "Play John 3:16–21 in Scripture Alone"
+
+CarPlay's Siri asks an audio app to play through SiriKit's media request (`INPlayMediaIntent`). The app handles it itself —
+`application(_:handlerFor:)` in `FamilyShareAppDelegate` returns `PlayPassageHandler` (`Intents/`), no Intents extension — and what
+Siri heard goes through the search box's reference parser, in the app's language, into the same player the CarPlay rows use
+(`CarPlayPlayer.play`). A verse, a range, a chapter or a list all work; words that aren't a reference are refused. Needs the
+Siri capability on the App ID (entitlement `com.apple.developer.siri`) and `INPlayMediaIntent` / `INSupportedMediaCategories`
+in Info.plist. Not yet tried in a car: say "Play Psalm 23 in Scripture Alone", "Read Romans 8:28 through 30 with Scripture Alone".
+Android Auto / Google Assistant is the same idea through `onSetMediaItems` and is not built yet.
 
 ## Testing in a car
 

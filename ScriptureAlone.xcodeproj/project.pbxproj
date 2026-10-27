@@ -147,6 +147,7 @@
 		A3F695662AA5D3E21A9C9836 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F2A8744EEF32A4DBDD0B4F /* Models.swift */; };
 		A41D6F7C2B1648A683FF87A1 /* ScriptureAloneAssets.appex in Embed Dependencies */ = {isa = PBXBuildFile; fileRef = 21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A437CCE33E1410D3BE47154E /* SpotlightSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D1C1C708C6A208F51FD1270 /* SpotlightSync.swift */; };
+		A6A8DD64017C5309C7DF8BEC /* PlayPassageHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B88F22CA66487049CC016AE /* PlayPassageHandler.swift */; };
 		A771342820E690E56E2D7CD4 /* LegacyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1173FDAE1BF32CF7B1D46B2F /* LegacyTests.swift */; };
 		A812EADE1AA534488E842DC4 /* ScriptureAloneCore in Frameworks */ = {isa = PBXBuildFile; productRef = EC22F6F7CA731D1C087B4FF9 /* ScriptureAloneCore */; };
 		A8297B71D8139BBA02E739CC /* TranslationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28285C0E3886DE44F37837D /* TranslationsTests.swift */; };
@@ -353,6 +354,7 @@
 		1535B298112D25F32BB4CDE8 /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
 		16AF12A3C0ED58D26D26A632 /* VerseOfDayShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseOfDayShared.swift; sourceTree = "<group>"; };
 		1874DB30855498F9A08136DB /* UITestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestSupport.swift; sourceTree = "<group>"; };
+		1B88F22CA66487049CC016AE /* PlayPassageHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayPassageHandler.swift; sourceTree = "<group>"; };
 		203F6AB07B6BCF4DCF442A78 /* ContentKeySeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentKeySeed.swift; sourceTree = "<group>"; };
 		20BD450097F73167BD1052AB /* ReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderTests.swift; sourceTree = "<group>"; };
 		21F37E95795EF3EF8F188302 /* ScriptureAloneAssets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = ScriptureAloneAssets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1063,6 +1065,7 @@
 				93FAE7B8C1A17A1BAD1F94B7 /* Entities.swift */,
 				789FEBECBA694C702095C1A4 /* IntentLibrary.swift */,
 				CBD294CA96AA689BF14E101A /* NoteIntents.swift */,
+				1B88F22CA66487049CC016AE /* PlayPassageHandler.swift */,
 				BE05AC71739076FFA5A2849E /* ReadingIntents.swift */,
 				420E7B7CEC22CE5109ED4105 /* ScriptureAloneShortcuts.swift */,
 			);
@@ -1696,6 +1699,7 @@
 				C682624AA2AE2503ABFC7F78 /* PlanStore.swift in Sources */,
 				D8B2BAD7189B28277C808E0E /* PlanText.swift in Sources */,
 				88A9A0F604E3C2DFC2C6CDA6 /* PlansView.swift in Sources */,
+				A6A8DD64017C5309C7DF8BEC /* PlayPassageHandler.swift in Sources */,
 				CA283E49B2AC5EDFF35810B4 /* ReaderModel.swift in Sources */,
 				F5D593C5E98A1598C2F69F77 /* ReaderStyle.swift in Sources */,
 				6E6914307A950EB418658595 /* ReaderView.swift in Sources */,

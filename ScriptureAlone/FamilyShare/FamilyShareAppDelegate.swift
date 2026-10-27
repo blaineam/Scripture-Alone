@@ -3,6 +3,7 @@ import CloudKit
 #if os(iOS)
 import UIKit
 import CarPlay
+import Intents
 #else
 import AppKit
 #endif
@@ -40,6 +41,11 @@ final class FamilyShareAppDelegate: NSObject, UIApplicationDelegate {
         // The car's screen is not a window of the app: it gets the CarPlay audio scene (`CarPlay/`).
         configuration.delegateClass = Self.sceneDelegateClass(for: connectingSceneSession.role)
         return configuration
+    }
+
+    /// Siri's "play …" (CarPlay, AirPods): handled here, in the app that owns the player.
+    func application(_ application: UIApplication, handlerFor intent: INIntent) -> Any? {
+        intent is INPlayMediaIntent ? PlayPassageHandler() : nil
     }
 
     static func sceneDelegateClass(for role: UISceneSession.Role) -> AnyClass {

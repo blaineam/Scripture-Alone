@@ -62,6 +62,11 @@ final class CarPlayPlayer {
         }
     }
 
+    /// Reads passages the driver asked Siri for ("play John 3:16-21").
+    func play(_ passages: [PlanPassage]) -> Outcome {
+        listen.playReading(passages, in: model) ? .started : unavailable
+    }
+
     private var unavailable: Outcome {
         .unavailable(String(localized: "This translation can’t be read aloud right now. Open Scripture Alone to download it.",
                             comment: "Shown on the CarPlay screen when the translation's text isn't on the phone"))
