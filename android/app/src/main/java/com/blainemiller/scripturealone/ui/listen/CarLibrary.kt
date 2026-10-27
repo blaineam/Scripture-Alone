@@ -9,6 +9,7 @@ import com.blainemiller.scripturealone.data.listen.CarAction
 import com.blainemiller.scripturealone.data.listen.CarCatalog
 import com.blainemiller.scripturealone.data.listen.CarEntry
 import com.blainemiller.scripturealone.data.listen.CarLabels
+import com.blainemiller.scripturealone.data.listen.SpokenReference
 import com.blainemiller.scripturealone.data.plans.PlanPassage
 import com.blainemiller.scripturealone.data.plans.PlanServices
 import com.blainemiller.scripturealone.data.prefs.ReaderKeys
@@ -70,7 +71,8 @@ object CarLibrary {
             is CarAction.Spoken -> {
                 val query = action.query.trim()
                 if (query.isEmpty()) return playChapter(context, listen, translation, location(context))
-                val passages = ReferenceParser.parseList(query)
+                if (SpokenReference.asksForToday(query)) return listen.playTodaysReading(PlanServices.store(context), translation)
+                val passages = ReferenceParser.parseList(SpokenReference.normalize(query))
                 if (passages.isEmpty()) false else listen.playReading(passages.map(PlanPassage::of), translation)
             }
             is CarAction.Range -> {

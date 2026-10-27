@@ -201,22 +201,56 @@ struct PlayPassageHandlerTests {
                                        reference: .unknown, mediaIdentifier: nil))
     }
 
+    private func passages(_ heard: String) -> [Passage] {
+        if case .passages(let p)? = PlayPassageHandler.request(in: intent(heard)) { return p }
+        return []
+    }
+
     @Test func aVerseRangeIsOnePassage() {
-        let passages = PlayPassageHandler.passages(in: intent("John 3:16-21"))
-        #expect(passages.count == 1)
-        #expect(passages.first?.startVerse == 16)
-        #expect(passages.first?.endVerse == 21)
+        let found = passages("John 3:16-21")
+        #expect(found.count == 1)
+        #expect(found.first?.startVerse == 16)
+        #expect(found.first?.endVerse == 21)
     }
 
     @Test func aChapterHasNoVerses() {
-        let passage = PlayPassageHandler.passages(in: intent("Psalm 23")).first
+        let passage = passages("Psalm 23").first
         #expect(passage?.startChapter == 23)
         #expect(passage?.startVerse == nil)
     }
 
     @Test func wordsThatAreNotAReferenceAreRefused() {
-        #expect(PlayPassageHandler.passages(in: intent("Bohemian Rhapsody")).isEmpty)
-        #expect(PlayPassageHandler.passages(in: intent("")).isEmpty)
+        #expect(PlayPassageHandler.request(in: intent("Bohemian Rhapsody")) == nil)
+    }
+}
+#endif
+
+#if os(iOS)
+struct SpokenReferenceTests {
+    @Test(arguments: [
+        ("John 3 16", "john 3:16"),
+        ("John 3 colon 16", "john 3:16"),
+        ("john chapter 3 verse 16", "john 3:16"),
+        ("1 Corinthians 7 4", "1 corinthians 7:4"),
+        ("John 3 16 through 21", "john 3:16-21"),
+        ("John 3 16 21", "john 3:16-21"),
+        ("Romans 8:28 to 30", "romans 8:28-30"),
+        ("John 3.16", "john 3:16"),
+        ("Psalm 23", "psalm 23"),
+        ("Romans 8", "romans 8"),
+        ("John 3-5", "john 3-5"),
+    ])
+    func spokenFormsBecomeReferences(heard: String, normalized: String) {
+        #expect(SpokenReference.normalize(heard) == normalized)
+    }
+
+    @Test func requestsAreTodayResumeOrPassages() {
+        #expect(PlayPassageHandler.request(heard: "today's reading") == .today)
+        #expect(PlayPassageHandler.request(heard: "my reading plan") == .today)
+        #expect(PlayPassageHandler.request(heard: "") == .resume)
+        #expect(PlayPassageHandler.request(heard: "Bohemian Rhapsody") == nil)
+        if case .passages(let p)? = PlayPassageHandler.request(heard: "John 3 16") { #expect(p.first?.startVerse == 16) }
+        else { Issue.record("John 3 16 should be a passage") }
     }
 }
 #endif
