@@ -55,5 +55,5 @@ DRM이 없는 ePub, 텍스트 레이어가 있는 성경 PDF, USFM 파일처럼 
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.2.2 — 차 안에서도 Scripture Alone. Android Auto에서 오늘의 읽기, 마지막으로 읽은 곳, 원하는 책과 장, 즐겨찾기를 고를 수 있고, 즐겨찾기는 재생목록처럼 이어서 재생됩니다. Google 어시스턴트에게 “Scripture Alone에서 요한복음 3:16-21 재생해 줘”라고 말해도 됩니다.
+1.2.3 — Android Auto: Google 어시스턴트에게 구절을 읽어 달라고 할 수 있습니다. “Scripture Alone에서 요한복음 1장 읽어 줘.” 차에서 시작한 읽기가 진동 모드 휴대전화 때문에 무음이 되지 않습니다.
 

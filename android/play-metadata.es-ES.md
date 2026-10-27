@@ -53,5 +53,5 @@ Subrayados, notas y favoritos se quedan en tu dispositivo. Sin servidor ni cuent
 Hecha para ayudar a estudiar la Palabra de Dios y acercarse más a Cristo.
 
 ## release_notes
-1.2.2 — Scripture Alone en el coche. En Android Auto elige la lectura de hoy, dónde lo dejaste, cualquier libro y capítulo o un favorito —los favoritos siguen como lista de reproducción— o pídeselo al Asistente de Google: «Reproduce Juan 3:16-21 en Scripture Alone».
+1.2.3 — Android Auto: pídele al Asistente de Google que lea un pasaje: «Lee Juan capítulo 1 en Scripture Alone». Las lecturas que inicias desde el coche ya no se silencian si el teléfono está en vibración.
 

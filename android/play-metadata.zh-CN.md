@@ -55,5 +55,5 @@
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.2.2 — 在车里也能用 Scripture Alone。在 Android Auto 上可选择今日读经、上次读到的位置、任意书卷与章节或收藏——收藏会像播放列表一样接着播放——也可以对 Google 助理说“在 Scripture Alone 中播放约翰福音 3:16-21”。
+1.2.3 — Android Auto：可以让 Google 助理朗读经文——“在 Scripture Alone 中朗读约翰福音第 1 章”。从车里开始的朗读不再因手机处于振动模式而无声。
 

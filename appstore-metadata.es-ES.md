@@ -66,7 +66,7 @@ rvr1960,reina valera,lbla,biblia,ansiedad,duelo,consuelo,devocional,sermones,com
 Ahora con la NASB 2020. Descubre lo que la Biblia dice de lo que estás viviendo y estudia sin conexión con comentarios, mapas y cronologías. Sin anuncios ni cuentas.
 
 ## whats_new
-1.2.2 — Scripture Alone en el coche. En CarPlay elige la lectura de hoy, dónde lo dejaste, cualquier libro y capítulo o un favorito —los favoritos siguen como lista de reproducción— o pídele a Siri: «Reproduce Juan 3:16-21 en Scripture Alone». El interruptor de silencio ya no silencia la lectura en voz alta en el coche.
+1.2.3 — Pequeñas mejoras para la lectura en voz alta en el coche.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

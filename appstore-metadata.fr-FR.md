@@ -66,7 +66,7 @@ bible,louis segond,darby,kjv,commentaire,méditation,thèmes,anxiété,deuil,ré
 Désormais avec la NASB 2020. Trouvez ce que la Bible dit de ce que vous traversez et étudiez hors ligne avec commentaires, cartes et chronologies. Sans pub, sans compte.
 
 ## whats_new
-1.2.2 — Scripture Alone en voiture. Sur CarPlay, choisissez la lecture du jour, là où vous vous étiez arrêté, n’importe quel livre et chapitre ou un favori — les favoris s’enchaînent comme une liste de lecture — ou demandez à Siri : « Lis Jean 3:16-21 dans Scripture Alone ». Le commutateur Silence ne coupe plus la lecture à voix haute en voiture.
+1.2.3 — Petites améliorations pour la lecture à voix haute en voiture.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

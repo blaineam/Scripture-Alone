@@ -53,5 +53,5 @@ As suas marcações, notas e favoritos ficam no seu aparelho. Não há servidor 
 Feito para ajudar as pessoas a estudar a Palavra de Deus e a se aproximar de Cristo.
 
 ## release_notes
-1.2.2 — Scripture Alone no carro. No Android Auto, escolha a leitura de hoje, onde você parou, qualquer livro e capítulo ou um favorito — os favoritos continuam como uma playlist — ou peça ao Google Assistente: “Toque João 3:16-21 no Scripture Alone”.
+1.2.3 — Android Auto: peça ao Google Assistente para ler um trecho — “Leia João capítulo 1 no Scripture Alone”. Leituras iniciadas no carro não são mais silenciadas por um celular no modo vibrar.
 

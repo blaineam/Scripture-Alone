@@ -64,7 +64,7 @@ nasb 2020,nasb 1995,kjv,asv,bsb,topical,anxiety,grief,comfort,commentary,devotio
 Now with the NASB 2020. Find what the Bible says about what you're going through and study offline with commentary, maps and timelines. No ads, no accounts.
 
 ## whats_new
-1.2.2 — Scripture Alone in the car. On CarPlay, choose today’s reading, where you left off, any book and chapter or a favorite — your favorites play on as a playlist — or ask Siri: “Play John 3:16–21 in Scripture Alone.” The Silent switch no longer mutes reading aloud in a car.
+1.2.3 — Small fixes for reading aloud in the car.
 
 ## review_notes
 Scripture Alone is an open-source Bible app (AGPL-3.0, https://github.com/blaineam/Scripture-Alone). No account or login is required for any feature, and the app reads offline from its first launch.

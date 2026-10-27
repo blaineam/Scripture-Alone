@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.2.2 — Scripture Alone in the car. On Android Auto, choose today’s reading, where you left off, any book and chapter or a favorite — your favorites play on as a playlist — or ask Google Assistant: “Play John 3:16–21 on Scripture Alone.”
+1.2.3 — Android Auto: ask Google Assistant to read a passage — “Read John chapter 1 in Scripture Alone.” Readings you start from the car are no longer silenced by a phone set to vibrate.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

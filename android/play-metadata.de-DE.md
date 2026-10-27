@@ -53,5 +53,5 @@ Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 
 ## release_notes
-1.2.2 — Scripture Alone im Auto. Auf Android Auto wählst du die heutige Lesung, die Stelle, an der du aufgehört hast, ein beliebiges Buch und Kapitel oder einen Favoriten – Favoriten laufen als Playlist weiter – oder bittest den Google Assistant: „Spiele Johannes 3,16–21 auf Scripture Alone.“
+1.2.3 — Android Auto: Bitte den Google Assistant, eine Stelle vorzulesen – „Lies Johannes Kapitel 1 in Scripture Alone.“ Im Auto gestartete Lesungen werden nicht mehr von einem Telefon im Vibrationsmodus stummgeschaltet.
 

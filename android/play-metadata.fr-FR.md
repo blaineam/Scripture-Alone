@@ -53,5 +53,5 @@ Vos surlignages, notes et favoris restent sur votre appareil : ni serveur, ni co
 Conçue pour aider à étudier la Parole de Dieu et à se rapprocher du Christ.
 
 ## release_notes
-1.2.2 — Scripture Alone en voiture. Sur Android Auto, choisissez la lecture du jour, là où vous vous étiez arrêté, n’importe quel livre et chapitre ou un favori — les favoris s’enchaînent comme une liste de lecture — ou demandez à l’Assistant Google : « Lis Jean 3:16-21 sur Scripture Alone ».
+1.2.3 — Android Auto : demandez à l’Assistant Google de lire un passage — « Lis Jean chapitre 1 dans Scripture Alone ». Les lectures lancées depuis la voiture ne sont plus coupées par un téléphone en mode vibreur.
 

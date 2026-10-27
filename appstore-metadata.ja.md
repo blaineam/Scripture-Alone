@@ -66,7 +66,7 @@ NASB 2020 および NASB 1995 © The Lockman Foundation. 許諾を得て使用�
 NASB 2020に対応。いま抱えていることに聖書が何と語るかを見つけ、注解・地図・年表とともにオフラインで学べます。広告なし、アカウント登録も不要。
 
 ## whats_new
-1.2.2 — 車の中でもScripture Alone。CarPlayで、今日の読書箇所、前回の続き、好きな書・章、お気に入りを選べます。お気に入りはプレイリストのように続けて再生。Siriにも「Scripture Aloneでヨハネ3:16-21を再生」と頼めます。車内では消音スイッチが読み上げを無音にしなくなりました。
+1.2.3 — 車内での読み上げに関する細かな改善。
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

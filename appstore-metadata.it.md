@@ -66,7 +66,7 @@ bibbia,riveduta,diodati,cei,argomenti,ansia,lutto,conforto,devozionale,sermone,r
 Ora con la NASB 2020. Scopri che cosa dice la Bibbia di ciò che stai vivendo e studia offline con commentari, mappe e cronologie. Senza pubblicità né account.
 
 ## whats_new
-1.2.2 — Scripture Alone in auto. Su CarPlay scegli la lettura di oggi, il punto in cui eri rimasto, un libro e capitolo qualsiasi o un preferito — i preferiti proseguono come una playlist — oppure chiedi a Siri: «Riproduci Giovanni 3:16-21 in Scripture Alone». L’interruttore Silenzioso non silenzia più la lettura ad alta voce in auto.
+1.2.3 — Piccoli miglioramenti alla lettura ad alta voce in auto.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/
