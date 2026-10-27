@@ -29,12 +29,15 @@ sealed interface CarAction {
     data class Chapter(val ref: ChapterRef) : CarAction
     /** A favorite: stored (KJV) verse keys. */
     data class Range(val range: VerseRange) : CarAction
+    /** What the assistant heard: "play John 3:16-21". A reference, in the app's language; blank means "play something". */
+    data class Spoken(val query: String) : CarAction
 
     companion object {
         const val TODAY = "play:today"
         const val CONTINUE = "play:continue"
         fun chapterId(ref: ChapterRef) = "play:chapter:${ref.book}:${ref.chapter}"
         fun rangeId(range: VerseRange) = "play:range:${range.storageString}"
+        fun spokenId(query: String) = "play:spoken:$query"
 
         /** The action a media id stands for; null for a folder or anything unknown. */
         fun parse(id: String): CarAction? {
@@ -48,6 +51,8 @@ sealed interface CarAction {
                     val chapter = parts.getOrNull(3)?.toIntOrNull()?.takeIf { it in 1..Canon.book(book).chapterCount } ?: return null
                     Chapter(ChapterRef(book, chapter))
                 }
+                // The query may hold colons ("John 3:16"), so it is everything after the third separator.
+                "spoken" -> Spoken(id.split(":", limit = 3).getOrNull(2).orEmpty())
                 "range" -> parts.getOrNull(2)?.let { VerseRange.parse(it) }?.let(::Range)
                 else -> null
             }

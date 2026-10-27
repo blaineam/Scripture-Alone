@@ -42,7 +42,9 @@ Siri heard goes through the search box's reference parser, in the app's language
 (`CarPlayPlayer.play`). A verse, a range, a chapter or a list all work; words that aren't a reference are refused. Needs the
 Siri capability on the App ID (entitlement `com.apple.developer.siri`) and `INPlayMediaIntent` / `INSupportedMediaCategories`
 in Info.plist. Not yet tried in a car: say "Play Psalm 23 in Scripture Alone", "Read Romans 8:28 through 30 with Scripture Alone".
-Android Auto / Google Assistant is the same idea through `onSetMediaItems` and is not built yet.
+Android Auto's Google Assistant is the same idea: a voice request reaches `ListenPlaybackService.onAddMediaItems` with the words as
+the item's search query, becomes a `play:spoken:<words>` id (`CarAction.Spoken`) and is read through `ReferenceParser` into
+`CarLibrary.play`. Not yet tried in a car: "Hey Google, play Psalm 23 on Scripture Alone".
 
 ## Testing in a car
 

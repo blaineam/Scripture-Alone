@@ -19,6 +19,7 @@ import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
+import com.blainemiller.scripturealone.data.listen.CarAction
 import com.blainemiller.scripturealone.data.listen.CarCatalog
 import com.blainemiller.scripturealone.data.listen.CarEntry
 import com.google.common.collect.ImmutableList
@@ -90,10 +91,19 @@ class ListenPlaybackService : MediaLibraryService() {
             if (entry == null) LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE) else LibraryResult.ofItem(item(entry), null)
         }
 
-        /** A row chosen in a car: the ids pass through to [ListenPlayer.handleSetMediaItems], which starts the reading. */
+        /**
+         * A row chosen in a car: the ids pass through to [ListenPlayer.handleSetMediaItems], which starts the reading.
+         * A voice request ("Hey Google, play John 3:16–21 on Scripture Alone") arrives with no id, only the words it
+         * heard as the item's search query; they become a "spoken" id the same way.
+         */
         override fun onAddMediaItems(
             mediaSession: MediaSession, controller: MediaSession.ControllerInfo, mediaItems: MutableList<MediaItem>,
-        ): ListenableFuture<MutableList<MediaItem>> = Futures.immediateFuture(mediaItems)
+        ): ListenableFuture<MutableList<MediaItem>> = Futures.immediateFuture(
+            mediaItems.map { item ->
+                val query = item.requestMetadata.searchQuery
+                if (item.mediaId.isEmpty() && query != null) item.buildUpon().setMediaId(CarAction.spokenId(query)).build() else item
+            }.toMutableList(),
+        )
     }
 
     override fun onCreate() {

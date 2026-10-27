@@ -69,4 +69,9 @@ class CarCatalogTest {
         assertEquals(CarAction.Continue, CarAction.parse(CarAction.CONTINUE))
         assertEquals(CarAction.Chapter(ChapterRef(43, 3)), CarAction.parse(CarAction.chapterId(ChapterRef(43, 3))))
     }
+
+    @Test fun whatTheAssistantHeardSurvivesItsColons() {
+        assertEquals(CarAction.Spoken("John 3:16-21"), CarAction.parse(CarAction.spokenId("John 3:16-21")))
+        assertEquals(CarAction.Spoken(""), CarAction.parse(CarAction.spokenId("")))
+    }
 }

@@ -14,6 +14,7 @@ import com.blainemiller.scripturealone.data.plans.PlanServices
 import com.blainemiller.scripturealone.data.prefs.ReaderKeys
 import com.blainemiller.scripturealone.data.prefs.readerDataStore
 import com.blainemiller.scripturealone.data.reference.Passage
+import com.blainemiller.scripturealone.data.reference.ReferenceParser
 import com.blainemiller.scripturealone.data.sabible.ChapterRef
 import com.blainemiller.scripturealone.data.userdata.BundledUserDatabase
 import com.blainemiller.scripturealone.data.userdata.UserDataStore
@@ -66,6 +67,12 @@ object CarLibrary {
             CarAction.Today -> listen.playTodaysReading(PlanServices.store(context), translation)
             CarAction.Continue -> playChapter(context, listen, translation, location(context))
             is CarAction.Chapter -> playChapter(context, listen, translation, action.ref)
+            is CarAction.Spoken -> {
+                val query = action.query.trim()
+                if (query.isEmpty()) return playChapter(context, listen, translation, location(context))
+                val passages = ReferenceParser.parseList(query)
+                if (passages.isEmpty()) false else listen.playReading(passages.map(PlanPassage::of), translation)
+            }
             is CarAction.Range -> {
                 val r = action.range
                 val passage = Passage.of(com.blainemiller.scripturealone.data.canon.BookID.of(r.start.book) ?: return false,
