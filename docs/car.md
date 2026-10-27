@@ -49,9 +49,21 @@ Siri heard goes through the search box's reference parser, in the app's language
 (`CarPlayPlayer.play`). A verse, a range, a chapter or a list all work; words that aren't a reference are refused. Needs the
 Siri capability on the App ID (entitlement `com.apple.developer.siri`) and `INPlayMediaIntent` / `INSupportedMediaCategories` (Audiobooks only; App Store Connect refuses `INMediaCategoryOther`)
 in Info.plist. Not yet tried in a car: say "Play Psalm 23 in Scripture Alone", "Read Romans 8:28 through 30 with Scripture Alone".
-Android Auto's Google Assistant is the same idea: a voice request reaches `ListenPlaybackService.onAddMediaItems` with the words as
-the item's search query, becomes a `play:spoken:<words>` id (`CarAction.Spoken`) and is read through `ReferenceParser` into
-`CarLibrary.play`. Not yet tried in a car: "Hey Google, play Psalm 23 on Scripture Alone".
+Android Auto's Google Assistant is the same idea: a voice request ("Hey Google, read John chapter 1 in Scripture Alone")
+reaches `ListenPlaybackService.onAddMediaItems` as an item with no id, carrying the words as its search query and, when the
+assistant understood part of it as media, again in the extras (`EXTRA_MEDIA_TITLE`, `…ALBUM`, `…PLAYLIST`, `…ARTIST`).
+`voiceItem` turns every non-blank phrase into a `play:spoken:` id (`VoiceQuery`, `CarAction.Spoken`), and
+`SpokenReference.plan` decides what it is: today's reading, a passage (`ReferenceParser`), or the reader's place.
+`SpokenReference.clean` takes the request's own words off first — the wake phrase and verb ("read", "play", "listen to"…), the
+app's name ("in Scripture Alone", "with the Scripture Alone app"), "the book of / the gospel of / the letter to the", a leading
+"the" — and writes number words as digits ("twenty three", "a hundred and fifty"). "Psalm one fifty" is read as 1 and 50: say
+"a hundred and fifty". Phrases heard: "read John 1", "play John 3:16", "read Psalm twenty three", "read the book of Romans"
+(the whole book), "play first John chapter two", "read chapter 3 of John", "continue", "read something" (where you left off),
+"read today's reading". A bare play from the car's or a headset's button with nothing playing goes through
+`onPlaybackResumption` (the `MediaButtonReceiver` wakes the service) and carries on from the saved place. A request that is not
+a passage leaves the session with an error the car shows ("Couldn't find that passage."), as well as the notice on the phone.
+Not yet tried in a car: use the Desktop Head Unit and a phone with the Google app, say "Read John chapter 1 in Scripture
+Alone", and look in `adb logcat -s MediaSessionService` for the request if it does not start.
 
 ## Testing in a car
 

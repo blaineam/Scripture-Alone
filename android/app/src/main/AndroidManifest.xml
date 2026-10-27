@@ -190,6 +190,16 @@
             </intent-filter>
         </service>
 
+        <!-- A headset's or a car's play button while nothing is running: wakes the service above, whose
+             onPlaybackResumption carries on where the reader left off. -->
+        <receiver
+            android:name="androidx.media3.session.MediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
+
         <!-- Android Auto: a media app, browsed through the service above (docs/reading-plans.md, docs/car.md). -->
         <meta-data
             android:name="com.google.android.gms.car.application"

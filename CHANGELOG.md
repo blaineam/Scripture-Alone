@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.3 (unreleased)
+
+- **Android Auto: "Read John chapter 1 in Scripture Alone" works.** Google Assistant hands the app its words with the verb
+  and the app's name still on them, and the app only understood a bare reference — so "read John chapter 1 in Scripture
+  Alone" found nothing. It now takes the verb, the app's name, "the book of" and "the gospel of" off, understands spoken
+  numbers ("Psalm twenty three", "a hundred and fifty", "chapter one"), numbered books ("first John", "the second letter to
+  the Corinthians"), "chapter 3 of John", and a book alone as the whole book ("read the book of Romans"). "Continue" and
+  "read something" carry on where you left off, and so does a car's or headset's play button when nothing is playing. It
+  also reads the assistant's structured title, album and playlist when the words come that way, and when a request can't be
+  found the car now says so (before, only the phone's screen did). Android Auto only; CarPlay's Siri path is unchanged.
+
 ## 1.2.2 (2026-10-27)
 
 - **Scripture Alone in the car.** On CarPlay and Android Auto the app reads aloud from the car's own screen: today's reading
