@@ -173,7 +173,7 @@ class ListenPlayer(private val context: Context, private val listen: ListenContr
         val metadata = MediaMetadata.Builder()
             .setTitle(listen.nowPlayingTitle)
             .setArtist("Scripture Alone")
-            .setAlbumTitle(listen.nowPlayingSubtitle)
+            .setAlbumTitle(listen.translationLabel)
             .setDisplayTitle(listen.nowPlayingTitle)
             .setSubtitle(listen.nowPlayingSubtitle)
             .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)

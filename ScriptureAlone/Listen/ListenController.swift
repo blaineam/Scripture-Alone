@@ -899,10 +899,14 @@ final class ListenController {
         var info: [String: Any] = [
             MPMediaItemPropertyTitle: nowPlayingTitle,
             MPMediaItemPropertyArtist: "Scripture Alone",
-            MPMediaItemPropertyAlbumTitle: "\(reader?.location.display ?? "") · \(translation)",
+            // The title already names the passage, so the album is the Bible version, as the
+            // translation menu names it ("NASB 2020"), not the store's file id.
+            MPMediaItemPropertyAlbumTitle: translationInfo?.abbreviation ?? translation,
             MPNowPlayingInfoPropertyMediaType: MPNowPlayingInfoMediaType.audio.rawValue,
-            MPNowPlayingInfoPropertyPlaybackRate: phase == .playing ? 1.0 : 0.0,
+            MPNowPlayingInfoPropertyDefaultPlaybackRate: speed,
+            MPNowPlayingInfoPropertyPlaybackRate: phase == .playing ? speed : 0.0,
         ]
+        if let artwork = Self.artwork { info[MPMediaItemPropertyArtwork] = artwork }
         if let player {
             info[MPMediaItemPropertyPlaybackDuration] = player.duration
             info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime
@@ -914,6 +918,16 @@ final class ListenController {
         center.playbackState = phase == .playing ? .playing : .paused
         #endif
     }
+
+    /// The app icon, shown on the lock screen, in Control Center and on the car's screen.
+    private static let artwork: MPMediaItemArtwork? = {
+        #if canImport(UIKit)
+        guard let image = UIImage(named: "NowPlayingArt") else { return nil }
+        return MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+        #else
+        return nil
+        #endif
+    }()
 
     private func clearNowPlaying() {
         let center = MPNowPlayingInfoCenter.default()

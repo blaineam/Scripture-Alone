@@ -27,6 +27,7 @@ import com.blainemiller.scripturealone.data.BundledTranslations
 import com.blainemiller.scripturealone.data.Canon
 import com.blainemiller.scripturealone.data.Chapter
 import com.blainemiller.scripturealone.data.ChapterVerse
+import com.blainemiller.scripturealone.data.translations.TranslationLibrary
 import com.blainemiller.scripturealone.data.plans.PlanDevotion
 import com.blainemiller.scripturealone.data.plans.PlanPassage
 import com.blainemiller.scripturealone.data.plans.PlanStore
@@ -165,7 +166,11 @@ class ListenController private constructor(private val app: Context) {
 
     /** "John 3 · BSB" — the album line of the lock-screen entry. */
     val nowPlayingSubtitle: String
-        get() = listOfNotNull(passChapter?.let(Canon::display), translationId.ifEmpty { null }).joinToString(" · ")
+        get() = listOfNotNull(passChapter?.let(Canon::display), translationLabel.ifEmpty { null }).joinToString(" · ")
+
+    /** An import's id is an internal name ("IMPORT-NN0XUW"); show the abbreviation its file gave. */
+    val translationLabel: String
+        get() = TranslationLibrary.imported(translationId)?.info?.abbreviation ?: translationId
 
     /** The voice's name for the bar's status line. */
     val voiceName: String
