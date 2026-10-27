@@ -159,9 +159,13 @@ class ListenController private constructor(private val app: Context) {
 
     val isPlaying: Boolean get() = phase == Phase.Playing
 
+    /** While a heading or announcement is read ("Ephesians 2:8." between favorites), the verse that follows: the one to name. */
+    private val upcomingVerse: Int?
+        get() = items.getOrNull(current)?.takeIf { it.isAnnouncement }?.let { items.drop(current).firstOrNull { item -> !item.isAnnouncement }?.key }
+
     /** "John 3:16", or the chapter while nothing is marked — `nowPlayingTitle`. */
     val nowPlayingTitle: String
-        get() = proseTitle ?: ListenQueue.title(speakingVerse ?: items.firstOrNull { !it.isAnnouncement }?.key)
+        get() = proseTitle ?: ListenQueue.title(upcomingVerse ?: speakingVerse ?: items.firstOrNull { !it.isAnnouncement }?.key)
             ?: passChapter?.let(Canon::display).orEmpty()
 
     /** "John 3 · BSB" — the album line of the lock-screen entry. */

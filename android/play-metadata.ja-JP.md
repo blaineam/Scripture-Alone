@@ -55,5 +55,5 @@ DRM フリーの ePub、テキストレイヤーのある聖書 PDF、USFM フ�
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.2.1 — 読書プラン、先の日まで表示。フォローしている教会のプランに今後の日程も表示されるようになり、「読書プラン」は「聴く」の横に専用ボタンができました。学びや黙想の読み上げはページを離れずに行え、読んでいる段落がハイライトされます。
+1.2.2 — 車の中でもScripture Alone。Android Autoで、今日の読書箇所、前回の続き、好きな書・章、お気に入りを選べます。お気に入りはプレイリストのように続けて再生。Googleアシスタントにも「Scripture Aloneでヨハネ3:16-21を再生」と頼めます。
 

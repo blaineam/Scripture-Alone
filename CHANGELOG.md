@@ -1,10 +1,10 @@
 # Changelog
 
-## 1.2.2 (in development)
+## 1.2.2 (2026-10-27)
 
 - **Scripture Alone in the car.** On CarPlay and Android Auto the app reads aloud from the car's own screen: today's reading
   from your plan (Spurgeon's meditation included), where you left off, any book and chapter, or a favorite — with the car's
-  play, pause and skip, and a speed button on CarPlay. In a car the Silent switch no longer mutes Listen. Ask Siri in CarPlay, or Google Assistant in Android Auto — “Play John 3:16–21 in Scripture Alone”. The player shows the app icon and the Bible version's name. On iPhone and Android.
+  play, pause and skip, and a speed button. A favorite plays on through the rest of your favorites as a playlist. In a car the Silent switch no longer mutes Listen. Ask Siri in CarPlay, or Google Assistant in Android Auto — “Play John 3:16–21 in Scripture Alone”. The player shows the app icon and the Bible version's name. On iPhone and Android.
 
 ## 1.2.1 (2026-10-25)
 

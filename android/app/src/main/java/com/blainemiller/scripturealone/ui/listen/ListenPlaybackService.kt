@@ -11,6 +11,7 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.SimpleBasePlayer
 import androidx.media3.common.util.UnstableApi
@@ -206,9 +207,11 @@ class ListenPlayer(private val context: Context, private val listen: ListenContr
                     Player.COMMAND_SET_MEDIA_ITEM, Player.COMMAND_CHANGE_MEDIA_ITEMS,
                     Player.COMMAND_SEEK_TO_NEXT, Player.COMMAND_SEEK_TO_PREVIOUS,
                     Player.COMMAND_GET_CURRENT_MEDIA_ITEM, Player.COMMAND_GET_TIMELINE, Player.COMMAND_GET_METADATA,
-                    Player.COMMAND_GET_AUDIO_ATTRIBUTES,
+                    Player.COMMAND_GET_AUDIO_ATTRIBUTES, Player.COMMAND_SET_SPEED_AND_PITCH,
                 ).build(),
             )
+            // The reader's reading speed, which a car's speed button steps through (the counterpart of CarPlay's).
+            .setPlaybackParameters(PlaybackParameters(listen.speed.toFloat()))
             .setPlayWhenReady(reading, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
             .setPlaybackState(if (phase is ListenController.Phase.Preparing) Player.STATE_BUFFERING else Player.STATE_READY)
             .setAudioAttributes(
@@ -242,6 +245,11 @@ class ListenPlayer(private val context: Context, private val listen: ListenContr
                 if (!CarLibrary.play(context, id)) listen.notice = context.getString(R.string.plans_unavailable)
             }
         }
+        return Futures.immediateVoidFuture()
+    }
+
+    override fun handleSetPlaybackParameters(playbackParameters: PlaybackParameters): ListenableFuture<*> {
+        listen.updateSpeed(playbackParameters.speed.toDouble())
         return Futures.immediateVoidFuture()
     }
 

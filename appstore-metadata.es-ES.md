@@ -66,7 +66,7 @@ rvr1960,reina valera,lbla,biblia,ansiedad,duelo,consuelo,devocional,sermones,com
 Ahora con la NASB 2020. Descubre lo que la Biblia dice de lo que estás viviendo y estudia sin conexión con comentarios, mapas y cronologías. Sin anuncios ni cuentas.
 
 ## whats_new
-1.2.1 — Planes de lectura, con más días por delante. Un plan de iglesia que sigues ahora muestra los días que faltan, tomados del plan anual publicado por la iglesia, y Planes de lectura tiene su propio botón junto a Escuchar. Leer en voz alta un estudio o una meditación te mantiene en la página y marca el párrafo que se lee.
+1.2.2 — Scripture Alone en el coche. En CarPlay elige la lectura de hoy, dónde lo dejaste, cualquier libro y capítulo o un favorito —los favoritos siguen como lista de reproducción— o pídele a Siri: «Reproduce Juan 3:16-21 en Scripture Alone». El interruptor de silencio ya no silencia la lectura en voz alta en el coche.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

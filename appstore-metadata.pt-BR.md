@@ -64,7 +64,7 @@ almeida,acf,nvi,arc,ara,kjv,temas,ansiedade,luto,consolo,comentário,devocional,
 Agora com a NASB 2020. Descubra o que a Bíblia diz sobre o que você está vivendo e estude offline com comentários, mapas e linhas do tempo. Sem anúncios, sem contas.
 
 ## whats_new
-1.2.1 — Planos de leitura, com mais dias à frente. Um plano de igreja que você acompanha agora mostra os dias que ainda virão, tirados do plano anual publicado pela igreja, e Planos de leitura tem um botão próprio ao lado de Ouvir. Ler em voz alta um estudo ou meditação mantém você na página e marca o parágrafo que está sendo lido.
+1.2.2 — Scripture Alone no carro. No CarPlay, escolha a leitura de hoje, onde você parou, qualquer livro e capítulo ou um favorito — os favoritos continuam como uma playlist — ou peça à Siri: “Toque João 3:16-21 no Scripture Alone”. O botão de silêncio não silencia mais a leitura em voz alta no carro.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

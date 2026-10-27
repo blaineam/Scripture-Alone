@@ -66,7 +66,7 @@ NASB 2020 与 NASB 1995 © The Lockman Foundation。经许可使用。www.Lockma
 现已支持 NASB 2020。找到圣经对你正在经历之事的话语，并借助注释、地图与时间线离线研读。无广告，无需账户。
 
 ## whats_new
-1.2.1 — 阅读计划，提前看到后面的日子。你跟随的教会计划现在会显示接下来的日期，来自教会公布的年度计划；“阅读计划”在“收听”旁有了专属按钮。朗读学习或默想时无需离开页面，并会标出正在朗读的段落。
+1.2.2 — 在车里也能用 Scripture Alone。在 CarPlay 上可选择今日读经、上次读到的位置、任意书卷与章节或收藏——收藏会像播放列表一样接着播放——也可以对 Siri 说“在 Scripture Alone 中播放约翰福音 3:16-21”。在车里，静音开关不再让朗读无声。
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

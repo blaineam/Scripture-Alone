@@ -53,5 +53,5 @@ Subrayados, notas y favoritos se quedan en tu dispositivo. Sin servidor ni cuent
 Hecha para ayudar a estudiar la Palabra de Dios y acercarse más a Cristo.
 
 ## release_notes
-1.2.1 — Planes de lectura, con más días por delante. Un plan de iglesia que sigues ahora muestra los días que faltan, y Planes de lectura tiene su propio botón junto a Escuchar. Leer en voz alta un estudio o una meditación te mantiene en la página y marca el párrafo que se lee.
+1.2.2 — Scripture Alone en el coche. En Android Auto elige la lectura de hoy, dónde lo dejaste, cualquier libro y capítulo o un favorito —los favoritos siguen como lista de reproducción— o pídeselo al Asistente de Google: «Reproduce Juan 3:16-21 en Scripture Alone».
 

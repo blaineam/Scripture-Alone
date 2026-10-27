@@ -55,5 +55,5 @@ DRM이 없는 ePub, 텍스트 레이어가 있는 성경 PDF, USFM 파일처럼 
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.2.1 — 앞날까지 보이는 읽기 계획. 따라가는 교회 계획에 앞으로의 날짜가 표시되고, 읽기 계획은 듣기 옆에 전용 버튼이 생겼습니다. 공부나 묵상 읽어 주기는 페이지를 벗어나지 않고 읽는 문단을 표시합니다.
+1.2.2 — 차 안에서도 Scripture Alone. Android Auto에서 오늘의 읽기, 마지막으로 읽은 곳, 원하는 책과 장, 즐겨찾기를 고를 수 있고, 즐겨찾기는 재생목록처럼 이어서 재생됩니다. Google 어시스턴트에게 “Scripture Alone에서 요한복음 3:16-21 재생해 줘”라고 말해도 됩니다.
 

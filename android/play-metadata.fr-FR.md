@@ -53,5 +53,5 @@ Vos surlignages, notes et favoris restent sur votre appareil : ni serveur, ni co
 Conçue pour aider à étudier la Parole de Dieu et à se rapprocher du Christ.
 
 ## release_notes
-1.2.1 — Plans de lecture, plus loin devant vous. Un plan d’église que vous suivez affiche désormais les jours à venir, et Plans de lecture a son propre bouton à côté d’Écouter. La lecture à voix haute d’une étude ou d’une méditation reste sur la page et marque le paragraphe lu.
+1.2.2 — Scripture Alone en voiture. Sur Android Auto, choisissez la lecture du jour, là où vous vous étiez arrêté, n’importe quel livre et chapitre ou un favori — les favoris s’enchaînent comme une liste de lecture — ou demandez à l’Assistant Google : « Lis Jean 3:16-21 sur Scripture Alone ».
 

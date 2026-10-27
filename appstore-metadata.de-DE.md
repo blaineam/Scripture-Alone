@@ -66,7 +66,7 @@ andacht,predigt,kommentar,themen,trost,angst,trauer,lutherbibel,elberfelder,kjv,
 Jetzt mit der NASB 2020. Finde, was die Bibel zu dem sagt, was dich bewegt, und studiere offline mit Kommentaren, Karten und Zeitleisten. Ohne Werbung, ohne Konto.
 
 ## whats_new
-1.2.1 — Lesepläne, weiter vorausgeschaut. Ein Gemeindeplan, dem du folgst, zeigt jetzt auch die kommenden Tage – aus dem veröffentlichten Jahresplan der Gemeinde –, und die Lesepläne haben neben dem Anhören-Knopf eine eigene Schaltfläche. Vorlesen bei einer Studie oder Betrachtung bleibt auf der Seite und markiert den gerade gelesenen Absatz.
+1.2.2 — Scripture Alone im Auto. Auf CarPlay wählst du die heutige Lesung, die Stelle, an der du aufgehört hast, ein beliebiges Buch und Kapitel oder einen Favoriten – Favoriten laufen als Playlist weiter – oder bittest Siri: „Spiele Johannes 3,16–21 in Scripture Alone.“ Der Stummschalter schaltet das Vorlesen im Auto nicht mehr stumm.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/
