@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.2.3 — Android Auto: fixed choosing a chapter or favorite sometimes starting at John 1 instead. Search a passage by typing or saying it in the car’s search box, choose among your reading plans, and hear your church’s weekly study. Readings you start from the car are no longer silenced by a phone set to vibrate.
+1.2.4 — Android Auto: fixed choosing a chapter or favorite sometimes starting at John 1 instead. Search a passage by typing or saying it in the car’s search box, choose among your reading plans, and hear your church’s weekly study. Readings you start from the car are no longer silenced by a phone set to vibrate.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

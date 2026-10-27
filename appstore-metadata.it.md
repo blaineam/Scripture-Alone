@@ -66,7 +66,7 @@ bibbia,riveduta,diodati,cei,argomenti,ansia,lutto,conforto,devozionale,sermone,r
 Ora con la NASB 2020. Scopri che cosa dice la Bibbia di ciò che stai vivendo e studia offline con commentari, mappe e cronologie. Senza pubblicità né account.
 
 ## whats_new
-1.2.3 — In auto scegli tra i tuoi piani di lettura e ascolta lo studio settimanale della tua chiesa, con piccoli miglioramenti alla lettura ad alta voce in viaggio.
+1.2.4 — In auto scegli tra i tuoi piani di lettura e ascolta lo studio settimanale della tua chiesa, con piccoli miglioramenti alla lettura ad alta voce in viaggio.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

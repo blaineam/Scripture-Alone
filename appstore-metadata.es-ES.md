@@ -66,7 +66,7 @@ rvr1960,reina valera,lbla,biblia,ansiedad,duelo,consuelo,devocional,sermones,com
 Ahora con la NASB 2020. Descubre lo que la Biblia dice de lo que estás viviendo y estudia sin conexión con comentarios, mapas y cronologías. Sin anuncios ni cuentas.
 
 ## whats_new
-1.2.3 — En el coche, elige entre tus planes de lectura y escucha el estudio semanal de tu iglesia, con pequeñas mejoras en la lectura en voz alta en carretera.
+1.2.4 — En el coche, elige entre tus planes de lectura y escucha el estudio semanal de tu iglesia, con pequeñas mejoras en la lectura en voz alta en carretera.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

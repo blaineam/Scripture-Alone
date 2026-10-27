@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.3 (2026-10-27)
+## 1.2.4 (2026-10-27)
 
 - **Your reading plans in the car.** With two or more plans started, Listen has a "Reading Plans" list: choose a plan and
   today's reading in it plays. A church plan with a weekly study (Disciples Church's Saturday study) adds a "Weekly Study"

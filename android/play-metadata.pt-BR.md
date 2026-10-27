@@ -53,5 +53,5 @@ As suas marcações, notas e favoritos ficam no seu aparelho. Não há servidor 
 Feito para ajudar as pessoas a estudar a Palavra de Deus e a se aproximar de Cristo.
 
 ## release_notes
-1.2.3 — Android Auto: corrigido o problema em que escolher um capítulo ou favorito às vezes começava em João 1. Busque um trecho digitando ou falando na busca do carro, escolha entre seus planos de leitura e ouça o estudo semanal da sua igreja. Leituras iniciadas no carro não são mais silenciadas por um celular no modo vibrar.
+1.2.4 — Android Auto: corrigido o problema em que escolher um capítulo ou favorito às vezes começava em João 1. Busque um trecho digitando ou falando na busca do carro, escolha entre seus planos de leitura e ouça o estudo semanal da sua igreja. Leituras iniciadas no carro não são mais silenciadas por um celular no modo vibrar.
 

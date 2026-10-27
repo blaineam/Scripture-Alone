@@ -53,5 +53,5 @@ Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 
 ## release_notes
-1.2.3 — Android Auto: Die Auswahl eines Kapitels oder Favoriten startete manchmal stattdessen bei Johannes 1 – behoben. Suche eine Stelle per Tippen oder Sprechen im Suchfeld des Autos, wähle zwischen deinen Leseplänen und höre die wöchentliche Studie deiner Gemeinde. Im Auto gestartete Lesungen werden nicht mehr von einem Telefon im Vibrationsmodus stummgeschaltet.
+1.2.4 — Android Auto: Die Auswahl eines Kapitels oder Favoriten startete manchmal stattdessen bei Johannes 1 – behoben. Suche eine Stelle per Tippen oder Sprechen im Suchfeld des Autos, wähle zwischen deinen Leseplänen und höre die wöchentliche Studie deiner Gemeinde. Im Auto gestartete Lesungen werden nicht mehr von einem Telefon im Vibrationsmodus stummgeschaltet.
 
