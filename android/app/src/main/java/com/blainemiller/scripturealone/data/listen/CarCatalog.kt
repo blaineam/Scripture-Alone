@@ -29,6 +29,8 @@ sealed interface CarAction {
     data class Chapter(val ref: ChapterRef) : CarAction
     /** A favorite: stored (KJV) verse keys. */
     data class Range(val range: VerseRange) : CarAction
+    /** A favorite, read on through the others: this range first, then those after it, then those before it. */
+    data class Favorites(val from: VerseRange) : CarAction
     /** What the assistant heard: "play John 3:16-21". A reference, in the app's language; blank means "play something". */
     data class Spoken(val query: String) : CarAction
 
@@ -37,6 +39,7 @@ sealed interface CarAction {
         const val CONTINUE = "play:continue"
         fun chapterId(ref: ChapterRef) = "play:chapter:${ref.book}:${ref.chapter}"
         fun rangeId(range: VerseRange) = "play:range:${range.storageString}"
+        fun favoritesId(from: VerseRange) = "play:favorites:${from.storageString}"
         fun spokenId(query: String) = "play:spoken:$query"
 
         /** The action a media id stands for; null for a folder or anything unknown. */
@@ -53,6 +56,7 @@ sealed interface CarAction {
                 }
                 // The query may hold colons ("John 3:16"), so it is everything after the third separator.
                 "spoken" -> Spoken(id.split(":", limit = 3).getOrNull(2).orEmpty())
+                "favorites" -> parts.getOrNull(2)?.let { VerseRange.parse(it) }?.let(::Favorites)
                 "range" -> parts.getOrNull(2)?.let { VerseRange.parse(it) }?.let(::Range)
                 else -> null
             }
@@ -85,7 +89,7 @@ object CarCatalog {
             CarEntry("nt", labels.newTestament, null, grouped("nt", new.map { book(it, limit) }, limit)),
         ))
         val saved = CarEntry("favs", labels.favorites, null, grouped("favs",
-            favorites.map { CarEntry(CarAction.rangeId(it), display(it)) }, limit))
+            favorites.map { CarEntry(CarAction.favoritesId(it), display(it)) }, limit))
         return CarEntry(ROOT, "Scripture Alone", null, listOf(listen, books, saved))
     }
 

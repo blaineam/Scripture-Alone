@@ -71,7 +71,7 @@ struct CarPlayCatalogTests {
         let a = VerseRange(VerseRef(.john, 3, 16))
         let b = VerseRange(VerseRef(.psalms, 23, 1), VerseRef(.psalms, 23, 3))
         let rows = CarPlayCatalog.favorites([a, b], display: { $0.display })
-        #expect(rows.map(\.action) == [.playRange(a), .playRange(b)])
+        #expect(rows.map(\.action) == [.playFavorites(from: a, all: [a, b]), .playFavorites(from: b, all: [a, b])])
         #expect(CarPlayCatalog.favorites([], display: { $0.display }).isEmpty)
     }
 }
@@ -166,6 +166,7 @@ struct CarPlayTemplateTests {
         plans.start(PlanCatalog.book(.john))
         #expect(player.perform(.playToday) == .started)
         #expect(player.perform(.playRange(VerseRange(VerseRef(.john, 3, 16), VerseRef(.john, 3, 17)))) == .started)
+        #expect(player.perform(.playFavorites(from: VerseRange(VerseRef(.john, 3, 16)), all: [VerseRange(VerseRef(.john, 3, 16)), VerseRange(VerseRef(.psalms, 23, 1))])) == .started)
         #expect(player.perform(.playContinue) == .started)
     }
 

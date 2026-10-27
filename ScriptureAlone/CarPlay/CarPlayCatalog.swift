@@ -13,6 +13,8 @@ struct CarPlayEntry: Equatable {
         case playChapter(ChapterRef)
         /// A favorite: stored (KJV) verse keys.
         case playRange(VerseRange)
+        /// A favorite, read on through the others: the chosen range, and all of them in the order listed.
+        case playFavorites(from: VerseRange, all: [VerseRange])
         /// A folder of more rows — a testament, a book, a run of chapters.
         case open(title: String, entries: [CarPlayEntry])
     }
@@ -72,7 +74,7 @@ enum CarPlayCatalog {
     // MARK: Favorites
 
     static func favorites(_ ranges: [VerseRange], display: (VerseRange) -> String, limit: Int = defaultLimit) -> [CarPlayEntry] {
-        grouped(ranges.map { CarPlayEntry(title: display($0), detail: nil, action: .playRange($0)) }, limit: limit)
+        grouped(ranges.map { CarPlayEntry(title: display($0), detail: nil, action: .playFavorites(from: $0, all: ranges)) }, limit: limit)
     }
 
     // MARK: Limits

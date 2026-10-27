@@ -61,7 +61,7 @@ class CarCatalogTest {
         val a = VerseRange(VerseRef(43, 3, 16), VerseRef(43, 3, 16))
         val b = VerseRange(VerseRef(19, 23, 1), VerseRef(19, 23, 3))
         val rows = tree(favorites = listOf(a, b)).children!![2].children!!
-        assertEquals(listOf(CarAction.Range(a), CarAction.Range(b)), rows.map { CarAction.parse(it.id) })
+        assertEquals(listOf(CarAction.Favorites(a), CarAction.Favorites(b)), rows.map { CarAction.parse(it.id) })
         assertEquals(listOf("John 3:16", "Psalms 23:1–3"), rows.map { it.title })
         assertTrue(tree().children!![2].children!!.isEmpty())
         // Folders, unknown and out-of-range ids are not actions.

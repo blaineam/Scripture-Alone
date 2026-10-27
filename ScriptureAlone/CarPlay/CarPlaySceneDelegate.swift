@@ -97,16 +97,19 @@ final class CarPlayTemplates {
         CPNowPlayingTemplate.shared.updateNowPlayingButtons([button])
     }
 
-    /// "1.25×" as a template image, which CarPlay tints to match the other buttons. CarPlay scales the image to its
-    /// button, so the canvas hugs the text: any room around it would shrink the letters.
+    /// The speed as a template image, which CarPlay tints to match the other buttons. CarPlay scales the image to its
+    /// button, so every speed is drawn on the same canvas (the widest label's) at the same size: the letters stay as
+    /// large as that allows, and one speed doesn't look smaller than the next.
     static func speedImage(_ label: String) -> UIImage {
-        let text = NSAttributedString(string: label, attributes: [
-            .font: UIFont.systemFont(ofSize: 60, weight: .bold), .foregroundColor: UIColor.black,
-        ])
-        let box = text.size()
-        let size = CGSize(width: ceil(box.width) + 4, height: ceil(box.height))
+        func text(_ string: String) -> NSAttributedString {
+            NSAttributedString(string: string, attributes: [.font: UIFont.systemFont(ofSize: 60, weight: .bold), .foregroundColor: UIColor.black])
+        }
+        let widest = text("1¼×").size()
+        let size = CGSize(width: ceil(widest.width) + 4, height: ceil(widest.height))
+        let drawn = text(label)
+        let box = drawn.size()
         let image = UIGraphicsImageRenderer(size: size).image { _ in
-            text.draw(at: CGPoint(x: 2, y: 0))
+            drawn.draw(at: CGPoint(x: (size.width - box.width) / 2, y: (size.height - box.height) / 2))
         }
         return image.withRenderingMode(.alwaysTemplate)
     }

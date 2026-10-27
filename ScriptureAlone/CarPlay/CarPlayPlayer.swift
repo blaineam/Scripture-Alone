@@ -57,6 +57,17 @@ final class CarPlayPlayer {
             let passage = Passage(book: native.start.book, startChapter: native.start.chapter, startVerse: native.start.verse,
                                   endChapter: native.end.chapter, endVerse: native.end.verse)
             return listen.playReading([PlanPassage(passage)], in: model) ? .started : unavailable
+        case .playFavorites(let from, let all):
+            // A playlist: the one chosen, then those after it, then those before it — each announced by its
+            // reference, since a verse alone doesn't say where it is from.
+            let start = all.firstIndex(of: from) ?? 0
+            let ordered = Array(all[start...]) + Array(all[..<start])
+            let passages = ordered.map { range -> PlanPassage in
+                let native = model.numbering.nativeRange(range) ?? range
+                return PlanPassage(Passage(book: native.start.book, startChapter: native.start.chapter, startVerse: native.start.verse,
+                                           endChapter: native.end.chapter, endVerse: native.end.verse))
+            }
+            return listen.playReading(passages, announcing: true, in: model) ? .started : unavailable
         case .open:
             return .started
         }
@@ -79,7 +90,12 @@ final class CarPlayPlayer {
     }
 
     var speedLabel: String {
+        // Fractions are the shortest way to write these, and a short label is a large one: CarPlay scales the
+        // button's image to fit, so every extra character shrinks the letters.
         let s = listen.speed
+        let whole = Int(s.rounded(.down))
+        let fraction = ["0.25": "¼", "0.5": "½", "0.75": "¾"][String(format: "%g", s - Double(whole))] ?? ""
+        if !fraction.isEmpty { return (whole == 0 ? "" : String(whole)) + fraction + "×" }
         return (s == s.rounded() ? String(Int(s)) : String(format: "%g", s)) + "×"
     }
 }

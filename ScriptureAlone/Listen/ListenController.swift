@@ -218,10 +218,18 @@ final class ListenController {
     /// its heading, then the verse in the reader's translation, then the meditation. False when the
     /// translation has none of the passages to read (not downloaded, an online key missing).
     @discardableResult
-    func playReading(_ passages: [PlanPassage], devotions: [PlanDevotion] = [], in model: ReaderModel) -> Bool {
+    func playReading(_ passages: [PlanPassage], devotions: [PlanDevotion] = [], announcing: Bool = false, in model: ReaderModel) -> Bool {
         guard model.source != nil else { return false }
         var items: [Item] = []
-        if devotions.isEmpty || devotions.count != passages.count {
+        if announcing {
+            // A playlist of unrelated passages: each is named before it is read.
+            for passage in passages {
+                let verses = readingItems([passage], model: model)
+                guard !verses.isEmpty else { continue }
+                items.append(Item(key: 0, text: passage.display + "."))
+                items += verses
+            }
+        } else if devotions.isEmpty || devotions.count != passages.count {
             items = readingItems(passages, model: model)
         } else {
             for (passage, devotion) in zip(passages, devotions) {
@@ -317,6 +325,7 @@ final class ListenController {
         notice = nil
         presentation.sessionStarted()
         session += 1
+        artwork = nil
         #if os(iOS)
         if SilentSwitch.applies {
             // Read the ring/silent switch before a word is spoken, so Silent mode never lets the first
@@ -906,7 +915,8 @@ final class ListenController {
             MPNowPlayingInfoPropertyDefaultPlaybackRate: speed,
             MPNowPlayingInfoPropertyPlaybackRate: phase == .playing ? speed : 0.0,
         ]
-        if let artwork = Self.artwork { info[MPMediaItemPropertyArtwork] = artwork }
+        if artwork == nil { artwork = Self.makeArtwork() }
+        if let artwork { info[MPMediaItemPropertyArtwork] = artwork }
         // Each reading is its own item to the system, which fetches an item's artwork once: without an identity a
         // reading started right after another (a favorite from the car) could keep, or never get, its cover.
         info[MPNowPlayingInfoPropertyExternalContentIdentifier] = "reading-\(session)"
@@ -923,14 +933,20 @@ final class ListenController {
     }
 
     /// The app icon, shown on the lock screen, in Control Center and on the car's screen.
-    private static let artwork: MPMediaItemArtwork? = {
+    /// Redrawn into an in-memory bitmap (an asset's image can be purged, and the system asks for the cover long after
+    /// it was set), and made anew for each reading so the system asks for it again.
+    private static func makeArtwork() -> MPMediaItemArtwork? {
         #if canImport(UIKit)
-        guard let image = UIImage(named: "NowPlayingArt") else { return nil }
-        return MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+        guard let source = UIImage(named: "NowPlayingArt") else { return nil }
+        let format = UIGraphicsImageRendererFormat.preferred()
+        format.scale = 1
+        let bitmap = UIGraphicsImageRenderer(size: source.size, format: format).image { _ in source.draw(at: .zero) }
+        return MPMediaItemArtwork(boundsSize: bitmap.size) { @Sendable _ in bitmap }
         #else
         return nil
         #endif
-    }()
+    }
+    @ObservationIgnored private var artwork: MPMediaItemArtwork?
 
     private func clearNowPlaying() {
         let center = MPNowPlayingInfoCenter.default()

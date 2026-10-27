@@ -26,6 +26,13 @@ custom, and nothing to read while driving.
   `res/xml/automotive_app_desc.xml` declares a media app. `CarLibraryServiceTest` (instrumented) connects a `MediaBrowser`,
   browses and chooses a chapter, as Android Auto does.
 
+## Favorites play as a playlist
+
+Choosing a favorite reads it and then goes on through the rest of the list — the ones after it, then the ones before it — each
+named by its reference before it is read (`CarPlayEntry.Action.playFavorites`, `CarAction.Favorites`). The speed button is an
+image the app draws (the system's rate button reads a media player's rate, and speech has none); its labels are fractions
+(¾× 1× 1¼× 1½× 2×) on one canvas so they stay large.
+
 ## Limits, on purpose
 
 - CarPlay reads the translation the reader chose when it is on the phone — bundled or **imported** (the car's reader is given the

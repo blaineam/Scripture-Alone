@@ -75,6 +75,17 @@ object CarLibrary {
                 val passages = ReferenceParser.parseList(SpokenReference.normalize(query))
                 if (passages.isEmpty()) false else listen.playReading(passages.map(PlanPassage::of), translation)
             }
+            is CarAction.Favorites -> {
+                // A playlist: the one chosen, those after it, then those before it, each named before it is read.
+                val all = favorites(context)
+                val start = all.indexOf(action.from).coerceAtLeast(0)
+                val ordered = (if (all.isEmpty()) listOf(action.from) else all.drop(start) + all.take(start))
+                val passages = ordered.mapNotNull { r ->
+                    val book = com.blainemiller.scripturealone.data.canon.BookID.of(r.start.book) ?: return@mapNotNull null
+                    PlanPassage.of(Passage.of(book, r.start.chapter, r.start.verse, r.end.chapter, r.end.verse))
+                }
+                listen.playReading(passages, translation, announce = true)
+            }
             is CarAction.Range -> {
                 val r = action.range
                 val passage = Passage.of(com.blainemiller.scripturealone.data.canon.BookID.of(r.start.book) ?: return false,

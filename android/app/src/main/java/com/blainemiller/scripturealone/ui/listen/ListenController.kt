@@ -242,12 +242,18 @@ class ListenController private constructor(private val app: Context) {
      * an online key missing). UI-free: the reader's Listen, a notification and a launcher shortcut — and a
      * later car entry — all start a reading through this.
      */
-    suspend fun playReading(passages: List<PlanPassage>, translation: String, devotions: List<PlanDevotion> = emptyList()): Boolean {
+    suspend fun playReading(passages: List<PlanPassage>, translation: String, devotions: List<PlanDevotion> = emptyList(), announce: Boolean = false): Boolean {
         val loaded = withContext(Dispatchers.IO) {
             val source = runCatching { BundledTranslations.source(app, translation) }.getOrNull() ?: return@withContext null
             val cache = mutableMapOf<ChapterRef, Chapter?>()
             fun chapter(ref: ChapterRef) = cache.getOrPut(ref) { runCatching { source.chapter(ref) }.getOrNull() }
-            val items = ListenQueue.devotionItems(passages, devotions) { chapter(it)?.verses.orEmpty() }
+            val items = if (announce) {
+                // A playlist of unrelated passages: each is named before it is read.
+                passages.flatMap { p ->
+                    val verses = ListenQueue.readingItems(listOf(p)) { chapter(it)?.verses.orEmpty() }
+                    if (verses.isEmpty()) verses else listOf(ListenQueue.Item(0, p.display + ".")) + verses
+                }
+            } else ListenQueue.devotionItems(passages, devotions) { chapter(it)?.verses.orEmpty() }
             val info = passages.firstNotNullOfOrNull { p -> p.chapters.firstNotNullOfOrNull { (b, c) -> chapter(ChapterRef(b.number, c))?.translation } }
             if (items.isEmpty() || info == null) null else Triple(items, info.rights, info.language)
         } ?: return false
