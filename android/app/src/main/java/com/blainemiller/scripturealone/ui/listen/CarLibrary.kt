@@ -66,6 +66,7 @@ object CarLibrary {
 
     /** Starts reading what [id] names. False when there is nothing to read (no plan, a translation that isn't here). */
     suspend fun play(context: Context, id: String, fromCar: Boolean = true): Boolean {
+        android.util.Log.i("SAVoice", "play id=$id")
         val listen = ListenController.get(context)
         listen.startedFromCar = fromCar
         val translation = translation(context)

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Looper
+import android.os.SystemClock
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.media3.common.AudioAttributes
@@ -24,6 +25,7 @@ import androidx.media3.session.MediaSession
 import com.blainemiller.scripturealone.data.listen.CarAction
 import com.blainemiller.scripturealone.data.listen.CarCatalog
 import com.blainemiller.scripturealone.data.listen.CarEntry
+import com.blainemiller.scripturealone.data.listen.SpokenReference
 import com.blainemiller.scripturealone.data.listen.VoiceQuery
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListeningExecutorService
@@ -104,6 +106,25 @@ class ListenPlaybackService : MediaLibraryService() {
         ): ListenableFuture<MutableList<MediaItem>> = Futures.immediateFuture(mediaItems.map(::voiceItem).toMutableList())
 
         /**
+         * The car's own search box (the magnifier on the media screen, which takes a typed or spoken phrase and sends it straight to
+         * the app — the route that needs no assistant's blessing). What was said is read as a passage, today's reading or "continue",
+         * and offered as one row to choose; [onGetSearchResult] returns it.
+         */
+        override fun onSearch(
+            session: MediaLibrarySession, browser: MediaSession.ControllerInfo, query: String, params: MediaLibraryService.LibraryParams?,
+        ): ListenableFuture<LibraryResult<Void>> {
+            android.util.Log.i("SAVoice", "car search query=$query")
+            session.notifySearchResultChanged(browser, query, searchItems(query).size, params)
+            return Futures.immediateFuture(LibraryResult.ofVoid())
+        }
+
+        override fun onGetSearchResult(
+            session: MediaLibrarySession, browser: MediaSession.ControllerInfo, query: String, page: Int, pageSize: Int,
+            params: MediaLibraryService.LibraryParams?,
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
+            Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.copyOf(searchItems(query).drop(page * pageSize).take(pageSize)), params))
+
+        /**
          * A bare "play" (a car's play button, a headset's, Assistant's "resume") when the service is not reading: carry on where the
          * reader left off, as the Continue row does.
          */
@@ -114,6 +135,18 @@ class ListenPlaybackService : MediaLibraryService() {
                 listOf(MediaItem.Builder().setMediaId(CarAction.CONTINUE).build()), 0, C.TIME_UNSET,
             ),
         )
+    }
+
+    /** The row a phrase typed or spoken into the car's search offers: what it names, as a playable item. */
+    private fun searchItems(query: String): List<MediaItem> {
+        val id = CarAction.spokenId(listOf(query))
+        val title = when (val request = SpokenReference.plan(listOf(query))) {
+            SpokenReference.Request.Today -> getString(R.string.car_today)
+            SpokenReference.Request.Resume -> getString(R.string.car_continue)
+            is SpokenReference.Request.Read -> request.passages.joinToString("; ") { it.display }
+            SpokenReference.Request.Unknown -> return emptyList()
+        }
+        return listOf(item(CarEntry(id, title, getString(R.string.car_listen))))
     }
 
     override fun onCreate() {
@@ -167,6 +200,9 @@ internal fun voiceItem(item: MediaItem): MediaItem {
     android.util.Log.i("SAVoice", "heard query=${request.searchQuery} extraKeys=${extras?.keySet()?.toList()} phrases=$phrases")
     return item.buildUpon().setMediaId(CarAction.spokenId(phrases)).build()
 }
+
+/** How long after a car chose something a "continue" is taken for the echo of that choice ([ListenPlayer.handleSetMediaItems]). */
+private const val RESUMPTION_ECHO_MS = 3_000L
 
 /**
  * [ListenController] presented as a media3 `Player`. It owns nothing: every state it reports is read
@@ -257,6 +293,9 @@ class ListenPlayer(private val context: Context, private val listen: ListenContr
             .build()
     }
 
+    /** When a car last chose something to read (a row, a search result, a voice request), to tell a real "continue" from the echo of one. */
+    private var lastChosenAt = Long.MIN_VALUE / 2
+
     override fun handleSetPlayWhenReady(playWhenReady: Boolean): ListenableFuture<*> {
         if (failure != null) setFailure(null)
         if (playWhenReady) listen.resume() else listen.pause()
@@ -274,6 +313,11 @@ class ListenPlayer(private val context: Context, private val listen: ListenContr
     /** A row chosen in a car: read what its id names (today's reading, a chapter, a favorite). */
     override fun handleSetMediaItems(mediaItems: MutableList<MediaItem>, startIndex: Int, startPositionMs: Long): ListenableFuture<*> {
         val id = mediaItems.getOrNull(startIndex.coerceAtLeast(0))?.mediaId
+        // A row chosen in a car arrives as set-item, prepare, play — and the play, finding nothing yet reading (it starts a
+        // moment later), asks the session to resume, which comes here as "continue". That is not a second request: it must not
+        // replace what was just chosen (it read John 1 whatever was asked for).
+        if (id == CarAction.CONTINUE && SystemClock.elapsedRealtime() - lastChosenAt < RESUMPTION_ECHO_MS) return Futures.immediateVoidFuture()
+        if (id != null && id != CarAction.CONTINUE) lastChosenAt = SystemClock.elapsedRealtime()
         if (id != null && id != "listen") {
             failure = null
             scope.launch {

@@ -69,5 +69,25 @@ class CarLibraryServiceTest {
         var presented = false
         repeat(40) { if (!presented) { Thread.sleep(500); presented = onMain { listen.isPresented } } }
         assertTrue("choosing a chapter in the car starts Listen", presented)
+        var chapterTitle = ""
+        repeat(30) { if (chapterTitle != "John 3:1") { Thread.sleep(500); chapterTitle = onMain { listen.nowPlayingTitle } } }
+        assertEquals("a chapter row reads that chapter", "John 3:1", chapterTitle)
+    }
+
+    @Test fun theCarsSearchBoxOffersAPassageToPlay() {
+        onMain { browser!!.search("John chapter 3", null) }.get(20, TimeUnit.SECONDS)
+        val found = onMain { browser!!.getSearchResult("John chapter 3", 0, 10, null) }.get(20, TimeUnit.SECONDS).value!!.toList()
+        assertEquals(1, found.size)
+        assertEquals("John 3", found[0].mediaMetadata.title.toString())
+        assertTrue(found[0].mediaMetadata.isPlayable == true)
+        onMain { browser!!.setMediaItem(found[0]); browser!!.prepare(); browser!!.play() }
+        val listen = ListenController.get(context)
+        var presented = false
+        repeat(40) { if (!presented) { Thread.sleep(500); presented = onMain { listen.isPresented } } }
+        assertTrue("choosing the result starts Listen", presented)
+        // The title follows the verse once the voice starts it; wait for that, and say what it was if it never does.
+        var title = ""
+        repeat(30) { if (title != "John 3:1") { Thread.sleep(500); title = onMain { listen.nowPlayingTitle } } }
+        assertEquals("John 3:1", title)
     }
 }
