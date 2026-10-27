@@ -45,6 +45,13 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- "Hey Google, play John 3:16 on Scripture Alone": how an assistant finds a media app that can be asked
+                 for something by name. The words arrive as the query; MainActivity reads them as a reference and
+                 starts the reading (the car's own route is the media session: ui/listen/ListenPlaybackService). -->
+            <intent-filter>
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
             <!-- The app's links (data/share/AppLink.kt, AppCommand.kt): scripturealone://open?ref=… (stored
                  keys, OSIS, urn:osis:, a typed reference in any of the app's languages), passage/<ref>,
                  search?q=…, note/<uuid>, notes, favorites, share links (…#s=…), and the shortcuts' today,

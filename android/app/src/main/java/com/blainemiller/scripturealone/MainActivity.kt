@@ -3,6 +3,8 @@ package com.blainemiller.scripturealone
 import com.blainemiller.scripturealone.ui.appearance.RatingPrompt
 import android.content.Intent
 import android.os.Bundle
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import android.view.KeyEvent
 import android.view.KeyboardShortcutGroup
 import android.view.KeyboardShortcutInfo
@@ -148,6 +150,15 @@ class MainActivity : ComponentActivity() {
      * trusted.
      */
     private fun openFromIntent(intent: Intent?) {
+        // An assistant's "play <passage> on Scripture Alone": read the words as a reference (or today's reading) and start.
+        if (intent?.action == android.provider.MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH) {
+            val query = intent.getStringExtra(android.app.SearchManager.QUERY).orEmpty()
+            val id = com.blainemiller.scripturealone.data.listen.CarAction.spokenId(query)
+            lifecycleScope.launch {
+                com.blainemiller.scripturealone.ui.listen.CarLibrary.play(this@MainActivity, id, fromCar = false)
+            }
+            return
+        }
         // Text from another app (ui/share/TextEntryActivity): a reference, or words to search. Only ever
         // something to look at, so it needs no trust.
         if (intent?.action == ACTION_OPEN_TEXT) {
