@@ -26,7 +26,7 @@ object ScriptureLink {
         val ref = uri.rawQuery.orEmpty().split('&')
             .map { it.split('=', limit = 2) }
             .firstOrNull { it.size == 2 && it[0] == "ref" }
-            ?.let { URLDecoder.decode(it[1], Charsets.UTF_8) }
+            ?.let { URLDecoder.decode(it[1], "UTF-8") }
             ?: return null
         VerseRange.parse(ref)?.let { return it }
         return ref.toIntOrNull()?.let { VerseRange.ref(it) }?.let { VerseRange(it, it) }

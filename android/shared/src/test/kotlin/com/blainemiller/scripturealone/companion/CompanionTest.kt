@@ -28,6 +28,18 @@ class CompanionTest {
         assertNull(ScriptureLink.range("not a url at all"))
     }
 
+    @Test fun percentEncodedRefDecodes() {
+        val single = VerseRef(BookID.JOHN.number, 3, 16)
+        assertEquals(VerseRange(single, single), ScriptureLink.range("scripturealone://open?ref=%34%33003016"))
+    }
+
+    // `URLDecoder.decode(String, Charset)` is API 33+; the host JVM has it, so a unit test can't hit the
+    // NoSuchMethodError seen on API 30 watches. Guard the source instead.
+    @Test fun linkParsingAvoidsApi33Decoder() {
+        val source = java.io.File("src/main/kotlin/com/blainemiller/scripturealone/companion/ScriptureLink.kt").readText()
+        assertFalse(Regex("""URLDecoder\.decode\([^)]*Charsets?\.""").containsMatchIn(source))
+    }
+
     // VerseStyling.openingWords / VerseAccessoryView.split
 
     @Test fun openingWordsForTightSpaces() {
