@@ -115,6 +115,9 @@ android {
     sourceSets["main"].assets.srcDir(layout.buildDirectory.dir("generated/watchData"))
     // The launcher icon, copied from the phone app's resources (`syncWatchIcon`) — one icon, one copy.
     sourceSets["main"].res.srcDir(layout.buildDirectory.dir("generated/watchIcon"))
+    // The Topics directory's names, descriptions and search words in each language, copied from the phone
+    // app's resources (`syncWatchTopics`) — one translation, one copy.
+    sourceSets["main"].res.srcDir(layout.buildDirectory.dir("generated/watchTopics"))
 
     androidResources {
         // SQLite files and sealed packages must be stored uncompressed to be copied out cheaply, as in
@@ -147,8 +150,9 @@ android {
 /**
  * The watch's own Bible — the sealed NASB 2020 with the signing keys of every sealed translation it may
  * hold, or, without it, the ASV's compact edition (`Tools/build_companion_data.py`) — and
- * `DailyVerses.json`, copied from the iOS sources so both watches read byte-identical data. Nothing is
- * committed twice.
+ * `DailyVerses.json`, copied from the iOS sources so both watches read byte-identical data, and
+ * `LifeThemes.json`, the Topics directory's themes and passages (the iOS core's, as the phone has it).
+ * Nothing is committed twice.
  */
 val syncWatchData by tasks.registering(Sync::class) {
     if (carriesNasb) {
@@ -166,6 +170,9 @@ val syncWatchData by tasks.registering(Sync::class) {
     from(rootProject.layout.projectDirectory.dir("../ScriptureAlone/Shared")) {
         include("DailyVerses.json")
     }
+    from(rootProject.layout.projectDirectory.dir("../ScriptureAloneCore/Sources/ScriptureAloneCore/Resources")) {
+        include("LifeThemes.json")
+    }
     into(layout.buildDirectory.dir("generated/watchData"))
 }
 
@@ -175,7 +182,15 @@ val syncWatchIcon by tasks.registering(Sync::class) {
     }
     into(layout.buildDirectory.dir("generated/watchIcon"))
 }
-tasks.named("preBuild") { dependsOn(syncWatchData, syncWatchIcon) }
+// `values*/life_themes.xml` of the phone app: the life themes' names, descriptions and search words in
+// every language, as `R.array.life_theme_*` here too.
+val syncWatchTopics by tasks.registering(Sync::class) {
+    from(rootProject.layout.projectDirectory.dir("app/src/main/res")) {
+        include("values*/life_themes.xml")
+    }
+    into(layout.buildDirectory.dir("generated/watchTopics"))
+}
+tasks.named("preBuild") { dependsOn(syncWatchData, syncWatchIcon, syncWatchTopics) }
 
 dependencies {
     implementation(project(":shared"))
@@ -195,6 +210,8 @@ dependencies {
     implementation("androidx.wear.compose:compose-material:1.4.0")
     implementation("androidx.wear.compose:compose-foundation:1.4.0")
     implementation("androidx.wear.compose:compose-navigation:1.4.0")
+    // The system input screen (voice and keyboard) for typing a topic.
+    implementation("androidx.wear:wear-input:1.2.0")
 
     // The Verse of the Day tile and complication.
     // Tiles 1.5+: 1.4.1 can throw a SecurityException on Wear OS 5 when targeting API 35+ (Play

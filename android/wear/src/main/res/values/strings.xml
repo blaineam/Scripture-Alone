@@ -86,4 +86,37 @@
     <string name="wear_translation_remove_header">Remove from Watch</string>
     <!-- Button deleting a translation from the watch. %1$s is its abbreviation, e.g. “KJV”. -->
     <string name="wear_translation_remove">Remove %1$s</string>
+
+    <!-- Topics: the phone's life themes (Worry, Grief, Hope …) on the watch. -->
+    <!-- Home chip and title of the list of topics. -->
+    <string name="wear_topics">Topics</string>
+    <!-- Button: say a topic aloud (the system speech recogniser opens). -->
+    <string name="wear_topics_speak">Speak a Topic</string>
+    <!-- Button: type a topic on the system input screen. -->
+    <string name="wear_topics_type">Type a Topic</string>
+    <!-- Label of the system input screen while typing a topic. -->
+    <string name="wear_topics_input_label">Search topics</string>
+    <!-- Prompt on the speech recogniser. -->
+    <string name="wear_topics_speak_prompt">Say a topic</string>
+    <!-- Shown when the search finds no topic. %1$s is what was searched for. -->
+    <string name="wear_topics_no_match">No topic found for “%1$s”.</string>
+    <!-- Shown when the topics can't be read. -->
+    <string name="wear_topics_unavailable">Topics aren’t available.</string>
+    <!-- Where a passage stands in its topic: %1$d is its number, %2$d how many there are. “3 of 12”. -->
+    <string name="wear_topics_passage_of">%1$d of %2$d</string>
+    <!-- Button: show the topic's next passage (what a swipe left does). -->
+    <string name="wear_topics_next">Next passage</string>
+    <!-- After the last passage. %1$s is the number of passages, e.g. “12 passages”. -->
+    <string name="wear_topics_end">End of this topic: %1$s read.</string>
+    <!-- After the last passage, when the watch's translation has none of them. %1$s is its abbreviation. -->
+    <string name="wear_topics_none_in_edition">The %1$s on the watch has none of this topic’s passages.</string>
+    <!-- End of a topic: read its passages again from the first. -->
+    <string name="wear_topics_start_over">Start over</string>
+    <!-- End of a topic: back to the list of topics. -->
+    <string name="wear_topics_all">All topics</string>
+    <!-- Number of passages in a topic, in the list of topics. -->
+    <plurals name="wear_topics_passages">
+        <item quantity="one">%d passage</item>
+        <item quantity="other">%d passages</item>
+    </plurals>
 </resources>
