@@ -106,6 +106,9 @@ enum FlowItem: Sendable {
     case noteMarker(id: String?, label: String)
     /// The document said which book this is outside its text — `<section title="Romans">`.
     case place(BookID, chapter: Int?)
+    /// A study Bible's running commentary, set between the scripture paragraphs it discusses
+    /// (`<p class="ip">`). Never part of a verse.
+    case commentary(String)
     /// An essay or box set into the text: its title and paragraphs.
     case article(title: String, text: String)
     /// A picture: its source path as written, and its description.
@@ -155,6 +158,7 @@ struct DocumentScanner: Sendable {
         case note(String)
         case noteReference(id: String?)
         case essay
+        case commentary
     }
 
     private struct Frame {
@@ -281,6 +285,14 @@ struct DocumentScanner: Sendable {
                     }
                 }
 
+                // Commentary set between the scripture paragraphs: study material, not verse text.
+                if tag.name == "p", classes.contains(where: Self.isCommentaryClass) {
+                    frame.capture = .commentary
+                    buffers.append([])
+                    stack.append(frame)
+                    continue
+                }
+
                 if isHeading(tag) {
                     frame.capture = .heading
                     buffers.append([])
@@ -292,7 +304,7 @@ struct DocumentScanner: Sendable {
                     // A reference id is a fact about the element, not a guess, so it is emitted
                     // even when the element holds the verse text rather than the number.
                     if marker.shapes.contains(.referenceIdentifier) || marker.shapes.contains(.verseAnchor),
-                       !isNumberLike(tag) {
+                       !isNumberLike(tag), !classes.contains(where: Self.isChapterLabelClass) {
                         marker.shapes.remove(.numberClass)
                         marker.shapes.remove(.superscript)
                         marker.shapes.remove(.boldNumber)
@@ -363,7 +375,23 @@ struct DocumentScanner: Sendable {
         let text = Self.plainText(captured)
         switch capture {
         case .candidate(var marker):
-            if let parsed = Self.verseNumber(in: text) {
+            var number = Self.verseNumber(in: text)
+            // A verse split across two spans ("40a" … "40b") is one verse; the letter is not text.
+            if number == nil, marker.shapes.contains(.numberClass), !marker.isChapter {
+                number = Self.verseNumber(in: Self.strippingSplitLetters(text))
+            }
+            // A chapter label that names its book ("1. Mose 35"): the book and chapter it states.
+            if number == nil, marker.isChapter, marker.shapes.contains(.numberClass) {
+                let place = ScriptureLabels.heading(text.trimmingCharacters(in: .whitespaces))
+                if let labelled = place?.chapter ?? marker.chapter {
+                    marker.book = place?.book ?? marker.book
+                    marker.chapter = labelled
+                    record(&document, marker)
+                    emit(.marker(marker))
+                    return
+                }
+            }
+            if let parsed = number {
                 if marker.isChapter {
                     marker.chapter = marker.chapter ?? parsed.number
                 } else {
@@ -379,6 +407,9 @@ struct DocumentScanner: Sendable {
             if marker.shapes.contains(.superscript), Self.isFootnoteLabel(text) { return }
             // Not a number after all: it was an ordinary span that happened to be called "verse".
             for item in captured { emit(item) }
+        case .commentary:
+            let body = Self.paragraphs(captured).joined(separator: "\n\n")
+            if !body.isEmpty { emit(.commentary(body)) }
         case .heading:
             // A "title" that holds a chapter or verse number is where the chapter starts — a
             // psalm's number and superscription, or its first line — not a heading above it.
@@ -447,6 +478,8 @@ struct DocumentScanner: Sendable {
     }
 
     static func isNeverScriptureClass(_ name: String) -> Bool {
+        // `va`: a verse's alternative numbering ("[3]"), printed in the text but not part of it.
+        if name == "va" { return true }
         let squashed = name.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: "_", with: "")
         return squashed.contains("crossref") || squashed == "xref" || squashed.hasPrefix("xref")
             || squashed.contains("studynote") || squashed.contains("sidebar")
@@ -473,7 +506,7 @@ struct DocumentScanner: Sendable {
     /// Does this element's class or tag suggest it holds only a number?
     private func isNumberLike(_ tag: XMLTag) -> Bool {
         if tag.name == "sup" || tag.name == "b" || tag.name == "strong" { return true }
-        return tag.classes.contains { $0.contains("num") || $0 == "v" || $0 == "vn" || $0 == "b" || $0 == "bold" }
+        return tag.classes.contains { $0.contains("num") || $0 == "v" || $0 == "vn" || $0 == "bvn" || $0 == "b" || $0 == "bold" }
     }
 
     /// Every shape that would explain this element as a verse or chapter marker.
@@ -500,6 +533,10 @@ struct DocumentScanner: Sendable {
                 marker.shapes.insert(.verseAnchor)
                 marker.chapter = chapter
                 marker.isChapter = true
+            case .chapterVerse(let chapter, let verse):
+                marker.shapes.insert(.verseAnchor)
+                marker.chapter = chapter
+                marker.verse = verse
             }
         }
         if classes.contains(where: Self.isChapterNumberClass) {
@@ -517,7 +554,19 @@ struct DocumentScanner: Sendable {
         return marker.shapes.isEmpty ? nil : marker
     }
 
+    /// The publisher's study-commentary paragraph (`ip`): a study Bible's notes, interleaved with the text.
+    static func isCommentaryClass(_ name: String) -> Bool { name == "ip" }
+
+    /// `bcn`: a chapter's label, with the book's name in it ("1. Mose 35"), not a bare number.
+    static func isChapterLabelClass(_ name: String) -> Bool { name == "bcn" }
+
+    /// "40a" -> "40"; "3a-4" -> "3-4". Only for a span the typesetter styled as a verse number.
+    static func strippingSplitLetters(_ raw: String) -> String {
+        raw.replacing(/(\d)[a-f](?=$|[\s\]\-\u{2010}-\u{2014}])/) { String($0.1) }
+    }
+
     static func isVerseNumberClass(_ name: String) -> Bool {
+        if name == "bvn" { return true }
         if ["v", "vn", "vnum", "vnumber", "verse", "verses", "versenum", "verseno", "versenumber", "vers"].contains(name) {
             return true
         }
@@ -528,6 +577,7 @@ struct DocumentScanner: Sendable {
     }
 
     static func isChapterNumberClass(_ name: String) -> Bool {
+        if isChapterLabelClass(name) { return true }
         let squashed = name.replacingOccurrences(of: "-", with: "").replacingOccurrences(of: "_", with: "")
         return ["c", "cnum", "chapnum", "chapternum", "chapternumber", "chapter", "chap"].contains(squashed)
             || squashed.hasPrefix("chapnum") || squashed.hasPrefix("chapternum")
@@ -652,6 +702,10 @@ struct DocumentScanner: Sendable {
             switch item {
             case .text(let text, _): current += text
             case .heading(let text):
+                flush()
+                current = text
+                flush()
+            case .commentary(let text):
                 flush()
                 current = text
                 flush()
@@ -833,7 +887,7 @@ struct Assembler {
                 // heading ("…Prophetic Revelation").
                 if let place = ScriptureLabels.heading(text), place.book != nil || place.chapter != nil,
                    place.book == nil || !booksArePlaced, place.chapter == nil || place.book != nil || !chaptersAreMarked,
-                   place.chapter.map({ $0 <= (place.book ?? book ?? .psalms).chapterCount }) ?? true {
+                   place.chapter.map({ $0 <= GermanVersification.maxChapter(of: place.book ?? book ?? .psalms) }) ?? true {
                     move(to: place.book, chapter: place.chapter)
                     documentDeclaredPlace = true
                 } else if options.headings, book != nil {
@@ -847,8 +901,10 @@ struct Assembler {
                 }
                 let accepted = marker.isChapter || marker.shapes.contains(shape)
                 if marker.isChapter {
+                    // A chapter label with no book of its own, before any book is known: the file's name.
+                    if marker.book == nil, book == nil, let hintBook = hint.book { marker.book = hintBook }
                     // A chapter the book doesn't have is a number set large for another reason.
-                    if let number = marker.chapter, let current = marker.book ?? book, number > current.chapterCount { continue }
+                    if let number = marker.chapter, let current = marker.book ?? book, number > GermanVersification.maxChapter(of: current) { continue }
                     // Chapters don't run backwards within a book: a smaller number is a stray.
                     if chaptersAreMarked, let number = marker.chapter, let chapter, marker.book == nil || marker.book == book,
                        number < chapter { continue }
@@ -874,6 +930,8 @@ struct Assembler {
                     move(to: hintBook, chapter: hint.chapter)
                 }
                 start(verse: marker.verse, through: marker.through)
+            case .commentary(let text):
+                if options.studyMaterial { recordCommentary(path: path, text: text) }
             case .article(let title, let text):
                 guard options.studyMaterial, let book else { continue }
                 bible.study.articles.append(ExtractedStudy.Article(kind: .essay, book: book, anchor: studyAnchor,
@@ -914,6 +972,18 @@ struct Assembler {
 
     mutating func finish() {
         closeBlock()
+        // German Joel (4 chapters) and Malachi (3) are renumbered to the KJV's division.
+        for renumbered in GermanVersification.germanNumbered(bible).sorted() {
+            bible.renumber(renumbered) { GermanVersification.english(renumbered, chapter: $0, verse: $1) }
+            var mappedBridges: [VerseRef: VerseRef] = [:]
+            for (key, value) in bridged { mappedBridges[GermanVersification.english(key)] = GermanVersification.english(value) }
+            bridged = mappedBridges
+            outOfOrder = Set(outOfOrder.map {
+                $0.book == renumbered
+                    ? ChapterRef(renumbered, GermanVersification.english(renumbered, chapter: $0.chapter, verse: 1).chapter)
+                    : $0
+            })
+        }
         bible.recoverVersesAfterOmissions()
         bible.tidy()
         bible.outOfOrderChapters = outOfOrder
@@ -968,6 +1038,27 @@ struct Assembler {
         return VerseRef(book, chapter, verse ?? 1)
     }
 
+    private var commentaryCount = 0
+    /// The first verse read since the last commentary: the commentary below discusses it through the current verse.
+    private var passageStart: VerseRef?
+
+    /// A study Bible's running commentary: kept as a note on the verses read since the last one,
+    /// never as verse text.
+    private mutating func recordCommentary(path: String, text: String) {
+        guard let end = studyAnchor else { return }
+        var start = end
+        if let first = passageStart, first.book == end.book, first.chapter == end.chapter, first.key <= end.key {
+            start = first
+        }
+        passageStart = nil
+        let body = Self.studyNoteText(text)
+        guard !body.isEmpty else { return }
+        let id = "\(path)#commentary\(commentaryCount)"
+        commentaryCount += 1
+        bible.study.notes[id] = ExtractedStudy.Note(start: start, end: end, text: body)
+        bible.study.noteOrder.append(id)
+    }
+
     /// Every caller pointing at one note widens it: a note on 1:1–2 is called from both verses.
     private mutating func recordStudyNote(id: String, text: String) {
         guard let anchor = studyAnchor else { return }
@@ -1015,7 +1106,7 @@ struct Assembler {
         var text = raw
         if let match = text.firstMatch(of: /^\s*(?:[1-3]\s)?\p{Lu}[\p{Lu}\s]*?\s+\d+(?:[:.,;–\-]\s?\d+)*[;,]?\s*/) {
             text.removeSubrange(match.range)
-        } else if let match = text.firstMatch(of: /^\s*\d+:\d+(?:[–\-,]\s?\d+)*\s*/) {
+        } else if let match = text.firstMatch(of: /^\s*\d+[:,]\d+(?:[–\-,]\s?\d+)*\s*/) {
             text.removeSubrange(match.range)
         }
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -1079,6 +1170,7 @@ struct Assembler {
     private mutating func move(to newBook: BookID?, chapter newChapter: Int?) {
         closeBlock()
         deferredChapter = nil
+        passageStart = nil
         if let newBook, newBook != book {
             book = newBook
             chapter = newChapter ?? 1
@@ -1107,6 +1199,11 @@ struct Assembler {
             if number == 1, verse == 1 { return }
         }
         if chapter == nil { chapter = 1 }
+        // The same number again, straight after itself ("40a" … "40b"): the verse goes on, not begins.
+        if number > 1, number == verse, number == lastVerseNumber, through == nil, deferredChapter == nil {
+            fragmentIndex = nil
+            return
+        }
         if let resume = deferredChapter {
             if number == 1 || number < lastVerseNumber {
                 closeBlock()
@@ -1142,6 +1239,7 @@ struct Assembler {
         }
         verse = number
         lastVerseNumber = number
+        if passageStart == nil, let current = chapterRef { passageStart = VerseRef(book, current.chapter, number) }
         if let through, let current = chapterRef {
             for extra in (number + 1)...through {
                 bridged[VerseRef(book, current.chapter, extra)] = VerseRef(book, current.chapter, number)

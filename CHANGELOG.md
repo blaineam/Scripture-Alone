@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **Importing the Stuttgarter Erklärungsbibel (and other Deutsche Bibelgesellschaft ePubs).** The importer now reads that
+  publisher's markup: chapter ids `cref-<chapter>` and verse ids `vref-<chapter>-<verse>` with the `bvn`/`bcn` classes (a
+  verse span with no id is still a verse, read from its number), German book names ("1. Mose", "Offenbarung") in chapter
+  labels, bridged verses (3-4), verses split in two (40a, 40b), and `span.va` alternative numbers left out of the text.
+  The running commentary (`p.ip`) between the scripture paragraphs is kept as study notes on the verses it discusses, no
+  longer folded into verse text, and the EPUB 3 endnote files are ignored. This was "No Bible text was found" on Android
+  and the same on iPhone, iPad and Mac. (#7)
+- **German Joel and Malachi keep their own chapters.** German Bibles divide Joel into four chapters and Malachi into
+  three; an import with Joel 4 merged it into Joel 3. An import numbered the German way is now renumbered to the usual
+  division, so verses line up with search, cross-references and the other translations: Joel 3:1-5 becomes 2:28-32,
+  Joel 4 becomes 3, Malachi 3:19-24 becomes 4:1-6. On iPhone, iPad, Mac and Android. (#7)
 - **Topics on Wear OS.** The phone's Topics directory is on the watch: browse the life themes grouped as on the phone, each with
   its number of passages, or find one by speaking it or typing it on the system input screen. The search uses the same names and
   search words as the phone, in the watch's language ("Angst" finds "Angst & Sorgen", "Furcht" and "Angst vor der Zukunft").

@@ -1,6 +1,7 @@
 package com.blainemiller.scripturealone.data.importer
 
 import com.blainemiller.scripturealone.data.canon.BookID
+import com.blainemiller.scripturealone.data.canon.BookNames
 import com.blainemiller.scripturealone.data.reference.ReferenceParser
 
 /**
@@ -23,6 +24,9 @@ internal object ScriptureLabels {
 
         /** `id="ch2"` — a chapter number with no book of its own. */
         data class ChapterNumber(val chapter: Int) : Identifier()
+
+        /** `id="vref-35-1"` — a chapter and verse with no book of their own (the book is the file's). */
+        data class ChapterVerse(val chapter: Int, val verse: Int) : Identifier()
     }
 
     /** A place a heading or file name names: a book, a chapter number, or both. */
@@ -36,7 +40,28 @@ internal object ScriptureLabels {
     )
 
     private val verseWords: Set<String> = setOf("v", "vs", "ver", "vers", "verse", "versenum", "verseno")
-    private val chapterWords: Set<String> = setOf("c", "ch", "chap", "chapter", "chapternum")
+    private val chapterWords: Set<String> = setOf("c", "ch", "chap", "chapter", "chapternum", "cref")
+
+    /** `vref-35-1`: the Deutsche Bibelgesellschaft's verse ids, which carry no book token. */
+    private val chapterVerseWords: Set<String> = setOf("vref")
+
+    /**
+     * German book names the app's tables spell differently from Luther's 2017 text (Ester, Zefanja),
+     * as normalized spellings.
+     */
+    private val germanExtras: Map<String, BookID> = mapOf(
+        "ester" to BookID.ESTHER, "zefanja" to BookID.ZEPHANIAH, "klagelieder" to BookID.LAMENTATIONS,
+        "offenbarung" to BookID.REVELATION, "psalmen" to BookID.PSALMS,
+    )
+
+    /** German names and abbreviations, normalized, not shared with another language's other book. */
+    private val germanSpellings: Map<String, BookID> by lazy {
+        val found = HashMap<String, BookID>()
+        BookNames.aliases["de"]?.forEach { (book, spellings) ->
+            for (spelling in spellings) if (spelling !in BookNames.ambiguous && SwiftText.characterCount(spelling) > 2) found[spelling] = book
+        }
+        found + germanExtras
+    }
 
     // MARK: - Headings
 
@@ -111,7 +136,10 @@ internal object ScriptureLabels {
     fun exactBook(token: String): BookID? {
         if (SwiftText.characterCount(token) < 2) return null
         BookID.entries.firstOrNull { token in it.aliases }?.let { return it }
-        return BookID.entries.firstOrNull { it.code.lowercase() == token }
+        BookID.entries.firstOrNull { it.code.lowercase() == token }?.let { return it }
+        // German Bibles name books their own way ("1. Mose", "Offenbarung"); the rest of the tables
+        // would make too many ordinary words books, so only German's are read here.
+        return germanSpellings[token]
     }
 
     /** A book (and chapter) named by a file name: "gen01.xhtml", "01_Genesis.xhtml", "Genesis.xhtml". */
@@ -122,6 +150,7 @@ internal object ScriptureLabels {
                 is Identifier.Chapter -> Place(parsed.book, parsed.chapter)
                 is Identifier.ChapterNumber -> Place(null, parsed.chapter)
                 is Identifier.VerseNumber -> null
+                is Identifier.ChapterVerse -> null
             }
         }
         val tokens = normalizedTokens(stem).toMutableList()
@@ -180,6 +209,12 @@ internal object ScriptureLabels {
         val last = parts[parts.size - 1]
         val lastValue = SwiftText.int(last.text)
         if (!last.isDigits || lastValue == null || lastValue <= 0 || lastValue >= 1000) return null
+
+        // "vref-35-1": chapter and verse, no book.
+        if (parts.size == 3 && parts[0].text in chapterVerseWords && parts[1].isDigits) {
+            val chapter = SwiftText.int(parts[1].text)
+            if (chapter != null && chapter in 1..999) return Identifier.ChapterVerse(chapter, lastValue)
+        }
 
         if (parts.size >= 3 && parts[parts.size - 2].isDigits) {
             val chapter = SwiftText.int(parts[parts.size - 2].text)

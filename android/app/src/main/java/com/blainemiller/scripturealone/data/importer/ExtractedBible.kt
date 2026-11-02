@@ -183,6 +183,74 @@ class ExtractedBible {
         blockMap[chapter] = chapterBlocks.map { block -> block.copy(fragments = block.fragments.map(change)) }
     }
 
+    /**
+     * Renumbers [book] from one chapter-and-verse numbering to another (German Joel and Malachi to the
+     * KJV's, [GermanVersification]): verses, the blocks and fragments that print them, and the study
+     * material anchored on them. A chapter's blocks are split where its verses land in different
+     * chapters; a heading goes with the verse that follows it.
+     */
+    internal fun renumber(book: BookID, map: (chapter: Int, verse: Int) -> Pair<Int, Int>) {
+        fun mapRef(ref: VerseRef): VerseRef {
+            if (ref.book != book.number) return ref
+            val (chapter, verse) = map(ref.chapter, ref.verse)
+            return VerseRef(ref.book, chapter, verse)
+        }
+
+        val moved = verseMap.filterKeys { it.book == book.number }
+        for (key in moved.keys) verseMap.remove(key)
+        for ((key, verse) in moved) {
+            val ref = mapRef(key)
+            verseMap[ref] = verse.copy(ref = ref)
+        }
+
+        val oldChapters = chapterList.filter { it.book == book }
+        val rebuilt = LinkedHashMap<ChapterRef, MutableList<ExtractedBlock>>()
+        for (chapter in oldChapters) {
+            val blocks = blockMap.remove(chapter) ?: continue
+            for ((index, block) in blocks.withIndex()) {
+                if (block.fragments.isEmpty()) {
+                    // A heading (or stanza break) belongs with the next verse printed after it.
+                    val next = blocks.drop(index + 1).firstNotNullOfOrNull { it.fragments.firstOrNull() }
+                    val target = if (next != null) map(chapter.chapter, next.verse).first else map(chapter.chapter, 1).first
+                    rebuilt.getOrPut(ChapterRef(book, target)) { ArrayList() }.add(block)
+                    continue
+                }
+                // Keep fragments that land in the same chapter together, in their original order.
+                var run = ArrayList<ExtractedFragment>()
+                var runChapter = -1
+                fun flush() {
+                    if (run.isNotEmpty()) rebuilt.getOrPut(ChapterRef(book, runChapter)) { ArrayList() }.add(block.copy(fragments = run))
+                    run = ArrayList()
+                }
+                for (fragment in block.fragments) {
+                    val (target, verse) = map(chapter.chapter, fragment.verse)
+                    if (target != runChapter) flush()
+                    runChapter = target
+                    run.add(fragment.copy(verse = verse))
+                }
+                flush()
+            }
+        }
+        val position = chapterList.indexOfFirst { it.book == book }.takeIf { it >= 0 } ?: chapterList.size
+        chapterList.removeAll { it.book == book }
+        val ordered = rebuilt.keys.sorted()
+        chapterList.addAll(minOf(position, chapterList.size), ordered)
+        for ((chapter, blocks) in rebuilt) blockMap[chapter] = blocks
+
+        for ((id, note) in study.notes.entries.toList()) {
+            study.notes[id] = note.copy(start = mapRef(note.start), end = mapRef(note.end))
+        }
+        for (index in study.articles.indices) {
+            val article = study.articles[index]
+            article.anchor?.let { study.articles[index] = article.copy(anchor = mapRef(it)) }
+        }
+        for (index in study.images.indices) {
+            val image = study.images[index]
+            val anchor = image.anchor ?: continue
+            study.images[index] = ExtractedStudy.Image(mapRef(anchor), image.book, image.caption, image.path, image.data, image.mediaType)
+        }
+    }
+
     /** Some chapter of [book] has already been laid out. */
     internal fun hasVerses(book: BookID): Boolean = chapterList.any { it.book == book }
 

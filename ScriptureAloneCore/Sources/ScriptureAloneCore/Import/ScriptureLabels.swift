@@ -20,6 +20,8 @@ enum ScriptureLabels {
         case verseNumber(Int)
         /// `id="ch2"` — a chapter number with no book of its own.
         case chapterNumber(Int)
+        /// `id="vref-35-1"` — a chapter and verse with no book of their own (the book is the file's).
+        case chapterVerse(chapter: Int, verse: Int)
     }
 
     /// Words that decorate a book title without naming it.
@@ -30,7 +32,28 @@ enum ScriptureLabels {
     ]
 
     private static let verseWords: Set<String> = ["v", "vs", "ver", "vers", "verse", "versenum", "verseno"]
-    private static let chapterWords: Set<String> = ["c", "ch", "chap", "chapter", "chapternum"]
+    private static let chapterWords: Set<String> = ["c", "ch", "chap", "chapter", "chapternum", "cref"]
+
+    /// `vref-35-1`: the Deutsche Bibelgesellschaft's verse ids, which carry no book token.
+    private static let chapterVerseWords: Set<String> = ["vref"]
+
+    /// German book names the app's tables spell differently from Luther's 2017 text (Ester,
+    /// Zefanja), as normalized spellings.
+    private static let germanExtras: [String: BookID] = [
+        "ester": .esther, "zefanja": .zephaniah, "klagelieder": .lamentations,
+        "offenbarung": .revelation, "psalmen": .psalms,
+    ]
+
+    /// German names and abbreviations, normalized, not shared with another language's other book.
+    private static let germanSpellings: [String: BookID] = {
+        var found: [String: BookID] = [:]
+        for (book, spellings) in BookNames.aliases["de"] ?? [:] {
+            for spelling in spellings where !BookNames.ambiguous.contains(spelling) && spelling.count > 2 {
+                found[spelling] = book
+            }
+        }
+        return found.merging(germanExtras) { _, extra in extra }
+    }()
 
     // MARK: - Headings
 
@@ -97,7 +120,10 @@ enum ScriptureLabels {
     static func exactBook(_ token: String) -> BookID? {
         guard token.count >= 2 else { return nil }
         if let book = BookID.allCases.first(where: { $0.info.aliases.contains(token) }) { return book }
-        return BookID.allCases.first { $0.code.lowercased() == token }
+        if let book = BookID.allCases.first(where: { $0.code.lowercased() == token }) { return book }
+        // German Bibles name books their own way ("1. Mose", "Offenbarung"); the rest of the
+        // tables would make too many ordinary words books, so only German's are read here.
+        return germanSpellings[token]
     }
 
     /// A book (and chapter) named by a file name: "gen01.xhtml", "01_Genesis.xhtml", "Genesis.xhtml".
@@ -108,6 +134,7 @@ enum ScriptureLabels {
             case .chapter(let book, let chapter): return (book, chapter)
             case .chapterNumber(let chapter): return (nil, chapter)
             case .verseNumber: return nil
+            case .chapterVerse: return nil
             }
         }
         var tokens = normalizedTokens(stem)
@@ -158,6 +185,12 @@ enum ScriptureLabels {
 
         let last = parts[parts.count - 1]
         guard last.isDigits, let lastValue = Int(last.text), lastValue > 0, lastValue < 1000 else { return nil }
+
+        // "vref-35-1": chapter and verse, no book.
+        if parts.count == 3, chapterVerseWords.contains(parts[0].text), parts[1].isDigits,
+           let chapter = Int(parts[1].text), (1...999).contains(chapter) {
+            return .chapterVerse(chapter: chapter, verse: lastValue)
+        }
 
         if parts.count >= 3, parts[parts.count - 2].isDigits,
            let chapter = Int(parts[parts.count - 2].text), chapter > 0, chapter < 1000,

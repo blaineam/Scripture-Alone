@@ -248,6 +248,75 @@ public struct ExtractedBible: Sendable {
         return chapterOrder.compactMap { seen.insert($0.book).inserted ? $0.book : nil }.sorted()
     }
 
+    /// Renumbers `book` from one chapter-and-verse numbering to another (German Joel and Malachi to
+    /// the KJV's, `GermanVersification`): verses, the blocks and fragments that print them, and the
+    /// study material anchored on them. A chapter's blocks are split where its verses land in
+    /// different chapters; a heading goes with the verse that follows it.
+    mutating func renumber(_ book: BookID, _ map: (_ chapter: Int, _ verse: Int) -> (chapter: Int, verse: Int)) {
+        func mapRef(_ ref: VerseRef) -> VerseRef {
+            guard ref.book == book else { return ref }
+            let mapped = map(ref.chapter, ref.verse)
+            return VerseRef(ref.book, mapped.chapter, mapped.verse)
+        }
+
+        let moved = verses.filter { $0.key.book == book }
+        for key in moved.keys { verses[key] = nil }
+        for (key, verse) in moved {
+            let ref = mapRef(key)
+            var renamed = verse
+            renamed.ref = ref
+            verses[ref] = renamed
+        }
+
+        var rebuilt: [ChapterRef: [ExtractedBlock]] = [:]
+        for chapter in chapterOrder where chapter.book == book {
+            guard let chapterBlocks = blocks.removeValue(forKey: chapter) else { continue }
+            for (index, block) in chapterBlocks.enumerated() {
+                if block.fragments.isEmpty {
+                    // A heading (or stanza break) belongs with the next verse printed after it.
+                    let next = chapterBlocks.dropFirst(index + 1).lazy.compactMap(\.fragments.first).first
+                    let target = map(chapter.chapter, next?.verse ?? 1).chapter
+                    rebuilt[ChapterRef(book, target), default: []].append(block)
+                    continue
+                }
+                // Keep fragments that land in the same chapter together, in their original order.
+                var run: [ExtractedFragment] = []
+                var runChapter = -1
+                func flush() {
+                    if !run.isEmpty {
+                        var piece = block
+                        piece.fragments = run
+                        rebuilt[ChapterRef(book, runChapter), default: []].append(piece)
+                    }
+                    run = []
+                }
+                for fragment in block.fragments {
+                    let mapped = map(chapter.chapter, fragment.verse)
+                    if mapped.chapter != runChapter { flush() }
+                    runChapter = mapped.chapter
+                    var moved = fragment
+                    moved.verse = mapped.verse
+                    run.append(moved)
+                }
+                flush()
+            }
+        }
+        let position = chapterOrder.firstIndex { $0.book == book } ?? chapterOrder.count
+        chapterOrder.removeAll { $0.book == book }
+        chapterOrder.insert(contentsOf: rebuilt.keys.sorted(), at: min(position, chapterOrder.count))
+        for (chapter, chapterBlocks) in rebuilt { blocks[chapter] = chapterBlocks }
+
+        for (id, note) in study.notes {
+            study.notes[id] = ExtractedStudy.Note(start: mapRef(note.start), end: mapRef(note.end), text: note.text)
+        }
+        for index in study.articles.indices {
+            if let anchor = study.articles[index].anchor { study.articles[index].anchor = mapRef(anchor) }
+        }
+        for index in study.images.indices {
+            if let anchor = study.images[index].anchor { study.images[index].anchor = mapRef(anchor) }
+        }
+    }
+
     func hasVerses(in book: BookID) -> Bool {
         chapterOrder.contains { $0.book == book }
     }

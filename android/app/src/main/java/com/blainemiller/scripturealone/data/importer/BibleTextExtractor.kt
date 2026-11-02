@@ -104,6 +104,12 @@ internal sealed class FlowItem {
     /** The document said which book this is outside its text — `<section title="Romans">`. */
     data class Place(val book: BookID, val chapter: Int?) : FlowItem()
 
+    /**
+     * A study Bible's running commentary, set between the scripture paragraphs it discusses
+     * (`<p class="ip">`). Never part of a verse.
+     */
+    data class Commentary(val text: String) : FlowItem()
+
     /** An essay or box set into the text: its title and paragraphs. */
     data class Article(val title: String, val text: String) : FlowItem()
 
@@ -142,6 +148,7 @@ internal class DocumentScanner(
         data class Note(val id: String) : Capture()
         data class NoteReference(val id: String?) : Capture()
         data object Essay : Capture()
+        data object Commentary : Capture()
     }
 
     private class Frame(
@@ -271,6 +278,14 @@ internal class DocumentScanner(
                         blockTexts.add(BlockText())
                     }
 
+                    // Commentary set between the scripture paragraphs: study material, not verse text.
+                    if (tag.name == "p" && classes.any(::isCommentaryClass)) {
+                        frame.capture = Capture.Commentary
+                        buffers.add(ArrayList())
+                        stack.add(frame)
+                        continue
+                    }
+
                     if (isHeading(tag, classList)) {
                         frame.capture = Capture.Heading
                         buffers.add(ArrayList())
@@ -283,7 +298,8 @@ internal class DocumentScanner(
                         // A reference id is a fact about the element, not a guess, so it is emitted even
                         // when the element holds the verse text rather than the number.
                         if ((VerseMarkupShape.REFERENCE_IDENTIFIER in candidate.shapes ||
-                                VerseMarkupShape.VERSE_ANCHOR in candidate.shapes) && !isNumberLike(tag, classList)
+                                VerseMarkupShape.VERSE_ANCHOR in candidate.shapes) && !isNumberLike(tag, classList) &&
+                            !classes.any(::isChapterLabelClass)
                         ) {
                             val marker = candidate.copy(
                                 shapes = candidate.shapes - VerseMarkupShape.NUMBER_CLASS - VerseMarkupShape.SUPERSCRIPT -
@@ -361,7 +377,22 @@ internal class DocumentScanner(
         val text = plainText(captured)
         when (capture) {
             is Capture.Candidate -> {
-                val parsed = verseNumber(text)
+                var parsed = verseNumber(text)
+                // A verse split across two spans ("40a" … "40b") is one verse; the letter is not text.
+                if (parsed == null && VerseMarkupShape.NUMBER_CLASS in capture.marker.shapes && !capture.marker.isChapter) {
+                    parsed = verseNumber(strippingSplitLetters(text))
+                }
+                // A chapter label that names its book ("1. Mose 35"): the book and chapter it states.
+                if (parsed == null && capture.marker.isChapter && VerseMarkupShape.NUMBER_CLASS in capture.marker.shapes) {
+                    val place = ScriptureLabels.heading(SwiftText.trimWhitespace(text))
+                    val labelled = place?.chapter ?: capture.marker.chapter
+                    if (labelled != null) {
+                        val marker = capture.marker.copy(book = place?.book ?: capture.marker.book, chapter = labelled)
+                        record(document, marker)
+                        emit(FlowItem.MarkerItem(marker))
+                        return
+                    }
+                }
                 if (parsed != null) {
                     var marker = capture.marker
                     marker = if (marker.isChapter) {
@@ -378,6 +409,10 @@ internal class DocumentScanner(
                 if (VerseMarkupShape.SUPERSCRIPT in capture.marker.shapes && isFootnoteLabel(text)) return
                 // Not a number after all: it was an ordinary span that happened to be called "verse".
                 for (item in captured) emit(item)
+            }
+            Capture.Commentary -> {
+                val body = paragraphs(captured).joinToString("\n\n")
+                if (body.isNotEmpty()) emit(FlowItem.Commentary(body))
             }
             Capture.Heading -> {
                 // A "title" that holds a chapter or verse number is where the chapter starts — a psalm's
@@ -455,7 +490,7 @@ internal class DocumentScanner(
     /** Does this element's class or tag suggest it holds only a number? */
     private fun isNumberLike(tag: XMLTag, classes: List<String>): Boolean {
         if (tag.name == "sup" || tag.name == "b" || tag.name == "strong") return true
-        return classes.any { it.contains("num") || it == "v" || it == "vn" || it == "b" || it == "bold" }
+        return classes.any { it.contains("num") || it == "v" || it == "vn" || it == "bvn" || it == "b" || it == "bold" }
     }
 
     /** Every shape that would explain this element as a verse or chapter marker. */
@@ -483,6 +518,10 @@ internal class DocumentScanner(
             is ScriptureLabels.Identifier.ChapterNumber -> {
                 shapes += VerseMarkupShape.VERSE_ANCHOR
                 chapter = parsed.chapter; isChapter = true
+            }
+            is ScriptureLabels.Identifier.ChapterVerse -> {
+                shapes += VerseMarkupShape.VERSE_ANCHOR
+                chapter = parsed.chapter; verse = parsed.verse
             }
             null -> Unit
         }
@@ -551,13 +590,27 @@ internal class DocumentScanner(
          */
         fun isNeverScriptureClass(name: String): Boolean {
             val squashed = squash(name)
+            // `va`: a verse's alternative numbering ("[3]"), printed in the text but not part of it.
+            if (name == "va") return true
             return squashed.contains("crossref") || squashed == "xref" || squashed.startsWith("xref") ||
                 squashed.contains("studynote") || squashed.contains("sidebar") ||
                 (squashed.endsWith("box") && squashed.length <= 12) ||
                 squashed == "image" || squashed.contains("caption") || squashed.contains("illustration")
         }
 
+        /** The publisher's study-commentary paragraph (`ip`): a study Bible's notes, interleaved with the text. */
+        fun isCommentaryClass(name: String): Boolean = name == "ip"
+
+        /** `bcn`: a chapter's label, with the book's name in it ("1. Mose 35"), not a bare number. */
+        fun isChapterLabelClass(name: String): Boolean = name == "bcn"
+
+        private val splitLetters = Regex("""(?<=\d)[a-f](?=$|[\s\]\-\u2010-\u2014])""")
+
+        /** "40a" → "40"; "3a-4" → "3-4". Only for a span the typesetter styled as a verse number. */
+        fun strippingSplitLetters(raw: String): String = raw.replace(splitLetters, "")
+
         fun isVerseNumberClass(name: String): Boolean {
+            if (name == "bvn") return true
             if (name in setOf("v", "vn", "vnum", "vnumber", "verse", "verses", "versenum", "verseno", "versenumber", "vers")) return true
             // "verse-num", "v-num", "verse_number", "vNum1", "bibleverse-number"
             val squashed = squash(name)
@@ -567,6 +620,7 @@ internal class DocumentScanner(
 
         fun isChapterNumberClass(name: String): Boolean {
             val squashed = squash(name)
+            if (isChapterLabelClass(name)) return true
             return squashed in setOf("c", "cnum", "chapnum", "chapternum", "chapternumber", "chapter", "chap") ||
                 squashed.startsWith("chapnum") || squashed.startsWith("chapternum")
         }
@@ -678,6 +732,11 @@ internal class DocumentScanner(
                 when (item) {
                     is FlowItem.Text -> current.append(item.text)
                     is FlowItem.Heading -> {
+                        flush()
+                        current.append(item.text)
+                        flush()
+                    }
+                    is FlowItem.Commentary -> {
                         flush()
                         current.append(item.text)
                         flush()
@@ -878,7 +937,7 @@ internal class Assembler(private val options: BibleTextExtractor.Options) {
                     if (place != null && (place.book != null || placeChapter != null) &&
                         (place.book == null || !booksArePlaced) &&
                         (placeChapter == null || place.book != null || !chaptersAreMarked) &&
-                        (placeChapter == null || placeChapter <= (place.book ?: book ?: BookID.PSALMS).chapterCount)
+                        (placeChapter == null || placeChapter <= GermanVersification.maxChapter(place.book ?: book ?: BookID.PSALMS))
                     ) {
                         move(place.book, placeChapter)
                         documentDeclaredPlace = true
@@ -895,10 +954,12 @@ internal class Assembler(private val options: BibleTextExtractor.Options) {
                     }
                     val accepted = marker.isChapter || shape in marker.shapes
                     if (marker.isChapter) {
+                        // A chapter label with no book of its own, before any book is known: the file's name.
+                        if (marker.book == null && book == null && hint.book != null) marker = marker.copy(book = hint.book)
                         val number = marker.chapter
                         // A chapter the book doesn't have is a number set large for another reason.
                         val current = marker.book ?: book
-                        if (number != null && current != null && number > current.chapterCount) continue
+                        if (number != null && current != null && number > GermanVersification.maxChapter(current)) continue
                         // Chapters don't run backwards within a book: a smaller number is a stray.
                         val now = chapter
                         if (chaptersAreMarked && number != null && now != null && (marker.book == null || marker.book == book) &&
@@ -924,6 +985,9 @@ internal class Assembler(private val options: BibleTextExtractor.Options) {
                     }
                     if (book == null && hint.book != null) move(hint.book, hint.chapter)
                     start(marker.verse, marker.through)
+                }
+                is FlowItem.Commentary -> {
+                    if (options.studyMaterial) recordCommentary(path, item.text)
                 }
                 is FlowItem.Article -> {
                     val current = book
@@ -972,6 +1036,22 @@ internal class Assembler(private val options: BibleTextExtractor.Options) {
 
     fun finish() {
         closeBlock()
+        // German Joel (4 chapters) and Malachi (3) are renumbered to the KJV's division.
+        for (renumbered in GermanVersification.germanNumbered(bible)) {
+            bible.renumber(renumbered) { chapter, verse -> GermanVersification.english(renumbered, chapter, verse) }
+            for ((key, value) in bridged.entries.toList()) {
+                val mapped = GermanVersification.english(renumbered, key)
+                val mappedValue = GermanVersification.english(renumbered, value)
+                if (mapped != key || mappedValue != value) {
+                    bridged.remove(key)
+                    bridged[mapped] = mappedValue
+                }
+            }
+            for (chapter in outOfOrder.filter { it.book == renumbered }) {
+                outOfOrder.remove(chapter)
+                outOfOrder.add(ChapterRef(renumbered, GermanVersification.english(renumbered, chapter.chapter, 1).first))
+            }
+        }
         bible.recoverVersesAfterOmissions()
         bible.tidy()
         bible.outOfOrderChapters = outOfOrder.toSet()
@@ -998,6 +1078,26 @@ internal class Assembler(private val options: BibleTextExtractor.Options) {
             val chapter = chapter ?: return null
             return verseRef(book, chapter, verse ?: 1)
         }
+
+    private var commentaryCount = 0
+
+    /** The first verse read since the last commentary: the commentary below discusses it through the current verse. */
+    private var passageStart: VerseRef? = null
+
+    /**
+     * A study Bible's running commentary: kept as a note on the verses read since the last one, never
+     * as verse text.
+     */
+    private fun recordCommentary(path: String, text: String) {
+        val end = studyAnchor ?: return
+        val start = passageStart?.takeIf { it.book == end.book && it.chapter == end.chapter && it.key <= end.key } ?: end
+        passageStart = null
+        val body = studyNoteText(text)
+        if (body.isEmpty()) return
+        val id = "$path#commentary${commentaryCount++}"
+        bible.study.notes[id] = ExtractedStudy.Note(start, end, body)
+        bible.study.noteOrder.add(id)
+    }
 
     /** Every caller pointing at one note widens it: a note on 1:1–2 is called from both verses. */
     private fun recordStudyNote(id: String, text: String) {
@@ -1050,6 +1150,7 @@ internal class Assembler(private val options: BibleTextExtractor.Options) {
     private fun move(newBook: BookID?, newChapter: Int?) {
         closeBlock()
         deferredChapter = null
+        passageStart = null
         if (newBook != null && newBook != book) {
             book = newBook
             chapter = newChapter ?: 1
@@ -1079,6 +1180,11 @@ internal class Assembler(private val options: BibleTextExtractor.Options) {
             if (number == 1 && verse == 1) return
         }
         if (chapter == null) chapter = 1
+        // The same number again, straight after itself ("40a" … "40b"): the verse goes on, not begins.
+        if (number > 1 && number == verse && number == lastVerseNumber && through == null && deferredChapter == null) {
+            fragmentIndex = null
+            return
+        }
         val resume = deferredChapter
         val current = chapter
         if (resume != null) {
@@ -1117,6 +1223,7 @@ internal class Assembler(private val options: BibleTextExtractor.Options) {
         }
         verse = number
         lastVerseNumber = number
+        if (passageStart == null && now != null) passageStart = verseRef(book, now.chapter, number)
         if (through != null && now != null) {
             for (extra in (number + 1)..through) bridged[now.verse(extra)] = now.verse(number)
         }
@@ -1234,7 +1341,7 @@ internal class Assembler(private val options: BibleTextExtractor.Options) {
         }
 
         private val leadingReference = Regex("""^\s*(?:[1-3]\s)?\p{Lu}[\p{Lu}\s]*?\s+\d+(?:[:.,;–\-]\s?\d+)*[;,]?\s*""")
-        private val leadingVerse = Regex("""^\s*\d+:\d+(?:[–\-,]\s?\d+)*\s*""")
+        private val leadingVerse = Regex("""^\s*\d+[:,]\d+(?:[–\-,]\s?\d+)*\s*""")
         private val openingChapterVerse = Regex("""^\d{1,3}:\d{1,3}""")
 
         /**
