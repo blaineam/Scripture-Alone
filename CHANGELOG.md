@@ -13,6 +13,12 @@
   three; an import with Joel 4 merged it into Joel 3. An import numbered the German way is now renumbered to the usual
   division, so verses line up with search, cross-references and the other translations: Joel 3:1-5 becomes 2:28-32,
   Joel 4 becomes 3, Malachi 3:19-24 becomes 4:1-6. On iPhone, iPad, Mac and Android. (#7)
+- **Topics on Wear OS.** The phone's Topics directory is on the watch: browse the life themes grouped as on the phone, each with
+  its number of passages, or find one by speaking it or typing it on the system input screen. The search uses the same names and
+  search words as the phone, in the watch's language ("Angst" finds "Angst & Sorgen", "Furcht" and "Angst vor der Zukunft").
+  A topic's passages are read one at a time in the Verse of the Day's look, in the watch's translation, with "3 of 12": swipe left
+  for the next passage (or tap Next passage), swipe right to go back to the topics. After the last passage, Start over or All
+  topics. English and German; other languages show English for now. Nave's Topical Bible stays on the phone. Wear OS only.
 
 ## 1.2.4 (2026-10-27)
 

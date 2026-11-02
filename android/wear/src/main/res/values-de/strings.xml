@@ -43,4 +43,22 @@
     <string name="wear_remove_favorite">Aus Favoriten entfernen</string>
     <string name="wear_translation_remove_header">Von der Uhr entfernen</string>
     <string name="wear_translation_remove">%1$s entfernen</string>
+
+    <string name="wear_topics">Themen</string>
+    <string name="wear_topics_speak">Thema sprechen</string>
+    <string name="wear_topics_type">Thema eingeben</string>
+    <string name="wear_topics_input_label">Themen suchen</string>
+    <string name="wear_topics_speak_prompt">Thema sagen</string>
+    <string name="wear_topics_no_match">Kein Thema zu „%1$s“ gefunden.</string>
+    <string name="wear_topics_unavailable">Themen sind nicht verfügbar.</string>
+    <string name="wear_topics_passage_of">%1$d von %2$d</string>
+    <string name="wear_topics_next">Nächste Stelle</string>
+    <string name="wear_topics_end">Ende des Themas: %1$s gelesen.</string>
+    <string name="wear_topics_none_in_edition">In der %1$s auf der Uhr gibt es keine Stelle zu diesem Thema.</string>
+    <string name="wear_topics_start_over">Von vorn</string>
+    <string name="wear_topics_all">Alle Themen</string>
+    <plurals name="wear_topics_passages">
+        <item quantity="one">%d Stelle</item>
+        <item quantity="other">%d Stellen</item>
+    </plurals>
 </resources>

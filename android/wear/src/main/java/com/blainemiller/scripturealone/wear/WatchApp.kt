@@ -95,13 +95,16 @@ object Routes {
     const val NOTES = "notes"
     const val HIGHLIGHTS = "highlights"
     const val TRANSLATIONS = "translations"
-    val SCREENS = setOf(BOOKS, FAVORITES, NOTES, HIGHLIGHTS, TRANSLATIONS)
+    const val TOPICS = "topics"
+    val SCREENS = setOf(BOOKS, FAVORITES, NOTES, HIGHLIGHTS, TRANSLATIONS, TOPICS)
 
     fun verse(ref: String) = "verse/$ref"
     fun verse(range: VerseRange) = verse(range.storageString)
     fun book(book: BookID) = "book/${book.number}"
     fun chapter(book: Int, chapter: Int, focus: Int = 0) = "chapter/$book/$chapter/$focus"
     fun note(id: String) = "note/${Uri.encode(id)}"
+    fun topic(id: String) = "topic/${Uri.encode(id)}"
+    fun topicSearch(query: String) = "topics/search/${Uri.encode(query)}"
 }
 
 /** The app's own accent, until the phone sends the reader's (`WatchAccent`). */
@@ -109,9 +112,9 @@ private val DefaultAccent = Color(VersePalette.DARK.accent)
 private val LocalAccent = staticCompositionLocalOf { DefaultAccent }
 
 /** The reader's accent colour from the phone, or the app's own. */
-private val Accent: Color
+internal val Accent: Color
     @Composable @ReadOnlyComposable get() = LocalAccent.current
-private val Secondary = Color(0xFFB4ABA2)
+internal val Secondary = Color(0xFFB4ABA2)
 private val HeartRed = Color(0xFFFF453A)
 private val NoteOrange = Color(0xFFFF9F0A)
 private val HighlightYellow = Color(0xFFFFD60A)
@@ -160,6 +163,14 @@ fun WatchApp(bible: WatchBible, pendingRoute: MutableStateFlow<String?>) {
             }
             composable(Routes.HIGHLIGHTS) { HighlightsScreen(bible, state) { nav.navigate(it) } }
             composable(Routes.TRANSLATIONS) { TranslationsScreen(bible, state) }
+            // Topics — browse, search by voice or keyboard, and read a topic's passages (WatchTopics.kt).
+            composable(Routes.TOPICS) { TopicsScreen(nav) }
+            composable("topics/search/{query}") { entry ->
+                TopicSearchScreen(nav, entry.arguments?.getString("query").orEmpty())
+            }
+            composable("topic/{id}") { entry ->
+                TopicScreen(bible, state, nav, entry.arguments?.getString("id").orEmpty())
+            }
         }
     }
     }
@@ -167,7 +178,7 @@ fun WatchApp(bible: WatchBible, pendingRoute: MutableStateFlow<String?>) {
 
 /** A scrolling screen: time at the top, the crown-driven position indicator, round-screen scaling. */
 @Composable
-private fun Screen(listState: ScalingLazyListState = rememberScalingLazyListState(initialCenterItemIndex = 0), content: ScalingLazyListScope.() -> Unit) {
+internal fun Screen(listState: ScalingLazyListState = rememberScalingLazyListState(initialCenterItemIndex = 0), content: ScalingLazyListScope.() -> Unit) {
     Scaffold(
         timeText = { TimeText() },
         vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) },
@@ -188,7 +199,7 @@ private fun Screen(listState: ScalingLazyListState = rememberScalingLazyListStat
 }
 
 @Composable
-private fun Title(text: String, color: Color = MaterialTheme.colors.onBackground) {
+internal fun Title(text: String, color: Color = MaterialTheme.colors.onBackground) {
     ListHeader {
         Text(
             text, color = color, style = MaterialTheme.typography.title3, textAlign = TextAlign.Center,
@@ -198,7 +209,7 @@ private fun Title(text: String, color: Color = MaterialTheme.colors.onBackground
 }
 
 @Composable
-private fun RowChip(
+internal fun RowChip(
     label: String, icon: Int?, tint: Color = Accent, secondary: String? = null, trailing: String? = null, onClick: () -> Unit,
 ) {
     Chip(
@@ -246,6 +257,7 @@ private fun HomeScreen(bible: WatchBible, state: WatchBible.State, go: (String) 
         item { RowChip(stringResource(R.string.wear_favorites), R.drawable.ic_heart, HeartRed, trailing = favorites.takeIf { it > 0 }?.toString()) { go(Routes.FAVORITES) } }
         item { RowChip(stringResource(R.string.wear_notes), R.drawable.ic_note, NoteOrange, trailing = notes.takeIf { it > 0 }?.toString()) { go(Routes.NOTES) } }
         item { RowChip(stringResource(R.string.wear_highlights), R.drawable.ic_highlighter, HighlightYellow, trailing = highlights.takeIf { it > 0 }?.toString()) { go(Routes.HIGHLIGHTS) } }
+        item { RowChip(stringResource(R.string.wear_topics), R.drawable.ic_topics) { go(Routes.TOPICS) } }
         item { RowChip(stringResource(R.string.wear_read), R.drawable.ic_book) { go(Routes.BOOKS) } }
         item { RowChip(stringResource(R.string.wear_translation), R.drawable.ic_translate, trailing = state.abbreviation) { go(Routes.TRANSLATIONS) } }
     }
@@ -329,7 +341,7 @@ private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: Verse
 
 /** A verse with the words of Christ in red and an optional small verse number — `WatchVerseText`. */
 @Composable
-private fun VerseText(verse: WatchVerse, numbered: Boolean, highlight: Color? = null, onClick: (() -> Unit)? = null) {
+internal fun VerseText(verse: WatchVerse, numbered: Boolean, highlight: Color? = null, onClick: (() -> Unit)? = null) {
     var modifier = Modifier.fillMaxWidth()
     if (highlight != null) modifier = modifier.background(highlight.copy(alpha = 0.28f), RoundedCornerShape(4.dp)).padding(horizontal = 4.dp)
     if (onClick != null) modifier = modifier.clickable(onClick = onClick)
