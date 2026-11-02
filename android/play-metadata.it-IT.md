@@ -53,5 +53,5 @@ Evidenziazioni, note e preferiti restano sul tuo dispositivo. Nessun server, nes
 Nata per aiutare le persone a studiare la Parola di Dio e a crescere nella vicinanza a Cristo.
 
 ## release_notes
-1.2.4 — Android Auto: risolto il problema per cui scegliere un capitolo o un preferito a volte partiva da Giovanni 1. Cerca un passo scrivendolo o dicendolo nella ricerca dell’auto, scegli tra i tuoi piani di lettura e ascolta lo studio settimanale della tua chiesa. Le letture avviate dall’auto non vengono più silenziate da un telefono in modalità vibrazione.
+1.3.0 — Novità su Wear OS: Temi. Sfoglia, di’ o scrivi un tema sull’orologio e scorri i suoi passi. Importa più Bibbie di studio, comprese edizioni tedesche con il commento come note di studio; Gioele e Malachia combaciano con ricerca e rimandi. Risolve un arresto anomalo sugli orologi Wear OS meno recenti.
 

@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.2.4 — Android Auto: fixed choosing a chapter or favorite sometimes starting at John 1 instead. Search a passage by typing or saying it in the car’s search box, choose among your reading plans, and hear your church’s weekly study. Readings you start from the car are no longer silenced by a phone set to vibrate.
+1.3.0 — New on Wear OS: Topics. Browse, speak or type a topic on your watch and swipe through its passages. Import more study Bibles, including German editions whose commentary becomes study notes; German Joel and Malachi now line up with search and cross-references. Fixes a crash on older Wear OS watches.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

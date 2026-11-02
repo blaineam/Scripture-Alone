@@ -64,7 +64,7 @@ almeida,acf,nvi,arc,ara,kjv,temas,ansiedade,luto,consolo,comentário,devocional,
 Agora com a NASB 2020. Descubra o que a Bíblia diz sobre o que você está vivendo e estude offline com comentários, mapas e linhas do tempo. Sem anúncios, sem contas.
 
 ## whats_new
-1.2.4 — No carro, escolha entre seus planos de leitura e ouça o estudo semanal da sua igreja, com pequenas melhorias na leitura em voz alta na estrada.
+1.3.0 — Importe mais Bíblias de estudo, incluindo edições alemãs: o comentário vira notas de estudo, e Joel e Malaquias agora combinam com a busca e as referências cruzadas.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/
