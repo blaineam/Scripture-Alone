@@ -53,5 +53,5 @@ Vos surlignages, notes et favoris restent sur votre appareil : ni serveur, ni co
 Conçue pour aider à étudier la Parole de Dieu et à se rapprocher du Christ.
 
 ## release_notes
-1.3.0 — Nouveau sur Wear OS : Thèmes. Parcourez, dites ou saisissez un thème sur la montre et faites défiler ses passages. Importez plus de Bibles d’étude, dont des éditions allemandes avec leur commentaire en notes d’étude ; Joël et Malachie concordent avec la recherche et les renvois. Corrige un plantage sur les anciennes montres Wear OS.
+1.4.0 — Lisez l’ESV avec un seul interrupteur. Activez « Utiliser l'ESV en ligne » dans Traductions en ligne : un guide sur le site de Crossway met chaque étape en évidence, remplit la demande et enregistre votre clé pour vous.
 

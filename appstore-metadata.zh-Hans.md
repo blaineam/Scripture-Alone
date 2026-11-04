@@ -66,7 +66,7 @@ NASB 2020 与 NASB 1995 © The Lockman Foundation。经许可使用。www.Lockma
 现已支持 NASB 2020。找到圣经对你正在经历之事的话语，并借助注释、地图与时间线离线研读。无广告，无需账户。
 
 ## whats_new
-1.3.0 — 可导入更多研读本圣经，包括德语版本：其注释会成为研读笔记，约珥书和玛拉基书现在也与搜索和交叉引用对齐。
+1.4.0 — 一个开关即可阅读 ESV。在“在线译本”中打开“在线使用 ESV”，Crossway 官网上的向导会逐步高亮提示、填写申请表，并为你保存密钥。
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

@@ -545,6 +545,7 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
     val chosen = remember { mutableStateMapOf<String, Boolean>() }
     var checking by remember { mutableStateOf(false) }
     var failure by remember { mutableStateOf<String?>(null) }
+    var showEsvGuide by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
@@ -566,6 +567,30 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
             checking = false
             result.onSuccess { list -> available = list.sortedBy { it.name.lowercase() } }
                 .onFailure { failure = it.message ?: AppText.get(R.string.translations_keys_api_bible_unreachable) }
+        }
+    }
+
+    /** A key the guide found: kept at once, as on iOS, without leaving this page. */
+    fun keepEsvKey(key: String) {
+        entry[OnlineProvider.CROSSWAY] = key
+        stored[OnlineProvider.CROSSWAY] = true
+        scope.launch {
+            withContext(Dispatchers.IO) {
+                keys.set(key, OnlineProvider.CROSSWAY)
+                TranslationLibrary.syncKeys()
+            }
+        }
+    }
+
+    fun forgetEsvKey() {
+        entry[OnlineProvider.CROSSWAY] = ""
+        stored[OnlineProvider.CROSSWAY] = false
+        scope.launch {
+            withContext(Dispatchers.IO) {
+                keys.remove(OnlineProvider.CROSSWAY)
+                TranslationLibrary.syncKeys()
+                runCatching { TranslationLibrary.loader.clear(OnlineEntry("ESV", "English Standard Version", OnlineProvider.CROSSWAY, "esv")) }
+            }
         }
     }
 
@@ -592,7 +617,9 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
         }
     }
 
-    Column(Modifier.fillMaxSize()) {
+    if (showEsvGuide) {
+        EsvKeyGuideScreen(palette, onKey = ::keepEsvKey, onClose = { showEsvGuide = false })
+    } else Column(Modifier.fillMaxSize()) {
         SheetTopBar(
             stringResource(R.string.translations_keys_title), palette,
             leading = { GlassTextButton(stringResource(R.string.common_cancel), palette, surface, onClick = onDone) },
@@ -600,13 +627,27 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
         )
         Column(Modifier.fillMaxSize().background(StudyStyle.groupedBackground(palette)).verticalScroll(rememberScrollState())) {
             for (provider in OnlineProvider.entries) {
-                GroupedSection(palette, header = provider.title, footer = provider.explanation) {
+                GroupedSection(
+                    palette, header = provider.title,
+                    footer = if (provider == OnlineProvider.CROSSWAY) {
+                        provider.explanation + "\n\n" + stringResource(R.string.translations_esv_disclosure)
+                    } else provider.explanation,
+                ) {
+                    if (provider == OnlineProvider.CROSSWAY) {
+                        EsvToggle(
+                            on = stored[provider] == true, palette = palette,
+                            onChange = { if (it) showEsvGuide = true else forgetEsvKey() },
+                        )
+                        CellDivider(palette)
+                    }
                     KeyField(entry[provider].orEmpty(), stringResource(R.string.translations_keys_field_description, provider.title), palette) { entry[provider] = it }
-                    CellDivider(palette)
-                    Cell(palette, onClick = { uri.openUri(provider.signupUrl) }) {
-                        Icon(Icons.AutoMirrored.Outlined.OpenInNew, null, tint = palette.accent, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(12.dp))
-                        Text(stringResource(R.string.translations_keys_get_free), color = palette.accent, fontSize = StudyStyle.body)
+                    if (provider != OnlineProvider.CROSSWAY) {
+                        CellDivider(palette)
+                        Cell(palette, onClick = { uri.openUri(provider.signupUrl) }) {
+                            Icon(Icons.AutoMirrored.Outlined.OpenInNew, null, tint = palette.accent, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Text(stringResource(R.string.translations_keys_get_free), color = palette.accent, fontSize = StudyStyle.body)
+                        }
                     }
                     if (stored[provider] == true) {
                         CellDivider(palette)
@@ -650,6 +691,18 @@ private fun OnlineKeysPage(reader: ReaderViewModel, palette: ReaderPalette, onDo
         }
     }
     failure?.let { Alert(stringResource(R.string.translations_keys_failed_title), it, palette, confirm = stringResource(R.string.common_ok), onConfirm = { failure = null }) }
+}
+
+/** The ESV's one switch: on starts the guided setup, off forgets the key on this device. */
+@Composable
+private fun EsvToggle(on: Boolean, palette: ReaderPalette, onChange: (Boolean) -> Unit) {
+    Cell(palette, onClick = { onChange(!on) }) {
+        Text(stringResource(R.string.translations_esv_toggle), color = palette.ink, fontSize = StudyStyle.body, modifier = Modifier.weight(1f))
+        androidx.compose.material3.Switch(
+            checked = on, onCheckedChange = null,
+            colors = androidx.compose.material3.SwitchDefaults.colors(checkedTrackColor = palette.accent),
+        )
+    }
 }
 
 /** A secure field: the key is masked, never autocorrected, never suggested. */

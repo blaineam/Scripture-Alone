@@ -53,5 +53,5 @@ Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 
 ## release_notes
-1.3.0 — Neu auf Wear OS: Themen. Auf der Uhr ein Thema durchsuchen, sprechen oder tippen und durch die Stellen wischen. Mehr Studienbibeln lassen sich importieren, auch deutsche Ausgaben mit Kommentar als Studiennotizen; Joel und Malachi stimmen mit Suche und Querverweisen überein. Behebt einen Absturz auf älteren Wear-OS-Uhren.
+1.4.0 — Die ESV mit einem Schalter lesen. Aktiviere in den Online-Übersetzungen „ESV online nutzen“, und eine Anleitung auf Crossways eigener Seite hebt jeden Schritt hervor, füllt den Antrag aus und speichert deinen Schlüssel für dich.
 

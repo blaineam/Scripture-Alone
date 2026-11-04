@@ -260,6 +260,37 @@
     <string name="translations_keys_chosen">Choisie</string>
     <string name="translations_keys_failed_title">Échec de l\'opération</string>
     <string name="translations_keys_placeholder">Clé API</string>
+    <string name="translations_esv_toggle">Utiliser l\'ESV en ligne</string>
+    <string name="translations_esv_disclosure">Cette option configure tout pour vous. Elle accepte les conditions de Crossway en votre nom, vous connecte, remplit la demande et enregistre votre clé. Vous saisissez uniquement vos informations et réussissez la vérification « Je ne suis pas un robot » de Crossway. Votre e-mail et votre mot de passe restent en mémoire le temps de la connexion, sans jamais être enregistrés.</string>
+    <string name="esv_guide_title">Obtenir votre clé ESV</string>
+    <string name="esv_guide_checking">Vérification de votre clé…</string>
+    <string name="esv_guide_unavailable">La configuration guidée n\'est pas disponible sur cet appareil. Obtenez une clé sur api.esv.org et collez-la dans le champ Clé API.</string>
+    <string name="esv_guide_skip">Ignorer le guide</string>
+    <string name="esv_guide_email_title">Votre e-mail</string>
+    <string name="esv_guide_email_body">Saisissez l\'adresse e-mail de votre compte ESV.org gratuit.</string>
+    <string name="esv_guide_pass_title">Votre mot de passe</string>
+    <string name="esv_guide_pass_body">Saisissez votre mot de passe ESV.org. Votre gestionnaire de mots de passe peut le remplir.</string>
+    <string name="esv_guide_sign_in_title">Se connecter</string>
+    <string name="esv_guide_tap_this">Touchez le bouton lumineux.</string>
+    <string name="esv_guide_need_account">Je n\'ai pas de compte</string>
+    <string name="esv_guide_fill_title">Remplissez ceci</string>
+    <string name="esv_guide_fill_body">Complétez « %1$s ».</string>
+    <string name="esv_guide_tos_title">Accepter les conditions</string>
+    <string name="esv_guide_tos_body">Lisez les conditions de Crossway, puis cochez la case. Ce choix vous appartient.</string>
+    <string name="esv_guide_captcha_title">Prouvez que vous êtes humain</string>
+    <string name="esv_guide_captcha_body">Crossway demande cette vérification. Réussissez-la, puis poursuivez.</string>
+    <string name="esv_guide_submit_title">Presque terminé</string>
+    <string name="esv_guide_submit_body">Tout est rempli. Touchez le bouton lumineux.</string>
+    <string name="esv_guide_verify_title">Étape suivante : le site développeur</string>
+    <string name="esv_guide_verify_body">Votre compte ESV.org est prêt. Touchez Continuer et reconnectez-vous sur le site développeur de Crossway, où les clés sont créées. Si Crossway vous a envoyé un lien de confirmation par e-mail, ouvrez-le d\'abord.</string>
+    <string name="esv_guide_continue">Continuer</string>
+    <string name="esv_guide_signing_title">Connexion en cours</string>
+    <string name="esv_guide_signing_body">Avec l\'e-mail et le mot de passe que vous venez de créer. Rien n\'est enregistré.</string>
+    <string name="esv_guide_key_title">Clé trouvée</string>
+    <string name="esv_guide_key_body">Enregistrement sur cet appareil…</string>
+    <string name="esv_guide_bad_key_title">Cette clé n\'a pas fonctionné</string>
+    <string name="esv_guide_bad_key_body">Crossway ne l\'a pas acceptée. Touchez Réessayer, ou copiez la clé à la main depuis cette page.</string>
+    <string name="esv_guide_retry">Réessayer</string>
     <string name="translations_summary_title">Ajoutées</string>
     <string name="translations_summary_translation">Traduction</string>
     <string name="translations_summary_books">Livres</string>
@@ -592,16 +623,6 @@
     <string name="keepsake_note_copied">Copié</string>
     <string name="keepsake_note_copy">Copier la note</string>
     <string name="keepsake_settings_title">Souvenir &amp; export</string>
-    <string name="user_guide_title">Guide d’utilisation</string>
-    <string name="user_guide_welcome_title">Bienvenue dans Scripture Alone</string>
-    <string name="user_guide_welcome_message">Un guide illustré vous présente tout ce que fait l\'app : lecture, étude, notes et plus encore.</string>
-    <string name="user_guide_welcome_read">Lire le guide</string>
-    <string name="user_guide_welcome_skip">Passer</string>
-    <string name="user_guide_welcome_footnote">Vous pouvez l\'ouvrir à tout moment depuis Aa › Guide d’utilisation.</string>
-    <string name="user_guide_downloading">Téléchargement du Guide d’utilisation…</string>
-    <string name="user_guide_download_failed">Impossible de télécharger le Guide d’utilisation. Vérifiez votre connexion et réessayez.</string>
-    <string name="user_guide_contents">Sommaire</string>
-    <string name="user_guide_chapters">Chapitres</string>
     <string name="keepsake_settings_section_yours">Votre Bible souvenir</string>
     <string name="keepsake_settings_give_footer">Offrez à votre famille une copie de vos surlignages et de vos notes — une version numérique de la Bible que vous annotez depuis des années. C\'est un fichier que vous remettez vous-même ; rien n\'est envoyé nulle part.</string>
     <string name="keepsake_settings_section_given">Les souvenirs qu\'on vous a offerts</string>
@@ -627,6 +648,16 @@
     <string name="keepsake_row_share_copy">Partager une copie</string>
     <string name="keepsake_row_remove">Supprimer…</string>
     <string name="keepsake_row_made">créé %1$s</string>
+    <string name="user_guide_title">Guide d’utilisation</string>
+    <string name="user_guide_welcome_title">Bienvenue dans Scripture Alone</string>
+    <string name="user_guide_welcome_message">Un guide illustré vous présente tout ce que fait l\'app : lecture, étude, notes et plus encore.</string>
+    <string name="user_guide_welcome_read">Lire le guide</string>
+    <string name="user_guide_welcome_skip">Passer</string>
+    <string name="user_guide_welcome_footnote">Vous pouvez l\'ouvrir à tout moment depuis Aa › Guide d’utilisation.</string>
+    <string name="user_guide_downloading">Téléchargement du Guide d’utilisation…</string>
+    <string name="user_guide_download_failed">Impossible de télécharger le Guide d’utilisation. Vérifiez votre connexion et réessayez.</string>
+    <string name="user_guide_contents">Sommaire</string>
+    <string name="user_guide_chapters">Chapitres</string>
     <string name="share_template_parchment">Parchemin</string>
     <string name="share_template_ink">Encre</string>
     <string name="share_template_dawn">Aube</string>
@@ -987,8 +1018,6 @@
     <string name="process_text_label">Ouvrir dans Scripture Alone</string>
     <string name="tile_votd_label">Verset du jour</string>
     <string name="tile_votd_description">Verset du jour, %1$s</string>
-
-    <!-- Reading plans (docs/reading-plans.md). Machine-drafted: Levi to review. -->
     <string name="reader_reading_plans">Plans de lecture…</string>
     <string name="plans_title">Plans de lecture</string>
     <string name="plans_today">Aujourd’hui</string>
@@ -1064,8 +1093,6 @@
     <string name="plans_summary_import">Calendrier de %1$s. Le texte se lit dans votre traduction.</string>
     <string name="plans_disciples_note">Suit la lecture quotidienne de l’église, mise à jour automatiquement chaque jour.</string>
     <string name="plans_read_devotion">Lire la méditation du jour</string>
-
-    <!-- Android Auto (the car screens: docs/car.md). -->
     <string name="car_listen">Écouter</string>
     <string name="car_today">Lecture du jour</string>
     <string name="car_continue">Continuer</string>

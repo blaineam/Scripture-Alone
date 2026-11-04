@@ -947,6 +947,7 @@ final class ListenController {
         return nil
         #endif
     }
+    #if canImport(UIKit)
     /// The cover, drawn once into memory.
     private static let coverBitmap: UIImage? = {
         guard let source = UIImage(named: "NowPlayingArt") else { return nil }
@@ -954,6 +955,7 @@ final class ListenController {
         format.scale = 1
         return UIGraphicsImageRenderer(size: source.size, format: format).image { _ in source.draw(at: .zero) }
     }()
+    #endif
 
     private func clearNowPlaying() {
         let center = MPNowPlayingInfoCenter.default()

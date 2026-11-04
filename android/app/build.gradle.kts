@@ -29,8 +29,11 @@ val contentKeySeedMasked: String = System.getenv("SA_CONTENT_KEY_SEED").orEmpty(
  * NASB 2020 when present — is a constant at runtime. A package without the seed that opens it fails
  * the build rather than ship a translation nobody can read.
  */
+// `-PsaNoLicensed=true` builds without them even when their files are here: a developer's debug build
+// that has no seed to open them (the release workflow never sets it).
 val licensedTranslations: List<String> = rootProject.layout.projectDirectory.dir("../ScriptureAlone/Resources/Packages").asFile.let { dir ->
-    listOf("NASB2020", "NASB1995").filter { File(dir, "$it.sabible").exists() && File(dir, "$it-signing.pub").exists() }
+    if (providers.gradleProperty("saNoLicensed").orNull == "true") emptyList()
+    else listOf("NASB2020", "NASB1995").filter { File(dir, "$it.sabible").exists() && File(dir, "$it-signing.pub").exists() }
 }.also { present ->
     check(present.isEmpty() || contentKeySeedMasked.isNotEmpty()) {
         "${present.joinToString()} present but SA_CONTENT_KEY_SEED is not set: nobody could open it"
@@ -268,7 +271,8 @@ val syncBundledData by tasks.registering(Sync::class) {
     }
     // Verse of the Day: the same curated list, and so the same passage on the same day, as iOS.
     from(rootProject.layout.projectDirectory.dir("../ScriptureAlone/Shared")) {
-        include("DailyVerses.json")
+        // The guided ESV key setup's coach script: one copy, shared with iOS.
+        include("DailyVerses.json", "ESVKeyGuide.js")
     }
     // The curated life themes of the Topics directory: the same passages as iOS (Tools/build_topics.py).
     from(rootProject.layout.projectDirectory.dir("../ScriptureAloneCore/Sources/ScriptureAloneCore/Resources")) {
@@ -312,6 +316,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.navigation:navigation-compose:2.8.4")
+    // WebMessageListener: the ESV key guide's page may talk to the app only from Crossway's own origins.
+    implementation("androidx.webkit:webkit:1.12.1")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     // Android's own SQLite has no FTS5 ("no such module: fts5", verified on API 35 / SQLite 3.44.3),

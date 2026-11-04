@@ -55,5 +55,5 @@ DRM이 없는 ePub, 텍스트 레이어가 있는 성경 PDF, USFM 파일처럼 
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.3.0 — Wear OS에 주제 기능이 추가되었습니다. 시계에서 주제를 둘러보거나 말하거나 입력하고 구절을 넘겨 보세요. 더 많은 스터디 성경을 가져올 수 있으며 독일어판 해설은 학습 노트가 되고 요엘서와 말라기서도 검색·상호 참조와 맞습니다. 구형 Wear OS 시계의 충돌을 수정했습니다.
+1.4.0 — 스위치 하나로 ESV를 읽어 보세요. 온라인 번역본에서 “온라인으로 ESV 사용”을 켜면 Crossway 사이트의 안내가 각 단계를 강조해 주고, 신청서를 작성하고 키를 대신 저장해 줍니다.
 

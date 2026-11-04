@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.3.0 — New on Wear OS: Topics. Browse, speak or type a topic on your watch and swipe through its passages. Import more study Bibles, including German editions whose commentary becomes study notes; German Joel and Malachi now line up with search and cross-references. Fixes a crash on older Wear OS watches.
+1.4.0 — Read the ESV with one switch. Turn on “Use the ESV online” in Online Translations and a guide on Crossway’s own site highlights each step, fills in the application and saves your key for you.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

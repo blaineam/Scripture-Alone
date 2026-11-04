@@ -486,6 +486,45 @@
     <!-- Placeholder in the key field. -->
     <string name="translations_keys_placeholder">API key</string>
 
+    <!-- Online translations: the ESV switch and the guided key setup -->
+    <!-- Switch that sets up the ESV over the network. -->
+    <string name="translations_esv_toggle">Use the ESV online</string>
+    <!-- Disclosure under the “Use the ESV online” switch. -->
+    <string name="translations_esv_disclosure">Turning this on sets everything up for you. It agrees to Crossway\'s terms on your behalf, signs you in, fills in the application and saves your key. You only enter your own details and complete Crossway\'s “I\'m not a robot” check. Your email and password are kept in memory just long enough to sign you in, and never saved.</string>
+    <!-- Title of the guided ESV key setup. -->
+    <string name="esv_guide_title">Get Your ESV Key</string>
+    <string name="esv_guide_checking">Checking your key…</string>
+    <!-- Shown when this device\'s web view cannot run the guide. -->
+    <string name="esv_guide_unavailable">The guided setup isn\'t available on this device. Get a key at api.esv.org and paste it into the API key field instead.</string>
+    <!-- Button on the guide that turns the highlighting off. -->
+    <string name="esv_guide_skip">Skip guide</string>
+    <string name="esv_guide_email_title">Your email</string>
+    <string name="esv_guide_email_body">Type the email address of your free ESV.org account.</string>
+    <string name="esv_guide_pass_title">Your password</string>
+    <string name="esv_guide_pass_body">Type your ESV.org password. Your password manager can fill it in.</string>
+    <string name="esv_guide_sign_in_title">Sign in</string>
+    <string name="esv_guide_tap_this">Tap the glowing button.</string>
+    <string name="esv_guide_need_account">I need an account</string>
+    <string name="esv_guide_fill_title">Fill this in</string>
+    <!-- %1$s is the name of a form field. -->
+    <string name="esv_guide_fill_body">Complete “%1$s”.</string>
+    <string name="esv_guide_tos_title">Agree to the terms</string>
+    <string name="esv_guide_tos_body">Read Crossway\'s terms, then tick the box. That choice is yours.</string>
+    <string name="esv_guide_captcha_title">Prove you\'re human</string>
+    <string name="esv_guide_captcha_body">Crossway asks for this check. Solve it, then carry on.</string>
+    <string name="esv_guide_submit_title">Almost there</string>
+    <string name="esv_guide_submit_body">Everything is filled in. Tap the glowing button.</string>
+    <string name="esv_guide_verify_title">Next: the developer site</string>
+    <string name="esv_guide_verify_body">Your ESV.org account is ready. Tap Continue and sign in again on Crossway\'s developer site, where keys are made. If Crossway emailed you a confirmation link, open it first.</string>
+    <string name="esv_guide_continue">Continue</string>
+    <string name="esv_guide_signing_title">Signing you in</string>
+    <string name="esv_guide_signing_body">Using the email and password you just created. Nothing is saved.</string>
+    <string name="esv_guide_key_title">Found your key</string>
+    <string name="esv_guide_key_body">Saving it to this device…</string>
+    <string name="esv_guide_bad_key_title">That key didn\'t work</string>
+    <string name="esv_guide_bad_key_body">Crossway didn\'t accept it. Tap Try again, or copy the key by hand from this page.</string>
+    <string name="esv_guide_retry">Try again</string>
+
     <!-- Translations: import summary -->
     <!-- Title after a translation is imported. -->
     <string name="translations_summary_title">Added</string>

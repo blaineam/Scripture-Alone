@@ -64,7 +64,7 @@ nasb 2020,nasb 1995,kjv,asv,bsb,topical,anxiety,grief,comfort,commentary,devotio
 Now with the NASB 2020. Find what the Bible says about what you're going through and study offline with commentary, maps and timelines. No ads, no accounts.
 
 ## whats_new
-1.3.0 — Import more study Bibles, including German editions whose commentary becomes study notes, and Joel and Malachi in German numbering now line up with search and cross-references.
+1.4.0 — Read the ESV with one switch. Turn on “Use the ESV online” in Online Translations and a guide on Crossway’s own site highlights each step, fills in the application and saves your key for you.
 
 ## review_notes
 Scripture Alone is an open-source Bible app (AGPL-3.0, https://github.com/blaineam/Scripture-Alone). No account or login is required for any feature, and the app reads offline from its first launch.

@@ -260,6 +260,37 @@
     <string name="translations_keys_chosen">選択済み</string>
     <string name="translations_keys_failed_title">うまくいきませんでした</string>
     <string name="translations_keys_placeholder">API キー</string>
+    <string name="translations_esv_toggle">ESVをオンラインで使う</string>
+    <string name="translations_esv_disclosure">オンにすると、設定がすべて自動で行われます。Crosswayの利用規約への同意、サインイン、申請書の入力、キーの保存までお任せください。入力するのはご自身の情報だけで、Crosswayの「私はロボットではありません」確認も行っていただきます。メールアドレスとパスワードはサインインの間だけメモリに保持され、保存されません。</string>
+    <string name="esv_guide_title">ESVキーを取得</string>
+    <string name="esv_guide_checking">キーを確認中…</string>
+    <string name="esv_guide_unavailable">このデバイスではガイド付き設定を利用できません。api.esv.orgでキーを取得し、APIキー欄に貼り付けてください。</string>
+    <string name="esv_guide_skip">ガイドをスキップ</string>
+    <string name="esv_guide_email_title">メールアドレス</string>
+    <string name="esv_guide_email_body">無料のESV.orgアカウントのメールアドレスを入力してください。</string>
+    <string name="esv_guide_pass_title">パスワード</string>
+    <string name="esv_guide_pass_body">ESV.orgのパスワードを入力してください。パスワードマネージャで自動入力できます。</string>
+    <string name="esv_guide_sign_in_title">サインイン</string>
+    <string name="esv_guide_tap_this">光っているボタンをタップしてください。</string>
+    <string name="esv_guide_need_account">アカウントが必要です</string>
+    <string name="esv_guide_fill_title">ここに入力</string>
+    <string name="esv_guide_fill_body">「%1$s」を入力してください。</string>
+    <string name="esv_guide_tos_title">利用規約に同意</string>
+    <string name="esv_guide_tos_body">Crosswayの利用規約を読んで、ボックスにチェックを入れてください。同意するかどうかはご自身で決められます。</string>
+    <string name="esv_guide_captcha_title">ロボットではないことの確認</string>
+    <string name="esv_guide_captcha_body">Crosswayがこの確認を求めています。完了したら先へ進んでください。</string>
+    <string name="esv_guide_submit_title">あと少しです</string>
+    <string name="esv_guide_submit_body">すべて入力されました。光っているボタンをタップしてください。</string>
+    <string name="esv_guide_verify_title">次へ:開発者サイト</string>
+    <string name="esv_guide_verify_body">ESV.orgアカウントの準備ができました。「続ける」をタップし、キーを作成するCrosswayの開発者サイトで再度サインインしてください。Crosswayから確認リンクのメールが届いた場合は、先にそのリンクを開いてください。</string>
+    <string name="esv_guide_continue">続ける</string>
+    <string name="esv_guide_signing_title">サインイン中</string>
+    <string name="esv_guide_signing_body">作成したメールアドレスとパスワードを使用します。何も保存されません。</string>
+    <string name="esv_guide_key_title">キーが見つかりました</string>
+    <string name="esv_guide_key_body">このデバイスに保存中…</string>
+    <string name="esv_guide_bad_key_title">キーが使えませんでした</string>
+    <string name="esv_guide_bad_key_body">Crosswayに受け付けられませんでした。「もう一度試す」をタップするか、このページからキーを手動でコピーしてください。</string>
+    <string name="esv_guide_retry">もう一度試す</string>
     <string name="translations_summary_title">追加済み</string>
     <string name="translations_summary_translation">翻訳</string>
     <string name="translations_summary_books">書</string>
@@ -592,16 +623,6 @@
     <string name="keepsake_note_copied">コピーしました</string>
     <string name="keepsake_note_copy">メモをコピー</string>
     <string name="keepsake_settings_title">思い出の聖書と書き出し</string>
-    <string name="user_guide_title">ユーザガイド</string>
-    <string name="user_guide_welcome_title">Scripture Alone へようこそ</string>
-    <string name="user_guide_welcome_message">図解入りのガイドで、聖書の閲覧、研究、メモなど、このアプリでできることをすべてご紹介します。</string>
-    <string name="user_guide_welcome_read">ガイドを読む</string>
-    <string name="user_guide_welcome_skip">スキップ</string>
-    <string name="user_guide_welcome_footnote">ガイドはいつでも Aa › ユーザガイド から開けます。</string>
-    <string name="user_guide_downloading">ユーザガイドをダウンロード中…</string>
-    <string name="user_guide_download_failed">ユーザガイドをダウンロードできませんでした。接続を確認して、もう一度お試しください。</string>
-    <string name="user_guide_contents">目次</string>
-    <string name="user_guide_chapters">章</string>
     <string name="keepsake_settings_section_yours">あなたの思い出の聖書</string>
     <string name="keepsake_settings_give_footer">ハイライトとメモのコピーをご家族に。長年書き込んできた聖書のデジタル版です。ご自身で手渡すファイルで、どこにも送信されません。</string>
     <string name="keepsake_settings_section_given">受け取った思い出の聖書</string>
@@ -627,6 +648,16 @@
     <string name="keepsake_row_share_copy">コピーを共有</string>
     <string name="keepsake_row_remove">削除…</string>
     <string name="keepsake_row_made">%1$s に作成</string>
+    <string name="user_guide_title">ユーザガイド</string>
+    <string name="user_guide_welcome_title">Scripture Alone へようこそ</string>
+    <string name="user_guide_welcome_message">図解入りのガイドで、聖書の閲覧、研究、メモなど、このアプリでできることをすべてご紹介します。</string>
+    <string name="user_guide_welcome_read">ガイドを読む</string>
+    <string name="user_guide_welcome_skip">スキップ</string>
+    <string name="user_guide_welcome_footnote">ガイドはいつでも Aa › ユーザガイド から開けます。</string>
+    <string name="user_guide_downloading">ユーザガイドをダウンロード中…</string>
+    <string name="user_guide_download_failed">ユーザガイドをダウンロードできませんでした。接続を確認して、もう一度お試しください。</string>
+    <string name="user_guide_contents">目次</string>
+    <string name="user_guide_chapters">章</string>
     <string name="share_template_parchment">羊皮紙</string>
     <string name="share_template_ink">インク</string>
     <string name="share_template_dawn">夜明け</string>
@@ -987,8 +1018,6 @@
     <string name="process_text_label">Scripture Aloneで開く</string>
     <string name="tile_votd_label">今日の聖句</string>
     <string name="tile_votd_description">今日の聖句、%1$s</string>
-
-    <!-- Reading plans (docs/reading-plans.md). Machine-drafted: Levi to review. -->
     <string name="reader_reading_plans">読書プラン…</string>
     <string name="plans_title">読書プラン</string>
     <string name="plans_today">今日</string>
@@ -1064,8 +1093,6 @@
     <string name="plans_summary_import">%1$sの日程。本文はあなたの翻訳で読みます。</string>
     <string name="plans_disciples_note">教会の毎日の聖書箇所に沿って、毎日自動で更新されます。</string>
     <string name="plans_read_devotion">今日のデボーションを読む</string>
-
-    <!-- Android Auto (the car screens: docs/car.md). -->
     <string name="car_listen">聴く</string>
     <string name="car_today">今日の箇所</string>
     <string name="car_continue">続きから</string>

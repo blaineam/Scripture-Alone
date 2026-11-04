@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: the ESV key guide's local stand-in for Crossway (EsvGuideDev) is plain HTTP, reached as
+     localhost through `adb reverse` (or 10.0.2.2) on the developer's machine. Release builds have no such exception. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

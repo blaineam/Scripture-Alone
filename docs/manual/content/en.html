@@ -217,20 +217,19 @@
     <div class="text">
       <ol class="steps">
         <li>In Scripture Alone, <span data-only="iphone ipad android">tap</span><span data-only="mac">click</span> the translation button, then <span class="ui">Manage Translations…</span> › <span class="ui">Online Translations…</span>.</li>
-        <li>Under <b>Crossway (ESV)</b>, <span data-only="iphone ipad android">tap</span><span data-only="mac">click</span> <span class="ui">Get a free key…</span>. It opens <a href="https://api.esv.org/account/create-application/">api.esv.org</a>.</li>
-        <li>Sign in, or create a free ESV.org account.</li>
-        <li>Fill in the short <b>Create Application</b> form. Any name works ("My Bible reading"); describe it as personal, non-commercial Bible reading in Scripture Alone, and agree to the terms.</li>
-        <li>Open your application's page and copy its <b>API key</b> (a long string of letters and numbers).</li>
-        <li>Back in Scripture Alone, paste it into <b>API key</b> under Crossway and <span data-only="iphone ipad android">tap</span><span data-only="mac">click</span> <span class="ui">Done</span>.</li>
+        <li>Under <b>Crossway (ESV)</b>, turn on <span class="ui">Use the ESV online</span>. A guide opens on Crossway's own site and dims everything except the next thing to do.</li>
+        <li>Follow the glowing highlight. Sign in with your ESV.org account, or <span data-only="iphone ipad android">tap</span><span data-only="mac">click</span> <span class="ui">I need an account</span> to create a free one. You type your own details and complete Crossway's "I'm not a robot" check. Turning the switch on is your agreement to Crossway's terms, which the guide ticks for you.</li>
+        <li>Scripture Alone signs you in on Crossway's developer site with the details you just chose, fills in the application form ("Scripture Alone (personal use)") and submits it. Your email and password are held in memory only for that moment and are never saved.</li>
+        <li>When Crossway shows your key, Scripture Alone finds it, checks that it works, saves it, and closes the guide. Nothing to copy.</li>
       </ol>
-      <p>The ESV now appears in the translation menu with an <b>Online</b> label.</p>
+      <p>The ESV now appears in the translation menu with an <b>Online</b> label. If you would rather paste a key you already have, the <b>API key</b> field is still there, and turning the switch off removes the key from this device.</p>
     </div>
     <div class="mock">
       <div class="bar"><span class="btn">Cancel</span><span>Online Translations</span><span class="btn bold">Done</span></div>
       <div class="head">Crossway (ESV)</div>
       <div class="group">
-        <div class="row field hl">API key</div>
-        <div class="row link"><span class="ico">↗</span>Get a free key…</div>
+        <div class="row hl">Use the ESV online<span class="check">✓</span></div>
+        <div class="row field">API key</div>
       </div>
       <div class="foot">Crossway's free tier allows 5,000 requests a day for non-commercial use…</div>
       <div class="head">API.Bible (CSB, NASB, NKJV…)</div>

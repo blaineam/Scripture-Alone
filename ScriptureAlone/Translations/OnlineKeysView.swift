@@ -16,20 +16,24 @@ struct OnlineKeysView: View {
     @State private var chosen: Set<String> = []
     @State private var checking = false
     @State private var failure: String?
+    @State private var showESVGuide = false
 
     var body: some View {
         NavigationStack {
             Form {
                 ForEach(OnlineProvider.allCases) { provider in
                     Section {
+                        if provider == .crossway { esvToggle }
                         SecureField("API key", text: binding(for: provider))
                             .textContentType(.password)
                             .autocorrectionDisabled()
                             #if os(iOS)
                             .textInputAutocapitalization(.never)
                             #endif
-                        Button("Get a free key…", systemImage: "arrow.up.right.square") {
-                            openURL(provider.signupURL)
+                        if provider != .crossway {
+                            Button("Get a free key…", systemImage: "arrow.up.right.square") {
+                                openURL(provider.signupURL)
+                            }
                         }
                         if keys.key(for: provider) != nil {
                             Button("Remove Key", systemImage: "trash", role: .destructive) {
@@ -45,7 +49,13 @@ struct OnlineKeysView: View {
                     } header: {
                         Text(provider.title)
                     } footer: {
-                        Text(provider.explanation)
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(provider.explanation)
+                            if provider == .crossway {
+                                // The switch is the reader's consent to all of this, so it is said plainly.
+                                Text("Turning this on sets everything up for you. It agrees to Crossway's terms on your behalf, signs you in, fills in the application and saves your key. You only enter your own details and complete Crossway's “I'm not a robot” check. Your email and password are kept in memory just long enough to sign you in, and never saved.", comment: "Disclosure under the “Use the ESV online” switch.")
+                            }
+                        }
                     }
                 }
             }
@@ -69,12 +79,35 @@ struct OnlineKeysView: View {
                     })
                 if keys.key(for: .apiBible) != nil { Task { await loadAvailable() } }
             }
+            .sheet(isPresented: $showESVGuide) {
+                ESVKeyGuideView { key in
+                    entry[.crossway] = key
+                    keys.set(key, for: .crossway)
+                    refreshTranslations()
+                }
+            }
             .alert("That didn't work", isPresented: .constant(failure != nil)) {
                 Button("OK") { failure = nil }
             } message: {
                 Text(failure ?? "")
             }
         }
+    }
+
+    /// One switch for the ESV. Turning it on walks the reader through getting their key; turning it
+    /// off forgets the key on this device (and its iCloud Keychain copies).
+    private var esvToggle: some View {
+        Toggle("Use the ESV online", isOn: Binding(
+            get: { keys.key(for: .crossway) != nil },
+            set: { on in
+                if on {
+                    showESVGuide = true
+                } else {
+                    keys.remove(.crossway)
+                    entry[.crossway] = ""
+                    refreshTranslations()
+                }
+            }))
     }
 
     @ViewBuilder

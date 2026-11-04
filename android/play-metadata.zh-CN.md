@@ -55,5 +55,5 @@
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.3.0 — Wear OS 新增主题功能：在手表上浏览、语音或输入主题，并滑动阅读经文。可导入更多研读本圣经，包括带注释的德语版本（注释成为研读笔记），约珥书和玛拉基书也与搜索和交叉引用对齐。修复了旧款 Wear OS 手表上的崩溃。
+1.4.0 — 一个开关即可阅读 ESV。在“在线译本”中打开“在线使用 ESV”，Crossway 官网上的向导会逐步高亮提示、填写申请表，并为你保存密钥。
 

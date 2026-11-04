@@ -53,5 +53,5 @@ As suas marcações, notas e favoritos ficam no seu aparelho. Não há servidor 
 Feito para ajudar as pessoas a estudar a Palavra de Deus e a se aproximar de Cristo.
 
 ## release_notes
-1.3.0 — Novo no Wear OS: Temas. Navegue, fale ou digite um tema no relógio e deslize pelas passagens. Importe mais Bíblias de estudo, incluindo edições alemãs com o comentário como notas de estudo; Joel e Malaquias combinam com a busca e as referências cruzadas. Corrige uma falha em relógios Wear OS mais antigos.
+1.4.0 — Leia a ESV com um único interruptor. Ative “Usar a ESV on-line” em Traduções on-line e um guia no site da Crossway destaca cada passo, preenche a solicitação e salva sua chave para você.
 

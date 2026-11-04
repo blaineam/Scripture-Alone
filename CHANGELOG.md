@@ -20,6 +20,13 @@
   for the next passage (or tap Next passage), swipe right to go back to the topics. After the last passage, Start over or All
   topics. English and German; other languages show English for now. Nave's Topical Bible stays on the phone. Wear OS only.
 
+- **Guided ESV setup.** Online Translations now has a single "Use the ESV online" switch. It opens Crossway's own
+  sign-up pages in a guide that dims the page and highlights the next thing to tap, fills in the application form,
+  signs you in, agrees to Crossway's terms on your behalf, submits it, then finds, checks and saves your key. You
+  enter your own details and complete Crossway's reCAPTCHA. Your email and password are held in memory only long
+  enough to sign you in, and no Crossway session is kept afterwards. Arrow keys and ‹ › buttons step back and forward
+  through the guide. On iPhone, iPad, Mac and Android.
+
 ## 1.2.4 (2026-10-27)
 
 - **Your reading plans in the car.** With two or more plans started, Listen has a "Reading Plans" list: choose a plan and
@@ -70,7 +77,6 @@
   weekly study can be fetched on demand, read aloud, and kept for offline reading, with a link back to the
   church. Spurgeon's *Morning and Evening* — a morning and an evening meditation for every day, in his own words, with the verse in your translation and read-aloud — is included for English devices, and the Disciples Church plan is one tap away in Add a Plan. Reading Plans is in the translation menu. The Shortcuts app gains **Start Today's Reading** (it takes the
   Siri phrase *Add to Favorites* had; that action stays in Shortcuts). On iPhone, iPad, Mac and Android.
-
 ## 1.1.7 (2026-10-18)
 
 - Fixed a crash that could happen the first time the app opened on some Android phones, when the reader and a

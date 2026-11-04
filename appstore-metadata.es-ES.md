@@ -66,7 +66,7 @@ rvr1960,reina valera,lbla,biblia,ansiedad,duelo,consuelo,devocional,sermones,com
 Ahora con la NASB 2020. Descubre lo que la Biblia dice de lo que estás viviendo y estudia sin conexión con comentarios, mapas y cronologías. Sin anuncios ni cuentas.
 
 ## whats_new
-1.3.0 — Importa más Biblias de estudio, incluidas ediciones alemanas: su comentario pasa a ser notas de estudio, y Joel y Malaquías ahora coinciden con la búsqueda y las referencias cruzadas.
+1.4.0 — Lee la ESV con un solo interruptor. Activa «Usar la ESV en línea» en Traducciones en línea y una guía en el sitio de Crossway resalta cada paso, rellena la solicitud y guarda tu clave por ti.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

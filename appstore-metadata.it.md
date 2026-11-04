@@ -66,7 +66,7 @@ bibbia,riveduta,diodati,cei,argomenti,ansia,lutto,conforto,devozionale,sermone,r
 Ora con la NASB 2020. Scopri che cosa dice la Bibbia di ciò che stai vivendo e studia offline con commentari, mappe e cronologie. Senza pubblicità né account.
 
 ## whats_new
-1.3.0 — Importa più Bibbie di studio, comprese le edizioni tedesche: il commento diventa note di studio, e Gioele e Malachia ora combaciano con la ricerca e i rimandi.
+1.4.0 — Leggi la ESV con un solo interruttore. Attiva «Usa la ESV online» in Traduzioni online e una guida sul sito di Crossway evidenzia ogni passaggio, compila la richiesta e salva la tua chiave per te.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

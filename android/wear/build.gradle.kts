@@ -30,7 +30,8 @@ fun allowsWearables(file: File): Boolean = file.inputStream().use { input ->
  * storage (docs/lockman/README.md); without them (a developer's build) the watch carries the ASV's
  * compact edition instead, so it still has something to read.
  */
-val carriesNasb: Boolean = File(packagesDir, "NASB2020.sabible").exists() && File(packagesDir, "NASB2020-signing.pub").exists() &&
+val carriesNasb: Boolean = providers.gradleProperty("saNoLicensed").orNull != "true" &&
+    File(packagesDir, "NASB2020.sabible").exists() && File(packagesDir, "NASB2020-signing.pub").exists() &&
     allowsWearables(File(packagesDir, "NASB2020.sabible")).also { allowed ->
         if (!allowed) logger.warn("NASB2020.sabible is licensed off wearables: the watch carries the ASV's compact edition instead")
     }
