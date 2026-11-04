@@ -33,6 +33,20 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 - **Add a translation** — browse eBible.org's free catalogue (filtered to your own languages) or
   import a USFM zip or DRM-free ePub you own. Imports are local to the device and never synced,
   shared or exported; protected files are refused, and no decryption code ships in the app.
+- **The ESV, online** — nobody may give the ESV away, so it is read from Crossway's own API with your
+  own free key and never ships in the app. One switch (Translations › Online Translations › *Use the
+  ESV online*) sets the key up: a guide on Crossway's real pages dims everything but the next step and
+  steps back and forward (buttons, or the arrow keys on a keyboard). Turning the switch on is your
+  consent for it to agree to Crossway's terms, sign you in on their developer site with the account you
+  just made, answer and submit the application, then find, check and save the key. You still enter your
+  own details and complete Crossway's "I'm not a robot" check. Your email and password are held in
+  memory only long enough to sign in and are never saved; no Crossway cookie, storage or cached page
+  outlives the guide; only `esv.org` loads inside it. The key is kept in the Keychain (Android:
+  Keystore, carried by Block Store) and up to 500 verses are cached, Crossway's limit. API.Bible keys
+  (CSB, NKJV…) are set up by hand, as the User Guide shows. One script,
+  [`ScriptureAlone/Shared/ESVKeyGuide.js`](ScriptureAlone/Shared/ESVKeyGuide.js), serves both apps; see
+  [`ESVKeyGuideView.swift`](ScriptureAlone/Translations/ESVKeyGuideView.swift) and, on Android,
+  [`data/online/EsvKeyGuide.kt`](android/app/src/main/java/com/blainemiller/scripturealone/data/online/EsvKeyGuide.kt).
 - **Quick navigation** — type `jn 3 16`, `rom 8:28-39`, `1co13` or a word to search; or browse
   books and chapters. The chapters you've read and the words you've searched wait at the top,
   ready to run again. ⌘L on Mac and iPad keyboards.
@@ -103,8 +117,8 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
   keep the last copy and can save it as a keepsake. Design in [docs/heir-mode.md](docs/heir-mode.md).
 - **User Guide** — an illustrated guide in all nine languages, drawn natively (it reflows and
   follows Dynamic Type) and downloaded on demand the first time it's opened (Aa › User Guide), with
-  a one-time welcome card offering it. Includes step-by-step setup of your own ESV and API.Bible
-  keys. Also a PDF on the website. Source and build: [docs/manual/](docs/manual/README.md).
+  a one-time welcome card offering it. Includes how the ESV switch works and step-by-step
+  setup of your own API.Bible key. Also a PDF on the website. Source and build: [docs/manual/](docs/manual/README.md).
 - **Notes export** — all notes, the ones you've filtered, or one note, as a typeset PDF,
   Markdown (one file or a folder) or plain text, with the verses quoted in your translation.
 
@@ -130,8 +144,8 @@ Page: [wemiller.com/apps/scripture-alone](https://wemiller.com/apps/scripture-al
 ## On the way
 
 - **More translations** — the NASB 2020 and NASB 1995 are licensed from The Lockman Foundation, the first publisher to
-  license a translation to Scripture Alone, and built in; ESV, CSB and LSB licenses have been
-  requested from their publishers. The NKJV and NIV are not being pursued at this time. Licensed texts will never be committed to this repository. A licensed translation
+  license a translation to Scripture Alone, and built in; CSB and LSB licenses have been
+  requested from their publishers; the ESV is read online with your own key (above). The NKJV and NIV are not being pursued at this time. Licensed texts will never be committed to this repository. A licensed translation
   ships as a signed, encrypted package (`.sabible`): chapters sealed one at a time with
   AES-256-GCM, terms in a header signed with the publisher's Ed25519 key and enforced by the same
   code that governs the bundled texts, and a sealed search index so a packaged translation is fully
