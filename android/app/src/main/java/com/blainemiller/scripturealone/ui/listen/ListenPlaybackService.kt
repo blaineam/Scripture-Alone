@@ -1,11 +1,18 @@
 package com.blainemiller.scripturealone.ui.listen
 
 import android.app.PendingIntent
+import android.content.pm.ServiceInfo
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.os.Build
+import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.media3.common.AudioAttributes
@@ -31,6 +38,7 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -168,6 +176,71 @@ class ListenPlaybackService : MediaLibraryService() {
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = session
 
+    private val main = Handler(Looper.getMainLooper())
+    private var holdingForeground = false
+    private var holdStartedAt = 0L
+
+    /**
+     * A headset's or a car's play button while nothing is reading: media3's MediaButtonReceiver woke this service with
+     * `startForegroundService`, a promise to call `startForeground` within seconds — Android 8–11 kill the app with
+     * RemoteServiceException when it isn't kept (even when the service stops first), Android 12+ with
+     * ForegroundServiceDidNotStartInTimeException. media3 only goes foreground once the player shows a notification, and a
+     * "continue" with nothing to read (or one slower than the deadline) never shows one. So the service keeps the promise
+     * itself, at once, with a placeholder; media3's own notification replaces it if reading starts ([releaseForegroundHold]).
+     */
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == Intent.ACTION_MEDIA_BUTTON && !isPlaybackOngoing && !ListenController.get(this).isPresented) {
+            holdForeground()
+        }
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun holdForeground() {
+        val notifications = NotificationManagerCompat.from(this)
+        // media3's channel (DefaultMediaNotificationProvider makes it lazily, with this id and name): one "Listening" channel.
+        notifications.createNotificationChannel(
+            NotificationChannelCompat.Builder(DefaultMediaNotificationProvider.DEFAULT_CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_LOW)
+                .setName(getString(R.string.listen_channel_name))
+                .build(),
+        )
+        val placeholder = NotificationCompat.Builder(this, DefaultMediaNotificationProvider.DEFAULT_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_listen_notification)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.listen_loading_voice))
+            .setOngoing(true)
+            .setSilent(true)
+            .build()
+        ServiceCompat.startForeground(
+            this, HOLD_NOTIFICATION_ID, placeholder,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK else 0,
+        )
+        holdingForeground = true
+        holdStartedAt = SystemClock.uptimeMillis()
+        main.removeCallbacks(releaseForegroundHold)
+        main.postDelayed(releaseForegroundHold, HOLD_FIRST_CHECK_MS)
+    }
+
+    /**
+     * Lets the placeholder go once the request has settled (or after [HOLD_MAX_MS], so a voice that never comes up leaves no
+     * placeholder behind; reading that starts later is foregrounded by media3 as usual): nothing when media3 is foreground now (its notification took the
+     * place of this one), else the placeholder comes down — and when nothing came of it (no reading to continue), the service
+     * stops, as it does when swiped away while paused.
+     */
+    private val releaseForegroundHold: Runnable = object : Runnable {
+        override fun run() {
+            if (!holdingForeground) return
+            val starting = (session?.player as? ListenPlayer)?.isStarting == true
+            if (starting && SystemClock.uptimeMillis() - holdStartedAt < HOLD_MAX_MS) {
+                main.postDelayed(this, HOLD_RECHECK_MS)
+                return
+            }
+            holdingForeground = false
+            if (isPlaybackOngoing) return
+            ServiceCompat.stopForeground(this@ListenPlaybackService, ServiceCompat.STOP_FOREGROUND_REMOVE)
+            if (!ListenController.get(this@ListenPlaybackService).isPresented) stopSelf()
+        }
+    }
+
     /** Swiped away from Recents while paused: nothing is reading, so nothing stays behind. */
     override fun onTaskRemoved(rootIntent: Intent?) {
         val player = session?.player
@@ -175,6 +248,7 @@ class ListenPlaybackService : MediaLibraryService() {
     }
 
     override fun onDestroy() {
+        main.removeCallbacks(releaseForegroundHold)
         session?.run {
             player.release()
             release()
@@ -200,6 +274,15 @@ internal fun voiceItem(item: MediaItem): MediaItem {
     android.util.Log.d("SAVoice", "heard query=${request.searchQuery} extraKeys=${extras?.keySet()?.toList()} phrases=$phrases")
     return item.buildUpon().setMediaId(CarAction.spokenId(phrases)).build()
 }
+
+/** The placeholder that keeps a media button's startForegroundService promise ([ListenPlaybackService.onStartCommand]); not media3's id. */
+private const val HOLD_NOTIFICATION_ID = 1_002
+/** When the placeholder is first looked at: media3 has turned the button into a "continue" by then. */
+private const val HOLD_FIRST_CHECK_MS = 3_000L
+/** How often after that, while a "continue" is still starting. */
+private const val HOLD_RECHECK_MS = 1_000L
+/** The longest the placeholder waits for one: the window Android allows a media button's foreground start. */
+private const val HOLD_MAX_MS = 10_000L
 
 /** How long after a car chose something a "continue" is taken for the echo of that choice ([ListenPlayer.handleSetMediaItems]). */
 private const val RESUMPTION_ECHO_MS = 3_000L
@@ -293,6 +376,10 @@ class ListenPlayer(private val context: Context, private val listen: ListenContr
             .build()
     }
 
+    /** A chosen item still being started ([CarLibrary.play] is under way). */
+    private var starting: Job? = null
+    val isStarting: Boolean get() = starting?.isActive == true
+
     /** When a car last chose something to read (a row, a search result, a voice request), to tell a real "continue" from the echo of one. */
     private var lastChosenAt = Long.MIN_VALUE / 2
 
@@ -320,7 +407,7 @@ class ListenPlayer(private val context: Context, private val listen: ListenContr
         if (id != null && id != CarAction.CONTINUE) lastChosenAt = SystemClock.elapsedRealtime()
         if (id != null && id != "listen") {
             failure = null
-            scope.launch {
+            starting = scope.launch {
                 if (!CarLibrary.play(context, id)) {
                     // On the phone's screen, and in the car — where the driver is not looking at the phone.
                     listen.notice = context.getString(R.string.plans_unavailable)
