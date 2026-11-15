@@ -53,5 +53,5 @@ Evidenziazioni, note e preferiti restano sul tuo dispositivo. Nessun server, nes
 Nata per aiutare le persone a studiare la Parola di Dio e a crescere nella vicinanza a Cristo.
 
 ## release_notes
-1.4.0 — Leggi la ESV con un solo interruttore. Attiva «Usa la ESV online» in Traduzioni online e una guida sul sito di Crossway evidenzia ogni passaggio, compila la richiesta e salva la tua chiave per te.
+1.4.1 — Risolve un arresto anomalo raro all’avvio dell’app. Il pulsante di riproduzione non causa più l’arresto dell’app su Android 11.
 

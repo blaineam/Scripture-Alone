@@ -66,7 +66,7 @@ bible,louis segond,darby,kjv,commentaire,méditation,thèmes,anxiété,deuil,ré
 Désormais avec la NASB 2020. Trouvez ce que la Bible dit de ce que vous traversez et étudiez hors ligne avec commentaires, cartes et chronologies. Sans pub, sans compte.
 
 ## whats_new
-1.4.0 — Lisez l’ESV avec un seul interrupteur. Activez « Utiliser l'ESV en ligne » dans Traductions en ligne : un guide sur le site de Crossway met chaque étape en évidence, remplit la demande et enregistre votre clé pour vous.
+1.4.1 — Corrige un plantage rare au démarrage de l’app.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

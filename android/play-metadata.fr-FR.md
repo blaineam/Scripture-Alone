@@ -53,5 +53,5 @@ Vos surlignages, notes et favoris restent sur votre appareil : ni serveur, ni co
 Conçue pour aider à étudier la Parole de Dieu et à se rapprocher du Christ.
 
 ## release_notes
-1.4.0 — Lisez l’ESV avec un seul interrupteur. Activez « Utiliser l'ESV en ligne » dans Traductions en ligne : un guide sur le site de Crossway met chaque étape en évidence, remplit la demande et enregistre votre clé pour vous.
+1.4.1 — Corrige un plantage rare au démarrage de l’app. Le bouton de lecture ne fait plus planter l’app sous Android 11.
 

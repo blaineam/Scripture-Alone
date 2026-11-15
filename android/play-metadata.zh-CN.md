@@ -55,5 +55,5 @@
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.4.0 — 一个开关即可阅读 ESV。在“在线译本”中打开“在线使用 ESV”，Crossway 官网上的向导会逐步高亮提示、填写申请表，并为你保存密钥。
+1.4.1 — 修复了应用启动时偶尔出现的崩溃问题。修复了在 Android 11 上点按播放按钮导致崩溃的问题。
 

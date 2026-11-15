@@ -53,5 +53,5 @@ Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 
 ## release_notes
-1.4.0 — Die ESV mit einem Schalter lesen. Aktiviere in den Online-Übersetzungen „ESV online nutzen“, und eine Anleitung auf Crossways eigener Seite hebt jeden Schritt hervor, füllt den Antrag aus und speichert deinen Schlüssel für dich.
+1.4.1 — Behebt einen seltenen Absturz beim Start der App. Die Wiedergabetaste führt unter Android 11 nicht mehr zum Absturz.
 

@@ -53,5 +53,5 @@ Subrayados, notas y favoritos se quedan en tu dispositivo. Sin servidor ni cuent
 Hecha para ayudar a estudiar la Palabra de Dios y acercarse más a Cristo.
 
 ## release_notes
-1.4.0 — Lee la ESV con un solo interruptor. Activa «Usar la ESV en línea» en Traducciones en línea y una guía en el sitio de Crossway resalta cada paso, rellena la solicitud y guarda tu clave por ti.
+1.4.1 — Corrige un cierre inesperado poco frecuente al iniciar la app. El botón de reproducir ya no cierra la app en Android 11.
 

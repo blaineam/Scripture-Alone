@@ -55,5 +55,5 @@ DRM フリーの ePub、テキストレイヤーのある聖書 PDF、USFM フ�
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.4.0 — スイッチひとつでESVが読めます。「オンラインの翻訳」で「ESVをオンラインで使用」をオンにすると、Crossway のサイト上のガイドが各手順を強調表示し、申請フォームの入力とキーの保存まで行います。
+1.4.1 — アプリの起動時にまれに発生するクラッシュを修正しました。Android 11 で再生ボタンを押すとクラッシュする問題を修正しました。
 
