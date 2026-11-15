@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.4.0 — Read the ESV with one switch. Turn on “Use the ESV online” in Online Translations and a guide on Crossway’s own site highlights each step, fills in the application and saves your key for you.
+1.4.1 — Fixes a rare crash when the app starts up. The play button no longer crashes the app on Android 11.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

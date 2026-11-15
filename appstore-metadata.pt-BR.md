@@ -64,7 +64,7 @@ almeida,acf,nvi,arc,ara,kjv,temas,ansiedade,luto,consolo,comentário,devocional,
 Agora com a NASB 2020. Descubra o que a Bíblia diz sobre o que você está vivendo e estude offline com comentários, mapas e linhas do tempo. Sem anúncios, sem contas.
 
 ## whats_new
-1.4.0 — Leia a ESV com um único interruptor. Ative “Usar a ESV on-line” em Traduções on-line e um guia no site da Crossway destaca cada passo, preenche a solicitação e salva sua chave para você.
+1.4.1 — Corrige uma falha rara ao abrir o app.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/
