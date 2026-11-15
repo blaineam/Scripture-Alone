@@ -139,7 +139,7 @@ enum DataStore {
 }
 
 /// Keeps the process from being suspended while a file lock is held.
-protocol SuspensionGuard {
+nonisolated protocol SuspensionGuard {
     associatedtype Token
     func begin(_ name: String) -> Token
     func end(_ token: Token)
@@ -148,7 +148,7 @@ protocol SuspensionGuard {
 /// A background task on iOS (it must start on the main thread, which is where the app's launch and
 /// its intents reach the store); nothing on the Mac, where the system doesn't suspend an app this way,
 /// or on the watch.
-struct SystemSuspensionGuard: SuspensionGuard {
+nonisolated struct SystemSuspensionGuard: SuspensionGuard {
     #if os(iOS)
     func begin(_ name: String) -> UIBackgroundTaskIdentifier {
         guard Thread.isMainThread else { return .invalid }
