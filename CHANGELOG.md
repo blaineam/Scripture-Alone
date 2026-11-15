@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Fixes a crash at launch on iPhone and iPad.** If iOS suspended the app while it was opening your notes and highlights
+  (which it can do when it starts the app in the background), it ended the app instead of letting it finish. Opening the
+  library now holds the app awake until it is done. iPhone and iPad.
+
 - **Importing the Stuttgarter Erklärungsbibel (and other Deutsche Bibelgesellschaft ePubs).** The importer now reads that
   publisher's markup: chapter ids `cref-<chapter>` and verse ids `vref-<chapter>-<verse>` with the `bvn`/`bcn` classes (a
   verse span with no id is still a verse, read from its number), German book names ("1. Mose", "Offenbarung") in chapter
