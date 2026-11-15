@@ -54,9 +54,10 @@ export default {
     //    widgets and the Background Assets extension.
     ios: {
       type: 'xcodebuild-test',
-      // Measured 63.8%, now 61.2%: the same tests as macOS plus Listen's transport on a silent speaker,
-      // but the watch app's sources are in this scheme's figure and no unit test can run them.
-      coverageFloor: 61,
+      // Measured 64.2% (was 61.2% before the reading-plans screens and the ESV key check got tests): the
+      // same tests as macOS plus Listen's transport on a silent speaker, but the watch app's sources
+      // are in this scheme's figure and no unit test can run them.
+      coverageFloor: 63,
       coverageExclude: CORE,
       project: 'ScriptureAlone.xcodeproj',
       scheme: 'ScriptureAlone',
