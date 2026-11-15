@@ -152,3 +152,28 @@ struct ModelsTests {
         #expect(names("Favorite") == ["uuid", "rangeRaw", "startKey", "endKey", "createdAt"])
     }
 }
+
+/// 0xdead10cc: iOS kills an app that is suspended while it holds a file lock in a shared (app-group)
+/// container — and SwiftData keeps its store there once the app has an app group. Opening the store
+/// reads the WAL under a lock, so the open must run inside a suspension guard (a background task).
+@MainActor
+struct StoreOpenSuspensionTests {
+    final class Recorder: SuspensionGuard {
+        var events: [String] = []
+        func begin(_ name: String) -> Int { events.append("begin \(name)"); return 7 }
+        func end(_ token: Int) { events.append("end \(token)") }
+    }
+
+    @Test func openingTheStoreHoldsASuspensionGuardUntilItIsLoaded() {
+        let recorder = Recorder()
+        _ = DataStore.makeContainer(suspensionGuard: recorder)
+        #expect(recorder.events == ["begin Scripture Alone store open", "end 7"])
+    }
+
+    @Test func theSystemGuardBeginsAndEndsOnTheMainThreadAndOffIt() async {
+        let systemGuard = SystemSuspensionGuard()
+        systemGuard.end(systemGuard.begin("test on main"))
+        // Off the main thread there is no UIApplication to ask: it must be a harmless no-op.
+        await Task.detached { systemGuard.end(systemGuard.begin("test off main")) }.value
+    }
+}

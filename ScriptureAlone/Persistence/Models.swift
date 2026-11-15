@@ -1,6 +1,9 @@
 import Foundation
 import SwiftData
 import ScriptureAloneCore
+#if os(iOS)
+import UIKit
+#endif
 
 // CloudKit-backed SwiftData rules: every property has a default, nothing is unique,
 // relationships are optional. Verse keys are translation-independent, so highlights and
@@ -98,6 +101,22 @@ enum DataStore {
     /// Syncs through the user's private iCloud database when the app is signed with the
     /// iCloud entitlement; falls back to a local store (unsigned builds, no account).
     static func makeContainer() -> ModelContainer {
+        makeContainer(suspensionGuard: SystemSuspensionGuard())
+    }
+
+    /// Opening the store reads the WAL under a SQLite file lock, and once the app has an app group
+    /// SwiftData keeps the store in the shared container. iOS kills a process that is suspended
+    /// while it holds a lock there (RUNNINGBOARD 0xdead10cc), and a launch the system backgrounds
+    /// mid-open (prewarm, an intent, a widget-driven wake) does exactly that. So the open runs
+    /// inside a suspension guard — on iOS a background task — which keeps the process running until
+    /// the store is loaded and the lock released.
+    static func makeContainer<G: SuspensionGuard>(suspensionGuard: G) -> ModelContainer {
+        let token = suspensionGuard.begin("Scripture Alone store open")
+        defer { suspensionGuard.end(token) }
+        return openContainer()
+    }
+
+    private static func openContainer() -> ModelContainer {
         var inMemory = ProcessInfo.processInfo.arguments.contains("-inMemoryStore")
         #if DEBUG
         inMemory = inMemory || UITestMode.isOn
@@ -117,4 +136,31 @@ enum DataStore {
         // Last resort keeps the Bible readable even if storage is broken.
         return try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
     }
+}
+
+/// Keeps the process from being suspended while a file lock is held.
+protocol SuspensionGuard {
+    associatedtype Token
+    func begin(_ name: String) -> Token
+    func end(_ token: Token)
+}
+
+/// A background task on iOS (it must start on the main thread, which is where the app's launch and
+/// its intents reach the store); nothing on the Mac, where the system doesn't suspend an app this way,
+/// or on the watch.
+struct SystemSuspensionGuard: SuspensionGuard {
+    #if os(iOS)
+    func begin(_ name: String) -> UIBackgroundTaskIdentifier {
+        guard Thread.isMainThread else { return .invalid }
+        return MainActor.assumeIsolated { UIApplication.shared.beginBackgroundTask(withName: name) }
+    }
+
+    func end(_ token: UIBackgroundTaskIdentifier) {
+        guard token != .invalid else { return }
+        MainActor.assumeIsolated { UIApplication.shared.endBackgroundTask(token) }
+    }
+    #else
+    func begin(_ name: String) {}
+    func end(_ token: Void) {}
+    #endif
 }
