@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Fixes a crash when opening the Wear OS app.** On Galaxy Watch 4, 5 and 6, Wear OS refuses the app a read of its
+  reduce-motion setting, and the watch app ended as its first screen opened. It now opens and treats the refusal as
+  "motion is fine". Wear OS only.
+
 - **Fixes a crash at launch on iPhone and iPad.** If iOS suspended the app while it was opening your notes and highlights
   (which it can do when it starts the app in the background), it ended the app instead of letting it finish. Opening the
   library now holds the app awake until it is done. iPhone and iPad.

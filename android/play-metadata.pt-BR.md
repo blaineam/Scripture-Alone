@@ -53,5 +53,5 @@ As suas marcações, notas e favoritos ficam no seu aparelho. Não há servidor 
 Feito para ajudar as pessoas a estudar a Palavra de Deus e a se aproximar de Cristo.
 
 ## release_notes
-1.4.1 — Corrige uma falha rara ao abrir o app. O botão de reproduzir não faz mais o app falhar no Android 11.
+1.4.2 — Corrige uma falha nos relógios Wear OS que fechava o app ao abri-lo.
 

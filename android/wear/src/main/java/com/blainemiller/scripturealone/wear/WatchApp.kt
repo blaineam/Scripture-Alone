@@ -1,6 +1,8 @@
 package com.blainemiller.scripturealone.wear
 
+import android.content.ContentResolver
 import android.net.Uri
+import android.provider.Settings
 import android.text.format.DateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,6 +30,9 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.wear.compose.foundation.ExperimentalWearFoundationApi
+import androidx.wear.compose.foundation.LocalReduceMotion
+import androidx.wear.compose.foundation.ReduceMotion
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -120,12 +125,31 @@ private val NoteOrange = Color(0xFFFF9F0A)
 private val HighlightYellow = Color(0xFFFFD60A)
 private val WordsOfChrist = Color(VersePalette.WATCH_RED)
 
+/**
+ * Compose for Wear's own `LocalReduceMotion` reads the `reduce_motion` global setting, which Wear OS
+ * keeps from apps targeting past API 34 — a SecurityException on the first frame of
+ * `SwipeDismissableNavHost` (Play vitals, Galaxy Watch 4/5/6). The same reading, with the refusal
+ * meaning "motion is fine".
+ */
+@OptIn(ExperimentalWearFoundationApi::class)
+internal object SafeReduceMotion : ReduceMotion {
+    @Composable
+    override fun enabled(): Boolean {
+        val resolver = LocalContext.current.contentResolver
+        return remember(resolver) { reduceMotionSetting(resolver) }
+    }
+}
+
+internal fun reduceMotionSetting(resolver: ContentResolver): Boolean =
+    try { Settings.Global.getInt(resolver, "reduce_motion", 0) == 1 } catch (_: SecurityException) { false }
+
+@OptIn(ExperimentalWearFoundationApi::class)
 @Composable
 fun WatchApp(bible: WatchBible, pendingRoute: MutableStateFlow<String?>) {
     val state by bible.state.collectAsStateWithLifecycle()
     // The phone's accent colour (`WatchLinkKeys.accent`) tints the app; its own until the phone has said.
     val accent = state.accent?.let { Color(0xFF000000 or it.toLong()) } ?: DefaultAccent
-    CompositionLocalProvider(LocalAccent provides accent) {
+    CompositionLocalProvider(LocalAccent provides accent, LocalReduceMotion provides SafeReduceMotion) {
     MaterialTheme(colors = Colors(primary = accent, primaryVariant = accent, onPrimary = Color.Black)) {
         val nav = rememberSwipeDismissableNavController()
         val route by pendingRoute.collectAsStateWithLifecycle()
