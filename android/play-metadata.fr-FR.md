@@ -53,5 +53,5 @@ Vos surlignages, notes et favoris restent sur votre appareil : ni serveur, ni co
 Conçue pour aider à étudier la Parole de Dieu et à se rapprocher du Christ.
 
 ## release_notes
-1.4.1 — Corrige un plantage rare au démarrage de l’app. Le bouton de lecture ne fait plus planter l’app sous Android 11.
+1.4.2 — Corrige un plantage sur les montres Wear OS : l'app se fermait à l'ouverture.
 

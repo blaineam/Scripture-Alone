@@ -55,5 +55,5 @@
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.4.1 — 修复了应用启动时偶尔出现的崩溃问题。修复了在 Android 11 上点按播放按钮导致崩溃的问题。
+1.4.2 — 修复了 Wear OS 手表上打开应用时闪退的问题。
 

@@ -55,5 +55,5 @@ DRM이 없는 ePub, 텍스트 레이어가 있는 성경 PDF, USFM 파일처럼 
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.4.1 — 앱을 시작할 때 드물게 발생하던 비정상 종료를 수정했습니다. Android 11에서 재생 버튼을 누르면 앱이 종료되던 문제를 수정했습니다.
+1.4.2 — Wear OS 워치에서 앱을 열면 종료되던 문제를 수정했습니다.
 

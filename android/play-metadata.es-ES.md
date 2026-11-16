@@ -53,5 +53,5 @@ Subrayados, notas y favoritos se quedan en tu dispositivo. Sin servidor ni cuent
 Hecha para ayudar a estudiar la Palabra de Dios y acercarse más a Cristo.
 
 ## release_notes
-1.4.1 — Corrige un cierre inesperado poco frecuente al iniciar la app. El botón de reproducir ya no cierra la app en Android 11.
+1.4.2 — Corrige un cierre inesperado en los relojes Wear OS al abrir la app.
 

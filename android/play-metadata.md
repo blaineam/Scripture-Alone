@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.4.1 — Fixes a rare crash when the app starts up. The play button no longer crashes the app on Android 11.
+1.4.2 — Fixes a crash on Wear OS watches that closed the app as it opened.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->
