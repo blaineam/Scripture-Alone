@@ -21,7 +21,7 @@ typealias PlatformWindow = UIWindow
 enum ViewHost {
     /// The three SwiftData models, in memory only.
     static func container() throws -> ModelContainer {
-        try ModelContainer(for: DataStore.schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        try ModelContainer(for: DataStore.schema, configurations: DataStore.inMemoryConfiguration())
     }
 
     /// A little library: a favorite, highlights and notes, like the demo the screenshot rig seeds.

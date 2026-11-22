@@ -14,7 +14,7 @@ struct ModelsTests {
     let numbers21 = VerseRange(VerseRef(.numbers, 21, 8), VerseRef(.numbers, 21, 9))
 
     static func container() throws -> ModelContainer {
-        try ModelContainer(for: DataStore.schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        try ModelContainer(for: DataStore.schema, configurations: DataStore.inMemoryConfiguration())
     }
 
     // MARK: Note anchors

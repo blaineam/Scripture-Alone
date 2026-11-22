@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **A library kept in memory is never mirrored to iCloud.** When the app cannot open its library on disk it keeps one in
+  memory so the Bible stays readable. That store still got an iCloud mirror, which fails without an iCloud account and
+  closes the store under it; the next save then ended the app ("No eligible connection available"). The same thing broke
+  eleven screen tests on a simulator with no account. In-memory stores now have no mirror. iPhone, iPad and Mac.
+
 - **Round Wear OS watches: nothing is cut off by the edge of the screen.** Verses, notes and messages ran the full width of
   the list, so on a round watch the ends of the lines near the top and bottom were cut by the circle, and the time sat on
   top of the text (Google Play's Wear OS quality check turned 1.4.2 down for it). Running text now keeps a margin a round

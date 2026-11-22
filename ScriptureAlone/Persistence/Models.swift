@@ -134,7 +134,15 @@ enum DataStore {
             }
         }
         // Last resort keeps the Bible readable even if storage is broken.
-        return try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        return try! ModelContainer(for: schema, configurations: inMemoryConfiguration())
+    }
+
+    /// A store in memory only, and never mirrored to iCloud. Left at the default (`.automatic`) an
+    /// in-memory store still gets a CloudKit mirror under the iCloud entitlement; with no iCloud
+    /// account that mirror fails to set up and takes the store's connections with it, and the next
+    /// save raises "No eligible connection available" — an exception `try?` cannot catch.
+    static func inMemoryConfiguration() -> ModelConfiguration {
+        ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
     }
 }
 
