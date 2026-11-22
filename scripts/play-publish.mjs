@@ -300,7 +300,7 @@ async function main() {
 			if (!/changesNotSentForReview/.test(`${e.message} ${e.body || ''}`)) throw e;
 			held = true;
 			log('Play will not send this edit for review automatically (the last review was rejected): committing it held');
-			await api('POST', `${base(a)}/edits/${editId}:validate?changesNotSentForReview=true`);
+			// Only commit takes the parameter (validate answers 400 "Unknown name"); commit validates.
 			await api('POST', `${base(a)}/edits/${editId}:commit?changesNotSentForReview=true`);
 		}
 		committed = true;
