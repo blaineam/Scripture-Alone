@@ -64,7 +64,7 @@ almeida,acf,nvi,arc,ara,kjv,temas,ansiedade,luto,consolo,comentário,devocional,
 Agora com a NASB 2020. Descubra o que a Bíblia diz sobre o que você está vivendo e estude offline com comentários, mapas e linhas do tempo. Sem anúncios, sem contas.
 
 ## whats_new
-1.4.1 — Corrige uma falha rara ao abrir o app.
+1.4.2 — Quando um download como o Comentário deixa de ser oferecido a uma versão antiga do app, o app agora avisa que é preciso atualizar em vez de mostrar um erro técnico. Corrige uma falha rara quando sua biblioteca não podia ser aberta.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

@@ -64,7 +64,7 @@ nasb 2020,nasb 1995,kjv,asv,bsb,topical,anxiety,grief,comfort,commentary,devotio
 Now with the NASB 2020. Find what the Bible says about what you're going through and study offline with commentary, maps and timelines. No ads, no accounts.
 
 ## whats_new
-1.4.1 — Fixes a rare crash when the app starts up.
+1.4.2 — When a download such as Commentary is no longer offered to an older copy of the app, the app now says to update instead of showing a technical error. Fixes a rare crash when your library could not be opened.
 
 ## review_notes
 Scripture Alone is an open-source Bible app (AGPL-3.0, https://github.com/blaineam/Scripture-Alone). No account or login is required for any feature, and the app reads offline from its first launch.

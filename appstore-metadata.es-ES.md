@@ -66,7 +66,7 @@ rvr1960,reina valera,lbla,biblia,ansiedad,duelo,consuelo,devocional,sermones,com
 Ahora con la NASB 2020. Descubre lo que la Biblia dice de lo que estás viviendo y estudia sin conexión con comentarios, mapas y cronologías. Sin anuncios ni cuentas.
 
 ## whats_new
-1.4.1 — Corrige un cierre inesperado poco frecuente al iniciar la app.
+1.4.2 — Cuando una descarga como el Comentario ya no se ofrece a una versión antigua de la app, ahora la app indica que hay que actualizar en lugar de mostrar un error técnico. Corrige un fallo poco frecuente cuando no se podía abrir tu biblioteca.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

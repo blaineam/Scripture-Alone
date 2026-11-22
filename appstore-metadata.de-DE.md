@@ -66,7 +66,7 @@ andacht,predigt,kommentar,themen,trost,angst,trauer,lutherbibel,elberfelder,kjv,
 Jetzt mit der NASB 2020. Finde, was die Bibel zu dem sagt, was dich bewegt, und studiere offline mit Kommentaren, Karten und Zeitleisten. Ohne Werbung, ohne Konto.
 
 ## whats_new
-1.4.1 — Behebt einen seltenen Absturz beim Start der App.
+1.4.2 — Wenn ein Download wie der Kommentar für eine ältere Version der App nicht mehr angeboten wird, weist die App jetzt auf das Update hin, statt eine technische Fehlermeldung zu zeigen. Behebt einen seltenen Absturz, wenn deine Bibliothek nicht geöffnet werden konnte.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

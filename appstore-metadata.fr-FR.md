@@ -66,7 +66,7 @@ bible,louis segond,darby,kjv,commentaire,méditation,thèmes,anxiété,deuil,ré
 Désormais avec la NASB 2020. Trouvez ce que la Bible dit de ce que vous traversez et étudiez hors ligne avec commentaires, cartes et chronologies. Sans pub, sans compte.
 
 ## whats_new
-1.4.1 — Corrige un plantage rare au démarrage de l’app.
+1.4.2 — Lorsqu’un téléchargement comme le Commentaire n’est plus proposé à une ancienne version de l’app, l’app indique désormais qu’il faut la mettre à jour au lieu d’afficher une erreur technique. Corrige un plantage rare lorsque votre bibliothèque ne pouvait pas être ouverte.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

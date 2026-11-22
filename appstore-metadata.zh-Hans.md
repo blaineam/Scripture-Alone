@@ -66,7 +66,7 @@ NASB 2020 与 NASB 1995 © The Lockman Foundation。经许可使用。www.Lockma
 现已支持 NASB 2020。找到圣经对你正在经历之事的话语，并借助注释、地图与时间线离线研读。无广告，无需账户。
 
 ## whats_new
-1.4.1 — 修复了应用启动时偶尔出现的崩溃问题。
+1.4.2 — 当注释等下载内容不再提供给旧版本的应用时，应用现在会提示需要更新，而不是显示技术性错误。修复了无法打开资料库时偶发的崩溃问题。
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/

@@ -66,7 +66,7 @@ bibbia,riveduta,diodati,cei,argomenti,ansia,lutto,conforto,devozionale,sermone,r
 Ora con la NASB 2020. Scopri che cosa dice la Bibbia di ciò che stai vivendo e studia offline con commentari, mappe e cronologie. Senza pubblicità né account.
 
 ## whats_new
-1.4.1 — Risolve un arresto anomalo raro all’avvio dell’app.
+1.4.2 — Quando un download come il Commentario non è più offerto a una versione precedente dell’app, ora l’app dice di aggiornare invece di mostrare un errore tecnico. Risolve un raro arresto anomalo quando la tua libreria non poteva essere aperta.
 
 ## marketing_url
 https://wemiller.com/apps/scripture-alone/
