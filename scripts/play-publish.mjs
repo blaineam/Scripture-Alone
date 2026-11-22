@@ -288,12 +288,30 @@ async function main() {
 			}
 			log(`"${t}" ← ${a.versionName} (${c}) ${a.status}`);
 		}
-		await api('POST', `${base(a)}/edits/${editId}:validate`);
-		await api('POST', `${base(a)}/edits/${editId}:commit`);
+		// After a rejection Play will not send an edit for review by itself: validate and commit both
+		// answer 400 "Changes cannot be sent for review automatically. Please set the query parameter
+		// changesNotSentForReview to true". The edit is then committed held, and someone presses
+		// "Send changes for review" on the Console's Publishing overview page.
+		let held = false;
+		try {
+			await api('POST', `${base(a)}/edits/${editId}:validate`);
+			await api('POST', `${base(a)}/edits/${editId}:commit`);
+		} catch (e) {
+			if (!/changesNotSentForReview/.test(`${e.message} ${e.body || ''}`)) throw e;
+			held = true;
+			log('Play will not send this edit for review automatically (the last review was rejected): committing it held');
+			await api('POST', `${base(a)}/edits/${editId}:validate?changesNotSentForReview=true`);
+			await api('POST', `${base(a)}/edits/${editId}:commit?changesNotSentForReview=true`);
+		}
 		committed = true;
 		const line = `${a.versionName}: phone ${a.phoneCode} → ${a.phoneTracks.join(' + ')}${wear ? `; Wear OS ${a.wearCode} → ${a.wearTracks.join(' + ')}` : ''} (${a.status})`;
 		console.log(`✓ Play: ${line}`);
 		summary(`- ✅ Play: ${line}`);
+		if (held) {
+			const todo = 'NOT sent for review yet: open Play Console ▸ Publishing overview and press "Send changes for review".';
+			console.log(`::warning title=Play review not started::${todo}`);
+			summary(`- ⚠️ Play: ${todo}`);
+		}
 	} finally {
 		if (!committed) await deleteEdit(a, editId);
 	}
