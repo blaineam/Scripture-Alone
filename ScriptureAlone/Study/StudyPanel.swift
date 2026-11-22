@@ -44,6 +44,8 @@ enum StudyTab: String, CaseIterable, Identifiable {
 struct StudyPanel: View {
     @Environment(ReaderModel.self) private var model
     @Environment(StudyModel.self) private var study
+    /// The system's own opener, read above the panel's override for passage links: the App Store.
+    @Environment(\.openURL) private var openSystemURL
     /// As a sheet (iPhone) over the reader. The reader's selection bar stays beneath it: nothing of
     /// the reader's floats over the commentary or the maps.
     var isSheet = false
@@ -147,6 +149,10 @@ struct StudyPanel: View {
                 Text(message)
             } actions: {
                 Button("Try Again") { Task { await study.prepareStore() } }
+                // An out-of-date copy of the app can lose the download: the App Store has the cure.
+                if AssetLibrary.shared.suggestsUpdate(for: .commentary) {
+                    Button("Update Scripture Alone") { openSystemURL(AssetLibrary.appStoreURL) }
+                }
             }
         default:
             ContentUnavailableView {

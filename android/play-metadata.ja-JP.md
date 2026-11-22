@@ -55,5 +55,5 @@ DRM フリーの ePub、テキストレイヤーのある聖書 PDF、USFM フ�
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.4.2 — Wear OS搭載のウォッチで、アプリを開くと終了してしまう問題を修正しました。
+1.4.2 — Wear OS搭載のウォッチで、アプリを開くと終了してしまう問題を修正しました。丸型の画面でも文字やボタンが画面内に収まるようになりました。
 

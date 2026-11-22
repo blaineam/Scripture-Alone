@@ -53,5 +53,5 @@ Subrayados, notas y favoritos se quedan en tu dispositivo. Sin servidor ni cuent
 Hecha para ayudar a estudiar la Palabra de Dios y acercarse más a Cristo.
 
 ## release_notes
-1.4.2 — Corrige un cierre inesperado en los relojes Wear OS al abrir la app.
+1.4.2 — Corrige un cierre inesperado en los relojes Wear OS al abrir la app. El texto y los botones ya no se salen de las pantallas redondas.
 

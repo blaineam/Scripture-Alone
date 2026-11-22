@@ -951,6 +951,118 @@
         }
       }
     },
+    "%@ couldn't be downloaded. This version of Scripture Alone may be too old for it. Update the app from the App Store, then try again." : {
+      "comment" : "%@ is the name of a download, e.g. a Bible translation or “Commentary”. Shown when an out-of-date copy of the app can no longer fetch it.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ konnte nicht geladen werden. Diese Version von Scripture Alone ist dafür möglicherweise zu alt. Aktualisiere die App im App Store und versuche es dann erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo descargar %@. Puede que esta versión de Scripture Alone sea demasiado antigua. Actualiza la app en el App Store y vuelve a intentarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec du téléchargement de %@. Cette version de Scripture Alone est peut-être trop ancienne. Mettez l’app à jour dans l’App Store, puis réessayez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile scaricare %@. Questa versione di Scripture Alone potrebbe essere troppo vecchia. Aggiorna l’app dall’App Store, poi riprova."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ をダウンロードできませんでした。このバージョンの Scripture Alone は古い可能性があります。App Store でアプリをアップデートしてから、もう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@을(를) 다운로드하지 못했습니다. 이 버전의 Scripture Alone이 너무 오래되었을 수 있습니다. App Store에서 앱을 업데이트한 후 다시 시도하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível baixar %@. Esta versão do Scripture Alone pode ser antiga demais. Atualize o app na App Store e tente novamente."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 下载失败。此版本的 Scripture Alone 可能过旧。请在 App Store 中更新应用后重试。"
+          }
+        }
+      }
+    },
+    "%@ couldn't be downloaded. %@ If this keeps happening, update Scripture Alone from the App Store." : {
+      "comment" : "%1$@ is the name of a download; %2$@ is an error message.",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ konnte nicht geladen werden. %2$@ Wenn das weiter passiert, aktualisiere Scripture Alone im App Store."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ couldn't be downloaded. %2$@ If this keeps happening, update Scripture Alone from the App Store."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo descargar %1$@. %2$@ Si sigue ocurriendo, actualiza Scripture Alone en el App Store."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec du téléchargement de %1$@. %2$@ Si le problème persiste, mettez Scripture Alone à jour dans l’App Store."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile scaricare %1$@. %2$@ Se continua a succedere, aggiorna Scripture Alone dall’App Store."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ をダウンロードできませんでした。%2$@ 問題が続く場合は、App Store で Scripture Alone をアップデートしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@을(를) 다운로드하지 못했습니다. %2$@ 문제가 계속되면 App Store에서 Scripture Alone을 업데이트하세요."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível baixar %1$@. %2$@ Se continuar acontecendo, atualize o Scripture Alone na App Store."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 下载失败。%2$@ 如果问题持续出现，请在 App Store 中更新 Scripture Alone。"
+          }
+        }
+      }
+    },
     "%@ couldn't be opened." : {
       "comment" : "%@ is a Bible translation name.",
       "localizations" : {
@@ -51284,6 +51396,59 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "开启后将自动为你完成所有设置:代你同意 Crossway 的条款、登录、填写申请并保存密钥。你只需输入自己的信息,并完成 Crossway 的“我不是机器人”验证。你的邮箱和密码仅在登录期间暂存于内存,绝不会被保存。"
+          }
+        }
+      }
+    },
+    "Update Scripture Alone" : {
+      "comment" : "Button that opens the app's App Store page, shown when a download fails because the app is out of date",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scripture Alone aktualisieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar Scripture Alone"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre à jour Scripture Alone"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiorna Scripture Alone"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scripture Alone をアップデート"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scripture Alone 업데이트"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizar o Scripture Alone"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新 Scripture Alone"
           }
         }
       }

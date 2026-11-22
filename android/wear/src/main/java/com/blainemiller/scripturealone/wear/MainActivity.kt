@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.blainemiller.scripturealone.companion.ScriptureLink
 import kotlinx.coroutines.Dispatchers
@@ -23,9 +25,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) route(intent)
-        val bible = WatchBible.get(this)
-        lifecycleScope.launch(Dispatchers.IO) { PhoneLink.catchUp(this@MainActivity) }
-        setContent { WatchApp(bible, pendingRoute) }
+        // The watch's library reads its editions and the phone's snapshot from storage: never on the
+        // main thread, where a slow read at launch is an ANR ("no focused window"). A process that
+        // already has it (the tile or the phone link started first) draws at once.
+        val bible = MutableStateFlow(WatchBible.ifReady())
+        lifecycleScope.launch(Dispatchers.IO) {
+            bible.value = WatchBible.get(this@MainActivity)
+            PhoneLink.catchUp(this@MainActivity)
+        }
+        setContent {
+            val ready by bible.collectAsStateWithLifecycle()
+            ready?.let { WatchApp(it, pendingRoute) }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

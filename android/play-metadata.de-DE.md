@@ -53,5 +53,5 @@ Markierungen, Notizen und Favoriten bleiben auf deinem Gerät. Kein Server, kein
 Gebaut, um Menschen zu helfen, Gottes Wort zu studieren und Christus näherzukommen.
 
 ## release_notes
-1.4.2 — Behebt einen Absturz auf Wear-OS-Uhren, bei dem sich die App beim Öffnen schloss.
+1.4.2 — Behebt einen Absturz auf Wear-OS-Uhren, bei dem sich die App beim Öffnen schloss. Text und Tasten bleiben jetzt innerhalb runder Uhrendisplays.
 

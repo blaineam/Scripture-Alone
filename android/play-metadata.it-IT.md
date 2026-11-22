@@ -53,5 +53,5 @@ Evidenziazioni, note e preferiti restano sul tuo dispositivo. Nessun server, nes
 Nata per aiutare le persone a studiare la Parola di Dio e a crescere nella vicinanza a Cristo.
 
 ## release_notes
-1.4.2 — Risolto un arresto anomalo sugli smartwatch Wear OS: l'app si chiudeva all'apertura.
+1.4.2 — Risolto un arresto anomalo sugli smartwatch Wear OS: l'app si chiudeva all'apertura. Testo e pulsanti ora restano all’interno degli schermi rotondi.
 

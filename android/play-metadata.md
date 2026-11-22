@@ -73,7 +73,7 @@ https://wemiller.com/apps/scripture-alone/
 https://wemiller.com/privacy/
 
 ## release_notes
-1.4.2 — Fixes a crash on Wear OS watches that closed the app as it opened.
+1.4.2 — Fixes a crash on Wear OS watches that closed the app as it opened. Text and buttons now stay inside round watch screens.
 
 ## data_safety
 <!-- Play Console → App content → Data safety -->

@@ -244,6 +244,9 @@ final class AssetLibrary {
 
     private(set) var states: [AssetPack: State] = [:]
 
+    /// Packs whose last download failed in a way a newer build of the app may cure.
+    private(set) var updateSuggested: Set<AssetPack> = []
+
     /// Where a database lives once it has been copied out of its pack. Application Support rather
     /// than Caches: the system may evict Caches under pressure, and a reader who downloaded 44 MB
     /// of commentary should not silently lose it.
@@ -263,8 +266,9 @@ final class AssetLibrary {
 
     #if DEBUG
     /// Test seam: shows a pack as failed (or puts its real state back) without touching the network.
-    func overrideState(_ state: State?, of pack: AssetPack) {
+    func overrideState(_ state: State?, of pack: AssetPack, suggestingUpdate: Bool = false) {
         states[pack] = state ?? (url(of: pack) == nil ? .absent : .ready)
+        if suggestingUpdate { updateSuggested.insert(pack) } else { updateSuggested.remove(pack) }
     }
     #endif
 
@@ -287,6 +291,7 @@ final class AssetLibrary {
         if case .downloading = state(of: pack) { return false }
 
         states[pack] = .downloading(0)
+        updateSuggested.remove(pack)
         let progress = Task { [weak self] in
             for await update in AssetPackManager.shared.statusUpdates(forAssetPackWithID: pack.id) {
                 guard let self else { return }
@@ -312,6 +317,8 @@ final class AssetLibrary {
             states[pack] = .ready
             return true
         } catch {
+            let kind = Self.kind(of: error)
+            if kind == .packUnavailable || kind == .other { updateSuggested.insert(pack) }
             states[pack] = .failed(Self.message(for: error, pack: pack))
             return false
         }
@@ -386,20 +393,73 @@ final class AssetLibrary {
         states[pack] = .absent
     }
 
-    static func message(for error: any Error, pack: AssetPack) -> String {
-        // The pack isn't on App Store Connect for this build — the one failure a reader can do
-        // nothing about, so it says so rather than offering a retry that cannot succeed.
-        if case ManagedBackgroundAssetsError.assetPackNotFound = error {
-            return String(localized: "\(pack.title) isn't available for this version of the app yet.", comment: "%@ is the name of a download, e.g. a Bible translation or “Commentary”.")
+    /// The app's page on the App Store, where a reader on an old build gets the current one.
+    static let appStoreURL = URL(string: "https://apps.apple.com/app/id6813729762")!
+
+    /// Whether the last failed download of `pack` is one a newer build of the app may cure, so the
+    /// failure can offer the App Store beside Try Again.
+    func suggestsUpdate(for pack: AssetPack) -> Bool { updateSuggested.contains(pack) }
+
+    /// What kind of failure a download error is, as far as a reader can act on it.
+    enum FailureKind: Equatable {
+        /// No connection: try again later.
+        case connection
+        /// The device is out of space.
+        case storage
+        /// Apple's servers no longer offer this build the pack — an older build once a newer one is
+        /// out ("The asset pack … is unavailable"). Updating the app is the cure.
+        case packUnavailable
+        case other
+    }
+
+    static func kind(of error: any Error) -> FailureKind {
+        let all = flattened(error)
+        // Reachability comes through as a URL error, sometimes under a Background Assets one.
+        if all.contains(where: { $0.domain == NSURLErrorDomain &&
+            [NSURLErrorNotConnectedToInternet, NSURLErrorNetworkConnectionLost, NSURLErrorTimedOut,
+             NSURLErrorDataNotAllowed, NSURLErrorInternationalRoamingOff].contains($0.code) }) {
+            return .connection
         }
-        // Reachability comes through as a URL error, not a Background Assets one; `BAError`'s own
-        // codes are all about scheduling and allowances, none of which a reader can act on.
+        if all.contains(where: { ($0.domain == NSCocoaErrorDomain && $0.code == NSFileWriteOutOfSpaceError)
+            || ($0.domain == NSPOSIXErrorDomain && $0.code == Int(ENOSPC)) }) {
+            return .storage
+        }
+        if error is ManagedBackgroundAssetsError
+            || all.contains(where: { $0.domain == "BAManagedErrorDomain" || $0.domain == BAErrorDomain }) {
+            return .packUnavailable
+        }
+        return .other
+    }
+
+    /// The error and every error under it: `NSUnderlyingErrorKey`, and the per-pack failures a
+    /// Background Assets local-availability error carries as a dictionary in its `userInfo`.
+    private static func flattened(_ error: any Error, depth: Int = 0) -> [NSError] {
         let nsError = error as NSError
-        if nsError.domain == NSURLErrorDomain,
-           [NSURLErrorNotConnectedToInternet, NSURLErrorNetworkConnectionLost,
-            NSURLErrorTimedOut].contains(nsError.code) {
-            return String(localized: "\(pack.title) needs a connection to download.", comment: "%@ is the name of a download, e.g. a Bible translation or “Commentary”.")
+        guard depth < 4 else { return [nsError] }
+        var found = [nsError]
+        for value in nsError.userInfo.values {
+            if let inner = value as? NSError {
+                found += flattened(inner, depth: depth + 1)
+            } else if let many = value as? [AnyHashable: Any] {
+                for case let inner as NSError in many.values { found += flattened(inner, depth: depth + 1) }
+            } else if let many = value as? [Any] {
+                for case let inner as NSError in many { found += flattened(inner, depth: depth + 1) }
+            }
         }
-        return String(localized: "\(pack.title) couldn't be downloaded. \(error.localizedDescription)", comment: "%1$@ is the name of a download; %2$@ is an error message.")
+        return found
+    }
+
+    static func message(for error: any Error, pack: AssetPack) -> String {
+        switch kind(of: error) {
+        case .connection:
+            return String(localized: "\(pack.title) needs a connection to download.", comment: "%@ is the name of a download, e.g. a Bible translation or “Commentary”.")
+        case .packUnavailable:
+            // Never the system's own text here: it names the pack by its identifier and byte count.
+            return String(localized: "\(pack.title) couldn't be downloaded. This version of Scripture Alone may be too old for it. Update the app from the App Store, then try again.", comment: "%@ is the name of a download, e.g. a Bible translation or “Commentary”. Shown when an out-of-date copy of the app can no longer fetch it.")
+        case .storage:
+            return String(localized: "\(pack.title) couldn't be downloaded. \(error.localizedDescription)", comment: "%1$@ is the name of a download; %2$@ is an error message.")
+        case .other:
+            return String(localized: "\(pack.title) couldn't be downloaded. \(error.localizedDescription) If this keeps happening, update Scripture Alone from the App Store.", comment: "%1$@ is the name of a download; %2$@ is an error message.")
+        }
     }
 }

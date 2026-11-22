@@ -55,5 +55,5 @@
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.4.2 — 修复了 Wear OS 手表上打开应用时闪退的问题。
+1.4.2 — 修复了 Wear OS 手表上打开应用时闪退的问题。文字和按钮现在不会超出圆形表盘屏幕。
 

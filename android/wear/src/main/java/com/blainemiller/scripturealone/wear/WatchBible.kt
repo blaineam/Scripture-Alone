@@ -623,6 +623,10 @@ class WatchBible private constructor(private val app: Context) {
 
         @Volatile private var shared: WatchBible? = null
 
+        /** The library if this process has already read it, without touching storage. */
+        fun ifReady(): WatchBible? = shared
+
+        /** Reads the library on first use: storage work, so call off the main thread. */
         fun get(context: Context): WatchBible = shared ?: synchronized(this) {
             shared ?: WatchBible(context.applicationContext).also { shared = it }
         }

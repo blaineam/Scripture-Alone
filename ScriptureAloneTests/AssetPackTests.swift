@@ -130,6 +130,44 @@ struct AssetPackTests {
         #expect(message.contains("disk full"))
         #expect(message.contains(AssetPack.commentary.title))
     }
+
+    /// An older build once a newer one is out: the system's "The asset pack “<Asset Pack | ID: …>” is
+    /// unavailable" never reaches the reader; being asked to update does.
+    @Test func aPackTheStoreNoLongerOffersThisBuildAsksForAnUpdate() {
+        let system = "The asset pack “<Asset Pack | ID: study-commentary download size: 41955541 version: 1>” is unavailable."
+        let perPack = NSError(domain: "BAManagedErrorDomain", code: 2, userInfo: [NSLocalizedDescriptionKey: system])
+        let error = NSError(domain: "BAManagedErrorDomain", code: 2,
+                            userInfo: [NSLocalizedDescriptionKey: system, "BAFailuresErrorKey": ["study-commentary": perPack]])
+        #expect(AssetLibrary.kind(of: error) == .packUnavailable)
+        let message = AssetLibrary.message(for: error, pack: .commentary)
+        #expect(message.contains(AssetPack.commentary.title))
+        #expect(message.contains("Update the app"))
+        #expect(!message.contains("study-commentary") && !message.contains("41955541"))
+        // The older Background Assets domain reads the same way.
+        #expect(AssetLibrary.kind(of: NSError(domain: "BAErrorDomain", code: 102)) == .packUnavailable)
+    }
+
+    /// Offline under a Background Assets error is still offline: no one is told to update for that.
+    @Test func anOfflineFailureInsideAPackErrorStillAsksForAConnection() {
+        let offline = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
+        let error = NSError(domain: "BAManagedErrorDomain", code: 2, userInfo: ["BAFailuresErrorKey": ["study-commentary": offline]])
+        #expect(AssetLibrary.kind(of: error) == .connection)
+        #expect(AssetLibrary.kind(of: NSError(domain: "BAManagedErrorDomain", code: 2, userInfo: [NSUnderlyingErrorKey: offline])) == .connection)
+        #expect(AssetLibrary.message(for: error, pack: .commentary) == String(localized: "\(AssetPack.commentary.title) needs a connection to download."))
+    }
+
+    @Test func aFullDeviceIsNotBlamedOnTheAppVersion() {
+        let full = NSError(domain: NSCocoaErrorDomain, code: NSFileWriteOutOfSpaceError)
+        #expect(AssetLibrary.kind(of: full) == .storage)
+        #expect(!AssetLibrary.message(for: full, pack: .commentary).contains("App Store"))
+    }
+
+    @Test func anUnknownFailureKeepsItsReasonAndMentionsUpdating() {
+        struct Boom: LocalizedError { var errorDescription: String? { "something odd" } }
+        #expect(AssetLibrary.kind(of: Boom()) == .other)
+        let message = AssetLibrary.message(for: Boom(), pack: .commentary)
+        #expect(message.contains("something odd") && message.contains("App Store"))
+    }
 }
 
 final class BundleToken {}

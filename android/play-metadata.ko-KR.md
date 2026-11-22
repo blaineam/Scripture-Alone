@@ -55,5 +55,5 @@ DRM이 없는 ePub, 텍스트 레이어가 있는 성경 PDF, USFM 파일처럼 
 NASB 2020 and NASB 1995 © The Lockman Foundation. Used by permission. www.Lockman.org
 
 ## release_notes
-1.4.2 — Wear OS 워치에서 앱을 열면 종료되던 문제를 수정했습니다.
+1.4.2 — Wear OS 워치에서 앱을 열면 종료되던 문제를 수정했습니다. 이제 원형 화면에서도 글자와 버튼이 화면 안에 표시됩니다.
 

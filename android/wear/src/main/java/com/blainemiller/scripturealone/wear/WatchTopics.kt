@@ -180,7 +180,7 @@ internal fun TopicsScreen(nav: NavController) {
         item { RowChip(stringResource(R.string.wear_topics_speak), R.drawable.ic_mic, onClick = input.speak) }
         item { RowChip(stringResource(R.string.wear_topics_type), R.drawable.ic_keyboard, onClick = input.type) }
         if (catalog.themes.isEmpty()) {
-            item { Text(stringResource(R.string.wear_topics_unavailable), color = Secondary, textAlign = TextAlign.Center) }
+            item { Text(stringResource(R.string.wear_topics_unavailable), color = Secondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().readingInset()) }
         }
         for (group in catalog.groups) {
             val themes = catalog.themes(group)
@@ -205,9 +205,9 @@ internal fun TopicSearchScreen(nav: NavController, query: String) {
     val found = remember(catalog, query) { catalog.search(query, limit = 5) }
     Screen {
         item { Title(stringResource(R.string.wear_topics)) }
-        item { Text("“$query”", style = MaterialTheme.typography.caption3, color = Secondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
+        item { Text("“$query”", style = MaterialTheme.typography.caption3, color = Secondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().readingInset()) }
         if (found.isEmpty()) {
-            item { Text(stringResource(R.string.wear_topics_no_match, query), textAlign = TextAlign.Center) }
+            item { Text(stringResource(R.string.wear_topics_no_match, query), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().readingInset()) }
             item { RowChip(stringResource(R.string.wear_topics_speak), R.drawable.ic_mic, onClick = input.speak) }
             item { RowChip(stringResource(R.string.wear_topics_type), R.drawable.ic_keyboard, onClick = input.type) }
         }
@@ -226,7 +226,7 @@ internal fun TopicScreen(bible: WatchBible, state: WatchBible.State, nav: NavCon
     if (theme == null) {
         Screen {
             item { Title(stringResource(R.string.wear_topics)) }
-            item { Text(stringResource(R.string.wear_topics_unavailable), color = Secondary, textAlign = TextAlign.Center) }
+            item { Text(stringResource(R.string.wear_topics_unavailable), color = Secondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().readingInset()) }
             item { RowChip(stringResource(R.string.wear_topics_all), R.drawable.ic_topics) { nav.openAllTopics() } }
         }
         return
@@ -269,7 +269,7 @@ private fun PassagePage(theme: LifeTheme, passages: List<TopicPassage>, page: In
             item {
                 Text(
                     theme.localizedName.uppercase(), style = MaterialTheme.typography.caption3, color = Secondary,
-                    textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().readingInset(),
                 )
             }
             item { Title(passage.shown.display, Accent) }
@@ -277,7 +277,7 @@ private fun PassagePage(theme: LifeTheme, passages: List<TopicPassage>, page: In
             item {
                 Text(
                     position, style = MaterialTheme.typography.caption3, color = Secondary,
-                    textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().readingInset(),
                 )
             }
             // The button for anyone who can't swipe.
@@ -286,7 +286,7 @@ private fun PassagePage(theme: LifeTheme, passages: List<TopicPassage>, page: In
                 Text(
                     state.edition?.name ?: state.translation,
                     style = MaterialTheme.typography.caption3, color = Secondary, textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().readingInset(),
                 )
             }
         }
@@ -301,7 +301,7 @@ private fun EndPage(theme: LifeTheme, nothingToShow: Boolean, state: WatchBible.
             Text(
                 if (nothingToShow) stringResource(R.string.wear_topics_none_in_edition, state.abbreviation)
                 else stringResource(R.string.wear_topics_end, pluralStringResource(R.plurals.wear_topics_passages, theme.passages.size, theme.passages.size)),
-                color = Secondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
+                color = Secondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().readingInset(),
             )
         }
         if (!nothingToShow) item { RowChip(stringResource(R.string.wear_topics_start_over), R.drawable.ic_restart, onClick = restart) }

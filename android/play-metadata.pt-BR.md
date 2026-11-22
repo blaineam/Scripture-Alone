@@ -53,5 +53,5 @@ As suas marcações, notas e favoritos ficam no seu aparelho. Não há servidor 
 Feito para ajudar as pessoas a estudar a Palavra de Deus e a se aproximar de Cristo.
 
 ## release_notes
-1.4.2 — Corrige uma falha nos relógios Wear OS que fechava o app ao abri-lo.
+1.4.2 — Corrige uma falha nos relógios Wear OS que fechava o app ao abri-lo. O texto e os botões agora ficam dentro das telas redondas.
 

@@ -46,6 +46,10 @@ class WatchAppTest {
     private fun launch(route: String? = null) {
         val intent = Intent(app, MainActivity::class.java).apply { route?.let { putExtra(MainActivity.EXTRA_ROUTE, it) } }
         scenario = ActivityScenario.launch(intent)
+        // The library is read off the main thread (MainActivity): the first screen follows it.
+        val shared = WatchBible::class.java.getDeclaredField("shared").apply { isAccessible = true }
+        val end = System.currentTimeMillis() + 15_000
+        while (shared.get(null) == null && System.currentTimeMillis() < end) Thread.sleep(20)
         settle()
     }
 

@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- **Round Wear OS watches: nothing is cut off by the edge of the screen.** Verses, notes and messages ran the full width of
+  the list, so on a round watch the ends of the lines near the top and bottom were cut by the circle, and the time sat on
+  top of the text (Google Play's Wear OS quality check turned 1.4.2 down for it). Running text now keeps a margin a round
+  screen can hold, the bands at the very top and bottom where a line would still be cut are faded out, lists start below
+  the time and their last row scrolls up clear of the bottom, and a book's chapter buttons are three across instead of
+  four. Square watches are unchanged. Wear OS only.
+
+- **The Wear OS app reads its library off the main thread when it opens.** A slow read of the watch's storage at launch
+  could leave the app without a window long enough for the system to call it unresponsive (one "not responding" report,
+  Galaxy Watch8 Classic). The report carried no stack, so this removes the one piece of storage work the launch did on the
+  main thread rather than a proven cause. Wear OS only.
+
+- **A download an old copy of the app can no longer get says to update.** When a newer version is out, the App Store can
+  stop offering an older copy its downloads; Commentary then failed with the system's own text (the pack's identifier and
+  size in bytes). It now says this version may be too old and to update from the App Store, and the Commentary tab adds an
+  "Update Scripture Alone" button beside Try Again. Being offline still asks for a connection, and a full device is not
+  blamed on the app's version. iPhone, iPad and Mac.
+
 - **Fixes a crash when opening the Wear OS app.** On Galaxy Watch 4, 5 and 6, Wear OS refuses the app a read of its
   reduce-motion setting, and the watch app ended as its first screen opened. It now opens and treats the refusal as
   "motion is fine". Wear OS only.

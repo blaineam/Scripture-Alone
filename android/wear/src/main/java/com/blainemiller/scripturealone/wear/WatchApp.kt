@@ -7,7 +7,9 @@ import android.text.format.DateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,6 +37,8 @@ import androidx.wear.compose.foundation.LocalReduceMotion
 import androidx.wear.compose.foundation.ReduceMotion
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -50,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
@@ -90,6 +95,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.ZoneId
+import kotlin.math.sqrt
 import java.time.format.DateTimeFormatter
 
 /** The watch's screens, as `WatchRoute` on the Apple Watch. */
@@ -200,25 +206,107 @@ fun WatchApp(bible: WatchBible, pendingRoute: MutableStateFlow<String?>) {
     }
 }
 
-/** A scrolling screen: time at the top, the crown-driven position indicator, round-screen scaling. */
+/**
+ * How a list is framed by a round screen, as fractions of its diameter. A line of text is as wide as
+ * the list, so the circle cuts its ends wherever it sits near the top or bottom (Play's Wear OS quality
+ * check: "text or controls are cut off by the screen edges"). Running text is therefore drawn inside
+ * [TEXT_INSET], and the two bands where even that would be cut are painted over ([RoundFade]): a line
+ * is either whole or out of sight. Chips and cards keep the list's own margin — their rounded ends
+ * already follow the circle.
+ */
+internal object RoundFrame {
+    /** Each side's margin for running text. */
+    const val TEXT_INSET = 0.14f
+
+    /** How far the bands fade from opaque to clear. */
+    const val FADE = 0.05f
+
+    /** The list's own margin, which chips and cards sit at. */
+    val ListMargin = 10.dp
+
+    /**
+     * How far from the top (or bottom) edge a line inset by [inset] on each side is still cut by the
+     * circle: where the chord is narrower than the line.
+     */
+    fun cutBand(inset: Float = TEXT_INSET): Float {
+        val halfLine = 0.5f - inset
+        return 0.5f - sqrt(0.25f - halfLine * halfLine)
+    }
+
+    /** Where content is clear of the fade: the list starts and can end here. */
+    fun clear(inset: Float = TEXT_INSET): Float = cutBand(inset) + FADE
+    /** The gap between the chapter buttons. */
+    val GridGap = 6.dp
+
+    /** The chapter buttons across a screen, and their size. */
+    data class Grid(val columns: Int, val button: Dp)
+
+    /**
+     * Four small buttons across a square screen; on a round one, three inside the text's margin,
+     * shrunk if the watch is too small for three at full size.
+     */
+    fun chapterGrid(round: Boolean, screenWidthDp: Int): Grid {
+        val full = 48.dp // ButtonDefaults.SmallButtonSize
+        if (!round) return Grid(4, full)
+        val room = screenWidthDp.dp * (1 - 2 * TEXT_INSET)
+        return Grid(3, minOf(full, (room - GridGap * 2) / 3))
+    }
+}
+
+/** The extra margin running text takes on a round screen, beyond the list's own; none on a square one. */
+internal val LocalTextInset = staticCompositionLocalOf { 0.dp }
+
+/** Running text (a verse, a note, a message) kept clear of a round screen's edge. */
+@Composable
+internal fun Modifier.readingInset(): Modifier = padding(horizontal = LocalTextInset.current)
+
+/** The bands of a round screen where a line would be cut by the edge, painted over. */
+@Composable
+private fun RoundFade() {
+    val solid = RoundFrame.cutBand()
+    val clear = RoundFrame.clear()
+    Box(
+        Modifier.fillMaxSize().drawBehind {
+            drawRect(
+                Brush.verticalGradient(
+                    0f to Color.Black, solid to Color.Black, clear to Color.Transparent,
+                    1f - clear to Color.Transparent, 1f - solid to Color.Black, 1f to Color.Black,
+                ),
+            )
+        },
+    )
+}
+
+/** A scrolling screen: time at the top, the crown-driven position indicator, round-screen framing. */
 @Composable
 internal fun Screen(listState: ScalingLazyListState = rememberScalingLazyListState(initialCenterItemIndex = 0), content: ScalingLazyListScope.() -> Unit) {
+    val configuration = LocalConfiguration.current
+    val round = configuration.isScreenRound
+    val width = configuration.screenWidthDp.dp
+    val height = configuration.screenHeightDp.dp
+    val textInset: Dp = if (round) (width * RoundFrame.TEXT_INSET - RoundFrame.ListMargin).coerceAtLeast(0.dp) else 0.dp
+    // The title starts below the time (and, on a round screen, below the band the fade covers); the
+    // last row can be brought up clear of the bottom.
+    val top = if (round) maxOf(30.dp, height * RoundFrame.clear()) else 30.dp
+    val bottom = if (round) maxOf(48.dp, height * (RoundFrame.clear() + 0.04f)) else 48.dp
     Scaffold(
         timeText = { TimeText() },
-        vignette = { Vignette(vignettePosition = VignettePosition.TopAndBottom) },
+        vignette = { if (round) RoundFade() else Vignette(vignettePosition = VignettePosition.TopAndBottom) },
         positionIndicator = { PositionIndicator(scalingLazyListState = listState) },
     ) {
-        ScalingLazyColumn(
-            modifier = Modifier.fillMaxWidth(),
-            state = listState,
-            // The title starts below the time, as a watchOS navigation title does, rather than the
-            // first item being centred under it.
-            autoCentering = null,
-            anchorType = ScalingLazyListAnchorType.ItemStart,
-            contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = 30.dp, bottom = 48.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            content = content,
-        )
+        CompositionLocalProvider(LocalTextInset provides textInset) {
+            ScalingLazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                state = listState,
+                // The title starts below the time, as a watchOS navigation title does, rather than the
+                // first item being centred under it.
+                autoCentering = null,
+                anchorType = ScalingLazyListAnchorType.ItemStart,
+                contentPadding = PaddingValues(start = RoundFrame.ListMargin, end = RoundFrame.ListMargin, top = top, bottom = bottom),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                content = content,
+            )
+        }
     }
 }
 
@@ -311,7 +399,7 @@ private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: Verse
         item { Title(shown.display, Accent) }
         val loaded = verses
         if (loaded != null && loaded.isEmpty()) {
-            item { Text(stringResource(R.string.wear_verse_not_in_edition, state.abbreviation), color = Secondary, textAlign = TextAlign.Center) }
+            item { Text(stringResource(R.string.wear_verse_not_in_edition, state.abbreviation), color = Secondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().readingInset()) }
         }
         items(loaded.orEmpty()) { verse -> VerseText(verse, numbered = loaded.orEmpty().size > 1) }
         if (!loaded.isNullOrEmpty()) {
@@ -358,6 +446,7 @@ private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: Verse
             Text(
                 state.edition?.name ?: state.translation,
                 style = MaterialTheme.typography.caption3, color = Secondary, textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().readingInset(),
             )
         }
     }
@@ -366,7 +455,7 @@ private fun VerseScreen(bible: WatchBible, state: WatchBible.State, range: Verse
 /** A verse with the words of Christ in red and an optional small verse number — `WatchVerseText`. */
 @Composable
 internal fun VerseText(verse: WatchVerse, numbered: Boolean, highlight: Color? = null, onClick: (() -> Unit)? = null) {
-    var modifier = Modifier.fillMaxWidth()
+    var modifier = Modifier.fillMaxWidth().readingInset()
     if (highlight != null) modifier = modifier.background(highlight.copy(alpha = 0.28f), RoundedCornerShape(4.dp)).padding(horizontal = 4.dp)
     if (onClick != null) modifier = modifier.clickable(onClick = onClick)
     val description = if (numbered) stringResource(R.string.wear_verse_accessibility, verse.ref.verse, verse.text) else verse.text
@@ -420,16 +509,20 @@ private fun BooksScreen(go: (String) -> Unit) {
 
 @Composable
 private fun ChaptersScreen(book: BookID, go: (String) -> Unit) {
+    // A round screen has room for three across inside the text's margin (four would be cut by its
+    // edge), a little smaller on the smallest watches; a square one keeps four.
+    val configuration = LocalConfiguration.current
+    val grid = RoundFrame.chapterGrid(configuration.isScreenRound, configuration.screenWidthDp)
     Screen {
         item { Title(book.abbreviation) }
-        items((1..book.chapterCount).chunked(4)) { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally), modifier = Modifier.fillMaxWidth()) {
+        items((1..book.chapterCount).chunked(grid.columns)) { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(RoundFrame.GridGap, Alignment.CenterHorizontally), modifier = Modifier.fillMaxWidth()) {
                 for (chapter in row) {
                     val description = stringResource(R.string.wear_chapter_accessibility, chapter)
                     Button(
                         onClick = { go(Routes.chapter(book.number, chapter)) },
                         colors = ButtonDefaults.secondaryButtonColors(),
-                        modifier = Modifier.size(ButtonDefaults.SmallButtonSize).semantics { contentDescription = description },
+                        modifier = Modifier.size(grid.button).semantics { contentDescription = description },
                     ) { Text("$chapter", fontWeight = FontWeight.SemiBold) }
                 }
             }
@@ -584,16 +677,16 @@ private fun NoteScreen(state: WatchBible.State, id: String, go: (String) -> Unit
         }
         item { Title(note.noteTitle ?: note.reference) }
         item { RowChip(note.reference, R.drawable.ic_book) { note.verseRange?.let { go(Routes.verse(it)) } } }
-        note.noteBody?.let { body -> item { Text(body, style = MaterialTheme.typography.body1, modifier = Modifier.fillMaxWidth()) } }
+        note.noteBody?.let { body -> item { Text(body, style = MaterialTheme.typography.body1, modifier = Modifier.fillMaxWidth().readingInset()) } }
         item {
-            Text(stringResource(R.string.wear_note_edit_on_phone), style = MaterialTheme.typography.caption3, color = Secondary, textAlign = TextAlign.Center)
+            Text(stringResource(R.string.wear_note_edit_on_phone), style = MaterialTheme.typography.caption3, color = Secondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().readingInset())
         }
     }
 }
 
 @Composable
 private fun Empty(icon: Int, title: String, message: String?) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().readingInset().padding(horizontal = 8.dp)) {
         Icon(painterResource(icon), null, tint = Secondary, modifier = Modifier.size(28.dp))
         Text(title, style = MaterialTheme.typography.title3, textAlign = TextAlign.Center)
         if (message != null) Text(message, style = MaterialTheme.typography.body2, color = Secondary, textAlign = TextAlign.Center)
@@ -644,7 +737,7 @@ private fun TranslationsScreen(bible: WatchBible, state: WatchBible.State) {
             } else {
                 stringResource(R.string.wear_translation_follows_phone)
             }
-            Text(footer, style = MaterialTheme.typography.caption3, color = Secondary, textAlign = TextAlign.Center)
+            Text(footer, style = MaterialTheme.typography.caption3, color = Secondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().readingInset())
         }
     }
 }
